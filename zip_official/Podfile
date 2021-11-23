@@ -16,6 +16,7 @@ pod 'MessageKit'
 pod 'DropDown'
 pod 'MTSlideToOpen'
 pod 'RSKImageCropper'
+pod 'FloatingPanel'
 
 #FireBase
 pod 'Firebase/Core'
@@ -24,6 +25,10 @@ pod 'Firebase/Database'
 pod 'Firebase/Analytics'
 pod 'Firebase/Storage'
 pod 'Firebase/Crashlytics'
+
+
+pod 'GeoFire', '~> 4.0'
+
 
 
 end
