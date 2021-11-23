@@ -6,9 +6,6 @@
 //
 
 
-// Infinite Scroll Wheel of pictures
-// https://stackoverflow.com/questions/34396108/how-to-implement-horizontally-infinite-scrolling-uicollectionview
-
 import UIKit
 import MapKit
 import CoreLocation
