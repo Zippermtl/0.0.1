@@ -20,20 +20,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
         window?.makeKeyAndVisible()
-//        if Auth.auth().currentUser == nil {
-//            let vc = LoginViewController()
-//            let navVC = UINavigationController(rootViewController: vc)
-//            window?.rootViewController = navVC
-//        } else {
-//            let vc = ZipperTabBarViewController()
-//            vc.configureLocationServices()
-//            window?.rootViewController = vc
-//        }
-        
-        
-        let vc = MapViewController()
-        vc.isNewAccount = false
-        window?.rootViewController = vc
+        if Auth.auth().currentUser == nil {
+            let vc = LoginViewController()
+            let navVC = UINavigationController(rootViewController: vc)
+            window?.rootViewController = navVC
+        } else {
+            let vc = MapViewController()
+            vc.isNewAccount = false
+            window?.rootViewController = vc
+        }
         
         
 //        window?.rootViewController = UINavigationController(rootViewController:  BasicProfileSetupViewController())
