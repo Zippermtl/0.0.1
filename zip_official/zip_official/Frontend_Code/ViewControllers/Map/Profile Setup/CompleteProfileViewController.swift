@@ -91,12 +91,11 @@ class CompleteProfileViewController: UIViewController {
         configureNavBar()
         configureCollectionView()
         configureTable()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
-        
         
     }
     

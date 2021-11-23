@@ -65,16 +65,10 @@ class MapViewController: UIViewController {
     }
     
     @objc func didTapProfileButton() {
-        let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
-       
-        GeoManager.shared.updateLocation(location: userLoc)
-        GeoManager.shared.createTestCodeZip()
-        GeoManager.shared.zipfinder(location: userLoc)
-//        let vc = ProfileViewController()
-//        let nav = UINavigationController(rootViewController: vc)
-//        nav.modalPresentationStyle = .overCurrentContext
-//        present(nav, animated: true, completion: nil)
+        let vc = ProfileViewController()
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .overCurrentContext
+        present(nav, animated: true, completion: nil)
     }
 
 
@@ -116,7 +110,6 @@ class MapViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -125,13 +118,6 @@ class MapViewController: UIViewController {
             present(vc, animated: true, completion: nil)
         }
     
-        
-        guard let vc = presentingViewController else { return }
-        while (vc.presentingViewController != nil ) {
-            vc.dismiss(animated: false, completion: nil)
-        }
-        
-        
     }
     
     private func configureProfilePicture(){
@@ -257,11 +243,9 @@ extension MapViewController: CLLocationManagerDelegate {
         
         AppDelegate.userDefaults.set([userLoc.latitude, userLoc.longitude], forKey: "userLoc")
 
-        
         if locations.count == 1 {
             zoomToLatestLocation(with: userLoc)
         }
-        
     }
     
     // change auuthorization status
@@ -508,10 +492,9 @@ extension MapViewController: NewAccountDelegate {
         })
         getDataTask.resume()
         
-        vc.modalPresentationStyle = .fullScreen
-        tabBarController?.tabBar.isHidden = true
-        navigationController?.navigationBar.isHidden = false
-        navigationController?.pushViewController(vc, animated: true)
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true, completion: nil)
     }
     
     

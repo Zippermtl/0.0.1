@@ -499,6 +499,8 @@ class EventViewController: UIViewController {
         zipListButton.bottomAnchor.constraint(equalTo: footerView.bottomAnchor, constant: -2).isActive = true
         zipListButton.centerXAnchor.constraint(equalTo: footerView.centerXAnchor).isActive = true
     }
+    
+    
 
 }
 

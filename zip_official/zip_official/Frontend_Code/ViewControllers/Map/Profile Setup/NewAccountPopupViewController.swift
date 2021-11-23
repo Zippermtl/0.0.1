@@ -78,8 +78,42 @@ class NewAccountPopupViewController: UIViewController {
     }
     
     @objc private func didTapGoToProfile(){
-        delegate?.completeProfile()
-        dismiss(animated: true)
+        let vc = CompleteProfileViewController()
+
+        vc.user.userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        vc.user.username = AppDelegate.userDefaults.value(forKey: "username") as! String
+        vc.user.firstName = AppDelegate.userDefaults.value(forKey: "firstName") as! String
+        vc.user.lastName = AppDelegate.userDefaults.value(forKey: "lastName") as! String
+        vc.user.birthday = AppDelegate.userDefaults.value(forKey: "birthday") as! Date
+
+
+        guard let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+              let url = URL(string: urlString) else {
+            return
+        }
+        
+        
+        let getDataTask = URLSession.shared.dataTask(with: url, completionHandler: { data, _, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                vc.user.pictures.append(UIImage(data: data) ?? UIImage())
+                vc.collectionView?.reloadData()
+            }
+            
+        })
+        getDataTask.resume()
+        
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true, completion: {
+            
+            
+        })
+//        delegate?.completeProfile()
+//        dismiss(animated: true)
     }
     
     override func viewDidLoad() {

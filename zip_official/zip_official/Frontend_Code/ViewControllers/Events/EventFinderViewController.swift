@@ -167,6 +167,8 @@ class EventFinderViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
         tableView.tableHeaderView = nil
+//        tableView.sectionHeaderTopPadding = 0
+
         tableView.tableFooterView = nil
         tableView.sectionIndexBackgroundColor = .zipLightGray
         tableView.separatorColor = .zipSeparator
@@ -204,6 +206,8 @@ class EventFinderViewController: UIViewController {
         privateButton.addTarget(self, action: #selector(didTapPrivateButton), for: .touchUpInside)
     }
     
+    
+    
 }
 
 
@@ -226,6 +230,9 @@ extension EventFinderViewController :  UITableViewDataSource {
         return 2
     }
  
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return .leastNormalMagnitude
+    }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))

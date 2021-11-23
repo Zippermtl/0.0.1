@@ -112,7 +112,7 @@ class NewPrivateEventViewController: UIViewController {
     
     var locationTxt: UITextField = {
         let tf = UITextField()
-        tf.attributedPlaceholder = NSAttributedString(string: "Pick Your Event Date",
+        tf.attributedPlaceholder = NSAttributedString(string: "Enter Your Event Location",
                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
         tf.font = .zipBody
         tf.borderStyle = .roundedRect
@@ -398,6 +398,7 @@ class NewPrivateEventViewController: UIViewController {
     private func configureTextFields() {
         dateTxt.delegate = self
         durationTxt.delegate = self
+        locationTxt.delegate = self
         
         for view in titleText.subviews {
             if let button = view as? UIButton {
@@ -618,7 +619,6 @@ extension NewPrivateEventViewController: UITableViewDataSource {
 }
 
 
-
 extension NewPrivateEventViewController: UITextFieldDelegate {
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -626,6 +626,10 @@ extension NewPrivateEventViewController: UITextFieldDelegate {
             if textField.text == "Event Title" {
                 textField.text = ""
             }
+        } else if textField == locationTxt {
+            textField.resignFirstResponder()
+            let vc = SearchLocationViewController()
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     

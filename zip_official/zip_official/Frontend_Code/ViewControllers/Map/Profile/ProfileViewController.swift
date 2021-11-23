@@ -391,7 +391,8 @@ class ProfileViewController: UIViewController {
         profilePictureView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         profilePictureView.heightAnchor.constraint(equalToConstant: width/2).isActive = true
         profilePictureView.widthAnchor.constraint(equalTo: profilePictureView.heightAnchor).isActive = true
-        
+        profilePictureView.layer.masksToBounds = true
+        profilePictureView.layer.cornerRadius = width/4
 
         // name label constraints
         nameLabel.translatesAutoresizingMaskIntoConstraints = false

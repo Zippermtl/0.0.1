@@ -16,7 +16,11 @@ class EventFinderTableViewCell: UITableViewCell {
     
     //MARK: - Subviews
     private let bgView = UIView()
-    private let eventImage = UIImageView()
+    private let eventImage: UIImageView = {
+        let imgView = UIImageView()
+        imgView.isUserInteractionEnabled = true
+        return imgView
+    }()
     
     // Buttons
     private let goingButton: UIButton = {
@@ -40,7 +44,6 @@ class EventFinderTableViewCell: UITableViewCell {
         btn.setImage(img, for: .normal)
         return btn
     }()
-    
     
     //Labels
     private var titleLabel: UILabel = {
@@ -88,6 +91,10 @@ class EventFinderTableViewCell: UITableViewCell {
         return label
     }()
     
+    @objc private func openEvent(){
+        
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
     }
@@ -125,6 +132,10 @@ class EventFinderTableViewCell: UITableViewCell {
     
     //MARK: - Label Config
     private func configureLabels(){
+        let tap = UITapGestureRecognizer(target: self, action: #selector(openEvent))
+        titleLabel.isUserInteractionEnabled = true
+        titleLabel.addGestureRecognizer(tap)
+        
         titleLabel.text = event.title
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d"
@@ -156,6 +167,9 @@ class EventFinderTableViewCell: UITableViewCell {
     
     //MARK: - Image Config
     private func configureImage() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(openEvent))
+        eventImage.addGestureRecognizer(tap)
+        
         eventImage.image = event.image
         let size = contentView.frame.height/2
         let y = bgView.frame.height/2 - size/2

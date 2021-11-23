@@ -19,7 +19,6 @@ class LocationResultsViewController: UIViewController {
     private let tableView: UITableView = {
         let table = UITableView()
         table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        
         return table
     }()
     
@@ -44,7 +43,7 @@ class LocationResultsViewController: UIViewController {
 
     }
     
-    public func update(with places:  [Place]){
+    public func update(with places: [Place]){
         tableView.isHidden = false
         self.places = places
         tableView.reloadData()
@@ -53,33 +52,29 @@ class LocationResultsViewController: UIViewController {
 
 }
 
-
 extension LocationResultsViewController: UITableViewDelegate {
     
 }
 
 extension LocationResultsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print(places.count)
         return places.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .zipGray
+        cell.contentView.backgroundColor = .zipGray
         cell.textLabel?.text = places[indexPath.row].name
         cell.textLabel?.font = .zipBody
         cell.textLabel?.textColor = .white
         return cell
-    
-    
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         tableView.isHidden = true
         let place = places[indexPath.row]
-        GooglePlacesManager.shared.resolveLocation(for: place) { [weak self] result in
+        LocationSearchManager.shared.resolveLocation(for: place) { [weak self] result in
             switch result {
             case .success(let coordinate):
                 DispatchQueue.main.async {

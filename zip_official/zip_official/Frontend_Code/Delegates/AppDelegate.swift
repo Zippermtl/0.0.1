@@ -72,7 +72,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UITableView.appearance().separatorColor = .zipSeparator
         UITableView.appearance().separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         UITableView.appearance().tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 1))
+        UITableView.appearance().tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 1))
         UITableView.appearance().bounces = true
+        
+//        if #available(iOS 15.0, *) {
+//            UITableView.appearance().sectionHeaderTopPadding = 0
+//        }
     }
     
     func applyNavControllerChanges() {
