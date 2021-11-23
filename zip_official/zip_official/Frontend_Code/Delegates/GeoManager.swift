@@ -11,7 +11,7 @@ import GeoFire
 
 class GeoManager {
     
-    static let geoShared = GeoManager()
+    static let shared = GeoManager()
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
@@ -27,10 +27,9 @@ class GeoManager {
     
     public func updateLocation(location: CLLocation){
         print("got here")
-        let latitude = ZipperTabBarViewController.userLoc.latitude
-        let longitude = ZipperTabBarViewController.userLoc.longitude
+
         let userID = AppDelegate.userDefaults.value(forKey: "userId")
-        geoFire.setLocation(CLLocation(latitude: latitude, longitude: longitude), forKey: userID as! String){ (error) in
+        geoFire.setLocation(CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), forKey: userID as! String){ (error) in
             if (error != nil) {
                 print("An error occured: \(error)")
 //              Yianni insert a call to whatever happens if location is                    unavailable
@@ -41,13 +40,12 @@ class GeoManager {
 
     }
 
-    public func zipfinder(circleType: String){
-        let latitude = ZipperTabBarViewController.userLoc.latitude
-        let longitude = ZipperTabBarViewController.userLoc.longitude
+    public func zipfinder(location: CLLocation){
         var list: [User] = []
+        print("zipfinder")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
-        let center = CLLocation(latitude: latitude, longitude: longitude)
-        let geoRange = Double(2000)
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let geoRange = Double(10)
         //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
 //        let circleQuery = self.geoFire.query(at: center, withRadius: geoRange)
 //        _ = circleQuery.observe(.keyEntered, with: { key, location in
@@ -55,11 +53,27 @@ class GeoManager {
 //            print("Key: " + key + "entered the search radius.")
 //        })
         let query = self.geoFire.query(at: center, withRadius: geoRange)
-
+        var queryHandle = query.observe(.keyEntered, with: { (key: String!, location: CLLocation!) in
+            list.append(User(userId : key))
+            print("added \(key)")
+        })
         
-//        var queryHandle = query.observe(.keyEntered, with: { (key: String!, location: CLLocation!) in
-//            list.append(User(userID : key))
-//        })
+        var counter = 0;
+        for listUser in list {
+            DatabaseManager.shared.loadUserProfile(given: listUser.userId, completion: { [weak self] result in
+                switch result {
+                case .success(let user):
+                    list[counter] = user;
+                    counter += 1;
+                    print("big succ")
+                case .failure(let error):
+                    print("big fuck")
+                }
+                
+
+
+            })
+        }
         // Query location by region
 //        let span = MKCoordinateSpanMake(0.001, 0.001)
 //        let region = MKCoordinateRegionMake(center.coordinate, span)
