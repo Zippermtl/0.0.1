@@ -306,7 +306,6 @@ class BasicProfileSetupViewController: UIViewController {
     
     
     private func getAllUsernames(){
-        
         allUsernames = []
     }
     
@@ -351,11 +350,10 @@ class BasicProfileSetupViewController: UIViewController {
         createAnAccountLabel.translatesAutoresizingMaskIntoConstraints = false
         createAnAccountLabel.topAnchor.constraint(equalTo: logo.bottomAnchor, constant: 15).isActive = true
         createAnAccountLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        
+    
         stepLabel.translatesAutoresizingMaskIntoConstraints = false
         stepLabel.topAnchor.constraint(equalTo: createAnAccountLabel.bottomAnchor, constant: 15).isActive = true
         stepLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-
         
         stepTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         stepTitleLabel.topAnchor.constraint(equalTo: stepLabel.bottomAnchor, constant: 0).isActive = true
@@ -453,13 +451,6 @@ class BasicProfileSetupViewController: UIViewController {
         pageStatus2.layer.cornerRadius = tfHeight/2*statusHeightMult*0.67
         pageStatus3.layer.cornerRadius = tfHeight/2*statusHeightMult*0.67
     }
-
-    
-    
-    
-
-
-
 }
 
 
@@ -526,9 +517,6 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
                 return false
             }
         }
-        
-
         return true
     }
-    
 }
