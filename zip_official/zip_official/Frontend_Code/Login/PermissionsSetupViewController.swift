@@ -128,12 +128,6 @@ class PermissionsSetupViewController: UIViewController {
     
     
     @objc private func didTapCompleteButton(){
-        user.firstName = "Yianni"
-        user.lastName = "Zavaliagkos"
-        user.userId = "u6501111111"
-        user.username = "yianni_zav"
-        AppDelegate.userDefaults.set("delete this", forKey: "profilePictureUrl") // delete this, for testing purposes bc user defaults stay
-
         
         AppDelegate.locationManager.requestWhenInUseAuthorization()
 
