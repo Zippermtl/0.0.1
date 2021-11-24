@@ -35,7 +35,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         return button
     }()
     
-    
+    var hasMore = false;
         
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -47,7 +47,18 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        data = MapViewController.getTestUsers()
+        if(GeoManager.shared.ZFUlist.isEmpty){
+            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
+        }
+        let userSize = GeoManager.shared.ZFUlist.count
+        if(userSize > 10){
+            data = GeoManager.shared.loadUsers(size: 10)
+            hasMore = true
+        } else {
+            data = GeoManager.shared.loadUsers(size: userSize)
+            hasMore = false
+        }
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         collectionView?.isOpaque = true
         
@@ -179,7 +190,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        let model = data[indexPath.row % data.count]
+        let model = data[indexPath.row]
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
 
@@ -190,7 +201,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return .max //data.count
+        return data.count
     }
     
     
