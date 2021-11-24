@@ -46,11 +46,11 @@ class GeoManager {
 
     }
 
-    public func getUserByLoc(location: CLLocation){
+    public func getUserByLoc(location: CLLocation, range: Int){
         print("zipfinder")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        let geoRange = Double(10)
+        let geoRange = Double(range)
         //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
 //        let circleQuery = self.geoFire.query(at: center, withRadius: geoRange)
 //        _ = circleQuery.observe(.keyEntered, with: { key, location in
@@ -58,23 +58,67 @@ class GeoManager {
 //            print("Key: " + key + "entered the search radius.")
 //        })
         let query = self.geoFire.query(at: center, withRadius: geoRange)
-        var queryHandle = query.observe(.keyEntered, with: { (key: String!, location: CLLocation!) in
-            GeoManager.shared.ZFUlist.append(User(userId : key))
-            print("added \(key)")
+        var queryHandle = query.observe(.keyEntered, with: { [self] (key: String!, location: CLLocation!) in
+            if(ZFUlist.count > 100){
+                query.finalize()
+            }
+            if(userIsValid(key: key)){
+                GeoManager.shared.ZFUlist.append(User(userId : key))
+                print("added \(key)")
+            }
+        })
+        query.observeReady({
+            print("All initial data has been loaded and events have been fired!")
+            query.finalize()
         })
     }
+    
+    public func userIsValid(key: String) -> Bool{
+        for user in ZFUlist{
+            if(user.userId == key){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public func loadNextUsers() -> [User]{
+        var data: [User] = []
+//        if(GeoManager.shared.ZFUlist.isEmpty){
+//            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+//            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
+//        }
+        let userSize = GeoManager.shared.ZFUlist.count
+        if(userSize > 10){
+            data = GeoManager.shared.loadUsers(size: 10)
+//            hasMore = true
+            print(GeoManager.shared.ZFUlist.count)
+        } else {
+            data = GeoManager.shared.loadUsers(size: userSize)
+//            hasMore = false
+            print(GeoManager.shared.ZFUlist.count)
+        }
+        print("have data")
+        return data
+    }
+    
     public func loadUsers(size: Int) -> [User]{
         var listUser: [User] = []
+        print("loading users \(size)")
         for i in 0..<size{
-            DatabaseManager.shared.loadUserProfile(given: ZFUlist[i].userId, completion: { [weak self] result in
+            DatabaseManager.shared.loadUserProfile(given: ZFUlist[0].userId, completion: { [weak self] result in
                 switch result {
                 case .success(let user):
                     listUser.append(user)
                     print("big succ")
+                    print("copied \(user.username)")
                 case .failure(let error):
                     print("big fuck")
                 }
             })
+            var temp = ZFUlist[0];
+            alreadyReadySeen.append(temp)
+            ZFUlist.remove(at: 0)
         }
         return listUser
 //         Query location by region
