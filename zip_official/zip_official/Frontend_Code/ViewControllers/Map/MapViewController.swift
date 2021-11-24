@@ -245,9 +245,9 @@ extension MapViewController: CLLocationManagerDelegate {
         AppDelegate.userDefaults.set([userLoc.latitude, userLoc.longitude], forKey: "userLoc")
 
         if locations.count == 1 {
-            GeoManager.shared.updateLocation(location: latestLocation)
+            GeoManager.shared.UpdateLocation(location: latestLocation)
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 10)
+            GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3)
             zoomToLatestLocation(with: userLoc)
         }
     }
