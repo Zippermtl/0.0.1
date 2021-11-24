@@ -46,7 +46,7 @@ class GeoManager {
 
     }
 
-    public func getUserByLoc(location: CLLocation, range: Int){
+    public func getUserByLoc(location: CLLocation, range: Int, max: Int){
         print("zipfinder")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
@@ -59,7 +59,7 @@ class GeoManager {
 //        })
         let query = self.geoFire.query(at: center, withRadius: geoRange)
         var queryHandle = query.observe(.keyEntered, with: { [self] (key: String!, location: CLLocation!) in
-            if(ZFUlist.count > 100){
+            if(ZFUlist.count > max){
                 query.finalize()
             }
             if(userIsValid(key: key)){
