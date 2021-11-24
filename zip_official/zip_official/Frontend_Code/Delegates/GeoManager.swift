@@ -8,11 +8,16 @@
 import Foundation
 import FirebaseDatabase
 import GeoFire
+import CoreLocation
 
 class GeoManager {
     
     static let shared = GeoManager()
         
+    var ZFUlist: [User] = []
+    var alreadyReadySeen: [User] = []
+
+    
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
     
@@ -25,6 +30,7 @@ class GeoManager {
 //        return safeEmail
 //    }
     
+
     public func updateLocation(location: CLLocation){
         print("got here")
 
@@ -40,8 +46,7 @@ class GeoManager {
 
     }
 
-    public func zipfinder(location: CLLocation){
-        var list: [User] = []
+    public func getUserByLoc(location: CLLocation){
         print("zipfinder")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
@@ -54,27 +59,25 @@ class GeoManager {
 //        })
         let query = self.geoFire.query(at: center, withRadius: geoRange)
         var queryHandle = query.observe(.keyEntered, with: { (key: String!, location: CLLocation!) in
-            list.append(User(userId : key))
+            GeoManager.shared.ZFUlist.append(User(userId : key))
             print("added \(key)")
         })
-        
-        var counter = 0;
-        for listUser in list {
-            DatabaseManager.shared.loadUserProfile(given: listUser.userId, completion: { [weak self] result in
+    }
+    public func loadUsers(size: Int) -> [User]{
+        var listUser: [User] = []
+        for i in 0..<size{
+            DatabaseManager.shared.loadUserProfile(given: ZFUlist[i].userId, completion: { [weak self] result in
                 switch result {
                 case .success(let user):
-                    list[counter] = user;
-                    counter += 1;
+                    listUser.append(user)
                     print("big succ")
                 case .failure(let error):
                     print("big fuck")
                 }
-                
-
-
             })
         }
-        // Query location by region
+        return listUser
+//         Query location by region
 //        let span = MKCoordinateSpanMake(0.001, 0.001)
 //        let region = MKCoordinateRegionMake(center.coordinate, span)
 //        var regionQuery = geoFire.queryWithRegion(region)
