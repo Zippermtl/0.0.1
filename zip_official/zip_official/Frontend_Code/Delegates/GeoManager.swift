@@ -19,8 +19,8 @@ class GeoManager {
     var alreadyReadySeen: [String] = []
 
     let noUsers = User(userId: "empty")
-    var moreUsers = false
-    var loading = false
+    var moreUsersInQuery = false
+    var queryRunning = false
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
@@ -50,8 +50,8 @@ class GeoManager {
 
     }
 
-    public func GetUserByLoc(location: CLLocation, range: Double, max: Int){
-        print("zipfinder")
+    public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+        print("Entering GetUserByLoc")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         let geoRange = Double(range)
@@ -62,45 +62,48 @@ class GeoManager {
 //            print("Key: " + key + "entered the search radius.")
 //        })
         let query = self.geoFire.query(at: center, withRadius: geoRange)
-        loading = true
+        queryRunning = true
         query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
             guard let strongSelf = self else {
                 return
             }
             if(strongSelf.userIdList.count > max){
-                query.finalize()
-                strongSelf.moreUsers = true
+                query.removeAllObservers()
+                strongSelf.moreUsersInQuery = true
             }
             if(strongSelf.userIsValid(key: key)){
                 GeoManager.shared.userIdList.append(key)
-                print("added \(key.description)")
+                print("userIdList appending \(key.description)")
             }
         })
         var count = 0
         query.observeReady({
             print("All initial data has been loaded and events have been fired! \(count)")
             count += 1
-            self.userIdList.append(self.noUsers.userId)
-            self.loading = false
-            query.finalize()
+            self.queryRunning = false
+            query.removeAllObservers()
+            completion()
         })
+        
     }
     
     public func userIsValid(key: String) -> Bool{
         for user in userIdList{
             if(user == key){
-                return false;
+                print("A user is duplicated")
+                return false
             }
         }
         for user in alreadyReadySeen{
             if(user == key){
-                return false;
+                print("A user is already seen")
+                return false
             }
         }
-        return true;
+        return true
     }
     
-    public func LoadNextUsers(size: Int) {//        if(GeoManager.shared.userIdList.isEmpty){
+    public func LoadNextUsers(size: Int, completion: () -> Void) {//        if(GeoManager.shared.userIdList.isEmpty){
 //            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
 //            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
 //        }
@@ -114,26 +117,32 @@ class GeoManager {
 //            hasMore = false
             print("userIdList.count = \(GeoManager.shared.userIdList.count)")
         }
-        print("have data")
+        print("have data, exiting LoadNextUsers")
+        
+//        print("before completion of load next users")
+//        print(GeoManager.shared.loadedUsers)
+        completion()
     }
     
     public func LoadUsers(size: Int){
-        print("loading users \(size)")
-        for _ in 0..<size{
+        print("LoadUsers \(size) with array size \(userIdList.count)")
+        for i in 0..<size{
             DatabaseManager.shared.loadUserProfile(given: userIdList[0], completion: { [weak self] result in
                 switch result {
                 case .success(let user):
                     self?.loadedUsers.append(user)
-                    print("big succ")
+                    print("completed user profile copy for: ")
                     print("copied \(user.username)")
                 case .failure(let error):
                     print("error load in LoadUser -> LoadUserProfile \(error)")
                 }
             })
-            let temp = userIdList[0];
+            let temp = userIdList[0]
             alreadyReadySeen.append(temp)
             userIdList.remove(at: 0)
         }
+        print("exiting loadUsers with loadedUsers: \(loadedUsers.count) and ")
+
 //         Query location by region
 //        let span = MKCoordinateSpanMake(0.001, 0.001)
 //        let region = MKCoordinateRegionMake(center.coordinate, span)
@@ -143,15 +152,7 @@ class GeoManager {
 //
 //    }
     
-    public func PullNextUser(index: Int) -> User {
-        if(loadedUsers.count-index < 5){
-            LoadNextUsers(size: 10)
-        }
-        if(loadedUsers.count-index == 0){
-            return noUsers
-        }
-        return loadedUsers[index]
-    }
+    
 }
 
 
