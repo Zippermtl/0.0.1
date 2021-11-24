@@ -49,6 +49,8 @@ class MapViewController: UIViewController {
     
     private var profileButton = UIButton()
     
+    var guardingGeoFireCalls = false
+    
     // MARK: - Button Actions
     @objc private func didTapHomeButton(){
         if(ZipperTabBarViewController.userLoc != nil ){
@@ -238,16 +240,23 @@ class MapViewController: UIViewController {
 
 //MARK: -  Location Services
 extension MapViewController: CLLocationManagerDelegate {
+        
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let latestLocation = locations.first else { return }
         userLoc = latestLocation.coordinate
         
         AppDelegate.userDefaults.set([userLoc.latitude, userLoc.longitude], forKey: "userLoc")
 
-        if locations.count == 1 {
+        if !guardingGeoFireCalls {
             GeoManager.shared.UpdateLocation(location: latestLocation)
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-            GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3)
+            GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3, completion: {
+            
+                GeoManager.shared.LoadNextUsers(size: 10, completion: {
+                })
+            
+            })
+            guardingGeoFireCalls = true
             zoomToLatestLocation(with: userLoc)
         }
     }
