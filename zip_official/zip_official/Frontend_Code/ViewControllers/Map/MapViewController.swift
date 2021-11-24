@@ -110,6 +110,7 @@ class MapViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+//        isNewAccount = true
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -479,7 +480,6 @@ extension MapViewController: NewAccountDelegate {
             return
         }
         
-        
         let getDataTask = URLSession.shared.dataTask(with: url, completionHandler: { data, _, error in
             guard let data = data, error == nil else {
                 return
@@ -497,8 +497,6 @@ extension MapViewController: NewAccountDelegate {
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)
     }
-    
-    
 }
 
 
