@@ -47,18 +47,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if(GeoManager.shared.ZFUlist.isEmpty){
-            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
-        }
-        let userSize = GeoManager.shared.ZFUlist.count
-        if(userSize > 10){
-            data = GeoManager.shared.loadUsers(size: 10)
-            hasMore = true
-        } else {
-            data = GeoManager.shared.loadUsers(size: userSize)
-            hasMore = false
-        }
+        data = GeoManager.shared.loadNextUsers()
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         collectionView?.isOpaque = true
         
@@ -183,6 +172,23 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         return ((maxAlpha - minAlpha) * (x - minScale)) / (maxScale - minScale) + minAlpha
     }
     
+//    func loadNextUsers(){
+//        if(GeoManager.shared.ZFUlist.isEmpty){
+//            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+//            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
+//        }
+//        let userSize = GeoManager.shared.ZFUlist.count
+//        if(userSize > 10){
+//            data = GeoManager.shared.loadUsers(size: 10)
+//            hasMore = true
+//            print(GeoManager.shared.ZFUlist.count)
+//        } else {
+//            data = GeoManager.shared.loadUsers(size: userSize)
+//            hasMore = false
+//            print(GeoManager.shared.ZFUlist.count)
+//        }
+//        print("have data")
+//    }
 }
 
 // MARK: UICollectionViewDataSource
@@ -237,7 +243,5 @@ extension ZipFinderViewController : UIScrollViewDelegate {
         adjustScaleAndAlpha()
     }
 }
-
-
 
 
