@@ -47,17 +47,18 @@ class CompleteProfileViewController: UIViewController {
                     switch results {
                     case .success(let downloadUrl):
                         print(downloadUrl)
+                        DispatchQueue.main.async {
+                            strongSelf.dismiss(animated: true)
+                        }
                     case .failure(let error):
                         print("Storage Manager Error: \(error)")
+                        DispatchQueue.main.async {
+                            strongSelf.dismiss(animated: true)
+                        }
                     }
                 })
             }
         })
-        
-        
-        tabBarController?.tabBar.isHidden = false
-        navigationController?.navigationBar.isHidden = false
-        navigationController?.popViewController(animated: true)
     }
     
     @objc func handleLongGesture(gesture: UILongPressGestureRecognizer) {
