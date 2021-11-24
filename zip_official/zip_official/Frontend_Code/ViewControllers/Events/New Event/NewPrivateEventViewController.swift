@@ -47,7 +47,7 @@ class NewPrivateEventViewController: UIViewController {
         tf.layer.cornerRadius = 5
         tf.adjustsFontSizeToFitWidth = true
         
-        tf.minimumFontSize = 14.0;
+        tf.minimumFontSize = 14.0
         tf.text = "Event Title"
         tf.clearButtonMode = .whileEditing
         tf.font = .zipTitle
@@ -120,7 +120,7 @@ class NewPrivateEventViewController: UIViewController {
         tf.backgroundColor = .zipLightGray
         tf.textColor = .white
         tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0;
+        tf.minimumFontSize = 10.0
         
         return tf
     }()
@@ -135,7 +135,7 @@ class NewPrivateEventViewController: UIViewController {
         tf.backgroundColor = .zipLightGray
         tf.textColor = .white
         tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0;
+        tf.minimumFontSize = 10.0
         
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
@@ -159,7 +159,7 @@ class NewPrivateEventViewController: UIViewController {
         tf.backgroundColor = .zipLightGray
         tf.textColor = .white
         tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0;
+        tf.minimumFontSize = 10.0
         
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .time
@@ -183,7 +183,7 @@ class NewPrivateEventViewController: UIViewController {
         tf.backgroundColor = .zipLightGray
         tf.textColor = .white
         tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0;
+        tf.minimumFontSize = 10.0
         
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .countDownTimer
