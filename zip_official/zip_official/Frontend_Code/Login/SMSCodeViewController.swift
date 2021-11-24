@@ -125,8 +125,6 @@ class SMSCodeViewController: UIViewController {
         DatabaseManager.shared.verifyCode(smsCode: smsCode, completion: {[weak self] success in
             guard success, let strongSelf = self else { return }
             
-            
-            
             DatabaseManager.shared.userExists(with: strongSelf.userId, completion: { [weak self] exists in
                 guard let strongSelf = self else {
                     return
@@ -139,10 +137,9 @@ class SMSCodeViewController: UIViewController {
                 guard !exists else {
                     //user already exists
                     DispatchQueue.main.async {
-                        let vc = ZipperTabBarViewController()
+                        let vc = MapViewController()
                         vc.modalPresentationStyle = .fullScreen
                         AppDelegate.locationManager.requestWhenInUseAuthorization()
-                        vc.configureLocationServices()
 
                         // get basic user profile - username, userId, name
                         AppDelegate.userDefaults.set(self?.userId, forKey: "userId")
