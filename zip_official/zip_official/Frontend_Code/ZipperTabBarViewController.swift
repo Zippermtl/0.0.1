@@ -128,7 +128,7 @@ extension ZipperTabBarViewController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         
         if let vc = viewController as? UINavigationController {
-            vc.popToRootViewController(animated: false);
+            vc.popToRootViewController(animated: false)
         }
         
         if let tabBarItem = tabBarController.tabBar.items?[2] {
@@ -143,7 +143,10 @@ extension ZipperTabBarViewController: UITabBarControllerDelegate {
 extension ZipperTabBarViewController: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let latestLocation = locations.first else { return }
+        guard let latestLocation = locations.first else {
+            return
+            
+        }
 //        userLoc = latestLocation.coordinate
 
     }
