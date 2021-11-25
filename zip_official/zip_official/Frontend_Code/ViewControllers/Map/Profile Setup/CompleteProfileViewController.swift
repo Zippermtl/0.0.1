@@ -34,14 +34,20 @@ class CompleteProfileViewController: UIViewController {
 
     
     @objc private func didTapDoneButton(){
-        
+        //MARK: Yianni look below and text what you want me to do at the if success{
+        /*
+         I wrote three functions
+         updateIndividualImage
+         resetUserImages
+         
+         */
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] success in
             guard let strongSelf = self else {
                 return
             }
             
             if success {
-                StorageManager.shared.updateUserImages(with: strongSelf.user.pictures,
+                StorageManager.shared.ResetUserImages(with: strongSelf.user.pictures,
                                                        path: strongSelf.user.picturesPath,
                                                        completion: { results in
                     switch results {
