@@ -34,11 +34,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         return button
     }()
     
-    private var hasMore = false;
+    private var hasMore = false
     
     private var maxRangeFilter = AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as! Double
         
-    private var rangeMultiplier = 1 as! Double
+    private var rangeMultiplier = Double(1)
+    
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -49,13 +50,22 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("Entering View did load with userIdList size: \(GeoManager.shared.userIdList.count)")
         if NSLocale.current.regionCode == "US" {
             rangeMultiplier = 1.6
             maxRangeFilter *= rangeMultiplier
         }
         let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: rangeMultiplier, max: 100)
-        GeoManager.shared.LoadNextUsers(size: 10)
+        GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100, completion: {
+            GeoManager.shared.LoadNextUsers(size: 10, completion: { [weak self] in
+                self?.collectionView?.reloadData()
+                print("RELOADING DATA")
+            })
+        })
+        
+        
+        
+       
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         collectionView?.isOpaque = true
         
@@ -197,6 +207,18 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
 //        }
 //        print("have data")
 //    }
+    
+    
+    private func PullNextUser(index: Int) -> User {
+        if(GeoManager.shared.loadedUsers.count-index < 5){
+            GeoManager.shared.LoadNextUsers(size: 10, completion: { [weak self] in
+            })
+        }
+        if(GeoManager.shared.loadedUsers.count-index <= 0){
+            return GeoManager.shared.noUsers
+        }
+        return GeoManager.shared.loadedUsers[index]
+    }
 }
 
 // MARK: UICollectionViewDataSource
@@ -204,28 +226,38 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
+        print("got to the collection view with \(GeoManager.shared.userIdList.count) unloaded names and \(GeoManager.shared.loadedUsers.count) loaded on pass index: \(indexPath.row)")
         
         if(indexPath.row > GeoManager.shared.loadedUsers.count - 6){
-            let userCheck = GeoManager.shared.PullNextUser(index: indexPath.row)
-            if(GeoManager.shared.userIdList.count < 10 && !GeoManager.shared.moreUsers && !GeoManager.shared.loading){
+            let userCheck = PullNextUser(index: indexPath.row)
+            if(GeoManager.shared.userIdList.count < 10 && !GeoManager.shared.moreUsersInQuery && !GeoManager.shared.queryRunning){
                 if(maxRangeFilter < 5 * rangeMultiplier){
                     maxRangeFilter = 5 * rangeMultiplier
                 } else {
                     maxRangeFilter += 5 * rangeMultiplier
                 }
                 let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-                GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100)
-            } else if(GeoManager.shared.userIdList.count == 0 && GeoManager.shared.loading){
-                if(maxRangeFilter > 50.0){
-                    //MARK: Insert no people near you card
-                } else {
-                    //MARK: Insert blank card with loading which updates once complete
-                }
+                GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100, completion: {
+                    
+                })
+            } else if (maxRangeFilter > 50){
+                print("range is \(maxRangeFilter)")
+//            else if(GeoManager.shared.userIdList.count == 0 && GeoManager.shared.loading){
+//                if(maxRangeFilter > 50.0){
+//
+//                    //MARK: Insert no people near you card
+//                } else {
+//                    //MARK: Insert blank card with loading which updates once complete
+//                }
             }
         }
         
-        let model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
+        
+        var model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
 
+        //MARK: delete this
+        model.pictures.append(UIImage(named: "gabe1")!)
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
 
         cell.delegate = self
@@ -235,7 +267,9 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return GeoManager.shared.loadedUsers.count
+        print("collection view count = \(GeoManager.shared.loadedUsers.count)")
+        return .max
+//        return 0 //GeoManager.shared.loadedUsers.count
     }
     
     
