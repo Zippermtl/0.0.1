@@ -10,6 +10,7 @@ import FirebaseDatabase
 import MessageKit
 import FirebaseAuth
 
+
 /// Manager object to read and write to firebase
 class DatabaseManager {
     /// Shared instance of  the  class
@@ -69,7 +70,8 @@ extension DatabaseManager {
             "username": user.username,
             "firstName": user.firstName,
             "lastName": user.lastName,
-            "birthday": user.birthdayString
+            "birthday": user.birthdayString,
+            "notifications": user.encodedPreferences
         ], withCompletionBlock: { [weak self] error, _ in
             guard error == nil else{
                 print("failed to write to database")
@@ -132,7 +134,8 @@ extension DatabaseManager {
             "lastName": user.lastName,
             "bio": user.bio,
             "school": user.school ?? "",
-            "interests": user.interests.map{ $0.rawValue }
+            "interests": user.interests.map{ $0.rawValue },
+            "notifications": user.encodedPreferences
         ], withCompletionBlock: { error, _ in
             guard error == nil else{
                 print("failed to write to database")
@@ -178,6 +181,7 @@ extension DatabaseManager {
                   let school = value["school"] as? String,
                   let bio = value["bio"] as? String,
                   let interestsInt = value["interests"] as? [Int],
+                  let notifPrefs = value["notifications"] as? Int,
                   let birthdayString = value["birthday"] as? String else {
                       print("retuning here")
                       return
@@ -198,10 +202,10 @@ extension DatabaseManager {
                             birthday: birthday,
                             bio: bio,
                             school: school,
-                            interests: interests
+                            interests: interests,
+                            notificationPreferences: DecodePreferences(notifPrefs)
             )
-                 
-
+            
             completion(.success(user))
 
         })
