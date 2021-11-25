@@ -167,8 +167,9 @@ class PermissionsSetupViewController: UIViewController {
                 AppDelegate.userDefaults.set((strongSelf.user.firstName), forKey: "firstName")
                 AppDelegate.userDefaults.set((strongSelf.user.lastName), forKey: "lastName")
                 AppDelegate.userDefaults.set((strongSelf.user.birthday), forKey: "birthday")
+                AppDelegate.userDefaults.set(0, forKey: "picNum")
                 
-                
+                //MARK: DELETE EVENTUALLY - might cause bugs
                 AppDelegate.userDefaults.set(2000, forKey: "BlueRing")
                 AppDelegate.userDefaults.set(5000, forKey: "GreenRing")
                 AppDelegate.userDefaults.set(10000, forKey: "PinkRing")
