@@ -35,6 +35,8 @@ struct User {
         return "\(encoded)"
     }
     
+    var picNum: Int = 0
+    
     var safeId: String {
         var safeID = userId.replacingOccurrences(of: ".", with: "-")
         safeID = safeID.replacingOccurrences(of: "@", with: "-")
