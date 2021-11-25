@@ -28,7 +28,7 @@ struct User {
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     var interestedEvents: [Event] = []
-    
+    var picNum: Int = 0
     
     var safeId: String {
         var safeID = userId.replacingOccurrences(of: ".", with: "-")
