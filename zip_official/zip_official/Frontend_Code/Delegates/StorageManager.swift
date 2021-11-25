@@ -47,7 +47,7 @@ final class StorageManager {
     // if you have 3 images and you try and delete one, it won't go away
     public func updateUserImages(with pictures: [UIImage], path: String, completion: @escaping UploadPictureCompletion) {
         print("Update user images called")
-        
+        //MARK: GABE TODO fix so it only uploads changed images
         var uploadCount = 0
         
         for image in pictures {
@@ -88,6 +88,69 @@ final class StorageManager {
         }
         
     }
+    
+    //MARK: GABE TO DO IN PHOTOS TODO LIST
+    /*
+     
+     - fix upload to not overwrite everytime -- way to many write to cold storage
+     - Upload 3 --> Delete 2 --> 3 images left
+     - upload 3 --> delete 1 --> 3 images left
+    
+     
+     - because load all images loads all imgs overwritten
+     - uploading images overwrites but no deletes
+     
+     
+     write this function somewhere
+     func getNumberOfPictures()
+     
+     
+     */
+    
+    public enum StorageErrors: Error {
+        case failedToUpload
+        case failedToGetDownloadUrl
+    }
+    
+    public func downloadURL(for path: String, completion: @escaping (Result<URL, Error>) -> Void ){
+        let reference = storage.child(path)
+        
+        reference.downloadURL(completion: { url, error in
+            guard let url = url, error == nil else {
+                completion(.failure(StorageErrors.failedToGetDownloadUrl))
+                return
+            }
+            
+            completion(.success(url))
+            
+        })
+    }
+    
+    public func getAllImages(for path: String, completion: @escaping (Result<[URL], Error>) -> Void ) {
+        storage.child(path).listAll(completion: { (result,error) in
+            let urls = result.items
+            guard !urls.isEmpty, error == nil else {
+                      completion(.failure(StorageErrors.failedToGetDownloadUrl))
+                      return
+                  }
+        
+            
+            completion(.success(urls.map({ URL(string: $0.description)! })))
+
+        })
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     /// upload image that will be sent in a conversation message
     public func uploadMessagePhoto(with data: Data, fileName: String, completion: @escaping UploadPictureCompletion) {
@@ -136,38 +199,6 @@ final class StorageManager {
         })
     }
     
-    public enum StorageErrors: Error {
-        case failedToUpload
-        case failedToGetDownloadUrl
-    }
-    
-    public func downloadURL(for path: String, completion: @escaping (Result<URL, Error>) -> Void ){
-        let reference = storage.child(path)
-        
-        reference.downloadURL(completion: { url, error in
-            guard let url = url, error == nil else {
-                completion(.failure(StorageErrors.failedToGetDownloadUrl))
-                return
-            }
-            
-            completion(.success(url))
-            
-        })
-    }
-    
-    public func getAllImages(for path: String, completion: @escaping (Result<[URL], Error>) -> Void ) {
-        storage.child(path).listAll(completion: { (result,error) in
-            let urls = result.items
-            guard !urls.isEmpty, error == nil else {
-                      completion(.failure(StorageErrors.failedToGetDownloadUrl))
-                      return
-                  }
-        
-            
-            completion(.success(urls.map({ URL(string: $0.description)! })))
-
-        })
-        
-    }
+ 
     
 }
