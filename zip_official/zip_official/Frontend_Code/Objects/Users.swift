@@ -28,7 +28,12 @@ struct User {
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     var interestedEvents: [Event] = []
-    var picNum: Int = 0
+    var notificationPreferences: [String: Bool] = [:] // Notification Preferences
+    
+    var encodedPreferences: String {
+        let encoded = EncodePreferences(notificationPreferences)
+        return "\(encoded)"
+    }
     
     var safeId: String {
         var safeID = userId.replacingOccurrences(of: ".", with: "-")
@@ -52,5 +57,9 @@ struct User {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         return formatter.string(from: birthday)
+    }
+    
+    var interestsString: String {
+        return "Interests: " + interests.map{$0.description}.joined(separator: ", ")
     }
 }
