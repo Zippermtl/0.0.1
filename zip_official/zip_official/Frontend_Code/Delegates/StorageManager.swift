@@ -256,12 +256,18 @@ final class StorageManager {
     //and it should work
     public func getAllImages(for path: String, completion: @escaping (Result<[URL], Error>) -> Void ) {
         storage.child(path).listAll(completion: { (result,error) in
-            let urls = result.items
+            var urls = result.items
             guard !urls.isEmpty, error == nil else {
                       completion(.failure(StorageErrors.failedToGetDownloadUrl))
                       return
                   }
-            
+            let picNumInGet = self.GetNumberOfPictures()
+            if (urls.count > picNumInGet) {
+                let difNum = urls.count - picNumInGet
+                for _ in 0..<difNum{
+                    urls.remove(at: urls.count-1)
+                }
+            }
             completion(.success(urls.map({ URL(string: $0.description)! })))
 
         })
