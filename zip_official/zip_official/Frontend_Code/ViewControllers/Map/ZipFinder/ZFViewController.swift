@@ -209,15 +209,22 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
 //    }
     
     
-    private func PullNextUser(index: Int) -> User {
+    private func PullNextUser(index: Int, completion: @escaping (User) -> Void) {
         if(GeoManager.shared.loadedUsers.count-index < 5){
-            GeoManager.shared.LoadNextUsers(size: 10, completion: { [weak self] in
+            GeoManager.shared.LoadNextUsers(size: 10, completion: {
+                if(GeoManager.shared.loadedUsers.count-index <= 0){
+                    completion(GeoManager.shared.noUsers)
+                } else {
+                    completion(GeoManager.shared.loadedUsers[index])
+
+                }
+                print("index \(index)")
+                print("loaded users count =  \(GeoManager.shared.loadedUsers.count)")
+
             })
+        } else {
+            completion(GeoManager.shared.loadedUsers[index])
         }
-        if(GeoManager.shared.loadedUsers.count-index <= 0){
-            return GeoManager.shared.noUsers
-        }
-        return GeoManager.shared.loadedUsers[index]
     }
 }
 
@@ -229,31 +236,56 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         print("got to the collection view with \(GeoManager.shared.userIdList.count) unloaded names and \(GeoManager.shared.loadedUsers.count) loaded on pass index: \(indexPath.row)")
         
         if(indexPath.row > GeoManager.shared.loadedUsers.count - 6){
-            let userCheck = PullNextUser(index: indexPath.row)
-            if(GeoManager.shared.userIdList.count < 10 && !GeoManager.shared.moreUsersInQuery && !GeoManager.shared.queryRunning){
-                if(maxRangeFilter < 5 * rangeMultiplier){
-                    maxRangeFilter = 5 * rangeMultiplier
-                } else {
-                    maxRangeFilter += 5 * rangeMultiplier
-                }
-                let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-                GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100, completion: {
-                    
-                })
-            } else if (maxRangeFilter > 50){
-                print("range is \(maxRangeFilter)")
-//            else if(GeoManager.shared.userIdList.count == 0 && GeoManager.shared.loading){
-//                if(maxRangeFilter > 50.0){
-//
-//                    //MARK: Insert no people near you card
-//                } else {
-//                    //MARK: Insert blank card with loading which updates once complete
+            PullNextUser(index: indexPath.row, completion: { _ in
+//                guard let user = user else {
+//                    return
 //                }
+            })
+            if(GeoManager.shared.userIdList.count == 0 && maxRangeFilter >= 55*rangeMultiplier && !GeoManager.shared.moreUsersInQuery){
+                print("range is \(maxRangeFilter)")
+                print("amoung of loaded users is \(GeoManager.shared.loadedUsers.count)")
+                print("there are \(GeoManager.shared.userIdList.count) uncounted users and the query running is \(GeoManager.shared.queryRunning)")
+//                if(!queryRunning){
+//                    //MARK: Yianni Read Below
+//                    //Insert blank card with loading which updates once complete
+//
+//                } else {
+//                    //Insert no people near you card
+//
+//                }
+            } else if(GeoManager.shared.userIdList.count < 10 ){
+                var letNextQueryBegin = true
+                if(GeoManager.shared.moreUsersInQuery || GeoManager.shared.queryRunning){
+                    print("there are more users in query: \(GeoManager.shared.moreUsersInQuery)")
+                    print("there are more users in query: \(GeoManager.shared.queryRunning)")
+                    print("")
+                    letNextQueryBegin = false
+                }
+                if(letNextQueryBegin){
+                    if(maxRangeFilter < 5 * rangeMultiplier){
+                        maxRangeFilter = 5 * rangeMultiplier
+                    } else {
+                        maxRangeFilter += 5 * rangeMultiplier
+                    }
+                }
+                if (!GeoManager.shared.queryRunning){
+                    let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+                    GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100, completion: { [weak self] in
+                        self?.collectionView?.reloadData()
+                    })
+                }
             }
         }
-        
-        
-        var model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
+        var model: User
+        if (GeoManager.shared.loadedUsers.count == 0){
+            model = User()
+            if (maxRangeFilter >= 50 * rangeMultiplier && !GeoManager.shared.queryRunning && !GeoManager.shared.moreUsersInQuery){
+            
+            }
+        } else {
+            model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
+
+        }
 
         //MARK: delete this
         model.pictures.append(UIImage(named: "gabe1")!)
