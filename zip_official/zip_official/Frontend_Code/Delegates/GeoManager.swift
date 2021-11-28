@@ -51,7 +51,7 @@ class GeoManager {
     }
 
     public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
-        print("Entering GetUserByLoc")
+        print("Entering GetUserByLoc, range = \(range) max = \(max)")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         let geoRange = Double(range)
@@ -126,7 +126,7 @@ class GeoManager {
     
     public func LoadUsers(size: Int){
         print("LoadUsers \(size) with array size \(userIdList.count)")
-        for i in 0..<size{
+        for _ in 0..<size{
             DatabaseManager.shared.loadUserProfile(given: userIdList[0], completion: { [weak self] result in
                 switch result {
                 case .success(let user):
