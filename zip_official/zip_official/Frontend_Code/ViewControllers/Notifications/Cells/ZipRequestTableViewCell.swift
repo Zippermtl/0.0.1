@@ -52,7 +52,7 @@ class ZipRequestTableViewCell: UITableViewCell {
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 70, weight: .bold, scale: .large)
         let img = UIImage(systemName: "xmark.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
-                        .withTintColor(.zipRed)
+                        .withTintColor(.zipVeryLightGray)
         btn.setImage(img, for: .normal)
         return btn
     }()
