@@ -25,10 +25,10 @@ class EventFinderTableViewCell: UITableViewCell {
     // Buttons
     private let goingButton: UIButton = {
         let btn = UIButton()
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 100, weight: .bold, scale: .large)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 70, weight: .bold, scale: .large)
         let img = UIImage(systemName: "checkmark.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
-                        .withTintColor(.zipVeryLightGray)
+                        .withTintColor(.zipYellow)
         btn.setImage(img, for: .normal)
         return btn
     }()
@@ -37,7 +37,7 @@ class EventFinderTableViewCell: UITableViewCell {
         let btn = UIButton()
 //        btn.layer.masksToBounds = true
 //        btn.layer.cornerRadius = 20
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 100, weight: .bold, scale: .large)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 70, weight: .bold, scale: .large)
         let img = UIImage(systemName: "star.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
                         .withTintColor(.zipVeryLightGray)
