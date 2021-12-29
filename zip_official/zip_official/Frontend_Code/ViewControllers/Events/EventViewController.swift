@@ -27,7 +27,7 @@ class EventViewController: UIViewController {
     
     private let eventPhotoView: UIImageView = {
         let imgView = UIImageView()
-        imgView.layer.borderWidth = 1
+        imgView.layer.borderWidth = 3
         imgView.layer.borderColor = UIColor.zipYellow.cgColor
         return imgView
     }()
@@ -352,11 +352,11 @@ class EventViewController: UIViewController {
         eventPhotoView.translatesAutoresizingMaskIntoConstraints = false
         eventPhotoView.topAnchor.constraint(equalTo: tableHeader.topAnchor, constant: 10).isActive = true
         eventPhotoView.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        eventPhotoView.heightAnchor.constraint(equalToConstant: view.frame.width/2).isActive = true
+        eventPhotoView.heightAnchor.constraint(equalToConstant: view.frame.width/3).isActive = true
         eventPhotoView.widthAnchor.constraint(equalTo: eventPhotoView.heightAnchor).isActive = true
         
         eventPhotoView.layer.masksToBounds = true
-        eventPhotoView.layer.cornerRadius = view.frame.width/4
+        eventPhotoView.layer.cornerRadius = view.frame.width/6
         
         tableHeader.addSubview(countDownLabel)
         countDownLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -416,7 +416,7 @@ class EventViewController: UIViewController {
 
         tableHeader.addSubview(saveButton)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
-        saveButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -20).isActive = true
+        saveButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -35).isActive = true
         saveButton.topAnchor.constraint(equalTo: buyTicketsButton.topAnchor).isActive = true
         saveButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
         saveButton.widthAnchor.constraint(equalTo: saveButton.heightAnchor).isActive = true
@@ -428,7 +428,7 @@ class EventViewController: UIViewController {
 
         tableHeader.addSubview(inviteButton)
         inviteButton.translatesAutoresizingMaskIntoConstraints = false
-        inviteButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 20).isActive = true
+        inviteButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
         inviteButton.topAnchor.constraint(equalTo: buyTicketsButton.topAnchor).isActive = true
         inviteButton.heightAnchor.constraint(equalTo: buyTicketsButton.heightAnchor).isActive = true
         inviteButton.widthAnchor.constraint(equalTo: buyTicketsButton.widthAnchor).isActive = true
@@ -502,7 +502,8 @@ class EventViewController: UIViewController {
         let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
         let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
         
-        var distance = Double(round(10*(userLoc.distance(from: event.location))/1000))/10
+        let eventLoc = CLLocation(latitude: event.coordinates.latitude, longitude: event.coordinates.longitude)
+        var distance = Double(round(10*(userLoc.distance(from: eventLoc))/1000))/10
         var unit = "km"
         if NSLocale.current.regionCode == "US" {
             distance = round(10*distance/1.6)/10
@@ -515,22 +516,22 @@ class EventViewController: UIViewController {
                 if unit == "miles" {
                     unit = "mile"
                 }
-                distanceLabel.text = "<1 \(unit) Away"
+                distanceLabel.text = "<1 \(unit) away"
             } else if distance >= 500 {
-                distanceLabel.text = ">500 \(unit) Away"
+                distanceLabel.text = ">500 \(unit) away"
             } else {
-                distanceLabel.text = String(intDistance) + " \(unit) Away"
+                distanceLabel.text = String(intDistance) + " \(unit) away"
             }
         } else {
             if distance <= 1 {
                 if unit == "miles" {
                     unit = "mile"
                 }
-                distanceLabel.text = "<1 \(unit) Away"
+                distanceLabel.text = "<1 \(unit) away"
             } else if distance >= 500 {
-                distanceLabel.text = ">500 \(unit) Away"
+                distanceLabel.text = ">500 \(unit) away"
             } else {
-                distanceLabel.text = String(distance) + " \(unit) Away"
+                distanceLabel.text = String(distance) + " \(unit) away"
             }
         }
     }
