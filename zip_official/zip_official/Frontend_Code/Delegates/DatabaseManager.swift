@@ -90,7 +90,6 @@ extension DatabaseManager {
                     
                     usersCollection.append(newElement)
 
-
                     self?.database.child("users").setValue(usersCollection, withCompletionBlock: { error, _ in
                         guard error == nil else {
                             completion(false)
@@ -260,6 +259,33 @@ extension DatabaseManager {
     }
     
     
+}
+
+//MARK: - Event Management
+extension DatabaseManager {
+    public func createEvent(event: Event, completion: @escaping (Bool) -> Void) {
+        let path = "eventProfiles/\(event.eventId)"
+        database.child(path).setValue([
+            "title" : event.title, //done
+            "coordinates" : ["lat" : event.coordinates.latitude, "long" : event.coordinates.longitude], //done
+            //MARK: Change when we switch to multiple hosts
+            "host" : ["userId" : event.hosts[0].userId, "name" : event.hosts[0].fullName],
+            "description" : event.description, //done
+            "address" : event.address, //done
+            "isPublic" : event.isPublic, //done
+            "startTime" : event.startTimeString, //done
+            "duration" : event.duration //done
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else {
+                print("failed to write to database")
+                completion(false)
+                return
+            }
+            
+            completion(true)
+            
+        })
+    }
 }
 
 //MARK: - Sending messages / conversations
