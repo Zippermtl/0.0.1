@@ -633,7 +633,7 @@ extension MapViewController {
         
 
         launchEvent = Event(title: "Zipper Launch Party",
-                            location: CLLocation(latitude: 51.5014, longitude: -0.1419),
+                            coordinates: CLLocationCoordinate2D(latitude: 51.5014, longitude: -0.1419),
                             hosts: [user],
                             description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
                             address: "3781 St. Lauremt Blvd.",
@@ -646,7 +646,7 @@ extension MapViewController {
                             image: UIImage(named: "launchevent")!)
         
         randomEvent = Event(title: "Fake Ass Frosh",
-                            location: CLLocation(latitude: 51.5313, longitude: -0.1570),
+                            coordinates: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570),
                             hosts: [user,gabe,seung,ezra],
                             description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
                             address: "3781 St. Lauremt Blvd.",
