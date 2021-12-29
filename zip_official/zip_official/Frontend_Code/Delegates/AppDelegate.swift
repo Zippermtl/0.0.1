@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        GMSPlacesClient.provideAPIKey("AIzaSyAgz3zbKsov8JAKWXBDyieBWElVzumLe-Q")
+        GMSPlacesClient.provideAPIKey("AIzaSyAlXUKYzukB_QHXwWtI3RPGu9bx_nkbuII")
         
         //FireBase
         FirebaseApp.configure()
@@ -30,10 +30,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         //Apearance Changes
-        applyDropDownChanges()
-        applyTableViewChanges()
-        applyNavControllerChanges()
-        applyTabBarChanges()
+        applyDropDownAppearanceChanges()
+        applyTableViewAppearanceChanges()
+        applyNavControllerAppearanceChanges()
+        applyTabBarAppearanceChanges()
+        applyGooglePlacesSearchAppearanceChanges()
         setDeviceDefault()
         
         
@@ -58,7 +59,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
     }
     
-    func applyDropDownChanges(){
+    func applyDropDownAppearanceChanges(){
         DropDown.appearance().textFont = .zipBody
         DropDown.appearance().textColor = .white
         DropDown.appearance().selectedTextColor = .white
@@ -68,7 +69,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         DropDown.appearance().direction = .bottom
     }
     
-    func applyTableViewChanges(){
+    func applyTableViewAppearanceChanges(){
         UITableView.appearance().backgroundColor = .clear
         UITableView.appearance().separatorColor = .zipSeparator
         UITableView.appearance().separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -81,7 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        }
     }
     
-    func applyNavControllerChanges() {
+    func applyNavControllerAppearanceChanges() {
         if #available(iOS 15.0, *) {
             let appearance = UINavigationBarAppearance()
 //            let backImage = UIImage(named: "navBarBack")?.withRenderingMode(.alwaysOriginal)
@@ -90,13 +91,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let titleAttributes = [NSAttributedString.Key.font: UIFont.zipTitle.withSize(27),
                                    NSAttributedString.Key.foregroundColor: UIColor.white]
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .zipMidGray
+            appearance.backgroundColor = .zipGray
             appearance.setBackIndicatorImage(backImage, transitionMaskImage: backImage)
             appearance.titleTextAttributes = titleAttributes
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
             UINavigationBar.appearance().isTranslucent = false
-            UINavigationBar.appearance().barTintColor = .white
+            UINavigationBar.appearance().barTintColor = .zipGray
             UINavigationBar.appearance().titleTextAttributes = titleAttributes
         } else {
             UINavigationBar.appearance().barTintColor = .zipGray
@@ -113,7 +114,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().backIndicatorTransitionMaskImage = backImage
     }
     
-    func applyTabBarChanges(){
+    func applyTabBarAppearanceChanges(){
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .zipDarkGray
@@ -126,6 +127,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("WHAT THE FUCK")
         }
         UITabBar.appearance().isTranslucent = false
+    }
+
+    private func applyGooglePlacesSearchAppearanceChanges() {
+//        GMSAutocompleteViewController.appearance()
     }
 
 
