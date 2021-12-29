@@ -431,7 +431,7 @@ extension FPCViewController: UICollectionViewDataSource {
 extension FPCViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if tableView == zipRequestsTable {
-            return 80
+            return 90
         } else {
             return 120
         }
