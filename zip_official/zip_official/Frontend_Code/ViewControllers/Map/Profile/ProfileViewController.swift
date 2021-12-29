@@ -311,7 +311,7 @@ class ProfileViewController: UIViewController {
         tableHeader.addSubview(photosButton)
         photosButton.translatesAutoresizingMaskIntoConstraints = false
         photosButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        photosButton.topAnchor.constraint(equalTo: editProfileButton.bottomAnchor, constant: 10).isActive = true
+        photosButton.topAnchor.constraint(equalTo: editProfileButton.bottomAnchor, constant: 15).isActive = true
         photosButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
         photosButton.widthAnchor.constraint(equalTo: photosButton.heightAnchor).isActive = true
         
@@ -329,7 +329,7 @@ class ProfileViewController: UIViewController {
 
         tableHeader.addSubview(myZipsButton)
         myZipsButton.translatesAutoresizingMaskIntoConstraints = false
-        myZipsButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -20).isActive = true
+        myZipsButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -35).isActive = true
         myZipsButton.topAnchor.constraint(equalTo: photosButton.topAnchor).isActive = true
         myZipsButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
         myZipsButton.widthAnchor.constraint(equalTo: myZipsButton.heightAnchor).isActive = true
@@ -341,7 +341,7 @@ class ProfileViewController: UIViewController {
 
         tableHeader.addSubview(myEventsButton)
         myEventsButton.translatesAutoresizingMaskIntoConstraints = false
-        myEventsButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 20).isActive = true
+        myEventsButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
         myEventsButton.topAnchor.constraint(equalTo: photosButton.topAnchor).isActive = true
         myEventsButton.heightAnchor.constraint(equalTo: photosButton.heightAnchor).isActive = true
         myEventsButton.widthAnchor.constraint(equalTo: photosButton.widthAnchor).isActive = true
@@ -436,7 +436,7 @@ extension ProfileViewController: UITableViewDataSource {
                 content.image = UIImage(systemName: "graduationcap.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
             case 2: // interests
                 content.text = user.interestsString
-                content.image = UIImage(systemName: "gamecontroller.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+                content.image = UIImage(systemName: "star.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
             default: // birthday
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "MMMM d, yyyy"
