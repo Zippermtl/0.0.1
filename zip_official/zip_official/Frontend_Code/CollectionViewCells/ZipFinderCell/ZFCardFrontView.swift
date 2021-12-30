@@ -16,6 +16,7 @@ class ZFCardFrontView: UIView {
     // Color
     var cellColor = UIColor.zipBlue.withAlphaComponent(1)
     
+    
     //User
     private var user = User()
     var userLoc = CLLocation()
@@ -339,10 +340,10 @@ class ZFCardFrontView: UIView {
 //MARK: - Picture Datasource
 extension ZFCardFrontView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let model = user.pictures[indexPath.row%user.pictures.count]
+        let model = user.pictureURLs[indexPath.row%user.pictures.count]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
-        cell.configure(with:model)
+        cell.configure(with: model)
         
         return cell
     }
