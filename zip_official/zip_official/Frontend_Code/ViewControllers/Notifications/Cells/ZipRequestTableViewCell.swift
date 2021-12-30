@@ -13,7 +13,7 @@ class ZipRequestTableViewCell: UITableViewCell {
     let cellImage: UIImageView = {
         let view = UIImageView()
         view.layer.masksToBounds = true
-        view.layer.cornerRadius = 25
+        view.layer.cornerRadius = 28
         
         return view
     }()
@@ -39,7 +39,7 @@ class ZipRequestTableViewCell: UITableViewCell {
     
     let acceptButton: UIButton = {
         let btn = UIButton()
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 70, weight: .bold, scale: .large)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         let img = UIImage(systemName: "checkmark.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
                         .withTintColor(.zipBlue)
@@ -49,10 +49,10 @@ class ZipRequestTableViewCell: UITableViewCell {
     
     let rejectButton: UIButton = {
         let btn = UIButton()
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 70, weight: .bold, scale: .large)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         let img = UIImage(systemName: "xmark.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
-                        .withTintColor(.zipRed)
+                        .withTintColor(.zipVeryLightGray)
         btn.setImage(img, for: .normal)
         return btn
     }()
@@ -82,6 +82,7 @@ class ZipRequestTableViewCell: UITableViewCell {
         outlineView.backgroundColor = .zipLightGray
 
         outlineView.layer.cornerRadius = 15
+        
     
         cellImage.image = notification.image
         cellText.text = "Yianni Zavaliagkos Zipped you!"
@@ -135,16 +136,14 @@ class ZipRequestTableViewCell: UITableViewCell {
         timeLabel.topAnchor.constraint(equalTo: cellText.bottomAnchor).isActive = true
 
         acceptButton.translatesAutoresizingMaskIntoConstraints = false
-        acceptButton.rightAnchor.constraint(equalTo: outlineView.rightAnchor, constant: -10).isActive = true
+        acceptButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10).isActive = true
         acceptButton.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        acceptButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        acceptButton.widthAnchor.constraint(equalTo: acceptButton.heightAnchor).isActive = true
+
 
         rejectButton.translatesAutoresizingMaskIntoConstraints = false
         rejectButton.rightAnchor.constraint(equalTo: acceptButton.leftAnchor, constant: -10).isActive = true
         rejectButton.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        rejectButton.heightAnchor.constraint(equalTo: acceptButton.heightAnchor).isActive = true
-        rejectButton.widthAnchor.constraint(equalTo: acceptButton.widthAnchor).isActive = true
+
         
 
 

@@ -9,6 +9,7 @@ import UIKit
 import CoreLocation
 import RSKImageCropper
 import DropDown
+import GooglePlaces
 
 
 class NewPrivateEventViewController: UIViewController {
@@ -25,8 +26,10 @@ class NewPrivateEventViewController: UIViewController {
     
     private var addPictureButton: UIButton = {
         let btn = UIButton()
-        
-        btn.setImage(UIImage(systemName: "camera")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray), for: .normal)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 40, weight: .bold, scale: .large)
+        btn.setImage(UIImage(systemName: "camera", withConfiguration: largeConfig)?
+                        .withRenderingMode(.alwaysOriginal)
+                        .withTintColor(.zipVeryLightGray), for: .normal)
         btn.imageView?.contentMode = .scaleAspectFill
         return btn
     }()
@@ -39,7 +42,7 @@ class NewPrivateEventViewController: UIViewController {
     
     private var scrollView = UIScrollView()
     
-    private var titleText: UITextField = {
+    private var titleTxt: UITextField = {
         let tf = UITextField()
         tf.tintColor = .white
         tf.backgroundColor = .zipLightGray
@@ -47,7 +50,7 @@ class NewPrivateEventViewController: UIViewController {
         tf.layer.cornerRadius = 5
         tf.adjustsFontSizeToFitWidth = true
         
-        tf.minimumFontSize = 14.0
+        tf.minimumFontSize = 18.0
         tf.text = "Event Title"
         tf.clearButtonMode = .whileEditing
         tf.font = .zipTitle
@@ -121,6 +124,21 @@ class NewPrivateEventViewController: UIViewController {
         tf.textColor = .white
         tf.adjustsFontSizeToFitWidth = true
         tf.minimumFontSize = 10.0
+        
+        tf.rightViewMode = .always
+        let view = UIView()
+        let symbol = UIImage(systemName: "chevron.right")?
+                                .withRenderingMode(.alwaysOriginal)
+                                .withTintColor(.zipVeryLightGray)
+        let btn = UIImageView(image: symbol)
+        view.addSubview(btn)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        btn.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        btn.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        btn.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -5).isActive = true
+        
+        tf.rightView = view
         
         return tf
     }()
@@ -246,7 +264,7 @@ class NewPrivateEventViewController: UIViewController {
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        titleText.resignFirstResponder()
+        titleTxt.resignFirstResponder()
         dateTxt.resignFirstResponder()
         startTimeTxt.resignFirstResponder()
         durationTxt.resignFirstResponder()
@@ -295,13 +313,40 @@ class NewPrivateEventViewController: UIViewController {
         durationTxt.text = formatter.string(from: sender.date) + " Hours "
         formatter.dateFormat = "m"
         durationTxt.text = durationTxt.text! + formatter.string(from: sender.date) + " Minutes"
+        event.duration = TimeInterval(sender.countDownDuration)
     }
     
     
     @objc private func openSearch(){
-        let searchVC = PopupSearchViewController()
-        searchVC.modalPresentationStyle = .overCurrentContext
-        present(searchVC, animated: true, completion: nil)
+        let autocompleteController = GMSAutocompleteViewController()
+        autocompleteController.delegate = self
+        
+        // Customize VC
+        autocompleteController.navigationController?.navigationBar.tintColor = .zipGray
+        autocompleteController.navigationItem.searchController?.searchBar.tintColor = .zipLightGray
+        autocompleteController.primaryTextHighlightColor = .white
+        autocompleteController.primaryTextColor = .zipVeryLightGray
+        autocompleteController.secondaryTextColor = .zipVeryLightGray
+        autocompleteController.tableCellSeparatorColor = .zipVeryLightGray
+        autocompleteController.tableCellBackgroundColor = .zipGray
+        
+        // Specify the place data types to return.
+        let fields: GMSPlaceField = GMSPlaceField (
+            rawValue: UInt(GMSPlaceField.name.rawValue) |
+            UInt(GMSPlaceField.addressComponents.rawValue) |
+            UInt(GMSPlaceField.formattedAddress.rawValue) |
+            UInt(GMSPlaceField.coordinate.rawValue)
+
+        )
+        autocompleteController.placeFields = fields
+        
+        // Specify a filter.
+        let filter = GMSAutocompleteFilter()
+        filter.type = .noFilter
+        autocompleteController.autocompleteFilter = filter
+        
+        // Display the autocomplete view controller.
+        navigationController?.pushViewController(autocompleteController, animated: true)
     }
     
     @objc private func didTapAddImage(){
@@ -334,6 +379,51 @@ class NewPrivateEventViewController: UIViewController {
         dismiss(animated: true)
     }
     
+    @objc private func didTapDoneButton() {
+        guard let title = titleTxt.text,
+              let desc = descriptionTxt.text else {
+            return
+        }
+
+        event.title = title
+        event.isPublic = false
+        event.description = desc
+        event.eventId = event.createEventId
+        
+        let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
+                        firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
+                        lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
+        
+        event.hosts = [host]
+        
+        DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
+            if success {
+                let actionSheet = UIAlertController(title: "Successfull Created an Event",
+                                                    message: "View your event in your profile",
+                                                    preferredStyle: .actionSheet)
+                
+                actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                self?.present(actionSheet, animated: true)
+                self?.dismiss(animated: true, completion: nil)
+                
+            } else {
+                let actionSheet = UIAlertController(title: "Failed to Create Your Event",
+                                                    message: "Make sure all the information you entered is correct or try again later.",
+                                                    preferredStyle: .actionSheet)
+                
+                actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                self?.present(actionSheet, animated: true)
+            }
+        })
+        
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -346,6 +436,10 @@ class NewPrivateEventViewController: UIViewController {
         dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
 
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
+                                                            style: UIBarButtonItem.Style.done,
+                                                            target: self,
+                                                            action: #selector(didTapDoneButton))
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         view.addGestureRecognizer(tapGesture)
@@ -396,16 +490,18 @@ class NewPrivateEventViewController: UIViewController {
     }
     
     private func configureTextFields() {
+        titleTxt.delegate = self
         dateTxt.delegate = self
         durationTxt.delegate = self
         locationTxt.delegate = self
         
-        for view in titleText.subviews {
+        for view in titleTxt.subviews {
             if let button = view as? UIButton {
                 button.setImage(button.image(for: .normal)?.withRenderingMode(.alwaysTemplate), for: .normal)
                 button.tintColor = .zipVeryLightGray
             }
         }
+        
     }
     
     private func configureTable(){
@@ -428,13 +524,12 @@ class NewPrivateEventViewController: UIViewController {
         scrollView.addSubview(infoLabel)
         
         //Title
-        scrollView.addSubview(titleText)
+        scrollView.addSubview(titleTxt)
         
         // Picture
         scrollView.addSubview(eventImage)
         scrollView.addSubview(deletePictureButton)
         eventImage.addSubview(addPictureButton)
-        
         
         // Location
         scrollView.addSubview(locationLabel)
@@ -472,13 +567,15 @@ class NewPrivateEventViewController: UIViewController {
         infoLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9).isActive = true
         
         //title
-        titleText.translatesAutoresizingMaskIntoConstraints = false
-        titleText.topAnchor.constraint(equalTo: infoLabel.bottomAnchor, constant: 5).isActive = true
-        titleText.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        titleTxt.translatesAutoresizingMaskIntoConstraints = false
+        titleTxt.topAnchor.constraint(equalTo: infoLabel.bottomAnchor, constant: 5).isActive = true
+        titleTxt.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        titleTxt.widthAnchor.constraint(lessThanOrEqualToConstant: view.frame.width-20).isActive = true
+        titleTxt.widthAnchor.constraint(greaterThanOrEqualToConstant: 20).isActive = true
 
         // Picture
         eventImage.translatesAutoresizingMaskIntoConstraints = false
-        eventImage.topAnchor.constraint(equalTo: titleText.bottomAnchor, constant: 10).isActive = true
+        eventImage.topAnchor.constraint(equalTo: titleTxt.bottomAnchor, constant: 10).isActive = true
         eventImage.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         eventImage.widthAnchor.constraint(equalToConstant: view.frame.width/2).isActive = true
         eventImage.heightAnchor.constraint(equalTo: eventImage.widthAnchor).isActive = true
@@ -622,19 +719,18 @@ extension NewPrivateEventViewController: UITableViewDataSource {
 extension NewPrivateEventViewController: UITextFieldDelegate {
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        if textField == titleText {
+        if textField == titleTxt {
             if textField.text == "Event Title" {
                 textField.text = ""
             }
         } else if textField == locationTxt {
             textField.resignFirstResponder()
-            let vc = SearchLocationViewController()
-            navigationController?.pushViewController(vc, animated: true)
+            openSearch()
         }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField == titleText {
+        if textField == titleTxt {
             if textField.text == "" {
                 textField.text = "Event Title"
             }
@@ -716,3 +812,32 @@ extension NewPrivateEventViewController {
         scrollView.scrollIndicatorInsets = .zero
     }
 }
+
+extension NewPrivateEventViewController: GMSAutocompleteViewControllerDelegate {
+    func viewController(_ viewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
+        guard let name = place.name,
+              let address = place.formattedAddress else {
+                  return
+              }
+        
+        if name.range(of: address) != nil { // if name is included in address
+            locationTxt.text = address
+        } else {
+            locationTxt.text = name + " " + address
+        }
+        
+        event.coordinates = place.coordinate
+        event.address = address
+        event.locationName = name
+        navigationController?.popViewController(animated: true)
+    }
+    
+    func viewController(_ viewController: GMSAutocompleteViewController, didFailAutocompleteWithError error: Error) {
+        print("Error: ", error.localizedDescription)
+    }
+    
+    func wasCancelled(_ viewController: GMSAutocompleteViewController) {
+        navigationController?.popViewController(animated: true)
+    }
+}
+

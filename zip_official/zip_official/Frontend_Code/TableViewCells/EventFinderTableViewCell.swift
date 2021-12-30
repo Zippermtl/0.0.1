@@ -25,10 +25,10 @@ class EventFinderTableViewCell: UITableViewCell {
     // Buttons
     private let goingButton: UIButton = {
         let btn = UIButton()
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 100, weight: .bold, scale: .large)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         let img = UIImage(systemName: "checkmark.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
-                        .withTintColor(.zipVeryLightGray)
+                        .withTintColor(.zipYellow)
         btn.setImage(img, for: .normal)
         return btn
     }()
@@ -37,8 +37,8 @@ class EventFinderTableViewCell: UITableViewCell {
         let btn = UIButton()
 //        btn.layer.masksToBounds = true
 //        btn.layer.cornerRadius = 20
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 100, weight: .bold, scale: .large)
-        let img = UIImage(systemName: "star.circle.fill", withConfiguration: largeConfig)?
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
+        let img = UIImage(systemName: "xmark.circle.fill", withConfiguration: largeConfig)?
                         .withRenderingMode(.alwaysOriginal)
                         .withTintColor(.zipVeryLightGray)
         btn.setImage(img, for: .normal)
@@ -144,8 +144,8 @@ class EventFinderTableViewCell: UITableViewCell {
         dateFormatter.dateFormat = "h:mm a"
         timeLabel.text = dateFormatter.string(from: event.startTime)
         
-        //MARK: TODO - change to eventLoc
-        var distance = Double(round(10*(userLoc.distance(from: event.location))/1000))/10
+        let eventLoc = CLLocation(latitude: event.coordinates.latitude, longitude: event.coordinates.longitude)
+        var distance = Double(round(10*(userLoc.distance(from: eventLoc))/1000))/10
         var unit = "km"
         if NSLocale.current.regionCode == "US" {
             distance = round(10*distance/1.6)/10
@@ -257,16 +257,13 @@ class EventFinderTableViewCell: UITableViewCell {
         participantsLabel.rightAnchor.constraint(equalTo: bgView.rightAnchor, constant: -5).isActive = true
 
         goingButton.translatesAutoresizingMaskIntoConstraints = false
-        goingButton.rightAnchor.constraint(equalTo: participantsLabel.rightAnchor).isActive = true
+        goingButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10).isActive = true
         goingButton.topAnchor.constraint(equalTo: participantsLabel.bottomAnchor, constant: 10).isActive = true
-        goingButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        goingButton.widthAnchor.constraint(equalTo: goingButton.heightAnchor).isActive = true
         
         interestedButton.translatesAutoresizingMaskIntoConstraints = false
         interestedButton.topAnchor.constraint(equalTo: goingButton.topAnchor).isActive = true
         interestedButton.rightAnchor.constraint(equalTo: goingButton.leftAnchor, constant: -10).isActive = true
-        interestedButton.widthAnchor.constraint(equalTo: goingButton.widthAnchor).isActive = true
-        interestedButton.heightAnchor.constraint(equalTo: goingButton.heightAnchor).isActive = true
+
 
         
         

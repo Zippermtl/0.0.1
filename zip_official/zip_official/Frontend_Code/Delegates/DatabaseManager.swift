@@ -54,7 +54,7 @@ extension DatabaseManager {
     /// - `email`: Target email to be checked
     ///  - `completion`: async clusire to return with result
     public func userExists(with userId: String, completion: @escaping ((Bool) -> Void)) {
-        database.child(userId).observeSingleEvent(of: .value, with: { snapshot in
+        database.child("userProfiles/\(userId)").observeSingleEvent(of: .value, with: { snapshot in
             guard snapshot.value as? [String: Any] != nil else {
                 completion(false)
                 return
@@ -66,12 +66,13 @@ extension DatabaseManager {
     
     /// Inserts new user to database
     public func insertUser(with user: User, completion: @escaping (Bool) -> Void){
-        database.child(user.safeId).setValue([
+        database.child("userProfiles/\(user.userId)").setValue([
             "username": user.username,
             "firstName": user.firstName,
             "lastName": user.lastName,
             "birthday": user.birthdayString,
-            "notifications": user.encodedPreferences
+            "notifications": user.encodedPreferences,
+            "picNum": user.picNum
         ], withCompletionBlock: { [weak self] error, _ in
             guard error == nil else{
                 print("failed to write to database")
@@ -89,7 +90,6 @@ extension DatabaseManager {
                     ]
                     
                     usersCollection.append(newElement)
-
 
                     self?.database.child("users").setValue(usersCollection, withCompletionBlock: { error, _ in
                         guard error == nil else {
@@ -127,7 +127,7 @@ extension DatabaseManager {
     
     /// Updates the full user profile
     public func updateUser(with user: User, completion: @escaping (Bool) -> Void) {
-        database.child(user.safeId).updateChildValues([
+        database.child("userProfiles/\(user.safeId)").updateChildValues([
             "id": user.userId,
             "username": user.username,
             "firstName": user.firstName,
@@ -168,20 +168,60 @@ extension DatabaseManager {
 //MARK: - User Data Retreival
 extension DatabaseManager {
     public func loadUserProfile(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
-        database.child("\(id)").observeSingleEvent(of: .value, with: { snapshot in
+        database.child("userProfiles/\(id)").observeSingleEvent(of: .value, with: { snapshot in
             guard let value = snapshot.value as? [String: Any] else {
                 print("failed to fetch user profile")
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
 
+//            guard let _f = value["firstName"] as? String else {
+//                      print("firstName issues")
+//                      return
+//                  }
+//
+//            guard let _l = value["lastName"] as? String else {
+//                      print("lastName issues")
+//                      return
+//                  }
+//
+//            guard let _u = value["username"] as? String else {
+//                      print("usernameIssues issues")
+//                      return
+//                  }
+//
+//            guard let _s = value["school"] as? String else {
+//                      print("school issues")
+//                      return
+//                  }
+//
+//            guard let _b = value["bio"] as? String else {
+//                      print("bio issues")
+//                      return
+//                  }
+//
+//            guard let _i = value["interests"] as? [Int] else {
+//                      print("interests issues")
+//                      return
+//                  }
+//
+//            guard let _n = value["notifications"] as? Int else {
+//                      print("notifications issues")
+//                      return
+//                  }
+//
+//            guard let _birth = value["birthday"] as? String else {
+//                      print("interests issues")
+//                      return
+//                  }
+//
             guard let firstName = value["firstName"] as? String,
                   let lastName = value["lastName"] as? String,
                   let username = value["username"] as? String,
                   let school = value["school"] as? String,
                   let bio = value["bio"] as? String,
                   let interestsInt = value["interests"] as? [Int],
-                  let notifPrefs = value["notifications"] as? Int,
+//                  let notifPrefs = value["notifications"] as? Int,
                   let birthdayString = value["birthday"] as? String else {
                       print("retuning here")
                       return
@@ -202,8 +242,8 @@ extension DatabaseManager {
                             birthday: birthday,
                             bio: bio,
                             school: school,
-                            interests: interests,
-                            notificationPreferences: DecodePreferences(notifPrefs)
+                            interests: interests
+//                            notificationPreferences: DecodePreferences(notifPrefs)
             )
             
             completion(.success(user))
@@ -262,6 +302,33 @@ extension DatabaseManager {
     
 }
 
+//MARK: - Event Management
+extension DatabaseManager {
+    public func createEvent(event: Event, completion: @escaping (Bool) -> Void) {
+        let path = "eventProfiles/\(event.eventId)"
+        database.child(path).setValue([
+            "title" : event.title, //done
+            "coordinates" : ["lat" : event.coordinates.latitude, "long" : event.coordinates.longitude], //done
+            //MARK: Change when we switch to multiple hosts
+            "host" : ["userId" : event.hosts[0].userId, "name" : event.hosts[0].fullName],
+            "description" : event.description, //done
+            "address" : event.address, //done
+            "isPublic" : event.isPublic, //done
+            "startTime" : event.startTimeString, //done
+            "duration" : event.duration //done
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else {
+                print("failed to write to database")
+                completion(false)
+                return
+            }
+            
+            completion(true)
+            
+        })
+    }
+}
+
 //MARK: - Sending messages / conversations
 extension DatabaseManager {
     /// Creates a new conversation with target user email and first message sent
@@ -271,9 +338,7 @@ extension DatabaseManager {
             return
         }
         
-        let safeId = DatabaseManager.safeId(id: currentId)
-
-        let ref = database.child("\(safeId)")
+        let ref = database.child("\(currentId)")
         
         ref.observeSingleEvent(of: .value, with: { [weak self] snapshot in
             guard var userNode = snapshot.value as? [String: Any] else {
@@ -282,11 +347,10 @@ extension DatabaseManager {
                 return
         }
             
-            let messageData = firstMessage.sentDate
-            let dateString = ChatViewController.dateFormatter.string(from: messageData)
+            let messageSentDate = firstMessage.sentDate
+            let dateString = ChatViewController.dateFormatter.string(from: messageSentDate)
             var message = ""
             switch firstMessage.kind {
-                
             case .text(let messageText):
                 message = messageText
             case .attributedText(_):
@@ -324,7 +388,7 @@ extension DatabaseManager {
             
             let recipient_newConversationData: [String: Any] = [
                 "id": conversationId,
-                "other_user_id" : safeId,
+                "other_user_id" : currentId,
                 "name" : currentName,
                 "latest_message" : [
                     "date" : dateString,
