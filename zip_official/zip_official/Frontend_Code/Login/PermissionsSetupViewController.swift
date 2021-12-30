@@ -143,6 +143,22 @@ class PermissionsSetupViewController: UIViewController {
             present(actionSheet, animated: true)
         }
         
+        user.notificationPreferences =
+        [
+            "pause_all" : false,
+            "news_update" : true,
+            "zip_requests" : true,
+            "accepted_zip_requests" : true,
+            "messages" : true,
+            "message_requests" : true,
+            "event_invites" : true,
+            "public_events" : true,
+            "one_day_reminders" : true,
+            "changes_to_event_info" : true
+        ]
+                
+        AppDelegate.userDefaults.set(user.encodedPreferences, forKey: "encodedNotificationSettings")
+
         spinner.show(in: view)
         DatabaseManager.shared.insertUser(with: user, completion: { [weak self] success in
             guard let strongSelf = self else {
