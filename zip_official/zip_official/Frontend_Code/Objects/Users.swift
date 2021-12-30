@@ -20,6 +20,7 @@ struct User {
     var birthday: Date = Date()
     var age: Int = 18
     var location: CLLocation = CLLocation(latitude: 0, longitude: 0)
+    var picNum: Int = 0
     var pictures: [UIImage] = []
     var pictureURLs: [URL] = []
     var bio: String = ""
@@ -35,7 +36,6 @@ struct User {
         return "\(encoded)"
     }
     
-    var picNum: Int = 0
     
     var safeId: String {
         var safeID = userId.replacingOccurrences(of: ".", with: "-")
