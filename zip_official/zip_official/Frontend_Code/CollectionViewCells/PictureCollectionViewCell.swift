@@ -22,8 +22,9 @@ class PictureCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func configure(with img: UIImage) {
-        picture = UIImageView(image: img)
+    public func configure(with url: URL) {
+        picture.sd_setImage(with: url, completed: nil)
+        
         contentView.addSubview(picture)
         picture.layer.masksToBounds = true
         picture.layer.cornerRadius = cornerRadius
