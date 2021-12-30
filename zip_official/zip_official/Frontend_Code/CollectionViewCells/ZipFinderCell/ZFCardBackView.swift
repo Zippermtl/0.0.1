@@ -156,14 +156,14 @@ class ZFCardBackView: UIView {
     }
     
     
-    public func configure(user: User, cellColor: UIColor, loc: CLLocation){
+    public func configure(user: User, cellColor: UIColor, loc: CLLocation, url: URL){
         backgroundColor = .clear
         layer.cornerRadius = 20
         self.user = user
         self.cellColor = cellColor
         self.userLoc = loc
         
-        profilePicture = UIImageView(image: user.pictures[0])
+        profilePicture.sd_setImage(with: url, completed: nil)
         
         configureLabels()
         configureDropDown()
