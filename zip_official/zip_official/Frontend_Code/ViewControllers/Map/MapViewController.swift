@@ -67,6 +67,10 @@ class MapViewController: UIViewController {
     }
     
     @objc func didTapProfileButton() {
+//        createNewUsersInDB()
+//        updateUsersInDB()
+        
+        
         let vc = ProfileViewController()
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .overCurrentContext
@@ -524,6 +528,337 @@ extension MKAnnotationView {
 
 
 extension MapViewController {
+    func createNewUsersInDB(){
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        let seungBirthday = formatter.date(from: "2002/01/01")!
+        let ezraBirthday = formatter.date(from: "2001/10/23")!
+        let yianniBirthday = formatter.date(from: "2001/12/06")!
+        let gabeBirthday = formatter.date(from: "2002/06/06")!
+        let nicBirthday = formatter.date(from: "2002/03/14")!
+        
+        let yianni = User(
+            userId: "u6501111111",
+            username: "yianni_zav",
+            firstName: "Yianni",
+            lastName: "Zavaliagkos",
+            birthday: yianniBirthday,
+            bio: "This is Yianni's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let nicholas = User(
+            userId: "u65022222222",
+            username: "nicholas.almerge",
+            firstName: "Nicholas",
+            lastName: "Almerge",
+            birthday: nicBirthday,
+            bio: "This is Nic's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let gabe = User(
+            userId: "u6503333333",
+            username: "gabe.denton",
+            firstName: "Gabe",
+            lastName: "Denton",
+            birthday: gabeBirthday,
+            bio: "This is Gabe's Test Bio",
+            school: "Vanderbilt University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let seung = User(
+            userId: "u6504444444",
+            username: "seung.choi13",
+            firstName: "Seung",
+            lastName: "Choi",
+            birthday: seungBirthday,
+            bio: "This is Seung's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let ezra = User(
+            userId: "u6505555555",
+            username: "ezrataylor55",
+            firstName: "Ezra",
+            lastName: "Taylor",
+            birthday: ezraBirthday,
+            bio: "This is Ezra's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        DatabaseManager.shared.insertUser(with: yianni, completion: { success in
+            if success {
+                print("successfully uploaded Yianni")
+            } else {
+                print("failed to upload Yianni")
+            }
+            
+            DatabaseManager.shared.insertUser(with: nicholas, completion: { success in
+                if success {
+                    print("successfully uploaded Nic")
+                } else {
+                    print("failed to upload Nic")
+                }
+                
+                DatabaseManager.shared.insertUser(with: gabe, completion: { success in
+                    if success {
+                        print("successfully uploaded Gabe")
+                    } else {
+                        print("failed to upload Gabe")
+                    }
+                    
+                    DatabaseManager.shared.insertUser(with: seung, completion: { success in
+                        if success {
+                            print("successfully uploaded Seung")
+                        } else {
+                            print("failed to upload Seung")
+                        }
+                        
+                        DatabaseManager.shared.insertUser(with: ezra, completion: { success in
+                            if success {
+                                print("successfully uploaded Ezra")
+                            }  else {
+                                print("failed to upload Ezra")
+                            }
+                        })
+                    })
+                })
+            })
+        })
+    }
+    
+    func updateUsersInDB() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        let seungBirthday = formatter.date(from: "2002/01/01")!
+        let ezraBirthday = formatter.date(from: "2001/10/23")!
+        let yianniBirthday = formatter.date(from: "2001/12/06")!
+        let gabeBirthday = formatter.date(from: "2002/06/06")!
+        let nicBirthday = formatter.date(from: "2002/03/14")!
+        
+        let yianni = User(
+            userId: "u6501111111",
+            username: "yianni_zav",
+            firstName: "Yianni",
+            lastName: "Zavaliagkos",
+            birthday: yianniBirthday,
+            bio: "This is Yianni's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let nicholas = User(
+            userId: "u65022222222",
+            username: "nicholas.almerge",
+            firstName: "Nicholas",
+            lastName: "Almerge",
+            birthday: nicBirthday,
+            bio: "This is Nic's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let gabe = User(
+            userId: "u6503333333",
+            username: "gabe.denton",
+            firstName: "Gabe",
+            lastName: "Denton",
+            birthday: gabeBirthday,
+            bio: "This is Gabe's Test Bio",
+            school: "Vanderbilt University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let seung = User(
+            userId: "u6504444444",
+            username: "seung.choi13",
+            firstName: "Seung",
+            lastName: "Choi",
+            birthday: seungBirthday,
+            bio: "This is Seung's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        let ezra = User(
+            userId: "u6505555555",
+            username: "ezrataylor55",
+            firstName: "Ezra",
+            lastName: "Taylor",
+            birthday: ezraBirthday,
+            bio: "This is Ezra's Test Bio",
+            school: "McGill University",
+            interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
+            notificationPreferences: [
+                "pause_all" : false,
+                "news_update" : true,
+                "zip_requests" : true,
+                "accepted_zip_requests" : true,
+                "messages" : true,
+                "message_requests" : true,
+                "event_invites" : true,
+                "public_events" : true,
+                "one_day_reminders" : true,
+                "changes_to_event_info" : true
+            ]
+        )
+        
+        DatabaseManager.shared.updateUser(with: yianni, completion: { success in
+            if success {
+                print("successfully updated Yianni")
+            } else {
+                print("failed to updated Yianni")
+            }
+            
+            DatabaseManager.shared.updateUser(with: nicholas, completion: { success in
+                if success {
+                    print("successfully updated Nic")
+                } else {
+                    print("failed to updated Nic")
+                }
+                DatabaseManager.shared.updateUser(with: gabe, completion: { success in
+                    if success {
+                        print("successfully updated Gabe")
+                    } else {
+                        print("failed to updated Gabe")
+                    }
+                    
+                    DatabaseManager.shared.updateUser(with: ezra, completion: { success in
+                        if success {
+                            print("successfully updated Ezra")
+                        } else {
+                            print("failed to updated Ezra")
+                        }
+                        
+                        DatabaseManager.shared.updateUser(with: seung, completion: { success in
+                            if success {
+                                print("successfully updated Seung")
+                            } else {
+                                print("failed to updated Seung")
+                            }
+                        })
+                    })
+                })
+            })
+        })
+    }
+    
+    
+    
     func generateTestData(){
         var seungpics = [UIImage]()
         var ezrapics = [UIImage]()
