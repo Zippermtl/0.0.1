@@ -16,6 +16,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     static let identifier = "ZipFinderCollectionViewCell"
     
     // MARK: - Cell Data
+    var idPath: Int = 0
     var delegate: ZFCardBackDelegate?
     // Color
     
@@ -33,9 +34,10 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     private var cardView = UIView()
     
     
-    public func configure(with user: User, loc: CLLocation) {
+    public func configure(with user: User, loc: CLLocation, idPath: Int) {
         self.user = user
         self.userLoc = loc
+        self.idPath = idPath
         configureBackground()
         configureCard()
         configureGestureRecognizer()
@@ -71,8 +73,9 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardFrontView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor).isActive = true
         cardFrontView.rightAnchor.constraint(equalTo: cardView.rightAnchor).isActive = true
         
+        
         cardBackView.frame = cardView.frame
-        cardBackView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc)
+        cardBackView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc, url: user.pictureURLs[0])
         cardView.addSubview(cardBackView)
         cardBackView.isHidden = true
         cardBackView.delegate = delegate
