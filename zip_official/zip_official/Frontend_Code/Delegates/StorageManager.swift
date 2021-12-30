@@ -235,41 +235,180 @@ final class StorageManager {
     }
     
     public func downloadURL(for path: String, completion: @escaping (Result<URL, Error>) -> Void ){
+        print(path)
         let reference = storage.child(path)
-        
+        print("got past ref")
         reference.downloadURL(completion: { url, error in
+            print("pre-guard")
             guard let url = url, error == nil else {
                 completion(.failure(StorageErrors.failedToGetDownloadUrl))
                 return
             }
-            
             completion(.success(url))
             
         })
     }
     
-    
+    public func getAllImagesManually(path: String, picNum: Int = -1, completion: @escaping (Result<[URL], Error>) -> Void ) {
+        print("picNum in getAllImagesManual is \(picNum)")
+        var counter = 0
+        var picURLs: [URL] = []
+        var size = picNum
+        if(picNum == -1){
+            size = GetNumberOfPictures()
+            print("size is \(size)")
+        }
+        var tempPath = path
+        for i in 0..<size{
+            print("attempt \(i)")
+            if (i == 0) {
+                tempPath = path + "/profile_picture.png"
+                print(tempPath)
+                self.downloadURL(for: tempPath, completion: { [weak self] result in
+                    print("got here in Manual")
+                    switch result {
+                    case .success(let url):
+                        print("URL = \(url)")
+                        picURLs.append(url)
+                    case .failure(let error):
+                        print("failed to get image URL: \(error)")
+                    }
+                    print(path + "/profile_picture.png")
+                    counter += 1
+                })
+            } else {
+                tempPath = path + "/img\(i-1).png"
+                print(tempPath)
+                self.downloadURL(for: tempPath, completion: { [weak self] result in
+                    print("got here in Manual")
+                    switch result {
+                    case .success(let url):
+                        print("URL = \(url)")
+                        picURLs.append(url)
+                    case .failure(let error):
+                        print("failed to get image URL: \(error)")
+                    }
+                    print(path + "/img\(i-1).png")
+                    counter += 1
+                })
+            }
+        }
+        while(counter != picNum){
+//                print("picUrls.count = \(picURLs.count)")
+            if(counter == picNum-1){
+                if(picURLs.count > 0){
+                    completion(.success(picURLs))
+                }
+            }
+        }
+        
+    }
     //MARK: Yianni Please Read Below
     //I don't really understand this function to be honest and can't tell how it works, I would just run a for on the grab
     //instead of list all but don't know how to do properly so I didn't do it. To get the number of pictures used the line
     //var size = GetNumberOfPictures()
     //and it should work
-    public func getAllImages(for path: String, completion: @escaping (Result<[URL], Error>) -> Void ) {
+    public func getAllImages(path: String, picNum: Int = -1, completion: @escaping (Result<[URL], Error>) -> Void ) {
+        print("picNum in getAllImages is \(picNum)")
+        var counter = 0
+        var picURLs: [URL] = []
         storage.child(path).listAll(completion: { (result,error) in
+            
             var urls = result.items
             guard !urls.isEmpty, error == nil else {
-                      completion(.failure(StorageErrors.failedToGetDownloadUrl))
-                      return
-                  }
-            let picNumInGet = self.GetNumberOfPictures()
-            if (urls.count > picNumInGet) {
-                let difNum = urls.count - picNumInGet
-                for _ in 0..<difNum{
-                    urls.remove(at: urls.count-1)
+                completion(.failure(StorageErrors.failedToGetDownloadUrl))
+                return
+            }
+            print("urls size is \(urls.count) picNum is \(picNum)")
+            print(urls)
+            print("urls[0] = \(urls[0])")
+            var continueFinding = true
+            var picNumInGet = picNum
+            if(urls.count != picNum){
+                if (picNum == -1){
+//                    picNumInGet = self.GetNumberOfPictures()
+                    picNumInGet = urls.count
+//                    if (urls.count > picNumInGet) {
+//                        let difNum = urls.count - picNumInGet
+//
+//                        for _ in 0..<difNum{
+//                            urls.remove(at: urls.count-1)
+//                        }
+//                    }
+//                    counter = urls.count-1
+                } else {
+                    for i in 0..<picNumInGet{
+                        counter += 1
+                        if (i == 0) {
+                            self.downloadURL(for: path + "/profile_picture.png", completion: { [weak self] result in
+                                switch result {
+                                case .success(let url):
+                                    print("URL = \(url)")
+                                    picURLs.append(url)
+                                case .failure(let error):
+                                    print("failed to get image URL: \(error)")
+                                }
+                                print(path + "/profile_picture.png")
+                            })
+                        }
+                    }
                 }
             }
+//            for i in 0..<picNum{
+//                counter += 1
+//                if (i == 0) {
+//                    self.downloadURL(for: path + "/profile_picture.png", completion: { [weak self] result in
+//                        switch result {
+//                        case .success(let url):
+//                            print("URL = \(url)")
+//                            picURLs.append(url)
+//                        case .failure(let error):
+//                            print("failed to get image URL: \(error)")
+//                        }
+//                        print(path + "/profile_picture.png")
+//                    })
+//                } else {
+//                    self.downloadURL(for: path + "/img\(i-1).png", completion: { [weak self] result in
+//                        switch result {
+//                        case .success(let url):
+//                            print("URL = \(url)")
+//                            picURLs.append(url)
+//                        case .failure(let error):
+//                            print("failed to get image URL: \(error)")
+//                        }
+//                        print(path + "/img\(i-1).png")
+//                    })
+//                }
+////                if (urls.count > picNum) {
+////                    let difNum = urls.count - picNum
+////                    for _ in 0..<difNum{
+////                        urls.remove(at: urls.count-1)
+////                    }
+////                }
+//                if (picURLs.count > picNum) {
+//                    let difNum = picURLs.count - picNum
+//                    for _ in 0..<difNum{
+//                        picURLs.remove(at: picURLs.count-1)
+//                    }
+//                }
+//            }
+//            var pictureURLs: [URL] = []
+//            for i in 0..<urls.count{
+//                downloadURL(for: urls[i], completion: {
+//
+//                })
+//            }
+//            while(counter != picNum){
+////                print("picUrls.count = \(picURLs.count)")
+//                if(counter == picNum-1){
+//                    if(picURLs.count > 0){
+//                        completion(.success(picURLs))
+//                    }
+//                }
+//            }
+            
             completion(.success(urls.map({ URL(string: $0.description)! })))
-
+            
         })
         
     }
