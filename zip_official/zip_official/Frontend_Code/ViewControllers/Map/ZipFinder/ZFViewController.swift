@@ -288,12 +288,13 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         }
 
         //MARK: delete this
-        model.pictures.append(UIImage(named: "gabe1")!)
+        
+//        model.pictures.append(UIImage(named: "gabe1")!)
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
 
         cell.delegate = self
-        cell.configure(with: model, loc: userLoc)
+        cell.configure(with: model, loc: userLoc, idPath: indexPath.row)
 //        print(model.location)
         return cell
     }
