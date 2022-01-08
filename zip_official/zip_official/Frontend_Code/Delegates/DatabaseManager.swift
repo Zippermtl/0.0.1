@@ -167,7 +167,8 @@ extension DatabaseManager {
 
 //MARK: - User Data Retreival
 extension DatabaseManager {
-    public func loadUserProfile(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
+    //MARK: Status: 0 = default no additional data, 1 = load URLS, more to be added as we go
+    public func loadUserProfile(given id: String, status: Int = 0, completion: @escaping (Result<User, Error>) -> Void) {
         database.child("userProfiles/\(id)").observeSingleEvent(of: .value, with: { snapshot in
             guard let value = snapshot.value as? [String: Any] else {
                 print("failed to fetch user profile")
@@ -221,6 +222,7 @@ extension DatabaseManager {
                   let school = value["school"] as? String,
                   let bio = value["bio"] as? String,
                   let interestsInt = value["interests"] as? [Int],
+                  let picNum = value["picNum"] as? Int,
 //                  let notifPrefs = value["notifications"] as? Int,
                   let birthdayString = value["birthday"] as? String else {
                       print("retuning here")
@@ -235,19 +237,38 @@ extension DatabaseManager {
             dateFormatter.dateFormat = "MM-dd-yy"
             let birthday = dateFormatter.date(from: birthdayString)!
             
-            let user = User(userId: id,
+            var user = User(userId: id,
                             username: username,
                             firstName: firstName,
                             lastName: lastName,
                             birthday: birthday,
+                            picNum: picNum,
                             bio: bio,
                             school: school,
                             interests: interests
 //                            notificationPreferences: DecodePreferences(notifPrefs)
             )
-            
-            completion(.success(user))
+            switch status {
+            case 0:
+                completion(.success(user))
+            case 1:
+                let imagesPath = "images/" + id
+                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: picNum, completion: {  [weak self] result in
+                    switch result {
+                    case .success(let url):
+                        user.pictureURLs = url
+                        print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                        print(user.pictureURLs)
+                        completion(.success(user))
 
+                    case .failure(let error):
+                        print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                    }
+                        
+                })
+            default:
+                completion(.success(user))
+            }
         })
     }
      
