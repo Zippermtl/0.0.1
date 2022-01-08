@@ -416,7 +416,7 @@ extension OtherProfileViewController: UICollectionViewDataSource {
         let model = user.pictures[indexPath.row % user.pictures.count]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         cell.cornerRadius = 10
-        cell.configure(with:model)
+//        cell.configure(with:model)
         return cell
     }
     
