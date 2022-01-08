@@ -236,10 +236,12 @@ final class StorageManager {
     
     public func downloadURL(for path: String, completion: @escaping (Result<URL, Error>) -> Void ){
         print(path)
+        let test = "images/u6503333333/profile_picture.png"
+        print(test)
         let reference = storage.child(path)
         print("got past ref")
         reference.downloadURL(completion: { url, error in
-            print("pre-guard")
+            print("pre-guard \(path)")
             guard let url = url, error == nil else {
                 completion(.failure(StorageErrors.failedToGetDownloadUrl))
                 return
@@ -248,8 +250,8 @@ final class StorageManager {
             
         })
     }
-    
-    public func getAllImagesManually(path: String, picNum: Int = -1, completion: @escaping (Result<[URL], Error>) -> Void ) {
+    //MARK: Only use default on picNum if for yourself. THE PICNUM IT WILL USE WILL BE THE LOCAL VARIABLE!
+    public func getAllImagesManually(path: String, picNum: Int = -1, completion: @escaping (Result<[URL], Error>) -> Void  ) {
         print("picNum in getAllImagesManual is \(picNum)")
         var counter = 0
         var picURLs: [URL] = []
@@ -268,13 +270,17 @@ final class StorageManager {
                     print("got here in Manual")
                     switch result {
                     case .success(let url):
+                        print(tempPath)
                         print("URL = \(url)")
                         picURLs.append(url)
                     case .failure(let error):
                         print("failed to get image URL: \(error)")
                     }
-                    print(path + "/profile_picture.png")
-                    counter += 1
+                    print("got a url")
+                    if(i == size-1){
+//                        printOn.pictureURLs = picURLs
+                        completion(.success(picURLs))
+                    }
                 })
             } else {
                 tempPath = path + "/img\(i-1).png"
@@ -283,25 +289,20 @@ final class StorageManager {
                     print("got here in Manual")
                     switch result {
                     case .success(let url):
+                        print(tempPath)
                         print("URL = \(url)")
                         picURLs.append(url)
                     case .failure(let error):
                         print("failed to get image URL: \(error)")
                     }
-                    print(path + "/img\(i-1).png")
-                    counter += 1
+                    print("got a url")
+                    if(picURLs.count == size){
+//                        printOn.pictureURLs = picURLs
+                        completion(.success(picURLs))
+                    }
                 })
             }
         }
-        while(counter != picNum){
-//                print("picUrls.count = \(picURLs.count)")
-            if(counter == picNum-1){
-                if(picURLs.count > 0){
-                    completion(.success(picURLs))
-                }
-            }
-        }
-        
     }
     //MARK: Yianni Please Read Below
     //I don't really understand this function to be honest and can't tell how it works, I would just run a for on the grab
