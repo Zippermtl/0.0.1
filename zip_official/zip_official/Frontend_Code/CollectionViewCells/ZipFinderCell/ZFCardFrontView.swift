@@ -340,7 +340,7 @@ class ZFCardFrontView: UIView {
 //MARK: - Picture Datasource
 extension ZFCardFrontView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let model = user.pictureURLs[indexPath.row%user.pictures.count]
+        let model = user.pictureURLs[indexPath.row]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
         cell.configure(with: model)
