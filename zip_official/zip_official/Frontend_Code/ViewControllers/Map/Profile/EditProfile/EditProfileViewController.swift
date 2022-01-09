@@ -94,7 +94,6 @@ class EditProfileViewController: UIViewController {
     //MARK: - Nav Bar Config
     private func configureNavBar(){
         navigationItem.title = "@" + user.username
-        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
                                                             style: UIBarButtonItem.Style.done,
                                                             target: self,
