@@ -174,6 +174,12 @@ class ProfileViewController: UIViewController {
         navigationController?.pushViewController(myEventsView, animated: true)
     }
     
+    @objc private func didTapPhotosButton(){
+        let myPhotosView = UserPhotosViewController()
+        myPhotosView.modalPresentationStyle = .overCurrentContext
+        navigationController?.pushViewController(myPhotosView, animated: true)
+    }
+    
     @objc private func didTapDismiss(){
         dismiss(animated: true)
     }
@@ -206,7 +212,7 @@ class ProfileViewController: UIViewController {
             case .success(let user):
                 DispatchQueue.main.async {
                     strongSelf.user = user
-                    strongSelf.title = user.username
+                    strongSelf.title = "@" + user.username
                     strongSelf.nameLabel.text = user.fullName
                     strongSelf.ageLabel.text = String(user.age)
                     strongSelf.tableView.reloadData()
@@ -360,6 +366,7 @@ class ProfileViewController: UIViewController {
         editProfileButton.addTarget(self, action: #selector(didTapEditButton), for: .touchUpInside)
         myZipsButton.addTarget(self, action: #selector(didTapMyZipsButton), for: .touchUpInside)
         myEventsButton.addTarget(self, action: #selector(didTapMyEventsButton), for: .touchUpInside)
+        photosButton.addTarget(self, action: #selector(didTapPhotosButton), for: .touchUpInside)
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
         tableHeader.topAnchor.constraint(equalTo: profilePictureView.topAnchor).isActive = true
