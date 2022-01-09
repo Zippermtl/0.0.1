@@ -444,6 +444,7 @@ class NewPrivateEventViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         view.addGestureRecognizer(tapGesture)
         
+        
         configureTextFields()
         configureDefaultPicture()
         configureTable()
@@ -667,7 +668,6 @@ class NewPrivateEventViewController: UIViewController {
         } else {
             tableView.heightAnchor.constraint(equalToConstant: CGFloat(zipList.count*80)).isActive = true
         }
-
     }
     
     override func viewDidLayoutSubviews() {
