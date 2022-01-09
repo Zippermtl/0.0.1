@@ -84,7 +84,8 @@ public func EncodePreferences(_ preferences: [String: Bool]) -> Int {
 
 
 struct ZipNotification {
-    var fromId: Int? //figure this shit out later
+    var fromId: String = " " //figure this shit out later
+    var fromName: String = "default Notif Name"
     let type: NotificationType
     let image: UIImage
     let time: TimeInterval
