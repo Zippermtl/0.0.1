@@ -340,6 +340,7 @@ class ZFCardFrontView: UIView {
 //MARK: - Picture Datasource
 extension ZFCardFrontView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        print("cell being loaded with picUrls = ", user.pictureURLs)
         let model = user.pictureURLs[indexPath.row]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
@@ -349,6 +350,6 @@ extension ZFCardFrontView: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return user.pictures.count
+        return user.pictureURLs.count
     }
 }
