@@ -9,7 +9,6 @@ import UIKit
 import CoreLocation
 
 
-
 class ZipListTableViewCell: UITableViewCell {
 
     static let zippedIdentifier = "zippedListUser"
