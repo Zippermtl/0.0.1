@@ -21,7 +21,6 @@ import CoreGraphics
 import SDWebImage
 import FloatingPanel
 
-
 //MARK: View Controller
 class MapViewController: UIViewController {
     static let title = "MapVC"
@@ -313,46 +312,53 @@ extension MapViewController: FPCMapDelegate {
     }
     
     func createEvent() {
-        let actionSheet = UIAlertController(title: "Create an Event",
-                                            message: "Which type of event would you like to create",
-                                            preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "Private",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-            let privateEvent = NewPrivateEventViewController()
-            let nav = UINavigationController(rootViewController: privateEvent)
-            nav.modalPresentationStyle = .fullScreen
-            self?.present(nav, animated: true, completion: { [weak self] in
-                self?.fpc.move(to: .tip, animated: true, completion: nil)
-            })
-        }))
+        let vc = CreateEventViewController()
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true, completion: { [weak self] in
+            self?.fpc.move(to: .tip, animated: true, completion: nil)
+        })
         
-        actionSheet.addAction(UIAlertAction(title: "Public",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-            let publicEvent = NewPublicEventViewController()
-            let nav = UINavigationController(rootViewController: publicEvent)
-            nav.modalPresentationStyle = .fullScreen
-            self?.present(nav, animated: true, completion: { [weak self] in
-                self?.fpc.move(to: .tip, animated: true, completion: nil)
-            })
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Promoter",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-            let publicEvent = NewPublicEventViewController()
-            let nav = UINavigationController(rootViewController: publicEvent)
-            nav.modalPresentationStyle = .fullScreen
-            self?.present(nav, animated: true, completion: { [weak self] in
-                self?.fpc.move(to: .tip, animated: true, completion: nil)
-            })
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Cancel",
-                                            style: .default,
-                                            handler: nil))
-        present(actionSheet, animated: true)
+//        let actionSheet = UIAlertController(title: "Create an Event",
+//                                            message: "Which type of event would you like to create",
+//                                            preferredStyle: .actionSheet)
+//        actionSheet.addAction(UIAlertAction(title: "Private",
+//                                            style: .default,
+//                                            handler: { [weak self] _ in
+//            let privateEvent = NewPrivateEventViewController()
+//            let nav = UINavigationController(rootViewController: privateEvent)
+//            nav.modalPresentationStyle = .fullScreen
+//            self?.present(nav, animated: true, completion: { [weak self] in
+//                self?.fpc.move(to: .tip, animated: true, completion: nil)
+//            })
+//        }))
+//
+//        actionSheet.addAction(UIAlertAction(title: "Public",
+//                                            style: .default,
+//                                            handler: { [weak self] _ in
+//            let publicEvent = NewPublicEventViewController()
+//            let nav = UINavigationController(rootViewController: publicEvent)
+//            nav.modalPresentationStyle = .fullScreen
+//            self?.present(nav, animated: true, completion: { [weak self] in
+//                self?.fpc.move(to: .tip, animated: true, completion: nil)
+//            })
+//        }))
+//
+//        actionSheet.addAction(UIAlertAction(title: "Promoter",
+//                                            style: .default,
+//                                            handler: { [weak self] _ in
+//            let publicEvent = NewPublicEventViewController()
+//            let nav = UINavigationController(rootViewController: publicEvent)
+//            nav.modalPresentationStyle = .fullScreen
+//            self?.present(nav, animated: true, completion: { [weak self] in
+//                self?.fpc.move(to: .tip, animated: true, completion: nil)
+//            })
+//        }))
+//
+//        actionSheet.addAction(UIAlertAction(title: "Cancel",
+//                                            style: .default,
+//                                            handler: nil))
+//        present(actionSheet, animated: true)
     }
     
     func openMessages() {
