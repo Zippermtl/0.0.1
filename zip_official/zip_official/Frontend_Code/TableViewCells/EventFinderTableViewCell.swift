@@ -11,6 +11,9 @@ import CoreLocation
 
 class EventFinderTableViewCell: UITableViewCell {
     static let identifier = "eventCell"
+    weak var delegate: UpdateZipRequestsTableDelegate?
+    
+    
     var event = Event()
     var userLoc = CLLocation(latitude: 0, longitude: 0)
     
@@ -95,6 +98,16 @@ class EventFinderTableViewCell: UITableViewCell {
         
     }
     
+    @objc private func didTapInterestedButton(){
+        print("Interested tapped")
+        delegate?.deleteEventsRow(interestedButton)
+    }
+    
+    @objc private func didTapGoingButton() {
+        print("Going tapped")
+        delegate?.deleteEventsRow(goingButton)
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
     }
@@ -113,6 +126,8 @@ class EventFinderTableViewCell: UITableViewCell {
         }
         
         userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
+        interestedButton.addTarget(self, action: #selector(didTapInterestedButton), for: .touchUpInside)
+        goingButton.addTarget(self, action: #selector(didTapGoingButton), for: .touchUpInside)
         
         print("userloc = \(userLoc)")
         configureBackground()
