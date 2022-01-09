@@ -9,21 +9,23 @@ import UIKit
 
 class UserPhotosViewController: UIViewController {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+    @objc private func didTapPreviewButton() {
+        
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .zipGray
     }
-    */
-
+    
+    private func configureNavBar(){
+        title = "Photos"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Preview",
+                                                            style: UIBarButtonItem.Style.done,
+                                                            target: self,
+                                                            action: #selector(didTapPreviewButton))
+        //removes the text section of the back button from pushed VCs
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+    }
+    
 }
