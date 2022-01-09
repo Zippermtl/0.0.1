@@ -213,6 +213,7 @@ class FPCViewController: UIViewController {
         }
 
         zipRequestsTable.register(ZipRequestTableViewCell.self, forCellReuseIdentifier: ZipRequestTableViewCell.identifier)
+        zipRequestsTable.register(UITableViewCell.self, forCellReuseIdentifier: "noRequests")
         zipRequestsTable.delegate = self
         zipRequestsTable.dataSource = self
         zipRequestsTable.backgroundColor = .clear
@@ -227,6 +228,7 @@ class FPCViewController: UIViewController {
 
         
         eventsTable.register(EventFinderTableViewCell.self, forCellReuseIdentifier: EventFinderTableViewCell.identifier)
+        eventsTable.register(UITableViewCell.self, forCellReuseIdentifier: "noEvents")
         eventsTable.delegate = self
         eventsTable.dataSource = self
         eventsTable.backgroundColor = .clear
@@ -347,7 +349,6 @@ extension FPCViewController: UICollectionViewDelegateFlowLayout {
         return CGSize(width: size, height: size + 40)
     }
     
-
 }
 
 extension FPCViewController: UICollectionViewDelegate {
@@ -439,27 +440,96 @@ extension FPCViewController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tableView == zipRequestsTable {
+            if requests.count != 0 {
+                return requests.count
+            }
             return 1
         } else {
-            return 3
+            if events.count != 0 {
+                return events.count
+            } else {
+                return 1
+            }
         }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if tableView == zipRequestsTable {
-            let cell = tableView.dequeueReusableCell(withIdentifier: ZipRequestTableViewCell.identifier) as! ZipRequestTableViewCell
-            cell.configure(with: requests[requests.count-1])
-            return cell
+            if requests.count != 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: ZipRequestTableViewCell.identifier) as! ZipRequestTableViewCell
+                cell.configure(with: requests[indexPath.row])
+                cell.delegate = self
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "noRequests")!
+                cell.backgroundColor = .clear
+                cell.selectionStyle = .none
+                var content = cell.defaultContentConfiguration()
+                content.textProperties.color = .zipVeryLightGray
+                content.textProperties.font = .zipBody.withSize(16)
+                content.textProperties.alignment = .center
+                content.text = "You have no requests"
+                cell.contentConfiguration = content
+                return cell
+            }
         } else {
-            let cellEvent = events[indexPath.row]
-            let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
-
-            cell.selectionStyle = .none
-            cell.clipsToBounds = true
-            cell.configure(cellEvent, loc: userLoc)
-            return cell
+            if events.count != 0 {
+                let cellEvent = events[indexPath.row]
+                let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
+                cell.delegate = self
+                cell.selectionStyle = .none
+                cell.clipsToBounds = true
+                cell.configure(cellEvent, loc: userLoc)
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "noEvents")!
+                cell.backgroundColor = .clear
+                cell.selectionStyle = .none
+                var content = cell.defaultContentConfiguration()
+                content.textProperties.color = .zipVeryLightGray
+                content.textProperties.font = .zipBody.withSize(16)
+                content.textProperties.alignment = .center
+                content.text = "There are no available events near you"
+                cell.contentConfiguration = content
+                return cell
+            }
         }
         
+    }
+}
+
+extension FPCViewController: UpdateZipRequestsTableDelegate {
+    func deleteZipRequestRow(_ sender: UIButton) {
+        let point = sender.convert(CGPoint.zero, to: zipRequestsTable)
+        guard let indexPath = eventsTable?.indexPathForRow(at: point) else {
+            return
+        }
+        requests.remove(at: indexPath.row)
+        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
+        if requests.count == 0 {
+            zipRequestsTable?.reloadData()
+        } else {
+            zipRequestsTable?.beginUpdates()
+            zipRequestsTable?.deleteRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .top)
+            zipRequestsTable?.endUpdates()
+        }
+    }
+    
+    func deleteEventsRow(_ sender: UIButton) {
+        let point = sender.convert(CGPoint.zero, to: eventsTable)
+        guard let indexPath = eventsTable?.indexPathForRow(at: point) else {
+            return
+        }
+        
+        events.remove(at: indexPath.row)
+        eventsLabel.text = "Zip Requests (\(requests.count))"
+        if events.count == 0 {
+            eventsTable?.reloadData()
+        } else {
+            eventsTable?.beginUpdates()
+            eventsTable?.deleteRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .top)
+            eventsTable?.endUpdates()
+        }
     }
 }
 
@@ -471,12 +541,41 @@ extension FPCViewController: UITextFieldDelegate {
 
 extension FPCViewController {
     func generateRequests(){
-        let request1 = ZipNotification(type: .zipRequest, image: UIImage(named: "ezra1")!, time: TimeInterval(10), hasRead: false)
-        let request2 = ZipNotification(type: .zipRequest, image: UIImage(named: "yianni1")!, time: TimeInterval(10), hasRead: false)
-        let request3 = ZipNotification(type: .zipRequest, image: UIImage(named: "seung1")!, time: TimeInterval(10), hasRead: false)
-        let request4 = ZipNotification(type: .zipRequest, image: UIImage(named: "elias1")!, time: TimeInterval(10), hasRead: false)
-        let request5 = ZipNotification(type: .zipRequest, image: UIImage(named: "gabe1")!, time: TimeInterval(10), hasRead: false)
-        let request6 = ZipNotification(type: .zipRequest, image: UIImage(named: "ezra2")!, time: TimeInterval(10), hasRead: false)
+        let request1 = ZipNotification(fromName: "Ezra Taylor",
+                                       type: .zipRequest,
+                                       image: UIImage(named: "ezra1")!,
+                                       time: TimeInterval(10),
+                                       hasRead: false)
+        
+        let request2 = ZipNotification(fromName: "Yianni Zavaliagkos",
+                                       type: .zipRequest,
+                                       image: UIImage(named: "yianni1")!,
+                                       time: TimeInterval(15),
+                                       hasRead: false)
+        
+        let request3 = ZipNotification(fromName: "Seung Choi",
+                                       type: .zipRequest,
+                                       image: UIImage(named: "seung1")!,
+                                       time: TimeInterval(20),
+                                       hasRead: false)
+        
+        let request4 = ZipNotification(fromName: "Elias Levy",
+                                       type: .zipRequest,
+                                       image: UIImage(named: "elias1")!,
+                                       time: TimeInterval(25),
+                                       hasRead: false)
+        
+        let request5 = ZipNotification(fromName: "Gabe Denton",
+                                       type: .zipRequest,
+                                       image: UIImage(named: "gabe1")!,
+                                       time: TimeInterval(30),
+                                       hasRead: false)
+        
+        let request6 = ZipNotification(fromName: "Ezra Taylor",
+                                       type: .zipRequest,
+                                       image: UIImage(named: "ezra2")!,
+                                       time: TimeInterval(35),
+                                       hasRead: false)
         
         requests.append(request1)
         requests.append(request2)
@@ -484,7 +583,9 @@ extension FPCViewController {
         requests.append(request4)
         requests.append(request5)
         requests.append(request6)
-
+        
+        print(requests)
+        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
     }
     
     func generateEvents(){
@@ -562,5 +663,6 @@ extension FPCViewController {
         events.append(fakeFroshEvent)
         events.append(spikeBallEvent)
 
+        eventsLabel.text = "Event Invites (\(events.count))"
     }
 }
