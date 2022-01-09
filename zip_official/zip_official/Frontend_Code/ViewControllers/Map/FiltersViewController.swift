@@ -474,10 +474,4 @@ class FiltersViewController: UIViewController {
 }
 
 
-class ResizeSlider: UISlider {
-  @IBInspectable var trackHeight: CGFloat = 2
 
-  override func trackRect(forBounds bounds: CGRect) -> CGRect {
-    return CGRect(origin: CGPoint(x: 0, y: bounds.midY), size: CGSize(width: bounds.width, height: trackHeight))
-  }
-}
