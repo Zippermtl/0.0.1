@@ -6,9 +6,14 @@
 //
 
 import UIKit
+protocol UpdateZipRequestsTableDelegate: AnyObject {
+    func deleteZipRequestRow(_ sender: UIButton)
+    func deleteEventsRow(_ sender: UIButton)
+}
 
 class ZipRequestTableViewCell: UITableViewCell {
     static let identifier = "ZipRequest"
+    weak var delegate: UpdateZipRequestsTableDelegate?
 
     let cellImage: UIImageView = {
         let view = UIImageView()
@@ -59,6 +64,18 @@ class ZipRequestTableViewCell: UITableViewCell {
     
     let outlineView = UIView()
     
+    @objc private func didTapAcceptButton(){
+        // Some completion for the back end shit, then delete
+        print("accept tapped")
+        delegate?.deleteZipRequestRow(acceptButton)
+    }
+    
+    @objc private func didTapRejectButton(){
+        // Some completion for the back end shit, then delete
+        print("reject tapped")
+        delegate?.deleteZipRequestRow(rejectButton)
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         
@@ -72,6 +89,10 @@ class ZipRequestTableViewCell: UITableViewCell {
     
     public func configure(with notification: ZipNotification){
         contentView.backgroundColor = .zipGray
+        
+        acceptButton.addTarget(self, action: #selector(didTapAcceptButton), for: .touchUpInside)
+        rejectButton.addTarget(self, action: #selector(didTapRejectButton), for: .touchUpInside)
+
         contentView.addSubview(outlineView)
         outlineView.translatesAutoresizingMaskIntoConstraints = false
         outlineView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 5).isActive = true
@@ -80,12 +101,11 @@ class ZipRequestTableViewCell: UITableViewCell {
         outlineView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
 
         outlineView.backgroundColor = .zipLightGray
-
         outlineView.layer.cornerRadius = 15
         
     
         cellImage.image = notification.image
-        cellText.text = "Yianni Zavaliagkos Zipped you!"
+        cellText.text = "\(notification.fromName) Zipped you!"
         
         if notification.time < 60 {
             timeLabel.text = Int(notification.time).description + "s ago"
@@ -143,8 +163,6 @@ class ZipRequestTableViewCell: UITableViewCell {
         rejectButton.translatesAutoresizingMaskIntoConstraints = false
         rejectButton.rightAnchor.constraint(equalTo: acceptButton.leftAnchor, constant: -10).isActive = true
         rejectButton.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-
-        
 
 
     }
