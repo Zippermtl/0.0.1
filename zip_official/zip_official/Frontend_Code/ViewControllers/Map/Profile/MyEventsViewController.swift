@@ -13,10 +13,21 @@ import CoreLocation
 class MyEventsViewController: UIViewController {
     var tableView = UITableView()
     
-    var upcomingEvents: [[Event]] = [[],[]]
-    var previousEvents: [[Event]] = [[]]
+    var eventData: [String:[String:[Event]]] =
+    [
+        "Upcoming" : ["Hosting" : [],
+                      "Going" : [],
+                      "Interested" : []],
+        "Previous" : ["Hosted" : [],
+                      "Went" : []]
+    ]
     
-    var tableData: [[Event]] = []
+    var tableData: [String:[Event]] =
+    [
+        "Hosting" : [Event](),
+        "Going" : [Event](),
+        "Interested" : [Event]()
+    ]
     
     // MARK: - Buttons
     var upcomingButton = UIButton()
@@ -27,17 +38,17 @@ class MyEventsViewController: UIViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    @objc private func didTapUpcomingButton(){
+    @objc private func didTapUpcomingButton() {
         upcomingButton.backgroundColor = .zipVeryLightGray
         previousButton.backgroundColor = .zipLightGray
-        tableData = upcomingEvents
+        tableData = eventData["Upcoming"]!
         tableView.reloadData()
     }
     
-    @objc private func didTapPreviousButton(){
+    @objc private func didTapPreviousButton() {
         previousButton.backgroundColor = .zipVeryLightGray
         upcomingButton.backgroundColor = .zipLightGray
-        tableData = previousEvents
+        tableData = eventData["Previous"]!
         tableView.reloadData()
     }
 
@@ -70,7 +81,7 @@ class MyEventsViewController: UIViewController {
         tableView.sectionIndexBackgroundColor = .zipLightGray
         tableView.separatorColor = .zipSeparator
         
-        tableData = upcomingEvents
+        tableData = eventData["Upcoming"]!
     }
     
     //MARK: - Button Config
@@ -146,36 +157,47 @@ extension MyEventsViewController :  UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
-        if tableView.numberOfSections == 2 {
-            let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
-            view.backgroundColor = .zipLightGray
-            let title = UILabel()
-
-            switch section {
-            case 0:  title.text = "Going"
-            case 1:  title.text = "Interested"
-            default:  title.text = "default"
-            }
-            
-            title.font = .zipBody
-            title.textColor = .white
-            view.addSubview(title)
-            title.translatesAutoresizingMaskIntoConstraints = false
-            title.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-            title.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
-
-            return view
-        } else {
-            return UIView()
-        }
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
+        view.backgroundColor = .zipLightGray
+        let title = UILabel()
+        
+        title.text = Array(tableData.keys)[section]
+        title.font = .zipBody
+        title.textColor = .white
+        view.addSubview(title)
+        title.translatesAutoresizingMaskIntoConstraints = false
+        title.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        title.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
+        
+        return view
+        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tableData[section].count
+        switch Array(tableData.keys)[section] {
+        case "Hosting": return tableData["Hosting"]!.count
+        case "Going": return tableData["Going"]!.count
+        case "Interested": return tableData["Interested"]!.count
+        case "Hosted": return tableData["Hosted"]!.count
+        case "Went": return tableData["Went"]!.count
+        default: return 0
+        }
+        
+        
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cellEvent = tableData[indexPath.section][indexPath.row]
+        var events = [Event]()
+        switch Array(tableData.keys)[indexPath.section] {
+        case "Hosting": events = tableData["Hosting"]!
+        case "Going": events = tableData["Going"]!
+        case "Interested": events = tableData["Interested"]!
+        case "Hosted": events = tableData["Hosted"]!
+        case "Went": events = tableData["Went"]!
+        default: print("section out of range")
+        }
+        
+        let cellEvent = events[indexPath.row]
         
         let eventView = EventViewController()
         eventView.configure(cellEvent)
@@ -185,14 +207,21 @@ extension MyEventsViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if tableView.numberOfSections == 2 {
-            return 30
-        }
-        return 0
+        return 30
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellEvent = tableData[indexPath.section][indexPath.row]
+        var events = [Event]()
+        switch Array(tableData.keys)[indexPath.section] {
+        case "Hosting": events = tableData["Hosting"]!
+        case "Going": events = tableData["Going"]!
+        case "Interested": events = tableData["Interested"]!
+        case "Hosted": events = tableData["Hosted"]!
+        case "Went": events = tableData["Went"]!
+        default: print("section out of range")
+        }
+        
+        let cellEvent = events[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
 
         cell.selectionStyle = .none
@@ -273,9 +302,10 @@ extension MyEventsViewController {
                             duration: TimeInterval(1000),
                             image: UIImage(named: "spikeball"))
         
-        upcomingEvents[0].append(launchEvent)
-        upcomingEvents[1].append(spikeBallEvent)
-        previousEvents[0].append(fakeFroshEvent)
+        eventData["Upcoming"]?["Hosting"]?.append(launchEvent)
+        eventData["Upcoming"]?["Going"]?.append(spikeBallEvent)
+        eventData["Upcoming"]?["Interested"]?.append(fakeFroshEvent)
+
     }
     
 }
