@@ -38,7 +38,7 @@ class ZipRequestTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .zipSubscript.withSize(14)
         label.textColor = .zipVeryLightGray
-    
+
         return label
     }()
     
