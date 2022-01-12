@@ -145,7 +145,26 @@ public class User {
     var interestsString: String {
         return "Interests: " + interests.map{$0.description}.joined(separator: ", ")
     }
-    func updateUser(email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", distance dis: Double = 0, birthday bd: Date = Date(), age a: Int = 0, location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], interestedEvents intere: [Event] = [], notificationPreferences np: [String: Bool] = [:], encodedNotifPref enp: Int? = 0){
+    
+    func updateUser(email em: String = "",
+                    username us: String = "",
+                    firstName fn: String = "",
+                    lastName ln: String = "",
+                    distance dis: Double = 0,
+                    birthday bd: Date = Date(),
+                    age a: Int = 0,
+                    location loc: CLLocation = CLLocation(latitude: 0, longitude: 0),
+                    picNum pn: Int = 0, pictures pics: [UIImage] = [],
+                    pictureURLs picurls: [URL] = [],
+                    bio b: String = "",
+                    school sc: String? = "",
+                    interests inters: [Interests] = [],
+                    previousEvents preve: [Event] = [],
+                    goingEvents goinge: [Event] = [],
+                    interestedEvents intere: [Event] = [],
+                    notificationPreferences np: [String: Bool] = [:],
+                    encodedNotifPref enp: Int? = 0){
+        
         if(em != ""){
             email = em
         }
