@@ -157,7 +157,7 @@ class PermissionsSetupViewController: UIViewController {
             "changes_to_event_info" : true
         ]
                 
-        AppDelegate.userDefaults.set(user.encodedPreferences, forKey: "encodedNotificationSettings")
+        AppDelegate.userDefaults.set(user.notificationPreferences, forKey: "encodedNotificationSettings")
 
         spinner.show(in: view)
         DatabaseManager.shared.insertUser(with: user, completion: { [weak self] success in
@@ -179,7 +179,7 @@ class PermissionsSetupViewController: UIViewController {
                 
                 AppDelegate.userDefaults.set(strongSelf.user.userId, forKey: "userId")
                 AppDelegate.userDefaults.set(strongSelf.user.username, forKey: "username")
-                AppDelegate.userDefaults.set((strongSelf.user.firstName+strongSelf.user.lastName), forKey: "name")
+                AppDelegate.userDefaults.set((strongSelf.user.fullName), forKey: "name")
                 AppDelegate.userDefaults.set((strongSelf.user.firstName), forKey: "firstName")
                 AppDelegate.userDefaults.set((strongSelf.user.lastName), forKey: "lastName")
                 AppDelegate.userDefaults.set((strongSelf.user.birthday), forKey: "birthday")

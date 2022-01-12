@@ -14,7 +14,7 @@ class GeoManager {
     
     static let shared = GeoManager()
         
-    var userIdList: [String] = []
+    var userIdList: [User] = []
     var loadedUsers: [User] = []
     var alreadyReadySeen: [String] = []
 
@@ -47,7 +47,13 @@ class GeoManager {
         }
         //adds test set to test1 -> test4 inclusive
 //        createTestCodeZip()
-
+        DatabaseManager.shared.updateLocationUserLookUp(location: CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), completion: { success in
+            if success {
+                print("successfully updated self userlookup")
+            } else {
+                print("failed to updated self userlookup")
+            }
+        })
     }
 
     public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
@@ -72,7 +78,7 @@ class GeoManager {
                 strongSelf.moreUsersInQuery = true
             }
             if(strongSelf.userIsValid(key: key)){
-                GeoManager.shared.userIdList.append(key)
+                GeoManager.shared.userIdList.append(User(userId:key))
                 print("userIdList appending \(key.description)")
             }
         })
@@ -89,7 +95,7 @@ class GeoManager {
     
     public func userIsValid(key: String) -> Bool{
         for user in userIdList{
-            if(user == key){
+            if(user.userId == key){
                 print("A user is duplicated")
                 return false
             }
@@ -99,6 +105,9 @@ class GeoManager {
                 print("A user is already seen")
                 return false
             }
+        }
+        if(key == AppDelegate.userDefaults.value(forKey: "userId") as? String){
+            return false
         }
         return true
     }
@@ -127,7 +136,7 @@ class GeoManager {
     public func LoadUsers(size: Int){
         print("LoadUsers \(size) with array size \(userIdList.count)")
         for _ in 0..<size{
-            DatabaseManager.shared.loadUserProfile(given: userIdList[0], status: 1, completion: { [weak self] result in
+            DatabaseManager.shared.loadUserProfileZipFinder(given: userIdList[0], completion: { [weak self] result in
                 switch result {
                 case .success(let user):
                     self?.loadedUsers.append(user)
@@ -138,7 +147,7 @@ class GeoManager {
                 }
             })
             let temp = userIdList[0]
-            alreadyReadySeen.append(temp)
+            alreadyReadySeen.append(temp.userId)
             userIdList.remove(at: 0)
         }
         print("exiting loadUsers with loadedUsers: \(loadedUsers.count) and ")

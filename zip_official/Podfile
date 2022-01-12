@@ -3,7 +3,7 @@ platform :ios, '13.0'
 target 'zip_official' do
   use_frameworks!
 
-pod 'GooglePlaces', '4.2.0'
+pod 'GooglePlaces', '6.0.0'
 
 
 pod 'JGProgressHUD'

@@ -16,7 +16,7 @@ class NewPrivateEventViewController: UIViewController {
     static let dateIdentifier = "date"
     static let numGuestsIdentifier = "numGuests"
     static let locationIdentifier = "location"
-    
+     
     var zipList: [User] = MapViewController.getTestUsers()
     
     var event = Event()

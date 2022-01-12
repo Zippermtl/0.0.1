@@ -9,6 +9,8 @@ import Foundation
 import FirebaseDatabase
 import MessageKit
 import FirebaseAuth
+import CoreLocation
+
 
 
 /// Manager object to read and write to firebase
@@ -71,7 +73,8 @@ extension DatabaseManager {
             "firstName": user.firstName,
             "lastName": user.lastName,
             "birthday": user.birthdayString,
-            "notifications": user.encodedPreferences,
+            "notifications": EncodePreferences(user.notificationPreferences),
+            "friendships": EncodeFriendships(of: user),
             "picNum": user.picNum
         ], withCompletionBlock: { [weak self] error, _ in
             guard error == nil else{
@@ -124,7 +127,38 @@ extension DatabaseManager {
             })
         })
     }
-    
+    public func createUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
+        let userID = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        var name = AppDelegate.userDefaults.value(forKey: "firstName") as! String
+        let last = AppDelegate.userDefaults.value(forKey: "lastName") as! String
+        name = name + " " + last
+        database.child("UserFastInfo/\(userID)").setValue([
+            "lat": location.coordinate.latitude,
+            "long": location.coordinate.longitude,
+            "name": name
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else {
+                print("failed to write to database")
+                completion(false)
+                return
+            }
+            completion(true)
+        })
+    }
+    public func updateLocationUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
+        let userID = AppDelegate.userDefaults.value(forKey: "userId") as? String
+        database.child("UserFastInfo/\(userID)").updateChildValues([
+            "lat": location.coordinate.latitude,
+            "long": location.coordinate.longitude
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else{
+                print("failed to write to database")
+                completion(false)
+                return
+            }
+            completion(true)
+        })
+    }
     /// Updates the full user profile
     public func updateUser(with user: User, completion: @escaping (Bool) -> Void) {
         database.child("userProfiles/\(user.safeId)").updateChildValues([
@@ -135,7 +169,8 @@ extension DatabaseManager {
             "bio": user.bio,
             "school": user.school ?? "",
             "interests": user.interests.map{ $0.rawValue },
-            "notifications": user.encodedPreferences
+            "notifications": EncodePreferences(user.notificationPreferences),
+            "friendships": EncodeFriendships(of: user)
         ], withCompletionBlock: { error, _ in
             guard error == nil else{
                 print("failed to write to database")
@@ -167,6 +202,134 @@ extension DatabaseManager {
 
 //MARK: - User Data Retreival
 extension DatabaseManager {
+    public func loadUserProfileZipFinder(given user: User, completion: @escaping (Result<User, Error>) -> Void) {
+        database.child("userProfiles/\(user.userId)").observeSingleEvent(of: .value, with: { snapshot in
+            guard let value = snapshot.value as? [String: Any] else {
+                print("failed to fetch user profile")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+
+            guard let firstName = value["firstName"] as? String,
+                  let lastName = value["lastName"] as? String,
+                  let username = value["username"] as? String,
+                  let school = value["school"] as? String,
+                  let bio = value["bio"] as? String,
+                  let interestsInt = value["interests"] as? [Int],
+                  let picNum = value["picNum"] as? Int,
+//                  let notifPrefs = value["notifications"] as? Int,
+                  let birthdayString = value["birthday"] as? String else {
+                      print("retuning here")
+                      return
+                  }
+            
+            
+            
+            let interests = interestsInt.map({Interests(rawValue: $0)!})
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "MM-dd-yy"
+            let birthday = dateFormatter.date(from: birthdayString)!
+            
+            user.updateUser(username: username,
+                            firstName: firstName,
+                            lastName: lastName,
+                            birthday: birthday,
+                            picNum: picNum,
+                            bio: bio,
+                            school: school,
+                            interests: interests
+//                            notificationPreferences: DecodePreferences(notifPrefs)
+            )
+            
+            let imagesPath = "images/" + user.userId
+            StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: picNum, completion: {  [weak self] result in
+                switch result {
+                case .success(let url):
+                    user.pictureURLs = url
+                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                    print(user.pictureURLs)
+                    completion(.success(user))
+
+                case .failure(let error):
+                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                }
+                    
+            })
+            
+        })
+    }
+    public func loadUserProfileSubViewNoLoc(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
+        database.child("UserFastInfo/\(id)").observeSingleEvent(of: .value, with: { snapshot in
+            guard let value = snapshot.value as? [String: Any] else {
+                print("failed to fetch user profile")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            guard let fullname = value["name"] as? String else {
+                      print("retuning SubView")
+                      return
+                  }
+            let name = fullname.components(separatedBy: " ")
+            var user = User(userId: id,
+                            firstName: name[0],
+                            lastName: name[1]
+//                            notificationPreferences: DecodePreferences(notifPrefs)
+            )
+            let imagesPath = "images/" + id
+            StorageManager.shared.getProfilePicture(path: imagesPath, completion: {  [weak self] result in
+                switch result {
+                case .success(let url):
+                    user.pictureURLs = url
+                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                    print(user.pictureURLs)
+                    completion(.success(user))
+
+                case .failure(let error):
+                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                }
+                    
+            })
+            
+        })
+    }
+    public func loadUserProfileSubView(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
+        database.child("UserFastInfo/\(id)").observeSingleEvent(of: .value, with: { snapshot in
+            guard let value = snapshot.value as? [String: Any] else {
+                print("failed to fetch user profile")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            guard let fullname = value["name"] as? String,
+                  let lat = value["lat"] as? Double,
+                  let long = value["long"] as? Double else {
+                      print("retuning SubView")
+                      return
+                  }
+            let name = fullname.components(separatedBy: " ")
+            var user = User(userId: id,
+                            firstName: name[0],
+                            lastName: name[1],
+                            location: CLLocation(latitude: lat, longitude: long)
+//                            notificationPreferences: DecodePreferences(notifPrefs)
+            )
+            let imagesPath = "images/" + id
+            StorageManager.shared.getProfilePicture(path: imagesPath, completion: {  [weak self] result in
+                switch result {
+                case .success(let url):
+                    user.pictureURLs = url
+                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                    print(user.pictureURLs)
+                    completion(.success(user))
+
+                case .failure(let error):
+                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                }
+                    
+            })
+            
+        })
+    }
     //MARK: Status: 0 = default no additional data, 1 = load URLS, more to be added as we go
     public func loadUserProfile(given id: String, status: Int = 0, completion: @escaping (Result<User, Error>) -> Void) {
         database.child("userProfiles/\(id)").observeSingleEvent(of: .value, with: { snapshot in
@@ -223,7 +386,8 @@ extension DatabaseManager {
                   let bio = value["bio"] as? String,
                   let interestsInt = value["interests"] as? [Int],
                   let picNum = value["picNum"] as? Int,
-//                  let notifPrefs = value["notifications"] as? Int,
+                  let notifPrefs = value["notifications"] as? Int,
+                  let friendships = value["friendships"] as? String,
                   let birthdayString = value["birthday"] as? String else {
                       print("retuning here")
                       return
@@ -237,16 +401,18 @@ extension DatabaseManager {
             dateFormatter.dateFormat = "MM-dd-yy"
             let birthday = dateFormatter.date(from: birthdayString)!
             
-            var user = User(userId: id,
-                            username: username,
-                            firstName: firstName,
-                            lastName: lastName,
-                            birthday: birthday,
-                            picNum: picNum,
-                            bio: bio,
-                            school: school,
-                            interests: interests
-//                            notificationPreferences: DecodePreferences(notifPrefs)
+            let user = User(
+                userId: id,
+                username: username,
+                firstName: firstName,
+                lastName: lastName,
+                birthday: birthday,
+                picNum: picNum,
+                bio: bio,
+                school: school,
+                interests: interests,
+                notificationPreferences: notifPrefs,
+                friendships: friendships
             )
             switch status {
             case 0:
