@@ -26,6 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //FireBase
         FirebaseApp.configure()
         
+        AppDelegate.userDefaults.setValue("Yianni Zavaliagkos", forKey: "name")
+
         AppDelegate.userDefaults.setValue(2, forKey: "maxRangeFilter")
         
         
