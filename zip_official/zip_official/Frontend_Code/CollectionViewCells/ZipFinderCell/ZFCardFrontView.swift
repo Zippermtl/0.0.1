@@ -317,7 +317,7 @@ class ZFCardFrontView: UIView {
         bioLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor, constant: 2).isActive = true
         bioLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
         bioLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
-        bioLabel.heightAnchor.constraint(lessThanOrEqualToConstant: bioLabelHeight).isActive = true
+        bioLabel.bottomAnchor.constraint(lessThanOrEqualTo: tapToFlipLabel.topAnchor).isActive = true
         
         tapToFlipLabel.translatesAutoresizingMaskIntoConstraints = false
         tapToFlipLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5).isActive = true
