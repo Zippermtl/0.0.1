@@ -291,6 +291,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                               sentDate: Date(),
                               kind: .text(text))
 
+        
         // Send Message
         if isNewConversation {
             //create convo in database
