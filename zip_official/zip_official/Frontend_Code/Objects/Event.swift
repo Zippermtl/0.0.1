@@ -27,7 +27,7 @@ struct Event {
     var type: String = "promoter"
     var isPublic: Bool = false
     var startTime: Date = Date()
-    var endTime: Date = Date()
+    var endTime: Date?
     var duration: TimeInterval = TimeInterval(1)
     var image: UIImage? = UIImage(named: "launchevent")
     
