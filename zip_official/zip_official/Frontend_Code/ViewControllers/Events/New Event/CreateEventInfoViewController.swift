@@ -9,7 +9,8 @@ import UIKit
 
 class CreateEventInfoViewController: UIViewController {
     var event = Event()
-
+    weak var delegate: MaintainEventDelegate?
+    
     private let eventPictureLabel: UILabel = {
         let label = UILabel()
         label.font = .zipBodyBold
@@ -73,6 +74,12 @@ class CreateEventInfoViewController: UIViewController {
         return btn
     }()
     
+    @objc private func didTapContinueButton(){
+        let vc = CompleteEventViewController()
+        vc.event = event
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     let capacitySlider = ResizeSlider()
 
     
@@ -135,7 +142,7 @@ class CreateEventInfoViewController: UIViewController {
         yesButton.backgroundColor = .zipLightGray
         capacitySlider.isEnabled = false
         capacitySlider.minimumTrackTintColor = .zipVeryLightGray
-
+        event.maxGuests = 0
     }
     
     @objc private func didTapYes() {
@@ -147,6 +154,11 @@ class CreateEventInfoViewController: UIViewController {
     
     @objc func sliderChanged(_ sender: UISlider){
         capacityNumLabel.text = Int(sender.value).description
+        event.maxGuests = Int(sender.value)
+    }
+    
+    @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
+        descriptionField.resignFirstResponder()
     }
     
     override func viewDidLoad() {
@@ -154,7 +166,25 @@ class CreateEventInfoViewController: UIViewController {
         view.backgroundColor = .zipGray
         title = "CUSTOMIZE EVENT"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        capacitySlider.isEnabled = false
+        
+        if event.description != "" {
+            descriptionField.text = event.description
+            descriptionField.textColor = .white
+        }
+        
+        if event.maxGuests != 0 {
+            noButton.backgroundColor = .zipVeryLightGray
+            yesButton.backgroundColor = .zipBlue
+            capacitySlider.value = Float(event.maxGuests)
+            capacitySlider.isEnabled = true
+        } else {
+            noButton.backgroundColor = .zipBlue
+            yesButton.backgroundColor = .zipVeryLightGray
+            capacitySlider.value = 0
+            capacitySlider.isEnabled = false
+        }
+//        eventPicture.image =
+
         
         let layout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
@@ -165,8 +195,13 @@ class CreateEventInfoViewController: UIViewController {
         
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(presentPhotoActionSheet))
-        eventPicture.addGestureRecognizer(tap)
+        let photoTap = UITapGestureRecognizer(target: self, action: #selector(presentPhotoActionSheet))
+        eventPicture.addGestureRecognizer(photoTap)
+        
+//        let viewTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
+//        view.addGestureRecognizer(viewTap)
+        
+        continueButton.addTarget(self, action: #selector(didTapContinueButton), for: .touchUpInside)
         
         descriptionField.delegate = self
         
@@ -174,6 +209,11 @@ class CreateEventInfoViewController: UIViewController {
         addSubviews()
         layoutSubviews()
         configureSlider()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        delegate?.updateEvent(event: event)
     }
     
     
@@ -328,10 +368,12 @@ class CreateEventInfoViewController: UIViewController {
 
 extension CreateEventInfoViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("selecting")
         if indexPath.row == 0 {
             presentPhotoActionSheet()
         } else {
             eventPicture.image = icons[indexPath.row]
+            event.image = icons[indexPath.row]
         }
     }
 }
@@ -431,6 +473,7 @@ extension CreateEventInfoViewController: UIImagePickerControllerDelegate, UINavi
         }
         
         eventPicture.image = selectedImage
+        event.image = selectedImage
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -451,5 +494,7 @@ extension CreateEventInfoViewController: UITextViewDelegate {
             textView.text = "Tell us about your event here!"
             textView.textColor = .zipVeryLightGray
         }
+        
+        event.description = textView.text
     }
 }
