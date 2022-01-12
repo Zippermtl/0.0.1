@@ -129,7 +129,6 @@ class EventFinderTableViewCell: UITableViewCell {
         interestedButton.addTarget(self, action: #selector(didTapInterestedButton), for: .touchUpInside)
         goingButton.addTarget(self, action: #selector(didTapGoingButton), for: .touchUpInside)
         
-        print("userloc = \(userLoc)")
         configureBackground()
         addSubviews()
         configureImage()
