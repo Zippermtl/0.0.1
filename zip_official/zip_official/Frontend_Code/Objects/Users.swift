@@ -1,5 +1,5 @@
 //
-//  User_Data.swift
+//  Users.swift
 //  zip_official
 //
 //  Created by Yianni Zavaliagkos on 6/3/21.
@@ -8,13 +8,12 @@
 import Foundation
 import MapKit
 
-struct User {
+public class User {
     var userId: String = ""
     var email: String = ""
     var username: String = ""
     var firstName: String = ""
     var lastName: String = ""
-//    var name: String = ""
     var zipped: Bool = false
     var distance: Double = 0
     var birthday: Date = Date()
@@ -30,12 +29,35 @@ struct User {
     var goingEvents: [Event] = []
     var interestedEvents: [Event] = []
     var notificationPreferences: [String: Bool] = [:] // Notification Preferences
+    var friendships: [Friendship] = [] // Friendship Preferences
     
-    var encodedPreferences: String {
-        let encoded = EncodePreferences(notificationPreferences)
-        return "\(encoded)"
+    init() {}
+    
+    init(userId id: String, username us: String, firstName fn: String, lastName ln: String, birthday bd: Date, picNum pn: Int, bio b: String, school sc: String?, interests inters: [Interests], notificationPreferences np: Int?, friendships fs: String?) {
+        userId = id
+        username = us
+        firstName = fn
+        lastName = ln
+        birthday = bd
+        picNum = pn
+        bio = b
+        school = sc
+        interests = inters
+        notificationPreferences = DecodePreferences(np)
+        friendships = DecodeFriendships(of: self, given: fs)
     }
     
+    func getFriendsList() -> [User] {
+        var friends: [User] = []
+        for friendship in friendships {
+            switch friendship.status {
+                case.ACCEPTED: friends.append(friendship.to)
+                default: break
+            }
+        }
+        
+        return friends
+    }
     
     var safeId: String {
         var safeID = userId.replacingOccurrences(of: ".", with: "-")
