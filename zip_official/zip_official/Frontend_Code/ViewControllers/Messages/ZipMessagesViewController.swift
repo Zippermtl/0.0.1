@@ -154,6 +154,10 @@ class ZipMessagesViewController: UIViewController {
         })
     }
     
+    @objc private func didTapDismiss(){
+        dismiss(animated: true)
+    }
+    
     //MARK: - Configure Navigation
     private func configureNavigation(){
         navigationItem.title = "MESSAGES"
@@ -165,6 +169,12 @@ class ZipMessagesViewController: UIViewController {
             [NSAttributedString.Key.font: UIFont.zipTitle.withSize(27),
              NSAttributedString.Key.foregroundColor: UIColor.white]
     
+        
+        let dismissButton = UIButton(type: .system)
+        dismissButton.setImage(UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
+        dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
     }
   
 
