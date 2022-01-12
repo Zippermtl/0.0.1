@@ -233,8 +233,8 @@ class ZFCardFrontView: UIView {
     //MARK: - PictureCofig
     private func configurePictures(){
         pictureCollectionLayout.scrollDirection = .horizontal
-        pictureCollectionLayout.itemSize = CGSize(width: frame.size.width, height: frame.size.width)
-        
+        let size = UIScreen.main.bounds.width-25 //AWFUL CODE --> autolayout is super weird with collectionView cells
+        pictureCollectionLayout.itemSize = CGSize(width: size, height: size)
         pictureCollectionView.collectionViewLayout = pictureCollectionLayout
         
         pictureCollectionView.register(PictureCollectionViewCell.self, forCellWithReuseIdentifier: PictureCollectionViewCell.identifier)
@@ -266,27 +266,22 @@ class ZFCardFrontView: UIView {
 
     //MARK: Add Constranits
     func configureSubviewLayout() {
-        let width = frame.size.width
-        let height = frame.size.height
-        
-        pictureCollectionView.frame = CGRect(x: 0, y: height/2-width/2 - 20 , width: width, height: width)
         let buffer = CGFloat(10.0)
         
-        
-        //Labels
-        lastNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        lastNameLabel.bottomAnchor.constraint(equalTo: pictureCollectionView.topAnchor, constant: -buffer).isActive = true
-        lastNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
-//        lastNameLabel.heightAnchor.constraint(equalToConstant: firstNameLabel.intrinsicContentSize.height).isActive = true
-        lastNameLabel.rightAnchor.constraint(lessThanOrEqualTo: zipButton.leftAnchor).isActive = true
-        
-        
-        
         firstNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        firstNameLabel.bottomAnchor.constraint(equalTo: lastNameLabel.topAnchor).isActive = true
+        firstNameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 5).isActive = true
         firstNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
         firstNameLabel.heightAnchor.constraint(equalToConstant: firstNameLabel.intrinsicContentSize.height).isActive = true
+        
+        lastNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        lastNameLabel.topAnchor.constraint(equalTo: firstNameLabel.bottomAnchor).isActive = true
+        lastNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
 
+        pictureCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        pictureCollectionView.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor, constant: 5).isActive = true
+        pictureCollectionView.heightAnchor.constraint(equalTo: pictureCollectionView.widthAnchor).isActive = true
+        pictureCollectionView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        
         reportButton.translatesAutoresizingMaskIntoConstraints = false
         reportButton.heightAnchor.constraint(equalToConstant: firstNameLabel.intrinsicContentSize.height*1.5).isActive = true
         reportButton.widthAnchor.constraint(equalTo: reportButton.heightAnchor).isActive = true
@@ -336,11 +331,9 @@ class ZFCardFrontView: UIView {
 
 }
 
-
 //MARK: - Picture Datasource
 extension ZFCardFrontView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-//        print("cell being loaded with picUrls = ", user.pictureURLs)
         let model = user.pictureURLs[indexPath.row]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
