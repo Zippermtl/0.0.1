@@ -175,9 +175,10 @@ class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapPhotosButton(){
-        let myPhotosView = UserPhotosViewController()
-        myPhotosView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(myPhotosView, animated: true)
+        let vc = UserPhotosViewController()
+        vc.configure(user: user)
+        vc.modalPresentationStyle = .overFullScreen
+        present(vc, animated: true)
     }
     
     @objc private func didTapDismiss(){
@@ -191,7 +192,6 @@ class ProfileViewController: UIViewController {
         
         
         fetchUser()
-
         configureTable()
         configureNavBar()
     }
@@ -199,45 +199,36 @@ class ProfileViewController: UIViewController {
 
     
     private func fetchUser() {
-        guard let id = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
+        user.userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        
         spinner.show(in: profilePictureView)
-        DatabaseManager.shared.loadUserProfile(given: id, completion: { [weak self] result in
+        DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
             guard let strongSelf = self else {
                 return
             }
-                        
-            switch result {
-            case .success(let user):
-                DispatchQueue.main.async {
-                    strongSelf.user = user
-                    strongSelf.title = "@" + user.username
-                    strongSelf.nameLabel.text = user.fullName
-                    strongSelf.ageLabel.text = String(user.age)
-                    strongSelf.tableView.reloadData()
-                }
-                
-                let path = "images/\(id)/profile_picture.png"
-                StorageManager.shared.downloadURL(for: path, completion: { [weak self] result in
-                    switch result {
-                    case .success(let url):
-                        DispatchQueue.main.async {
-                            self?.profilePictureView.sd_setImage(with: url, completed: nil)
-                            self?.photosButton.sd_setImage(with: url, for: .normal, completed: nil)
+            
+            print(strongSelf.user.bio)
 
-                            
-                            self?.spinner.dismiss()
-                        }
-                    case .failure(let error):
-                        print("failed to get image URL: \(error)")
-                    }
-                    
-                })
-                
-            case .failure(let error):
-                print("failed to get user data: \(error)")
+                        
+            strongSelf.title = "@" + strongSelf.user.username
+            strongSelf.nameLabel.text = strongSelf.user.fullName
+            strongSelf.ageLabel.text = String(strongSelf.user.age)
+            strongSelf.photoCountLabel.text = "\(strongSelf.user.pictureURLs.count)"
+            strongSelf.tableView.reloadData()
+            strongSelf.profilePictureView.sd_setImage(with: strongSelf.user.pictureURLs[0], completed: nil)
+            
+            
+            if strongSelf.user.pictureURLs.count > 1 {
+                strongSelf.photosButton.sd_setImage(with: strongSelf.user.pictureURLs[1], for: .normal, completed: nil)
+            } else {
+                strongSelf.photosButton.sd_setImage(with: strongSelf.user.pictureURLs[0], for: .normal, completed: nil)
             }
+            
+            
+            strongSelf.spinner.dismiss()
+
+                
+           
         })
     }
     
