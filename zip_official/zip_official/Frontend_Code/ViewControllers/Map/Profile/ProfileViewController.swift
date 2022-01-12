@@ -253,7 +253,6 @@ class ProfileViewController: UIViewController {
         
         //removes the text section of the back button from pushed VCs
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        
         let dismissButton = UIButton(type: .system)
         dismissButton.setImage(UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
