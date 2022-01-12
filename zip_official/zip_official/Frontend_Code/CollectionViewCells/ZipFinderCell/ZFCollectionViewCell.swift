@@ -28,9 +28,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     let cardFrontView = ZFCardFrontView()
     let cardBackView = ZFCardBackView()
     
-
     // MARK: - Subviews
-    private var outlineView = UIView()
     private var cardView = UIView()
     
     
@@ -48,13 +46,14 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     
     //inits outline/card frame and color
     private func configureBackground() {
-        contentView.backgroundColor = .clear
-        outlineView.frame = CGRect(x: 10, y: 0, width: contentView.frame.size.width-20, height: contentView.frame.size.height)
-        outlineView.layer.cornerRadius = 20
-        contentView.addSubview(outlineView)
-        outlineView.addSubview(cardView)
-    
-        cardView.frame = CGRect(x: 5, y: 5, width: outlineView.frame.size.width-10, height: outlineView.frame.size.height-10)
+        contentView.addSubview(cardView)
+        cardView.translatesAutoresizingMaskIntoConstraints = false
+        cardView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
+        cardView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
+        cardView.heightAnchor.constraint(equalToConstant: contentView.frame.height).isActive = true
+        cardView.widthAnchor.constraint(equalToConstant: contentView.frame.width-25).isActive = true
+
+        cardView.layer.cornerRadius = 20
         cardView.layer.cornerRadius = 20
         cardView.layer.borderColor = UIColor.zipBlue.cgColor
         cardView.layer.borderWidth = 4
@@ -111,7 +110,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     
     func flip() {
         let flipSide: UIView.AnimationOptions = cardFrontView.isHidden ? .transitionFlipFromLeft : .transitionFlipFromRight
-        UIView.transition(with: outlineView, duration: 0.5, options: flipSide, animations: { [weak self]  () -> Void in
+        UIView.transition(with: cardView, duration: 0.5, options: flipSide, animations: { [weak self]  () -> Void in
             self?.cardFrontView.isHidden = !(self?.cardFrontView.isHidden ?? true)
             self?.cardBackView.isHidden = !(self?.cardBackView.isHidden ?? false)
         }, completion: nil)
