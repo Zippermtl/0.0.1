@@ -22,13 +22,14 @@ class ConversationTableViewCell: UITableViewCell {
     private let userNameLabel: UILabel = {
         let label = UILabel()
         label.font = .zipBody.withSize(21)
+        label.textColor = .white
         return label
     }()
     
     private let userMessageLabel: UILabel = {
         let label = UILabel()
         label.font = .zipSubscript.withSize(19)
-        label.textColor = .zipLightGray
+        label.textColor = .zipVeryLightGray
         label.numberOfLines = 0
         return label
     }()
@@ -71,7 +72,7 @@ class ConversationTableViewCell: UITableViewCell {
         userMessageLabel.text = model.latestMessage.text
         userNameLabel.text = model.name
 
-        let path = "images/\(model.otherUserId)_profile_picture.png"
+        let path = "images/\(model.otherUserId)/profile_picture.png"
         StorageManager.shared.downloadURL(for: path, completion: { [weak self] result in
             switch result {
             case .success(let url):
