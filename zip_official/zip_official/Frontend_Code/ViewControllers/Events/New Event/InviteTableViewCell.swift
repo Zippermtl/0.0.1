@@ -17,12 +17,18 @@ class InviteTableViewCell: UITableViewCell {
     
     public var addButton: UIButton = {
         let btn = UIButton()
-        btn.setImage(UIImage(named: "redX"), for: .normal)
-        btn.setImage(UIImage(named: "accept"), for: .selected)
+//        btn.backgroundColor = .white
+        let plus = UIImage(systemName: "plus.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+        let check = UIImage(systemName: "checkmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
+        btn.setImage(plus, for: .normal)
+        btn.setImage(check, for: .selected)
+        btn.contentVerticalAlignment = .fill
+        btn.contentHorizontalAlignment = .fill
+        btn.imageView?.contentMode = .scaleAspectFill
         return btn
     }()
     
-    private var firstNameLabel: UILabel = {
+    private var nameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
         label.font = .zipTitle.withSize(18)
@@ -34,20 +40,8 @@ class InviteTableViewCell: UITableViewCell {
         return label
     }()
     
-    private var lastNameLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle.withSize(18)
-        label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 0
-        label.textAlignment = .left
-        label.sizeToFit()
-        label.text = "A"
-        return label
-    }()
     
     @objc private func didTapAdd(_ sender: UIButton){
-        print("tapped")
         if sender.isSelected {
             sender.isSelected = false
         } else {
@@ -79,12 +73,7 @@ class InviteTableViewCell: UITableViewCell {
     }
     
     private func configureLabels(){
-//        let name = user.name.components(separatedBy: " ")
-//        firstNameLabel.text = name[0]
-//        lastNameLabel.text = name[1]
-        
-        firstNameLabel.text = user.firstName
-        lastNameLabel.text = user.lastName
+        nameLabel.text = user.fullName
         
         if user.pictures.count != 0 {
             pictureView.image = user.pictures[0]
@@ -114,8 +103,7 @@ class InviteTableViewCell: UITableViewCell {
     
     private func addSubviews(){
         outlineView.addSubview(pictureView)
-        outlineView.addSubview(firstNameLabel)
-        outlineView.addSubview(lastNameLabel)
+        outlineView.addSubview(nameLabel)
         outlineView.addSubview(addButton)
     }
     
@@ -126,22 +114,17 @@ class InviteTableViewCell: UITableViewCell {
         pictureView.bottomAnchor.constraint(equalTo: outlineView.bottomAnchor, constant: -5).isActive = true
         pictureView.widthAnchor.constraint(equalTo: pictureView.heightAnchor).isActive = true
         
-        pictureView.layer.cornerRadius = 5
+        pictureView.layer.cornerRadius = 30 //(80 - 10 - 10) / 2
         pictureView.layer.masksToBounds = true
 
-
-        firstNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        firstNameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 10).isActive = true
-        firstNameLabel.bottomAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        
-        lastNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        lastNameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 10).isActive = true
-        lastNameLabel.topAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        nameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 15).isActive = true
+        nameLabel.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
         
         addButton.translatesAutoresizingMaskIntoConstraints = false
         addButton.rightAnchor.constraint(equalTo: outlineView.rightAnchor, constant: -10).isActive = true
         addButton.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        addButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        addButton.heightAnchor.constraint(equalToConstant: 25).isActive = true
         addButton.widthAnchor.constraint(equalTo: addButton.heightAnchor).isActive = true        
     }
 
