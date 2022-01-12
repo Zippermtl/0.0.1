@@ -50,7 +50,6 @@ extension DatabaseManager {
 
 //MARK: - Account Management
 extension DatabaseManager {
-    
     /// checks if user exists for given email
     /// parameters
     /// - `email`: Target email to be checked
@@ -259,6 +258,7 @@ extension DatabaseManager {
             
         })
     }
+    
     public func loadUserProfileSubViewNoLoc(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
         database.child("UserFastInfo/\(id)").observeSingleEvent(of: .value, with: { snapshot in
             guard let value = snapshot.value as? [String: Any] else {
@@ -387,7 +387,7 @@ extension DatabaseManager {
                   let interestsInt = value["interests"] as? [Int],
                   let picNum = value["picNum"] as? Int,
                   let notifPrefs = value["notifications"] as? Int,
-                  let friendships = value["friendships"] as? String,
+//                  let friendships = value["friendships"] as? String,
                   let birthdayString = value["birthday"] as? String else {
                       print("retuning here")
                       return
@@ -411,8 +411,8 @@ extension DatabaseManager {
                 bio: bio,
                 school: school,
                 interests: interests,
-                notificationPreferences: notifPrefs,
-                friendships: friendships
+                notificationPreferences: DecodePreferences(notifPrefs)
+//                friendships: friendships
             )
             switch status {
             case 0:
