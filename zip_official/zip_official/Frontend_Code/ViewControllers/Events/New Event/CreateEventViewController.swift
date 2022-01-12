@@ -11,6 +11,9 @@ import RSKImageCropper
 import DropDown
 import GooglePlaces
 
+protocol MaintainEventDelegate: AnyObject {
+    func updateEvent(event: Event)
+}
 
 class CreateEventViewController: UIViewController {
     var event = Event()
@@ -262,6 +265,7 @@ class CreateEventViewController: UIViewController {
     
     @objc private func didTapContinueButton(){
         let vc = CreateEventInfoViewController()
+        vc.delegate = self
         vc.event = event
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -504,5 +508,11 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
     
     func wasCancelled(_ viewController: GMSAutocompleteViewController) {
         navigationController?.popViewController(animated: true)
+    }
+}
+
+extension CreateEventViewController: MaintainEventDelegate {
+    func updateEvent(event: Event) {
+        self.event = event
     }
 }
