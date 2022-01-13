@@ -74,7 +74,10 @@ public func EncodePreferences(_ preferences: [String: Bool]) -> Int {
     
     // Loop through each value starting from end
     for i in (0..<ALL_NOTIF_KEYS.count).reversed() {
-        if preferences[ALL_NOTIF_KEYS[i]]! {total += powerOfTwo} // If bit is on, add power of 2
+        let pref = preferences[ALL_NOTIF_KEYS[i]]
+        if let preference = pref {
+            if preference {total += powerOfTwo} // If bit is on, add power of 2
+        }
         powerOfTwo *= 2 // Multiply by 2 to get next power of 2
     }
     
