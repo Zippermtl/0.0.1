@@ -12,6 +12,7 @@ class UserPhotosViewController: UIViewController {
     
     private var collectionView: UICollectionView?
     
+    private var focusedImageScale = CGFloat(0)
     private var focusedImage: UIImageView = {
         let img = UIImageView()
         img.isHidden = true
@@ -59,6 +60,26 @@ class UserPhotosViewController: UIViewController {
         return btn
     }()
     
+    @objc private func didTapFocusedImage(){
+        focusedImage.layer.removeAllAnimations()
+        guard let collectionView = collectionView else {
+            return
+        }
+        
+        guard let cellAttributes = collectionView.layoutAttributesForItem(at: IndexPath(row: focusedImage.tag, section: 0)) else {
+            return
+        }
+        
+        UIView.animate(withDuration: 0.1, animations: { [weak self] in
+            self?.focusedImage.transform = CGAffineTransform(scaleX: 1, y: 1)//1/(self?.focusedImageScale ?? 1),
+                                                                  //y: 1/(self?.focusedImageScale ?? 1))
+            self?.focusedImage.center.y = collectionView.frame.minY + cellAttributes.frame.midY
+            self?.focusedImage.center.x = collectionView.frame.minX + cellAttributes.frame.midX
+        },completion: { [weak self] _ in
+            self?.focusedImage.isHidden = true
+        })
+    }
+    
     @objc private func didTapCloseButton() {
         dismiss(animated: true)
     }
@@ -102,6 +123,9 @@ class UserPhotosViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.8)
         view.isOpaque = false
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
+        focusedImage.addGestureRecognizer(tap)
     }
     
     public func configure(user: User) {
@@ -141,6 +165,7 @@ class UserPhotosViewController: UIViewController {
         view.addSubview(xButton)
         view.addSubview(previewButton)
         view.addSubview(editButton)
+        view.addSubview(focusedImage)
     }
     
     private func layoutSubviews(){
@@ -177,13 +202,25 @@ class UserPhotosViewController: UIViewController {
 extension UserPhotosViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.row < user.pictureURLs.count {
-//            let cell = collectionView.cellForItem(at: indexPath)
-//            focusedImage.sd_setImage(with: user.pictureURLs[indexPath.row], completed: nil)
-//            focusedImage.frame = CGRect(x: cell.frame.minX, y: <#T##Double#>, width: <#T##Double#>, height: <#T##Double#>)
-//
-//
-//
-//
+            guard let cellAttributes = collectionView.layoutAttributesForItem(at: indexPath) else {
+                return
+            }
+            
+            focusedImage.sd_setImage(with: user.pictureURLs[indexPath.row], completed: nil)
+            focusedImage.frame = CGRect(x: collectionView.frame.minX + cellAttributes.frame.minX,
+                                        y: collectionView.frame.minY + cellAttributes.frame.minY,
+                                        width: cellAttributes.frame.width,
+                                        height: cellAttributes.frame.height)
+            focusedImage.isHidden = false
+            focusedImage.tag = indexPath.row
+            
+            focusedImageScale = collectionView.frame.width/cellAttributes.frame.width
+            UIView.animate(withDuration: 0.1, animations: { [weak self] in
+                self?.focusedImage.transform = CGAffineTransform(scaleX: self?.focusedImageScale ?? 1,
+                                                                      y: self?.focusedImageScale ?? 1)
+                self?.focusedImage.center.y = self?.view.frame.midY ?? 0
+                self?.focusedImage.center.x = self?.view.frame.midX ?? 0
+            })
         }
     }
 }
