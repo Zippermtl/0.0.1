@@ -63,7 +63,7 @@ public class User {
 //        interests = inters
 //    }
     
-    init(userId id: String, username us: String, firstName fn: String, lastName ln: String, birthday bd: Date, picNum pn: Int, bio b: String, school sc: String?, interests inters: [Interests], notificationPreferences np: Int?, friendships fs: String?) {
+    init(userId id: String, username us: String, firstName fn: String, lastName ln: String, birthday bd: Date, picNum pn: Int, bio b: String, school sc: String?, interests inters: [Interests], notificationPreferences np: Int?) {
         userId = id
         username = us
         firstName = fn
@@ -74,10 +74,9 @@ public class User {
         school = sc
         interests = inters
         notificationPreferences = DecodePreferences(np)
-        friendships = DecodeFriendships(of: self, given: fs)
     }
     
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", zipped zip: Bool = false, distance dis: Double = 0, birthday bd: Date = Date(), age a: Int = 18, location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], interestedEvents intere: [Event] = [], notificationPreferences np: [String: Bool] = [:], encodedNotifPref enp: Int? = 0, friendships fs: String? = "") {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", zipped zip: Bool = false, distance dis: Double = 0, birthday bd: Date = Date(), age a: Int = 18, location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], interestedEvents intere: [Event] = [], notificationPreferences np: [String: Bool] = [:], encodedNotifPref enp: Int? = 0) {
         userId = id
         email = em
         username = us
@@ -102,15 +101,31 @@ public class User {
         } else {
             notificationPreferences = DecodePreferences(enp)
         }
-        friendships = DecodeFriendships(of: self, given: fs)
     }
     
+    func loadFriendships() {
+        DatabaseManager.shared.loadUserFriendships(given: userId, completion: { [self] result in
+            switch result {
+                case.success(let f): self.friendships = f
+                default: print("error loading friends")
+            }
+        })
+    }
+    
+    func updateFriendships() {
+        DatabaseManager.shared.updateUserFriendships(of: self, completion: { result in
+            switch result {
+                case true: print("success")
+                default: print("error updating friends")
+            }
+        })
+    }
     
     func getFriendsList() -> [User] {
         var friends: [User] = []
         for friendship in friendships {
             switch friendship.status {
-                case.ACCEPTED: friends.append(friendship.to)
+                case.ACCEPTED: friends.append(friendship.receiver)
                 default: break
             }
         }

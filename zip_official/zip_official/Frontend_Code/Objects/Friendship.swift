@@ -8,16 +8,14 @@ public enum FriendshipStatus: Int {
 
 // MARK: Friendship class
 public class Friendship {
-    var from: User = User()
-    var to: User = User()
+    var receiver: User = User()
     var status: FriendshipStatus
     
-    init(from a: User, to b: String, status c: FriendshipStatus) {
-        from = a
+    init(to b: String, status c: FriendshipStatus) {
         status = c
         DatabaseManager.shared.loadUserProfile(given: b, completion: { [self] result in
             switch result {
-                case.success(let user): self.to = user
+                case.success(let user): self.receiver = user
                 default: print("error loading user")
             }
         })
@@ -25,20 +23,19 @@ public class Friendship {
 }
 
 // MARK: Utility functions
-public func DecodeFriendships(of user: User, given value: String?) -> [Friendship] {
+public func DecodeFriendships(_ value: [String]) -> [Friendship] {
     var friendships: [Friendship] = []
-    let string = value ?? ""
-    for elem in string.split(separator: ",") {
+    for elem in value {
         let list = elem.split(separator: ":")
         if list.count == 2 {
             let userId = String(list[0])
             let rawStatus = String(list[1])
             if rawStatus == "0" {
-                friendships.append(Friendship(from: user, to: userId, status: .REQUESTED_INCOMING))
+                friendships.append(Friendship(to: userId, status: .REQUESTED_INCOMING))
             } else if rawStatus == "1" {
-                friendships.append(Friendship(from: user, to: userId, status: .REQUESTED_OUTGOING))
+                friendships.append(Friendship(to: userId, status: .REQUESTED_OUTGOING))
             } else if rawStatus == "2" {
-                friendships.append(Friendship(from: user, to: userId, status: .ACCEPTED))
+                friendships.append(Friendship(to: userId, status: .ACCEPTED))
             }
         }
     }
@@ -46,16 +43,16 @@ public func DecodeFriendships(of user: User, given value: String?) -> [Friendshi
     return friendships
 }
 
-public func EncodeFriendships(of user: User) -> String {
+public func EncodeFriendships(_ friendships: [Friendship]) -> [String] {
     var encoded: [String] = []
-    for friendship in user.friendships {
+    for friendship in friendships {
         if friendship.status == .REQUESTED_INCOMING {
-            encoded.append(friendship.to.userId + ":0")
+            encoded.append(friendship.receiver.userId + ":0")
         } else if friendship.status == .REQUESTED_OUTGOING {
-            encoded.append(friendship.to.userId + ":1")
+            encoded.append(friendship.receiver.userId + ":1")
         } else {
-            encoded.append(friendship.to.userId + ":2")
+            encoded.append(friendship.receiver.userId + ":2")
         }
     }
-    return encoded.joined(separator: ",")
+    return encoded
 }
