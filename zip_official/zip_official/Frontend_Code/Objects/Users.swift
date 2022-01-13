@@ -133,6 +133,97 @@ public class User {
         return friends
     }
     
+    private func makeFriend(with user: User, status: FriendshipStatus = .ACCEPTED) {
+        for friendship in friendships {
+            if friendship.receiver.userId == user.userId {
+                if (friendship.status != status) {
+                    friendship.status = status
+                    updateFriendships()
+                }
+                return
+            }
+        }
+        friendships.append(Friendship(to: user.userId, status: status))
+        updateFriendships()
+    }
+    
+    func requestFriend(to recipient: User) {
+        for friendship in friendships {
+            if friendship.receiver.userId == recipient.userId {
+                switch (friendship.status) {
+                    // Recipient has already made a friend request
+                    case.REQUESTED_INCOMING:
+                        friendship.status = .ACCEPTED
+                        updateFriendships()
+                        recipient.makeFriend(with: self)
+                    // Don't do anything
+                    default: return
+                }
+                return
+            }
+        }
+        
+        // If friendship not found in list, add it
+        friendships.append(Friendship(to: recipient.userId, status: .REQUESTED_OUTGOING))
+        updateFriendships()
+        recipient.makeFriend(with: recipient, status: .REQUESTED_INCOMING)
+    }
+    
+    func acceptFriend(_ recipient: User) {
+        for friendship in friendships {
+            if friendship.receiver.userId == recipient.userId {
+                switch (friendship.status) {
+                    // Recipient has already made a friend request
+                    case.REQUESTED_INCOMING:
+                        friendship.status = .ACCEPTED
+                        updateFriendships()
+                        recipient.makeFriend(with: self)
+                    // Don't do anything
+                    default: return
+                }
+                return
+            }
+        }
+    }
+    
+    private func popFriend(_ user: User) {
+        var index = 0
+        for friendship in friendships {
+            if friendship.receiver.userId == user.userId {
+                friendships.remove(at: index)
+                updateFriendships()
+                return
+            }
+            index += 1
+        }
+    }
+    
+    func rejectFriend(_ recipient: User) {
+        var index = 0
+        for friendship in friendships {
+            if friendship.receiver.userId == recipient.userId {
+                switch (friendship.status) {
+                    // Recipient has already made a friend request
+                    case.REQUESTED_INCOMING:
+                        friendships.remove(at: index)
+                        updateFriendships()
+                        recipient.popFriend(self)
+                    // People are already friends
+                    case.ACCEPTED:
+                        friendships.remove(at: index)
+                        updateFriendships()
+                        recipient.popFriend(self)
+                    // Don't do anything
+                    default: return
+                }
+                return
+            }
+            index += 1
+        }
+    }
+    
+    
+    
     var safeId: String {
         var safeID = userId.replacingOccurrences(of: ".", with: "-")
         safeID = safeID.replacingOccurrences(of: "@", with: "-")
