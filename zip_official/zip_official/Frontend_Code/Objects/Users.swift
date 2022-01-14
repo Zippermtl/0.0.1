@@ -32,7 +32,6 @@ public class User {
     
     init() {}
     
-    
 //    init(userId id: String, username us: String, firstName fn: String, lastName ln: String) {
 //        userId = id
 //        username = us
@@ -106,7 +105,7 @@ public class User {
     func loadFriendships() {
         DatabaseManager.shared.loadUserFriendships(given: userId, completion: { [self] result in
             switch result {
-                case.success(let f): self.friendships = f
+                case.success(let f): self.friendships = f.map { $0 }
                 default: print("error loading friends")
             }
         })
@@ -122,6 +121,7 @@ public class User {
     }
     
     func getFriendsList() -> [User] {
+        loadFriendships()
         var friends: [User] = []
         for friendship in friendships {
             switch friendship.status {
@@ -143,11 +143,13 @@ public class User {
                 return
             }
         }
-        friendships.append(Friendship(to: user.userId, status: status))
+        friendships.append(Friendship(to: user, status: status))
         updateFriendships()
     }
     
     func requestFriend(to recipient: User) {
+        loadFriendships()
+        recipient.loadFriendships()
         for friendship in friendships {
             if friendship.receiver.userId == recipient.userId {
                 switch (friendship.status) {
@@ -164,12 +166,14 @@ public class User {
         }
         
         // If friendship not found in list, add it
-        friendships.append(Friendship(to: recipient.userId, status: .REQUESTED_OUTGOING))
+        friendships.append(Friendship(to: recipient, status: .REQUESTED_OUTGOING))
         updateFriendships()
-        recipient.makeFriend(with: recipient, status: .REQUESTED_INCOMING)
+        recipient.makeFriend(with: self, status: .REQUESTED_INCOMING)
     }
     
     func acceptFriend(_ recipient: User) {
+        loadFriendships()
+        recipient.loadFriendships()
         for friendship in friendships {
             if friendship.receiver.userId == recipient.userId {
                 switch (friendship.status) {
@@ -199,6 +203,8 @@ public class User {
     }
     
     func rejectFriend(_ recipient: User) {
+        loadFriendships()
+        recipient.loadFriendships()
         var index = 0
         for friendship in friendships {
             if friendship.receiver.userId == recipient.userId {
