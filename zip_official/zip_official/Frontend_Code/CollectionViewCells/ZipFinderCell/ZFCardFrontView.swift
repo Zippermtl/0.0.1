@@ -121,7 +121,10 @@ class ZFCardFrontView: UIView {
     }
     
     @objc private func didTapRequestedButton(){
-        print("unzip \(user.firstName) \(user.lastName)")
+        print("requested \(user.firstName) \(user.lastName)")
+        let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        let selfUser = User(userId: userId)
+        selfUser.requestFriend(to: user)
         zipButton.isHidden = false
         requestedButton.isHidden = true
     }
