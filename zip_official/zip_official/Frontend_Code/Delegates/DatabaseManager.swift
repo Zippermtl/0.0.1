@@ -179,12 +179,15 @@ extension DatabaseManager {
     }
     
     public func updateUserFriendships(of user: User, completion: @escaping (Bool) -> Void) {
+            print("Updating friendships…")
             database.child("userFriendships/\(user.userId)").updateChildValues([
                 "friends": EncodeFriendships(user.friendships)
             ], withCompletionBlock: { error, wtf in guard error == nil else {
+                    print("Did not write friendships for \(user.userId)")
                     completion(false)
                     return
                 }
+                print("Wrote friendships for \(user.userId)")
                 completion(true)
             })
         }
@@ -305,19 +308,30 @@ extension DatabaseManager {
     
     public func loadUserFriendships(given id: String, status: Int = 0, completion: @escaping (Result<[Friendship], Error>) -> Void) {
             // Get user id inside userFriendships
-            database.child("userFriendships/\(id)").observeSingleEvent(of: .value, with: { fuck in
+            print("Loading friendships for \(id)")
+        database.child("userFriendships/\(id)").observeSingleEvent(of: .value, with: { fuck in
                 guard let value = fuck.value as? [String: Any] else {
-                    completion(.failure(DatabaseError.failedToFetch))
+                    completion(.success([]))
+                    print("Nothing found for \(id)")
                     return
                 }
                 
                 // Get friends list or return empty list if failed
-                guard let friends = value["friends"] as? [String] else {
+                guard let friends = value["friends"] as? [String: Any] else {
+                    print("Nothing found 2 for \(id)")
                     completion(.success([]))
                     return
                 }
                 
+                print("BEGIN ENUM FOR \(id)")
+                print("\(friends.count) found for \(id)")
+                for friend in friends {
+                    print(friend.key)
+                }
+                print("END ENUM for \(id)")
+                
                 let friendships = DecodeFriendships(friends)
+                print(friendships.count)
                 
                 switch status {
                 case 0:
