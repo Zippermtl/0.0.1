@@ -126,7 +126,33 @@ public class User {
         for friendship in friendships {
             switch friendship.status {
                 case.ACCEPTED: friends.append(friendship.receiver)
-                default: break
+                default: continue
+            }
+        }
+        
+        return friends
+    }
+    
+    func getIncomingRequests() -> [User] {
+        loadFriendships()
+        var friends: [User] = []
+        for friendship in friendships {
+            switch friendship.status {
+                case.REQUESTED_INCOMING: friends.append(friendship.receiver)
+                default: continue
+            }
+        }
+        
+        return friends
+    }
+    
+    func getOutgoingRequests() -> [User] {
+        loadFriendships()
+        var friends: [User] = []
+        for friendship in friendships {
+            switch friendship.status {
+                case.REQUESTED_OUTGOING: friends.append(friendship.receiver)
+                default: continue
             }
         }
         
