@@ -84,9 +84,13 @@ class MapViewController: UIViewController {
         if #available(iOS 13.0, *){
             overrideUserInterfaceStyle = .dark
         }
+//        AppDelegate.locationManager.requexstWhenInUseAuthorization()
+
+        
         view.backgroundColor = .zipGray
         mapView = MKMapView()
 
+        mapView?.showsCompass = false
         mapView?.pointOfInterestFilter = .excludingAll
         
         configureLocationServices()
@@ -138,8 +142,8 @@ class MapViewController: UIViewController {
 
         profileButton.layer.masksToBounds = true
         profileButton.layer.cornerRadius = 25
-        profileButton.layer.borderColor = UIColor.white.cgColor //UIColor.zipVeryLightGray.cgColor
-        profileButton.layer.borderWidth = 2
+        profileButton.layer.borderColor = UIColor.zipVeryLightGray.cgColor //UIColor.zipVeryLightGray.cgColor
+        profileButton.layer.borderWidth = 1
     }
     
     private func configureFloatingPanel() {
@@ -254,10 +258,10 @@ extension MapViewController: CLLocationManagerDelegate {
             GeoManager.shared.UpdateLocation(location: latestLocation)
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
             GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3, completion: {
-            
+
                 GeoManager.shared.LoadNextUsers(size: 10, completion: {
                 })
-            
+
             })
             guardingGeoFireCalls = true
             zoomToLatestLocation(with: userLoc)
