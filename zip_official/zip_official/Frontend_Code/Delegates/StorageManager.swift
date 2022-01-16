@@ -236,12 +236,12 @@ final class StorageManager {
     
     public func downloadURL(for path: String, completion: @escaping (Result<URL, Error>) -> Void ){
         print(path)
-        let test = "images/u6503333333/profile_picture.png"
-        print(test)
+//        let test = "images/u6503333333/profile_picture.png"
+//        print(test)
         let reference = storage.child(path)
-        print("got past ref")
+//        print("got past ref")
         reference.downloadURL(completion: { url, error in
-            print("pre-guard \(path)")
+//            print("pre-guard \(path)")
             guard let url = url, error == nil else {
                 completion(.failure(StorageErrors.failedToGetDownloadUrl))
                 return
@@ -478,7 +478,7 @@ final class StorageManager {
     }
     
     //MARK: Helper Functions For Readability
-    private func SetPicNum(size: Int){
+    public func SetPicNum(size: Int){
         AppDelegate.userDefaults.set(size, forKey: "picNum")
     }
     
