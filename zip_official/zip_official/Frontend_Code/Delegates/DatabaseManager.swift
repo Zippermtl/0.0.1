@@ -202,6 +202,7 @@ extension DatabaseManager {
         })
     }
     
+    
     public enum DatabaseError: Error {
         case failedToFetch
     }
@@ -302,6 +303,21 @@ extension DatabaseManager {
             
         })
     }
+    
+    public func updatePicNum(id: String, picNum: Int, completion: @escaping (Bool) -> Void) {
+        let path = "userProfiles/\(id)/"
+        database.child(path).updateChildValues([
+            "picNum" : picNum
+        ], withCompletionBlock: { error, _ in
+            guard error == nil else{
+                print("failed to write to database")
+                completion(false)
+                return
+            }
+            completion(true)
+        })
+    }
+
     
     public func loadUserFriendships(given id: String, status: Int = 0, completion: @escaping (Result<[Friendship], Error>) -> Void) {
             // Get user id inside userFriendships
