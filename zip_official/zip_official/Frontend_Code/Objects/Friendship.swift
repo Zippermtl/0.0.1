@@ -20,38 +20,41 @@ public class Friendship {
             }
         })
     }
+    
+    init(to b: User, status c: FriendshipStatus) {
+        receiver = b
+        status = c
+    }
 }
 
 // MARK: Utility functions
-public func DecodeFriendships(_ value: [String]) -> [Friendship] {
+public func DecodeFriendships(_ values: [String: Any]) -> [Friendship] {
     var friendships: [Friendship] = []
-    for elem in value {
-        let list = elem.split(separator: ":")
-        if list.count == 2 {
-            let userId = String(list[0])
-            let rawStatus = String(list[1])
-            if rawStatus == "0" {
-                friendships.append(Friendship(to: userId, status: .REQUESTED_INCOMING))
-            } else if rawStatus == "1" {
-                friendships.append(Friendship(to: userId, status: .REQUESTED_OUTGOING))
-            } else if rawStatus == "2" {
-                friendships.append(Friendship(to: userId, status: .ACCEPTED))
-            }
+    for elem in values {
+        let code = String(describing: elem.value)
+        print("String: \(code)")
+        if code == "0" {
+            friendships.append(Friendship(to: elem.key, status: .REQUESTED_INCOMING))
+        } else if code == "1" {
+            friendships.append(Friendship(to: elem.key, status: .REQUESTED_OUTGOING))
+        } else if code == "2" {
+            friendships.append(Friendship(to: elem.key, status: .ACCEPTED))
         }
     }
     
     return friendships
 }
 
-public func EncodeFriendships(_ friendships: [Friendship]) -> [String] {
-    var encoded: [String] = []
+public func EncodeFriendships(_ friendships: [Friendship]) -> [String: Int] {
+    var encoded: [String: Int] = [:]
     for friendship in friendships {
+        print(friendship.receiver.userId)
         if friendship.status == .REQUESTED_INCOMING {
-            encoded.append(friendship.receiver.userId + ":0")
+            encoded[friendship.receiver.userId] = 0
         } else if friendship.status == .REQUESTED_OUTGOING {
-            encoded.append(friendship.receiver.userId + ":1")
+            encoded[friendship.receiver.userId] = 1
         } else {
-            encoded.append(friendship.receiver.userId + ":2")
+            encoded[friendship.receiver.userId] = 2
         }
     }
     return encoded

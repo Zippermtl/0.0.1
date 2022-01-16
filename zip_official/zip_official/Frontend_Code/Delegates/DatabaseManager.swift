@@ -321,15 +321,15 @@ extension DatabaseManager {
     
     public func loadUserFriendships(given id: String, status: Int = 0, completion: @escaping (Result<[Friendship], Error>) -> Void) {
             // Get user id inside userFriendships
-            database.child("userFriendships/\(id)").observeSingleEvent(of: .value, with: { fuck in
+        database.child("userFriendships/\(id)").observeSingleEvent(of: .value, with: { fuck in
                 guard let value = fuck.value as? [String: Any] else {
-                    completion(.failure(DatabaseError.failedToFetch))
+                    completion(.success([]))
                     return
                 }
                 
                 // Get friends list or return empty list if failed
-                guard let friends = value["friends"] as? [String] else {
-                    completion(.success([]))
+                guard let friends = value["friends"] as? [String: Any] else {
+                    completion(.failure(DatabaseError.failedToFetch))
                     return
                 }
                 
