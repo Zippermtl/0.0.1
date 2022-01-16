@@ -10,8 +10,11 @@ import UIKit
 class UserPhotosViewController: UIViewController {
     var user = User()
     
-    private var collectionView: UICollectionView?
+    var originalPicUrls = [URL]()
+    var userPictures = [PictureHolder]()
     
+    private var collectionView: UICollectionView?
+
     private var focusedImageScale = CGFloat(0)
     private var focusedImage: UIImageView = {
         let img = UIImageView()
@@ -57,6 +60,7 @@ class UserPhotosViewController: UIViewController {
         btn.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
         
         btn.addTarget(self, action: #selector(didTapEditButton), for: .touchUpInside)
+    
         return btn
     }()
     
@@ -85,37 +89,76 @@ class UserPhotosViewController: UIViewController {
     }
     
     @objc private func didTapEditButton() {
-        if editButton.titleLabel?.text == "Edit" {
+        if editButton.titleLabel?.text == "Edit" { // edit
+            //show xButtons
+            for i in 0..<user.picNum {
+                let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as! EditPicturesCollectionViewCell
+                cell.xButton.isHidden = false
+            }
+            
             let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                              .foregroundColor: UIColor.zipBlue ,
                                                              .underlineStyle: NSUnderlineStyle.single.rawValue]
 
             editButton.setAttributedTitle(NSMutableAttributedString(string: "Save", attributes: attributes), for: .normal)
             previewButton.setAttributedTitle(NSMutableAttributedString(string: "Cancel", attributes: attributes), for: .normal)
-        } else {
-            let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
-                                                             .foregroundColor: UIColor.white ,
-                                                             .underlineStyle: NSUnderlineStyle.single.rawValue]
+            
+            collectionView?.reloadData()
+            
+        } else { // save
+            saveImages(completion: { [weak self] in
+                guard let strongSelf = self else {
+                    return
+                }
+                StorageManager.shared.SetPicNum(size: strongSelf.userPictures.count )
+                DatabaseManager.shared.updatePicNum(id: strongSelf.user.userId,
+                                                    picNum: strongSelf.userPictures.count,
+                                                    completion: { [weak self] success in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    strongSelf.user.picNum = strongSelf.userPictures.count
+                    
+                    let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+                                                                     .foregroundColor: UIColor.white ,
+                                                                     .underlineStyle: NSUnderlineStyle.single.rawValue]
 
-            editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
-            previewButton.setAttributedTitle(NSMutableAttributedString(string: "Preview", attributes: attributes), for: .normal)
-
+                    strongSelf.editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
+                    strongSelf.previewButton.setAttributedTitle(NSMutableAttributedString(string: "Preview", attributes: attributes), for: .normal)
+                    
+                    strongSelf.collectionView?.reloadData()
+                })
+            })
         }
     }
     
     @objc private func didTapPreviewButton() {
-        if editButton.titleLabel?.text == "Edit" {
+        if editButton.titleLabel?.text == "Edit" { // Preview
             let vc = ZFSingleCardViewController()
             vc.configure(user: user)
             vc.modalPresentationStyle = .overFullScreen
             present(vc, animated: true)
-        } else {
+        } else { // Cancel
+            //Hide xButtons
+            for i in 0..<user.picNum {
+                let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as! EditPicturesCollectionViewCell
+                cell.xButton.isHidden = true
+            }
+            
+            //undo changes
+            user.picNum = originalPicUrls.count
+            userPictures.removeAll()
+            for url in originalPicUrls {
+                userPictures.append(PictureHolder(url: url))
+            }
+            
             let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                              .foregroundColor: UIColor.white ,
                                                              .underlineStyle: NSUnderlineStyle.single.rawValue]
 
             editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
             previewButton.setAttributedTitle(NSMutableAttributedString(string: "Preview", attributes: attributes), for: .normal)
+            collectionView?.reloadData()
         }
     }
     
@@ -131,10 +174,49 @@ class UserPhotosViewController: UIViewController {
     public func configure(user: User) {
         self.user = user
         collectionView?.reloadData()
+        originalPicUrls = user.pictureURLs
+        
+        for url in user.pictureURLs {
+            userPictures.append(PictureHolder(url: url))
+        }
         
         configureCollectionView()
         addSubviews()
         layoutSubviews()
+    }
+    
+    private func saveImages(completion: @escaping () -> Void){
+        print("saving")
+        var idx = 0
+        for pic in userPictures {
+            let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as! EditPicturesCollectionViewCell
+            if pic.isUrl() {
+                pic.image = cell.picture.image
+            }
+            if idx == 0 {
+                let path = "\(AppDelegate.userDefaults.value(forKey: "userId") as! String)/profile_picture.png"
+                pic.upload(path: path, completion: { [weak self] result in
+                    switch result {
+                    case .success(let url):
+                        AppDelegate.userDefaults.set(result, forKey: "profilePictureUrl")
+                        self?.userPictures[0].url = URL(string: url)
+                    case .failure(let error):
+                        print("failed to get download url for profile picture: \(error)")
+                    }
+                })
+            } else {
+                let path = "\(AppDelegate.userDefaults.value(forKey: "userId") as! String)/img\(idx-1).png"
+                pic.upload(path: path, completion: { [weak self] result in
+                    switch result {
+                    case .success(let url):
+                        self?.userPictures[idx].url = URL(string: url)
+                    case .failure(let error):
+                        print("failed to get download url: \(error)")
+                    }
+                })
+            }
+            idx += 1
+        }
     }
     
     private func configureCollectionView() {
@@ -147,8 +229,9 @@ class UserPhotosViewController: UIViewController {
             return
         }
         
-        collectionView.register(PictureCollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
+        collectionView.register(EditPicturesCollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "default")
+        collectionView.register(AddImageCollectionViewCell.self, forCellWithReuseIdentifier: "addImage")
 
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
@@ -225,25 +308,76 @@ extension UserPhotosViewController: UICollectionViewDelegate {
     }
 }
 
+extension UserPhotosViewController: AddImageCollectionViewCellDelegate {
+    func addImage() {
+        let picturePickerVC = UIImagePickerController()
+        picturePickerVC.allowsEditing = true
+        picturePickerVC.delegate = self
+        picturePickerVC.sourceType = .photoLibrary
+        picturePickerVC.modalPresentationStyle = .overCurrentContext
+        present(picturePickerVC, animated: true)
+    }
+}
+
+extension UserPhotosViewController: EditPicturesCollectionViewCellDelegate {
+    func deleteCell(_ sender: UIButton) {
+        let deleteAlert = UIAlertController(title: "Are you sure you want to delete this image?", message: "", preferredStyle: UIAlertController.Style.alert)
+
+        deleteAlert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [weak self] (action: UIAlertAction!) in
+            guard let strongSelf = self else {
+                return
+            }
+            
+            strongSelf.userPictures.remove(at: sender.tag)
+            strongSelf.collectionView?.reloadData()
+            
+            for i in sender.tag..<strongSelf.userPictures.count {
+                strongSelf.userPictures[i].isEdited = true
+            }
+        }))
+
+        deleteAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
+              print("Handle Cancel Logic here")
+        }))
+
+        present(deleteAlert, animated: true, completion: nil)
+    }
+}
+
 extension UserPhotosViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 9
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if indexPath.row < user.pictureURLs.count {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath) as! PictureCollectionViewCell
-            cell.configure(with: user.pictureURLs[indexPath.row])
+        if indexPath.row < userPictures.count {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath) as! EditPicturesCollectionViewCell
+            cell.delegate = self
+            cell.xButton.tag = indexPath.row
+            if editButton.titleLabel?.text == "Save" {
+                cell.xButton.isHidden = false
+            }
+            
+            cell.configure(pictureHolder: userPictures[indexPath.row])
+            
+            return cell
+        } else if editButton.titleLabel?.text == "Edit" {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "default", for: indexPath)
+            cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+            return cell
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "addImage", for: indexPath) as! AddImageCollectionViewCell
+            cell.delegate = self
+            cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
             return cell
         }
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "default", for: indexPath)
-        cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
-        return cell
+       
     }
     
     
 }
+
 
 extension UserPhotosViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -254,5 +388,17 @@ extension UserPhotosViewController: UICollectionViewDelegateFlowLayout {
         
         let size = totalSpace / CGFloat(numCells)
         return CGSize(width: size, height: size)
+    }
+}
+
+
+extension UserPhotosViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let image = info[.editedImage] as? UIImage {
+            userPictures.append(PictureHolder(image: image, edited: true))
+        }
+        
+        collectionView?.reloadData()
+        dismiss(animated: true, completion: nil)
     }
 }
