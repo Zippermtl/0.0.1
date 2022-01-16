@@ -53,7 +53,7 @@ class ZFCardFrontView: UIView {
     private var distanceLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = .zipBody
+        label.font = .zipBodyBold
         label.lineBreakMode = .byCharWrapping
         label.text = "A"
         return label
@@ -266,10 +266,10 @@ class ZFCardFrontView: UIView {
 
     //MARK: Add Constranits
     func configureSubviewLayout() {
-        let buffer = CGFloat(10.0)
+        let buffer = CGFloat(15.0)
         
         firstNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        firstNameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 5).isActive = true
+        firstNameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10).isActive = true
         firstNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
         firstNameLabel.heightAnchor.constraint(equalToConstant: firstNameLabel.intrinsicContentSize.height).isActive = true
         
@@ -278,7 +278,7 @@ class ZFCardFrontView: UIView {
         lastNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
 
         pictureCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        pictureCollectionView.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor, constant: 5).isActive = true
+        pictureCollectionView.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor, constant: 10).isActive = true
         pictureCollectionView.heightAnchor.constraint(equalTo: pictureCollectionView.widthAnchor).isActive = true
         pictureCollectionView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         
@@ -286,7 +286,7 @@ class ZFCardFrontView: UIView {
         reportButton.heightAnchor.constraint(equalToConstant: firstNameLabel.intrinsicContentSize.height*1.5).isActive = true
         reportButton.widthAnchor.constraint(equalTo: reportButton.heightAnchor).isActive = true
         reportButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
-        reportButton.centerYAnchor.constraint(equalTo: firstNameLabel.centerYAnchor).isActive = true
+        reportButton.centerYAnchor.constraint(equalTo: firstNameLabel.bottomAnchor).isActive = true
         
         zipButton.translatesAutoresizingMaskIntoConstraints = false
         zipButton.heightAnchor.constraint(equalTo: reportButton.heightAnchor,multiplier: 0.8).isActive = true
@@ -314,7 +314,7 @@ class ZFCardFrontView: UIView {
     
         let bioLabelHeight = frame.height - pictureCollectionView.frame.maxY - distanceLabel.intrinsicContentSize.height - 25
         bioLabel.translatesAutoresizingMaskIntoConstraints = false
-        bioLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor, constant: 2).isActive = true
+        bioLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor, constant: 5).isActive = true
         bioLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
         bioLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
         bioLabel.bottomAnchor.constraint(lessThanOrEqualTo: tapToFlipLabel.topAnchor).isActive = true
