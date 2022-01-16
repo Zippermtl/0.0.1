@@ -50,6 +50,11 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
+        view.isOpaque = false
+        
+        
         print("Entering View did load with userIdList size: \(GeoManager.shared.userIdList.count)")
         if NSLocale.current.regionCode == "US" {
             rangeMultiplier = 1.6
@@ -103,8 +108,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = true
-        view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6)
-        view.isOpaque = false
+
     }
     
 
