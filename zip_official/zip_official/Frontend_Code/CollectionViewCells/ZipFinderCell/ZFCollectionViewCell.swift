@@ -53,10 +53,9 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardView.heightAnchor.constraint(equalToConstant: contentView.frame.height).isActive = true
         cardView.widthAnchor.constraint(equalToConstant: contentView.frame.width-25).isActive = true
 
-        cardView.layer.cornerRadius = 20
-        cardView.layer.cornerRadius = 20
-        cardView.layer.borderColor = UIColor.zipBlue.cgColor
-        cardView.layer.borderWidth = 4
+        cardView.layer.cornerRadius = 30
+        cardView.layer.borderColor = UIColor.white.cgColor //UIColor.zipBlue.cgColor
+        cardView.layer.borderWidth = 2
         cardView.backgroundColor = .zipGray
     }
     
