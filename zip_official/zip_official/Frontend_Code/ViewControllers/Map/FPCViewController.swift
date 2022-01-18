@@ -522,7 +522,7 @@ extension FPCViewController: UpdateZipRequestsTableDelegate {
         }
         
         events.remove(at: indexPath.row)
-        eventsLabel.text = "Zip Requests (\(requests.count))"
+        eventsLabel.text = "Event Invites (\(events.count))"
         if events.count == 0 {
             eventsTable?.reloadData()
         } else {
