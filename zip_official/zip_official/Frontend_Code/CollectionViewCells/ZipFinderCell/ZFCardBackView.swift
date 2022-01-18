@@ -284,8 +284,10 @@ class ZFCardBackView: UIView {
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
         slideView.sliderTextLabel.text = ""
+        
+        slideView.backgroundColor = .clear
 
-        let sliderHolderImg = UIImageView(image: UIImage(named: "sliderHolder"))
+        let sliderHolderImg = UIImageView(image: UIImage(named: "sliderHolder")?.withTintColor(.zipVeryLightGray))
         slideView.sliderHolderView.addSubview(sliderHolderImg)
         sliderHolderImg.translatesAutoresizingMaskIntoConstraints = false
         sliderHolderImg.topAnchor.constraint(equalTo: slideView.sliderHolderView.topAnchor).isActive = true
@@ -294,18 +296,23 @@ class ZFCardBackView: UIView {
         sliderHolderImg.rightAnchor.constraint(equalTo: slideView.sliderHolderView.rightAnchor).isActive = true
         
         slideView.thumbnailViewStartingDistance = -10
-        slideView.sliderHolderView.backgroundColor = cellColor.withAlphaComponent(0.1)
-        slideView.slidingColor = UIColor(red: 60/255, green: 60/255, blue: 60/255, alpha: 1)
+        slideView.sliderHolderView.backgroundColor = .clear //.zipBlue.withAlphaComponent(0.1)
+        slideView.slidingColor = .zipGray//UIColor(red: 60/255, green: 60/255, blue: 60/255, alpha: 1)
         
         let requestedLabel = UILabel()
         requestedLabel.text = "REQUESTED"
         requestedLabel.font = .zipTitle
-        requestedLabel.textColor = cellColor
+        requestedLabel.textColor = .zipBlue
+        requestedLabel.textAlignment = .center
+        requestedLabel.backgroundColor = UIColor(red: 60/255, green: 60/255, blue: 60/255, alpha: 1)
+        requestedLabel.layer.cornerRadius = 8
+        requestedLabel.layer.masksToBounds = true
         
         slideView.draggedView.addSubview(requestedLabel)
         requestedLabel.translatesAutoresizingMaskIntoConstraints = false
         requestedLabel.centerYAnchor.constraint(equalTo: slideView.centerYAnchor).isActive = true
         requestedLabel.centerXAnchor.constraint(equalTo: slideView.centerXAnchor).isActive = true
+        requestedLabel.widthAnchor.constraint(equalToConstant: frame.width-85).isActive = true
 
         let xButton = UIButton(frame: .zero)
         xButton.setImage(UIImage(named: "redX"), for: .normal)
@@ -317,7 +324,7 @@ class ZFCardBackView: UIView {
 //        xButton.topAnchor.constraint(equalTo: requestedLabel.topAnchor).isActive = true
 //        xButton.bottomAnchor.constraint(equalTo: requestedLabel.bottomAnchor).isActive = true
 
-        xButton.leftAnchor.constraint(equalTo: requestedLabel.rightAnchor).isActive = true
+        xButton.rightAnchor.constraint(equalTo: requestedLabel.rightAnchor).isActive = true
         xButton.heightAnchor.constraint(equalToConstant: requestedLabel.intrinsicContentSize.height).isActive = true
         xButton.widthAnchor.constraint(equalTo: xButton.heightAnchor).isActive = true
         
