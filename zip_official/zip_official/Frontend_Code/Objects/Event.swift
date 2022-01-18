@@ -37,11 +37,17 @@ struct Event {
         return formatter.string(from: startTime)
     }
     
+    var endTimeString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: endTime ?? Date())
+    }
+    
     var createEventId: String {
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return ""
         }
-        let dateString = ChatViewController.dateFormatter.string(from: Date())
+        let dateString = ChatViewController.dateFormatter.string(from: startTime)
         return "\(userId)_\(title.replacingOccurrences(of: " ", with: "-"))_\(dateString)"
     }
 }
