@@ -24,7 +24,15 @@ class ProfileViewController: UIViewController {
     private let spinner = JGProgressHUD(style: .light)
     
     // MARK: - Labels
-    private let nameLabel: UILabel = {
+    private let firstnameLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipTitle
+        label.sizeToFit()
+        return label
+    }()
+    
+    private let lastnameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
         label.font = .zipTitle
@@ -211,7 +219,8 @@ class ProfileViewController: UIViewController {
 
                         
             strongSelf.title = "@" + strongSelf.user.username
-            strongSelf.nameLabel.text = strongSelf.user.fullName
+            strongSelf.firstnameLabel.text = strongSelf.user.firstName
+            strongSelf.lastnameLabel.text = strongSelf.user.lastName
             strongSelf.ageLabel.text = String(strongSelf.user.age)
             strongSelf.photoCountLabel.text = "\(strongSelf.user.pictureURLs.count)"
             strongSelf.tableView.reloadData()
@@ -287,15 +296,20 @@ class ProfileViewController: UIViewController {
         profilePictureView.layer.masksToBounds = true
         profilePictureView.layer.cornerRadius = view.frame.width/4
         
-        tableHeader.addSubview(nameLabel)
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        nameLabel.topAnchor.constraint(equalTo: profilePictureView.bottomAnchor, constant: 5).isActive = true
+        tableHeader.addSubview(firstnameLabel)
+        firstnameLabel.translatesAutoresizingMaskIntoConstraints = false
+        firstnameLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        firstnameLabel.topAnchor.constraint(equalTo: profilePictureView.bottomAnchor, constant: 5).isActive = true
+        
+        tableHeader.addSubview(lastnameLabel)
+        lastnameLabel.translatesAutoresizingMaskIntoConstraints = false
+        lastnameLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        lastnameLabel.topAnchor.constraint(equalTo: firstnameLabel.bottomAnchor).isActive = true
 
         tableHeader.addSubview(ageLabel)
         ageLabel.translatesAutoresizingMaskIntoConstraints = false
         ageLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        ageLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
+        ageLabel.topAnchor.constraint(equalTo: lastnameLabel.bottomAnchor).isActive = true
         
         tableHeader.addSubview(editProfileButton)
         editProfileButton.translatesAutoresizingMaskIntoConstraints = false
@@ -447,33 +461,6 @@ extension ProfileViewController: UITableViewDataSource {
         }
     }
 }
-
-//creates frame with wrapped text to see what the height will be
-extension String {
-    func heightForWrap(width: CGFloat) -> CGFloat{
-        let tempLabel = UILabel(frame: CGRect(x: 0, y: 0, width: width, height: CGFloat.greatestFiniteMagnitude))
-        tempLabel.numberOfLines = 0
-        tempLabel.lineBreakMode = .byWordWrapping
-        tempLabel.font = .zipBody
-        tempLabel.text = self
-        tempLabel.sizeToFit()
-        return tempLabel.frame.height
-    }
-}
-
-extension UILabel {
-    func heightForWrap(width: CGFloat) -> CGFloat{
-        let tempLabel = UILabel(frame: CGRect(x: 0, y: 0, width: width, height: CGFloat.greatestFiniteMagnitude))
-        tempLabel.numberOfLines = 0
-        tempLabel.lineBreakMode = .byWordWrapping
-        tempLabel.font = .zipBody
-        tempLabel.text = text
-        tempLabel.sizeToFit()
-        return tempLabel.frame.height
-    }
-}
-
-
 
 
 
