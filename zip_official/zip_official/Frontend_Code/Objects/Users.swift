@@ -30,6 +30,10 @@ public class User {
     var notificationPreferences: [String: Bool] = [:] // Notification Preferences
     var friendships: [Friendship] = [] // Friendship Preferences
     
+    
+    var isInivted: Bool = false
+    
+    
     init() {}
     
 //    init(userId id: String, username us: String, firstName fn: String, lastName ln: String) {
