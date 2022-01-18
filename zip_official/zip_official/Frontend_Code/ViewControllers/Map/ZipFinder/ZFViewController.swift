@@ -318,8 +318,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
 // MARK: UICollectionViewDelegate
 extension ZipFinderViewController: ZFCardBackDelegate {
     func openProfile(_ user: User) {        
-        let userProfileView = OtherProfileViewController()
-        userProfileView.configure(user)
+        let userProfileView = OtherProfileViewController(user: user)
         userProfileView.modalPresentationStyle = .overCurrentContext
 
         let transition: CATransition = CATransition()
