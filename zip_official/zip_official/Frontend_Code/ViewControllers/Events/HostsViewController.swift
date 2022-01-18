@@ -74,8 +74,7 @@ extension HostsViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let userProfileView = OtherProfileViewController()
-        userProfileView.configure(hosts[indexPath.row])
+        let userProfileView = OtherProfileViewController(user: hosts[indexPath.row], needsLoadUser: true)
         userProfileView.modalPresentationStyle = .overCurrentContext
         
         let transition: CATransition = CATransition()
