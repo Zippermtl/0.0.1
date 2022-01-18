@@ -264,6 +264,26 @@ class CreateEventViewController: UIViewController {
     }()
     
     @objc private func didTapContinueButton(){
+        guard eventNameField.text != "",
+              dateField.text != "",
+              startTimeField.text != "",
+              locationField.text != "",
+              let eventTitle = eventNameField.text
+        else {
+                  let alert = UIAlertController(title: "Complete All Fields To Conitnue",
+                                                      message: "",
+                                                      preferredStyle: .alert)
+
+                  alert.addAction(UIAlertAction(title: "Continue",
+                                                      style: .cancel,
+                                                      handler: nil))
+
+                  present(alert, animated: true)
+            return
+        }
+        
+        event.title = eventTitle
+        
         let vc = CreateEventInfoViewController()
         vc.delegate = self
         vc.event = event
@@ -283,6 +303,8 @@ class CreateEventViewController: UIViewController {
         endTimeField.isHidden = true
         endTimeLabel.isHidden = true
         closeEndTimeButton.isHidden = true
+        
+        event.endTime = nil
     }
     
     @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
@@ -331,6 +353,7 @@ class CreateEventViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        privacySwitch.isOn = true
         view.backgroundColor = .zipGray
         configureNavBar()
         privacySwitch.addTarget(self, action: #selector(switchValueChanged(_:)), for: .valueChanged)
