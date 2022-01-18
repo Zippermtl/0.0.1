@@ -11,6 +11,8 @@ class CreateEventInfoViewController: UIViewController {
     var event = Event()
     weak var delegate: MaintainEventDelegate?
     
+    var didUpdatePicture = false
+    
     private let eventPictureLabel: UILabel = {
         let label = UILabel()
         label.font = .zipBodyBold
@@ -36,52 +38,49 @@ class CreateEventInfoViewController: UIViewController {
         return label
     }()
     
-    private let maxCapacityLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBody
-        label.textColor = .white
-        label.text = "Maximum Capacity:"
-        return label
-    }()
     
-    private let capacityNumLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBody
-        label.textColor = .white
-        label.text = "0"
-        return label
+    private let capacityNumField: UITextField = {
+        let tf = UITextField()
+        tf.attributedPlaceholder = NSAttributedString(string: "Date",
+                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+        tf.font = .zipBody
+        tf.borderStyle = .roundedRect
+        tf.tintColor = .white
+        tf.returnKeyType = .continue
+        tf.backgroundColor = .zipLightGray
+        tf.textColor = .white
+        tf.adjustsFontSizeToFitWidth = true
+        tf.minimumFontSize = 10.0
+        tf.textAlignment = .center
+        tf.keyboardType = .numberPad
+        
+        return tf
     }()
+
     
-    private let yesButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("Yes", for: .normal)
-        btn.titleLabel?.font = .zipBody.withSize(16)
-        btn.backgroundColor = .zipLightGray
-        btn.addTarget(self, action: #selector(didTapYes), for: .touchUpInside)
-        btn.layer.cornerRadius = 5
-        btn.layer.masksToBounds = true
-        return btn
-    }()
-    
-    private let noButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("No", for: .normal)
-        btn.titleLabel?.font = .zipBody.withSize(16)
-        btn.backgroundColor = .zipBlue
-        btn.addTarget(self, action: #selector(didTapNo), for: .touchUpInside)
-        btn.layer.cornerRadius = 5
-        btn.layer.masksToBounds = true
-        return btn
-    }()
+    let capacitySlider = ResizeSlider()
     
     @objc private func didTapContinueButton(){
+        guard descriptionField.text != nil,
+              didUpdatePicture == true else {
+            let alert = UIAlertController(title: "Complete All Fields To Conitnue",
+                                          message: "",
+                                          preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Continue",
+                                          style: .cancel,
+                                          handler: nil))
+            
+            present(alert, animated: true)
+            return
+        }
+        
+        event.description = descriptionField.text
+        
         let vc = CompleteEventViewController()
         vc.event = event
         navigationController?.pushViewController(vc, animated: true)
     }
-    
-    let capacitySlider = ResizeSlider()
-
     
     var descriptionField: UITextView = {
         let tf = UITextView()
@@ -108,12 +107,19 @@ class CreateEventInfoViewController: UIViewController {
     private let icons: [UIImage?] =
     [
         UIImage(systemName: "plus"),
-        UIImage(systemName: "text.book.closed.fill"),
-        UIImage(systemName: "bicycle"),
-        UIImage(systemName: "gamecontroller.fill"),
-        UIImage(systemName: "music.mic"),
-        UIImage(systemName: "music.mic"),
-        UIImage(systemName: "music.mic")
+        UIImage(named: "defaultEventIcon"),
+        UIImage(named: "defaultEventIcon"),
+        UIImage(named: "defaultEventIcon"),
+        UIImage(named: "defaultEventIcon"),
+        UIImage(named: "defaultEventIcon"),
+        UIImage(named: "defaultEventIcon")
+
+//        UIImage(systemName: "text.book.closed.fill"),
+//        UIImage(systemName: "bicycle"),
+//        UIImage(systemName: "gamecontroller.fill"),
+//        UIImage(systemName: "music.mic"),
+//        UIImage(systemName: "music.mic"),
+//        UIImage(systemName: "music.mic")
 
     ]
     
@@ -137,28 +143,20 @@ class CreateEventInfoViewController: UIViewController {
     private let pageStatus1 = StatusCheckView()
     private let pageStatus3 = StatusCheckView()
     
-    @objc private func didTapNo() {
-        noButton.backgroundColor = .zipBlue
-        yesButton.backgroundColor = .zipLightGray
-        capacitySlider.isEnabled = false
-        capacitySlider.minimumTrackTintColor = .zipVeryLightGray
-        event.maxGuests = 0
-    }
-    
-    @objc private func didTapYes() {
-        noButton.backgroundColor = .zipLightGray
-        yesButton.backgroundColor = .zipBlue
-        capacitySlider.isEnabled = true
-        capacitySlider.minimumTrackTintColor = .zipBlue
-    }
-    
     @objc func sliderChanged(_ sender: UISlider){
-        capacityNumLabel.text = Int(sender.value).description
-        event.maxGuests = Int(sender.value)
+        if sender.value == 501 {
+            capacityNumField.text = "∞"
+            event.maxGuests = 0
+        } else {
+            capacityNumField.text = Int(sender.value).description
+            event.maxGuests = Int(sender.value)
+        }
+        
     }
     
     @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         descriptionField.resignFirstResponder()
+        capacityNumField.resignFirstResponder()
     }
     
     override func viewDidLoad() {
@@ -173,18 +171,17 @@ class CreateEventInfoViewController: UIViewController {
         }
         
         if event.maxGuests != 0 {
-            noButton.backgroundColor = .zipVeryLightGray
-            yesButton.backgroundColor = .zipBlue
             capacitySlider.value = Float(event.maxGuests)
-            capacitySlider.isEnabled = true
         } else {
-            noButton.backgroundColor = .zipBlue
-            yesButton.backgroundColor = .zipVeryLightGray
-            capacitySlider.value = 0
-            capacitySlider.isEnabled = false
+            if event.isPublic {
+                capacitySlider.value = 501
+                capacityNumField.text = "∞"
+            } else {
+                capacitySlider.value = 100
+                capacityNumField.text = "100"
+            }
+            
         }
-//        eventPicture.image =
-
         
         let layout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
@@ -233,8 +230,8 @@ class CreateEventInfoViewController: UIViewController {
     
     private func configureSlider(){
         capacitySlider.addTarget(self, action: #selector(sliderChanged(_:)), for: .valueChanged)
-        capacitySlider.minimumValue = 0
-        capacitySlider.maximumValue = 1000
+        capacitySlider.minimumValue = 1
+        capacitySlider.maximumValue = 501
         
         capacitySlider.trackHeight = 2
         capacitySlider.minimumTrackTintColor = .zipVeryLightGray
@@ -251,13 +248,9 @@ class CreateEventInfoViewController: UIViewController {
         view.addSubview(descriptionLabel)
         view.addSubview(descriptionField)
         view.addSubview(capacityLabel)
-        view.addSubview(maxCapacityLabel)
-        view.addSubview(yesButton)
-        view.addSubview(noButton)
-        view.addSubview(capacityNumLabel)
+        view.addSubview(capacityNumField)
         view.addSubview(capacitySlider)
-
-
+        
         view.addSubview(continueButton)
         view.addSubview(pageStatus1)
         view.addSubview(pageStatus2)
@@ -277,7 +270,7 @@ class CreateEventInfoViewController: UIViewController {
         eventPictureLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
         eventPictureLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
         // Picture
-        eventPicture.image = UIImage(named: "yianni1")
+
         eventPicture.translatesAutoresizingMaskIntoConstraints = false
         eventPicture.topAnchor.constraint(equalTo: eventPictureLabel.bottomAnchor, constant: 10).isActive = true
         eventPicture.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -309,30 +302,14 @@ class CreateEventInfoViewController: UIViewController {
         capacityLabel.topAnchor.constraint(equalTo: descriptionField.bottomAnchor, constant: 30).isActive = true
         capacityLabel.leftAnchor.constraint(equalTo: descriptionField.leftAnchor).isActive = true
         
-        maxCapacityLabel.translatesAutoresizingMaskIntoConstraints = false
-        maxCapacityLabel.topAnchor.constraint(equalTo: capacityLabel.bottomAnchor, constant: 10).isActive = true
-        maxCapacityLabel.leftAnchor.constraint(equalTo: capacityLabel.leftAnchor).isActive = true
-        
-        yesButton.translatesAutoresizingMaskIntoConstraints = false
-        yesButton.leftAnchor.constraint(equalTo: maxCapacityLabel.rightAnchor, constant: 5).isActive = true
-        yesButton.centerYAnchor.constraint(equalTo: maxCapacityLabel.centerYAnchor).isActive = true
-        yesButton.heightAnchor.constraint(equalTo: maxCapacityLabel.heightAnchor).isActive = true
-        yesButton.widthAnchor.constraint(equalTo: noButton.widthAnchor).isActive = true
-
-        noButton.translatesAutoresizingMaskIntoConstraints = false
-        noButton.leftAnchor.constraint(equalTo: yesButton.rightAnchor, constant: 5).isActive = true
-        noButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
-        noButton.centerYAnchor.constraint(equalTo: maxCapacityLabel.centerYAnchor).isActive = true
-        noButton.heightAnchor.constraint(equalTo: maxCapacityLabel.heightAnchor).isActive = true
-        
         capacitySlider.translatesAutoresizingMaskIntoConstraints = false
-        capacitySlider.topAnchor.constraint(equalTo: maxCapacityLabel.bottomAnchor, constant: 15).isActive = true
-        capacitySlider.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
-        capacitySlider.rightAnchor.constraint(equalTo: capacityNumLabel.leftAnchor, constant: -10).isActive = true
+        capacitySlider.topAnchor.constraint(equalTo: capacityLabel.bottomAnchor, constant: 15).isActive = true
+        capacitySlider.leftAnchor.constraint(equalTo: capacityNumField.rightAnchor, constant: 10).isActive = true
+        capacitySlider.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
         
-        capacityNumLabel.translatesAutoresizingMaskIntoConstraints = false
-        capacityNumLabel.topAnchor.constraint(equalTo: maxCapacityLabel.bottomAnchor, constant: 15).isActive = true
-        capacityNumLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
+        capacityNumField.translatesAutoresizingMaskIntoConstraints = false
+        capacityNumField.topAnchor.constraint(equalTo: capacityLabel.bottomAnchor, constant: 15).isActive = true
+        capacityNumField.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
         
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40).isActive = true
@@ -368,12 +345,12 @@ class CreateEventInfoViewController: UIViewController {
 
 extension CreateEventInfoViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("selecting")
         if indexPath.row == 0 {
             presentPhotoActionSheet()
         } else {
             eventPicture.image = icons[indexPath.row]
             event.image = icons[indexPath.row]
+            didUpdatePicture = true
         }
     }
 }
@@ -474,10 +451,18 @@ extension CreateEventInfoViewController: UIImagePickerControllerDelegate, UINavi
         
         eventPicture.image = selectedImage
         event.image = selectedImage
+        didUpdatePicture = true
+
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+}
+
+extension CreateEventInfoViewController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        textField.text = ""
     }
 }
 
