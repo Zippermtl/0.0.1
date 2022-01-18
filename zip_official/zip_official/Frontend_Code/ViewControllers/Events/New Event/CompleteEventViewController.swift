@@ -13,6 +13,7 @@ class CompleteEventViewController: UIViewController {
     private let tableView = UITableView()
     var zipList: [User] = MapViewController.getTestUsers()
     
+    
     let inviteAllButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Invite All", for: .normal)
@@ -49,6 +50,7 @@ class CompleteEventViewController: UIViewController {
         btn.layer.cornerRadius = 15
         btn.layer.masksToBounds = true
         btn.titleLabel?.font = .zipBodyBold//.withSize(20)
+        btn.addTarget(self, action: #selector(didTapCompleteButton), for: .touchUpInside)
         return btn
     }()
     
@@ -75,6 +77,65 @@ class CompleteEventViewController: UIViewController {
                 cell.addButton.isSelected = false
             }
         }
+    }
+    
+    @objc private func didTapCompleteButton(){
+        if event.endTime != nil {
+            event.duration = event.endTime! - event.startTime
+        } else {
+            event.duration = 0
+        }
+        
+        let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
+                        firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
+                        lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
+        
+        event.hosts = [host]
+        event.usersInvite = zipList.filter{$0.isInivted}
+        event.eventId = event.createEventId
+
+        if !event.isPublic {
+            guard !event.usersInvite.isEmpty else {
+                let alert = UIAlertController(title: "Private Events Must Have At Least One Invite",
+                                              message: "Invite a user to continue",
+                                              preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Continue",
+                                              style: .cancel,
+                                              handler: nil))
+                
+                present(alert, animated: true)
+                return
+            }
+        }
+        
+        
+        DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
+            if success {
+                let actionSheet = UIAlertController(title: "Successfull Created an Event",
+                                                    message: "View your event in your profile",
+                                                    preferredStyle: .actionSheet)
+                
+                actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                self?.present(actionSheet, animated: true)
+                self?.dismiss(animated: true, completion: nil)
+                
+            } else {
+                let actionSheet = UIAlertController(title: "Failed to Create Your Event",
+                                                    message: "Make sure all the information you entered is correct or try again later.",
+                                                    preferredStyle: .actionSheet)
+                
+                actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                self?.present(actionSheet, animated: true)
+            }
+        })
+        
     }
     
     override func viewDidLoad() {
@@ -194,6 +255,7 @@ extension CompleteEventViewController: UITableViewDataSource {
         cell.layoutIfNeeded()
         
         cell.configure(zipList[indexPath.row])
+
         return cell
     }
     
