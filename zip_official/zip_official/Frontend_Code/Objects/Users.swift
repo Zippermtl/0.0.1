@@ -109,7 +109,11 @@ public class User {
     func loadFriendships() {
         DatabaseManager.shared.loadUserFriendships(given: userId, completion: { [self] result in
             switch result {
-                case.success(let f): self.friendships = f.map { $0 }
+                case.success(let f):
+                    friendships.removeAll()
+                    for friendship in f {
+                        friendships.append(friendship)
+                    }
                 default: print("error loading friends")
             }
         })
