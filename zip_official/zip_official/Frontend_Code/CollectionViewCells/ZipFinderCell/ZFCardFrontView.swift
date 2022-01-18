@@ -48,8 +48,6 @@ class ZFCardFrontView: UIView {
     }()
     
     
-    
-    
     private var distanceLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
