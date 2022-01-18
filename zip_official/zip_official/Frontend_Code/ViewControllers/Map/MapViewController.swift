@@ -1083,7 +1083,8 @@ extension MapViewController {
         gabeinterests.sort(by: {$0.rawValue < $1.rawValue})
         eliasinterests.sort(by: {$0.rawValue < $1.rawValue})
 
-        var seung = User(email: "seung.choi@gmail.com",
+        var seung = User(userId: "u65044444444",
+                         email: "seung.choi@gmail.com",
                          username: "seungchoi_",
                          firstName: "Seung",
                          lastName: "Choi",
@@ -1096,7 +1097,8 @@ extension MapViewController {
                          school: "McGill University",
                          interests: seunginterests)
         
-        var ezra = User(email: "ezrataylor55@gmail.com",
+        var ezra = User(userId: "u6505555555",
+                        email: "ezrataylor55@gmail.com",
                          username: "ezrataylor55",
                          firstName: "Ezra",
                          lastName: "Taylor",
@@ -1109,7 +1111,8 @@ extension MapViewController {
                          school: "McGill University",
                          interests: ezrainterests)
         
-        var yianni = User(email: "zavalyia@gmail.com",
+        var yianni = User(userId: "u6501111111",
+                          email: "zavalyia@gmail.com",
                          username: "yianni_zav",
                          firstName: "Yianni",
                          lastName: "Zavaliagkos",
@@ -1122,7 +1125,8 @@ extension MapViewController {
                          school: "McGill Univeristy",
                          interests: yianniinterests)
 
-        var elias = User(email: "elias.levy@vanderbilt.edu",
+        var elias = User(userId: "u6502222222",
+                         email: "elias.levy@vanderbilt.edu",
                          username: "elias.levy",
                          firstName: "Elias",
                          lastName: "Levy",
@@ -1135,7 +1139,8 @@ extension MapViewController {
                          school: "Vanderbilt University",
                          interests: eliasinterests)
         
-        var gabe = User(email: "mason.g.denton@vanderbilt.edu",
+        var gabe = User(userId: "u6503333333",
+                        email: "mason.g.denton@vanderbilt.edu",
                         username: "gabe_denton",
                         firstName: "Gabe",
                         lastName: "Denton",
