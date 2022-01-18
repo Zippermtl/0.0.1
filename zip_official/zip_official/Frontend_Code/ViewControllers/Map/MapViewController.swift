@@ -50,10 +50,19 @@ class MapViewController: UIViewController {
     
     var guardingGeoFireCalls = false
     
+    private let zoomToCurrentButton : UIButton = {
+        let btn = UIButton()
+        btn.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+        btn.setImage(UIImage(systemName: "location"), for: .normal)
+        btn.layer.cornerRadius = 8
+        btn.layer.masksToBounds = true
+        return btn
+    }()
+    
     // MARK: - Button Actions
     @objc private func didTapHomeButton(){
         if(ZipperTabBarViewController.userLoc != nil ){
-            zoomToLatestLocation(with: userLoc)
+            zoomToLatestLocation()
         }
     }
     
@@ -75,6 +84,17 @@ class MapViewController: UIViewController {
         nav.modalPresentationStyle = .overCurrentContext
         present(nav, animated: true, completion: nil)
     }
+    
+    @objc private func zoomToLatestLocation(animated: Bool = true){
+        guard let mapView = mapView else {
+            return
+        }
+        
+        //change 20000,20000 so that it fits all 3 rings
+        let zoomDistance = CGFloat(2000)
+        let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: zoomDistance,longitudinalMeters: zoomDistance)
+        mapView.setRegion(zoomRegion, animated: animated)
+    }
 
 
     // MARK: ViewDidLoad
@@ -94,6 +114,9 @@ class MapViewController: UIViewController {
         mapView?.pointOfInterestFilter = .excludingAll
         
         configureLocationServices()
+        
+        zoomToCurrentButton.addTarget(self, action: #selector(zoomToLatestLocation), for: .touchUpInside)
+
         
         generateTestData()
         
@@ -185,16 +208,7 @@ class MapViewController: UIViewController {
 
     }
     
-    private func zoomToLatestLocation(with coordinate: CLLocationCoordinate2D, animated: Bool = true){
-        guard let mapView = mapView else {
-            return
-        }
-        
-        //change 20000,20000 so that it fits all 3 rings
-        let zoomDistance = CGFloat(2000)
-        let zoomRegion = MKCoordinateRegion(center: coordinate, latitudinalMeters: zoomDistance,longitudinalMeters: zoomDistance)
-        mapView.setRegion(zoomRegion, animated: animated)
-    }
+   
     
     
     //MARK: - Configure Subviews
@@ -218,6 +232,12 @@ class MapViewController: UIViewController {
         profileButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         profileButton.widthAnchor.constraint(equalTo: profileButton.heightAnchor).isActive = true
         profileButton.addTarget(self, action: #selector(didTapProfileButton), for: .touchUpInside)
+        
+        mapView.addSubview(zoomToCurrentButton)
+        zoomToCurrentButton.translatesAutoresizingMaskIntoConstraints = false
+        zoomToCurrentButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -10).isActive = true
+        zoomToCurrentButton.rightAnchor.constraint(equalTo: mapView.rightAnchor, constant: -10).isActive = true
+
     }
     
 
@@ -264,7 +284,7 @@ extension MapViewController: CLLocationManagerDelegate {
 
             })
             guardingGeoFireCalls = true
-            zoomToLatestLocation(with: userLoc)
+            zoomToLatestLocation()
         }
     }
     
