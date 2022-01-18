@@ -179,15 +179,13 @@ extension DatabaseManager {
     }
     
     public func updateUserFriendships(of user: User, completion: @escaping (Bool) -> Void) {
-            database.child("userFriendships/\(user.userId)").updateChildValues([
-                "friends": EncodeFriendships(user.friendships)
-            ], withCompletionBlock: { error, wtf in guard error == nil else {
-                    completion(false)
-                    return
-                }
-                completion(true)
-            })
-        }
+        database.child("userFriendships/\(user.userId)/friends").updateChildValues(EncodeFriendships(user.friendships), withCompletionBlock: { error, wtf in guard error == nil else {
+                completion(false)
+                return
+            }
+            completion(true)
+        })
+    }
     
     /// Gets all users from Firebase
     ///  Parameters
@@ -201,7 +199,6 @@ extension DatabaseManager {
             completion(.success(value))
         })
     }
-    
     
     public enum DatabaseError: Error {
         case failedToFetch
@@ -304,46 +301,24 @@ extension DatabaseManager {
         })
     }
     
-    public func updatePicNum(id: String, picNum: Int, completion: @escaping (Bool) -> Void) {
-        let path = "userProfiles/\(id)/"
-        database.child(path).updateChildValues([
-            "picNum" : picNum
-        ], withCompletionBlock: { error, _ in
-            guard error == nil else{
-                print("failed to write to database")
-                completion(false)
+    public func loadUserFriendships(given id: String, completion: @escaping (Result<[Friendship], Error>) -> Void) {
+        // Get user id inside userFriendships
+        database.child("userFriendships").child(id).observe(.value, with: { fuck in
+            guard let value = fuck.value as? [String: Any] else {
+                completion(.success([]))
                 return
             }
-            completion(true)
+            
+            // Get friends list or return empty list if failed
+            guard let friends = value["friends"] as? [String: Int] else {
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            
+            let friendships = DecodeFriendships(friends)
+            
+            completion(.success(friendships))
         })
-    }
-
-    
-    public func loadUserFriendships(given id: String, status: Int = 0, completion: @escaping (Result<[Friendship], Error>) -> Void) {
-            // Get user id inside userFriendships
-        database.child("userFriendships/\(id)").observeSingleEvent(of: .value, with: { fuck in
-                guard let value = fuck.value as? [String: Any] else {
-                    completion(.success([]))
-                    return
-                }
-                
-                // Get friends list or return empty list if failed
-                guard let friends = value["friends"] as? [String: Any] else {
-                    completion(.failure(DatabaseError.failedToFetch))
-                    return
-                }
-                
-                let friendships = DecodeFriendships(friends)
-                
-                switch status {
-                case 0:
-                    completion(.success(friendships))
-                case 1:
-                    completion(.failure(DatabaseError.failedToFetch))
-                default:
-                    completion(.success(friendships))
-                }
-            })
     }
     
     public func loadUserProfileSubView(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
