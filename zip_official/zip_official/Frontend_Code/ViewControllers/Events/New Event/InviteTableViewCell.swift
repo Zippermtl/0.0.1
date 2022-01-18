@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol InviteTableViewCellDelegate: AnyObject {
+    func inviteUser()
+    func uninviteUser()
+}
 
 class InviteTableViewCell: UITableViewCell {
     static let identifier = "eventInviteCell"
@@ -14,6 +18,8 @@ class InviteTableViewCell: UITableViewCell {
 
     var outlineView = UIView()
     var pictureView = UIImageView()
+    
+    weak var delegate: InviteTableViewCellDelegate?
     
     public var addButton: UIButton = {
         let btn = UIButton()
@@ -44,8 +50,10 @@ class InviteTableViewCell: UITableViewCell {
     @objc private func didTapAdd(_ sender: UIButton){
         if sender.isSelected {
             sender.isSelected = false
+            user.isInivted = false
         } else {
             sender.isSelected = true
+            user.isInivted = true
         }
     }
     
