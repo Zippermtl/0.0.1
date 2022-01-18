@@ -50,10 +50,15 @@ class MapViewController: UIViewController {
     
     var guardingGeoFireCalls = false
     
+    var mapDidMove = true
     private let zoomToCurrentButton : UIButton = {
         let btn = UIButton()
-        btn.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
-        btn.setImage(UIImage(systemName: "location"), for: .normal)
+        btn.backgroundColor = .zipVeryLightGray.withAlphaComponent(0.7)
+        btn.layer.borderColor = UIColor.zipVeryLightGray.cgColor
+        btn.layer.borderWidth = 1
+        btn.setImage(UIImage(systemName: "location")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        btn.imageView?.contentMode = .scaleToFill
+        btn.contentMode = .scaleToFill
         btn.layer.cornerRadius = 8
         btn.layer.masksToBounds = true
         return btn
@@ -85,7 +90,13 @@ class MapViewController: UIViewController {
         present(nav, animated: true, completion: nil)
     }
     
-    @objc private func zoomToLatestLocation(animated: Bool = true){
+    @objc private func didTapZoom(){
+        zoomToLatestLocation()
+        hideZoomButton()
+        mapDidMove = false
+    }
+    
+    private func zoomToLatestLocation(){
         guard let mapView = mapView else {
             return
         }
@@ -93,9 +104,28 @@ class MapViewController: UIViewController {
         //change 20000,20000 so that it fits all 3 rings
         let zoomDistance = CGFloat(2000)
         let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: zoomDistance,longitudinalMeters: zoomDistance)
-        mapView.setRegion(zoomRegion, animated: animated)
+        mapView.setRegion(zoomRegion, animated: true)
     }
 
+    private func hideZoomButton() {
+        
+        UIView.animate(withDuration: 0.2, delay: 0, animations: {
+            self.zoomToCurrentButton.alpha = 0
+        }, completion: { finished in
+            self.zoomToCurrentButton.isHidden = true
+        })
+        
+    }
+
+    private func showZoomButton() {
+        self.zoomToCurrentButton.isHidden = false
+        
+        UIView.animate(withDuration: 0.2, delay: 0, animations: {
+            self.zoomToCurrentButton.alpha = 1
+        }, completion: { finished in
+            
+        })
+    }
 
     // MARK: ViewDidLoad
     // essentially the main
@@ -115,7 +145,7 @@ class MapViewController: UIViewController {
         
         configureLocationServices()
         
-        zoomToCurrentButton.addTarget(self, action: #selector(zoomToLatestLocation), for: .touchUpInside)
+        zoomToCurrentButton.addTarget(self, action: #selector(didTapZoom), for: .touchUpInside)
 
         
         generateTestData()
@@ -237,6 +267,8 @@ class MapViewController: UIViewController {
         zoomToCurrentButton.translatesAutoresizingMaskIntoConstraints = false
         zoomToCurrentButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -10).isActive = true
         zoomToCurrentButton.rightAnchor.constraint(equalTo: mapView.rightAnchor, constant: -10).isActive = true
+        zoomToCurrentButton.widthAnchor.constraint(equalToConstant: 35).isActive = true
+        zoomToCurrentButton.heightAnchor.constraint(equalTo: zoomToCurrentButton.widthAnchor).isActive = true
 
     }
     
@@ -285,6 +317,7 @@ extension MapViewController: CLLocationManagerDelegate {
             })
             guardingGeoFireCalls = true
             zoomToLatestLocation()
+            mapDidMove = false
         }
     }
     
@@ -456,6 +489,15 @@ extension MapViewController: MKMapViewDelegate {
 //            navigationController?.navigationBar.isHidden = false
 //            navigationController?.pushViewController(eventVC, animated: true)
             mapView.deselectAnnotation(view.annotation, animated: false)
+        }
+    }
+    
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        if mapDidMove {
+            showZoomButton()
+        } else {
+            hideZoomButton()
+            mapDidMove = true
         }
     }
     
