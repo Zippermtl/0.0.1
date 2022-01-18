@@ -143,6 +143,7 @@ extension DatabaseManager {
             completion(true)
         })
     }
+    
     public func updateLocationUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
         let userID = AppDelegate.userDefaults.value(forKey: "userId") as? String
         database.child("UserFastInfo/\(userID)").updateChildValues([
@@ -179,23 +180,21 @@ extension DatabaseManager {
     }
     
     public func updateUserFriendships(of user: User, completion: @escaping (Bool) -> Void) {
-<<<<<<< HEAD
         database.child("userFriendships/\(user.userId)").updateChildValues([
             "friends": EncodeFriendships(user.friendships)
-        ], withCompletionBlock: { error, wtf in guard error == nil else {
+        ], withCompletionBlock: { [weak self] error, wtf in guard error == nil else {
             completion(false)
             return
         }
-=======
-        database.child("userFriendships/\(user.userId)/friends").updateChildValues(EncodeFriendships(user.friendships), withCompletionBlock: { error, wtf in guard error == nil else {
+            self?.database.child("userFriendships/\(user.userId)/friends").updateChildValues(EncodeFriendships(user.friendships), withCompletionBlock: { error, wtf in guard error == nil else {
                 completion(false)
                 return
             }
->>>>>>> refs/remotes/origin/master
-            completion(true)
+                completion(true)
+            })
         })
     }
-    
+                                                                           
     /// Gets all users from Firebase
     ///  Parameters
     ///   `completion`: async closure to deal with return result
