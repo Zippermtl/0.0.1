@@ -170,8 +170,7 @@ extension MyZipsViewController :  UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let userProfileView = OtherProfileViewController()
-        userProfileView.configure(myZips[indexPath.row])
+        let userProfileView = OtherProfileViewController(user: myZips[indexPath.row], needsLoadUser: true)
         userProfileView.modalPresentationStyle = .overCurrentContext
         
         let transition: CATransition = CATransition()
