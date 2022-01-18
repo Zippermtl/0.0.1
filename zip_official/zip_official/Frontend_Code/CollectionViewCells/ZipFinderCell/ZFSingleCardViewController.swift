@@ -80,7 +80,6 @@ class ZFSingleCardViewController: UIViewController {
             return
         }
         
-        cardFrontView.backgroundColor = .red
         let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
         
         cardFrontView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc)
