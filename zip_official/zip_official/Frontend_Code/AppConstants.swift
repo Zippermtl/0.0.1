@@ -20,6 +20,10 @@ extension UIColor {
         return UIColor(red: 99/255, green: 189/255, blue: 218/255, alpha: 1)
 
     }
+    
+    static let zipLogoBlue = UIColor(red: 99/255, green: 189/255, blue: 218/255, alpha: 1)
+    
+    
     static var zipGreen: UIColor{
 //        return UIColor(red: 154/255, green: 219/255, blue: 131/255, alpha: 1)
         return UIColor(red: 142/255, green: 221/255, blue: 114/255, alpha: 1)
