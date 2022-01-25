@@ -14,6 +14,7 @@
  */
 
 
+
 import UIKit
 import MapKit
 import CoreLocation
@@ -184,7 +185,7 @@ class MapViewController: UIViewController {
     }
     
     private func configureProfilePicture(){
-        if let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
+         if let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
             let url = URL(string: urlString)
             profileButton.sd_setImage(with: url, for: .normal, completed: nil)
         } else {
@@ -578,6 +579,12 @@ extension MapViewController: NewAccountDelegate {
             }
             
         })
+        
+        
+        // booga booga
+        te
+        
+        
         getDataTask.resume()
         
         let nav = UINavigationController(rootViewController: vc)
