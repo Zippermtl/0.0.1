@@ -36,26 +36,24 @@ class SettingsPageViewController: UIViewController {
         print("logout tapped")
         let alert = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { [weak self] _ in
-                                                                                guard let strongSelf = self else {
-                                                                                    return
-                                                                                }
-                                                                                
-                                                                                do {
-                                                                                    try FirebaseAuth.Auth.auth().signOut()
-                                                                                    AppDelegate.userDefaults.set(nil, forKey: "email")
-                                                                                    AppDelegate.userDefaults.set(nil, forKey: "name")
-                                                                                    AppDelegate.userDefaults.set(nil, forKey: "BlueRing")
-                                                                                    AppDelegate.userDefaults.set(nil, forKey: "GreenRing")
-                                                                                    AppDelegate.userDefaults.set(nil, forKey: "PinkRing")
-
-                                                                                    let vc = LoginViewController()
-                                                                                    let nav = UINavigationController(rootViewController: vc)
-                                                                                    nav.modalPresentationStyle = .fullScreen
-                                                                                    strongSelf.present(nav, animated: true, completion: nil)
-                                                                                }
-                                                                                catch {
-                                                                                    print("Failed to Logout User")
-                                                                                }
+            guard let strongSelf = self else {
+                return
+            }
+            
+            do {
+                try FirebaseAuth.Auth.auth().signOut()
+                let domain = Bundle.main.bundleIdentifier!
+                UserDefaults.standard.removePersistentDomain(forName: domain)
+                UserDefaults.standard.synchronize()
+                
+                let vc = LoginViewController()
+                let nav = UINavigationController(rootViewController: vc)
+                nav.modalPresentationStyle = .fullScreen
+                strongSelf.present(nav, animated: true, completion: nil)
+            }
+            catch {
+                print("Failed to Logout User")
+            }
             
         }))
         
