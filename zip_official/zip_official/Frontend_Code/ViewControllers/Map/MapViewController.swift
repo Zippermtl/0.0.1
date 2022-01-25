@@ -13,8 +13,6 @@
  
  */
 
-
-
 import UIKit
 import MapKit
 import CoreLocation
@@ -580,9 +578,6 @@ extension MapViewController: NewAccountDelegate {
             
         })
         
-        
-        // booga booga
-        te
         
         
         getDataTask.resume()
