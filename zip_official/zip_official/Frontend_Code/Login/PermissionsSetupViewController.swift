@@ -130,18 +130,6 @@ class PermissionsSetupViewController: UIViewController {
     @objc private func didTapCompleteButton(){
         
         AppDelegate.locationManager.requestWhenInUseAuthorization()
-
-        if !CLLocationManager.locationServicesEnabled() {
-            let actionSheet = UIAlertController(title: "Location Services Must Be Enabled to Use Zipper",
-                                                message: "Go into settings and enable it from there",
-                                                preferredStyle: .actionSheet)
-            
-            actionSheet.addAction(UIAlertAction(title: "Continue",
-                                                style: .cancel,
-                                                handler: nil))
-            
-            present(actionSheet, animated: true)
-        }
         
         user.notificationPreferences =
         [
@@ -190,7 +178,7 @@ class PermissionsSetupViewController: UIViewController {
                 let fileName = strongSelf.user.profilePictureFileName
                 
                 
-                StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { results in
+                StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { [weak self] results in
                     switch results {
                     case .success(let downloadUrl):
                         AppDelegate.userDefaults.set(downloadUrl, forKey: "profilePictureUrl")
@@ -200,11 +188,19 @@ class PermissionsSetupViewController: UIViewController {
                     
                     
                     DispatchQueue.main.async {
-                        let vc = MapViewController()
-                        vc.isNewAccount = true
-                        vc.configureLocationServices()
-                        vc.modalPresentationStyle = .fullScreen
-                        strongSelf.present(vc, animated: true, completion: nil)
+                        if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
+                            print("location services not enabled")
+                            let vc = LocationDeniedViewController()
+                            vc.modalPresentationStyle = .overFullScreen
+                            vc.modalTransitionStyle = .crossDissolve
+                            self?.present(vc, animated: true, completion: nil)
+                        } else {
+                            let vc = MapViewController()
+                            vc.isNewAccount = true
+                            vc.configureLocationServices()
+                            vc.modalPresentationStyle = .fullScreen
+                            self?.present(vc, animated: true, completion: nil)
+                        }
                     }
                 })
             }
