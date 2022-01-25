@@ -147,9 +147,8 @@ class SMSCodeViewController: UIViewController {
                         AppDelegate.userDefaults.set((user.lastName), forKey: "lastName")
                         AppDelegate.userDefaults.set((user.birthday), forKey: "birthday")
                         AppDelegate.userDefaults.set(0, forKey: "picNum")
-                        AppDelegate.userDefaults.set(user.pictureURLs[0], forKey: "profilePictureUrl")
+                        AppDelegate.userDefaults.set(user.pictureURLs[0].description, forKey: "profilePictureUrl")
 
-                        
                         DispatchQueue.main.async {
                             let vc = MapViewController()
                             vc.modalPresentationStyle = .fullScreen
@@ -167,7 +166,7 @@ class SMSCodeViewController: UIViewController {
                                 self?.present(vc, animated: true, completion: nil)
                             } else {
                                 let vc = MapViewController()
-                                vc.isNewAccount = true
+                                vc.isNewAccount = false
                                 vc.configureLocationServices()
                                 vc.modalPresentationStyle = .fullScreen
                                 self?.present(vc, animated: true, completion: nil)
