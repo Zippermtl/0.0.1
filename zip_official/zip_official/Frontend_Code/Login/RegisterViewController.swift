@@ -197,7 +197,7 @@ class RegisterViewController: UIViewController {
                         StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { results in
                             switch results {
                             case .success(let downloadUrl):
-                                AppDelegate.userDefaults.set(downloadUrl, forKey: "profilePictureUrl")
+                                AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
                                 print(downloadUrl)
                             case .failure(let error):
                                 print("Storage Manager Error: \(error)")
