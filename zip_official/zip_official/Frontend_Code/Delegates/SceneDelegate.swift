@@ -25,17 +25,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let navVC = UINavigationController(rootViewController: vc)
             window?.rootViewController = navVC
         } else {
-            let vc = MapViewController()
-            vc.isNewAccount = false
+            let vc = LoadingViewController()
             window?.rootViewController = vc
-        }
-        
-        
-//        window?.rootViewController = UINavigationController(rootViewController:  BasicProfileSetupViewController())
-//        window?.rootViewController = UINavigationController(rootViewController:  ProfilePicSetupViewController())
-//        window?.rootViewController = UINavigationController(rootViewController:  PermissionsSetupViewController())
 
-                                                           
+//            let vc = MapViewController()
+//            vc.isNewAccount = false
+//            window?.rootViewController = vc
+        }
+         
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
