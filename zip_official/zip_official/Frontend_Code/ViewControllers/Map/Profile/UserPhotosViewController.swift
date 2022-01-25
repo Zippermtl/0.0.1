@@ -198,7 +198,7 @@ class UserPhotosViewController: UIViewController {
                 pic.upload(path: path, completion: { [weak self] result in
                     switch result {
                     case .success(let url):
-                        AppDelegate.userDefaults.set(result.debugDescription.description, forKey: "profilePictureUrl")
+                        AppDelegate.userDefaults.set(result, forKey: "profilePictureUrl")
                         self?.userPictures[0].url = URL(string: url)
                     case .failure(let error):
                         print("failed to get download url for profile picture: \(error)")
