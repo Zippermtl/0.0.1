@@ -130,43 +130,71 @@ class SMSCodeViewController: UIViewController {
                     return
                 }
                 
-                DispatchQueue.main.async {
-                    strongSelf.spinner.dismiss()
-                }
+
                 
-                guard !exists else {
+                if exists {
                     //user already exists
-                    DispatchQueue.main.async {
-                        let vc = MapViewController()
-                        vc.modalPresentationStyle = .fullScreen
-                        AppDelegate.locationManager.requestWhenInUseAuthorization()
-
-                        // get basic user profile - username, userId, name
-                        AppDelegate.userDefaults.set(self?.userId, forKey: "userId")
-                        
-
-                        if !CLLocationManager.locationServicesEnabled() {
-                            let actionSheet = UIAlertController(title: "Location Services Must Be Enabled to Use Zipper",
-                                                                message: "Go into settings and enable it from there",
-                                                                preferredStyle: .actionSheet)
-                            
-                            actionSheet.addAction(UIAlertAction(title: "Continue",
-                                                                style: .cancel,
-                                                                handler: nil))
-                            
-                            strongSelf.present(actionSheet, animated: true)
+                    let user = User(userId: strongSelf.userId)
+                    DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
+                        guard let strongSelf = self else {
+                            return
                         }
                         
-                        // make sure to check if location is already enabled
-                        // have to request if its straight log in on first device
+                        AppDelegate.userDefaults.set(user.userId, forKey: "userId")
+                        AppDelegate.userDefaults.set(user.username, forKey: "username")
+                        AppDelegate.userDefaults.set((user.fullName), forKey: "name")
+                        AppDelegate.userDefaults.set((user.firstName), forKey: "firstName")
+                        AppDelegate.userDefaults.set((user.lastName), forKey: "lastName")
+                        AppDelegate.userDefaults.set((user.birthday), forKey: "birthday")
+                        AppDelegate.userDefaults.set(0, forKey: "picNum")
+                        AppDelegate.userDefaults.set(user.pictureURLs[0], forKey: "profilePictureUrl")
+
                         
+                        DispatchQueue.main.async {
+                            let vc = MapViewController()
+                            vc.modalPresentationStyle = .fullScreen
+                            AppDelegate.locationManager.requestWhenInUseAuthorization()
+
+                            // get basic user profile - username, userId, name
+                            AppDelegate.userDefaults.set(self?.userId, forKey: "userId")
+                            
+
+                            if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
+                                print("location services not enabled")
+                                let vc = LocationDeniedViewController()
+                                vc.modalPresentationStyle = .overFullScreen
+                                vc.modalTransitionStyle = .crossDissolve
+                                self?.present(vc, animated: true, completion: nil)
+                            } else {
+                                let vc = MapViewController()
+                                vc.isNewAccount = true
+                                vc.configureLocationServices()
+                                vc.modalPresentationStyle = .fullScreen
+                                self?.present(vc, animated: true, completion: nil)
+                            }
+                            
+                            DispatchQueue.main.async {
+                                strongSelf.spinner.dismiss()
+                            }
+                            
+                            // make sure to check if location is already enabled
+                            // have to request if its straight log in on first device
+                            
+                            
+                            self?.present(vc, animated: true, completion: nil)
+                            
+                            
+                        }
                         
-                        self?.present(vc, animated: true, completion: nil)
+                    })
+                    
+                } else {
+                    //user doens't exist
+                    DispatchQueue.main.async {
+                        strongSelf.spinner.dismiss()
                     }
-                    return
+                    strongSelf.continuteRegistration()
                 }
-                
-                strongSelf.continuteRegistration()
             })
         })
     }
