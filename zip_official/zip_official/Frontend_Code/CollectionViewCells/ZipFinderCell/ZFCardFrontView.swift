@@ -122,7 +122,10 @@ class ZFCardFrontView: UIView {
         print("requested \(user.firstName) \(user.lastName)")
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         let selfUser = User(userId: userId)
-        selfUser.requestFriend(to: user)
+        selfUser.requestFriend(to: user, completion: { error in
+            
+            
+        })
         zipButton.isHidden = false
         requestedButton.isHidden = true
     }
