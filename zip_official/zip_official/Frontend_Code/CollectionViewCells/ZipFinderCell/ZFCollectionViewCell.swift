@@ -36,6 +36,9 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         self.user = user
         self.userLoc = loc
         self.idPath = idPath
+        
+        print("USER LOCATION = ", user.location)
+        
         configureBackground()
         configureCard()
         configureGestureRecognizer()
