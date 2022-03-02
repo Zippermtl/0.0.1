@@ -12,6 +12,7 @@ protocol UpdateZipRequestsTableDelegate: AnyObject {
 }
 
 class ZipRequestTableViewCell: UITableViewCell {
+        
     static let identifier = "ZipRequest"
     weak var delegate: UpdateZipRequestsTableDelegate?
 
@@ -87,7 +88,22 @@ class ZipRequestTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    public func configure(with notification: ZipNotification){
+    public func configure(with request: ZipRequest){
+        DatabaseManager.shared.loadUserProfileSubViewNoLoc(given: request.fromUser.userId, completion: { [weak self] results in
+            guard let strongSelf = self else {
+                return
+            }
+            switch results {
+            case .success(let user):
+                strongSelf.cellImage.sd_setImage(with: user.pictureURLs[0], completed: nil)
+                strongSelf.cellText.text = "\(request.fromUser.fullName) Zipped you!"
+            case .failure(let error):
+                print("failed to load user in zip request tableview cell: \(error)")
+            }
+        })
+        
+        
+        
         contentView.backgroundColor = .zipGray
         
         acceptButton.addTarget(self, action: #selector(didTapAcceptButton), for: .touchUpInside)
@@ -102,19 +118,15 @@ class ZipRequestTableViewCell: UITableViewCell {
 
         outlineView.backgroundColor = .zipLightGray
         outlineView.layer.cornerRadius = 15
-        
-    
-        cellImage.image = notification.image
-        cellText.text = "\(notification.fromName) Zipped you!"
-        
-        if notification.time < 60 {
-            timeLabel.text = Int(notification.time).description + "s ago"
-        } else if notification.time < 3600 {
-            timeLabel.text = Int(notification.time/60).description + "m ago"
-        } else if notification.time < 3600 {
-            timeLabel.text = Int(notification.time/3600).description + "h ago"
+ 
+        if request.time < 60 {
+            timeLabel.text = Int(request.time).description + "s ago"
+        } else if request.time < 3600 {
+            timeLabel.text = Int(request.time/60).description + "m ago"
+        } else if request.time < 3600 {
+            timeLabel.text = Int(request.time/3600).description + "h ago"
         } else {
-            timeLabel.text = Int(notification.time/86400).description + "d ago"
+            timeLabel.text = Int(request.time/86400).description + "d ago"
         }
         
         
