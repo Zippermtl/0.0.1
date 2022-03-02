@@ -113,7 +113,7 @@ class FPCViewController: UIViewController {
     }()
     
     private var zipRequestsTable: UITableView?
-    private var requests: [ZipNotification] = []
+    var requests: [ZipRequest] = []
 
     private let eventsLabel: UILabel = {
         let label = UILabel()
@@ -161,7 +161,7 @@ class FPCViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        generateRequests()
+//        generateRequests()
         generateEvents()
         view.backgroundColor = .zipGray
         
@@ -188,6 +188,8 @@ class FPCViewController: UIViewController {
     
     public func configure(userLocation: CLLocation) {
         self.userLoc = userLocation
+        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
+        print("REQUESTS = \(requests)")
         eventsTable?.reloadData()
     }
     
@@ -541,48 +543,42 @@ extension FPCViewController: UITextFieldDelegate {
 
 extension FPCViewController {
     func generateRequests(){
-        let request1 = ZipNotification(fromName: "Ezra Taylor",
-                                       type: .zipRequest,
-                                       image: UIImage(named: "ezra1")!,
-                                       time: TimeInterval(10),
-                                       hasRead: false)
+        guard let picUrl = AppDelegate.userDefaults.value(forKey: "profilePicUrl") as? URL else {
+            return
+        }
         
-        let request2 = ZipNotification(fromName: "Yianni Zavaliagkos",
-                                       type: .zipRequest,
-                                       image: UIImage(named: "yianni1")!,
-                                       time: TimeInterval(15),
-                                       hasRead: false)
+        let ezra = User(userId: "u6502222222",
+                        firstName: "Ezra",
+                        lastName: "Taylor",
+                        pictureURLs: [picUrl])
         
-        let request3 = ZipNotification(fromName: "Seung Choi",
-                                       type: .zipRequest,
-                                       image: UIImage(named: "seung1")!,
-                                       time: TimeInterval(20),
-                                       hasRead: false)
+        let yianni = User(userId: "u6503333333",
+                        firstName: "Ezra",
+                        lastName: "Taylor",
+                        pictureURLs: [picUrl])
         
-        let request4 = ZipNotification(fromName: "Elias Levy",
-                                       type: .zipRequest,
-                                       image: UIImage(named: "elias1")!,
-                                       time: TimeInterval(25),
-                                       hasRead: false)
+        let seung = User(userId: "u6504444444",
+                        firstName: "Seung",
+                        lastName: "Choi",
+                        pictureURLs: [picUrl])
         
-        let request5 = ZipNotification(fromName: "Gabe Denton",
-                                       type: .zipRequest,
-                                       image: UIImage(named: "gabe1")!,
-                                       time: TimeInterval(30),
-                                       hasRead: false)
+        let gabe = User(userId: "u6505555555",
+                        firstName: "Gabe",
+                        lastName: "Denton",
+                        pictureURLs: [picUrl])
         
-        let request6 = ZipNotification(fromName: "Ezra Taylor",
-                                       type: .zipRequest,
-                                       image: UIImage(named: "ezra2")!,
-                                       time: TimeInterval(35),
-                                       hasRead: false)
+        let request1 = ZipRequest(fromUser: ezra, time: TimeInterval(10))
+        let request2 = ZipRequest(fromUser: yianni, time: TimeInterval(10))
+        let request3 = ZipRequest(fromUser: seung, time: TimeInterval(10))
+        let request4 = ZipRequest(fromUser: gabe, time: TimeInterval(10))
+
+
+
         
         requests.append(request1)
         requests.append(request2)
         requests.append(request3)
         requests.append(request4)
-        requests.append(request5)
-        requests.append(request6)
         
         print(requests)
         zipRequestsLabel.text = "Zip Requests (\(requests.count))"
