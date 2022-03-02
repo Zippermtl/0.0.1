@@ -8,7 +8,16 @@
 import UIKit
 import CoreLocation
 
+
+
 class LoadingViewController: UIViewController {
+
+     //info that needs to be loaded
+    var zipRequests: [ZipRequest] = []
+
+    
+    
+    
     private let logo: UIImageView = {
         let view = UIImageView()
         view.image = UIImage(named: "logopng")
@@ -28,6 +37,7 @@ class LoadingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipLogoBlue
+        
         configureLayout()
     }
     
@@ -37,6 +47,7 @@ class LoadingViewController: UIViewController {
     }
     
     private func checkLocationServices() {
+
         let manager = CLLocationManager()
         if !CLLocationManager.locationServicesEnabled() || manager.authorizationStatus == .denied {
             let vc = LocationDeniedViewController()
@@ -44,12 +55,41 @@ class LoadingViewController: UIViewController {
             vc.modalTransitionStyle = .crossDissolve
             present(vc, animated: true, completion: nil)
         } else {
-            let vc = MapViewController()
-            vc.isNewAccount = false
-            vc.modalPresentationStyle = .overFullScreen
-            vc.modalTransitionStyle = .crossDissolve
-            present(vc, animated: true, completion: nil)
+            loadZipRequests()
         }
+    }
+    
+    private func loadZipRequests() {
+        
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        
+        let user = User(userId: userId)
+        user.getIncomingRequests(completion: { [weak self] results in
+
+            switch results {
+            case .success(let requests):
+                self?.zipRequests = requests
+            case .failure(let error):
+                print("failed to initialize zip requests on launch with error \(error)")
+            }
+            
+            // present map regaurdless?
+            self?.presentMap()
+
+
+        })
+    }
+    
+    private func presentMap(){
+        let vc = MapViewController()
+        vc.isNewAccount = false
+        vc.zipRequests = zipRequests
+        print("ZIP REQUESTS = \(zipRequests)")
+        vc.modalPresentationStyle = .overFullScreen
+        vc.modalTransitionStyle = .crossDissolve
+        present(vc, animated: true, completion: nil)
     }
     
     private func configureLayout(){
@@ -59,15 +99,6 @@ class LoadingViewController: UIViewController {
         logo.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         logo.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         logo.heightAnchor.constraint(equalToConstant: 250).isActive = true
-//        logo.backgroundColor = .red
-        
-//        view.addSubview(progressView)
-//        progressView.translatesAutoresizingMaskIntoConstraints = false
-//        progressView.topAnchor.constraint(equalTo: logo.bottomAnchor).isActive = true
-//        progressView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
-//        progressView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
-//        progressView.heightAnchor.constraint(equalToConstant: 20).isActive = true
-//        progressView.setProgress(0, animated: false)
     }
     
     
