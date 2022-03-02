@@ -9,7 +9,7 @@ import UIKit
 import CoreLocation
 
 class MyZipsViewController: UIViewController {
-    let userLoc = CLLocation(latitude: ZipperTabBarViewController.userLoc.latitude, longitude: ZipperTabBarViewController.userLoc.longitude)
+    var userLoc = CLLocation()
 
     var tableView = UITableView()
     var myZips: [User] = MapViewController.getTestUsers()
@@ -64,7 +64,8 @@ class MyZipsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         
         configureNavBar()
         configureTableData()
