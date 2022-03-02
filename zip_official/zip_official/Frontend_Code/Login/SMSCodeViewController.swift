@@ -136,9 +136,6 @@ class SMSCodeViewController: UIViewController {
                     //user already exists
                     let user = User(userId: strongSelf.userId)
                     DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
-                        guard let strongSelf = self else {
-                            return
-                        }
                         
                         AppDelegate.userDefaults.set(user.userId, forKey: "userId")
                         AppDelegate.userDefaults.set(user.username, forKey: "username")
@@ -150,12 +147,17 @@ class SMSCodeViewController: UIViewController {
                         AppDelegate.userDefaults.set(user.pictureURLs[0].description, forKey: "profilePictureUrl")
 
                         DispatchQueue.main.async {
+                            guard let strongSelf = self else {
+                                return
+                            }
+                            
+                            
                             let vc = MapViewController()
                             vc.modalPresentationStyle = .fullScreen
                             AppDelegate.locationManager.requestWhenInUseAuthorization()
 
                             // get basic user profile - username, userId, name
-                            AppDelegate.userDefaults.set(self?.userId, forKey: "userId")
+                            AppDelegate.userDefaults.set(strongSelf.userId, forKey: "userId")
                             
 
                             if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
@@ -163,13 +165,13 @@ class SMSCodeViewController: UIViewController {
                                 let vc = LocationDeniedViewController()
                                 vc.modalPresentationStyle = .overFullScreen
                                 vc.modalTransitionStyle = .crossDissolve
-                                self?.present(vc, animated: true, completion: nil)
+                                strongSelf.present(vc, animated: true, completion: nil)
                             } else {
                                 let vc = MapViewController()
                                 vc.isNewAccount = false
                                 vc.configureLocationServices()
                                 vc.modalPresentationStyle = .fullScreen
-                                self?.present(vc, animated: true, completion: nil)
+                                strongSelf.present(vc, animated: true, completion: nil)
                             }
                             
                             DispatchQueue.main.async {
@@ -180,7 +182,7 @@ class SMSCodeViewController: UIViewController {
                             // have to request if its straight log in on first device
                             
                             
-                            self?.present(vc, animated: true, completion: nil)
+                            strongSelf.present(vc, animated: true, completion: nil)
                             
                             
                         }
