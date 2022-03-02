@@ -20,6 +20,12 @@ import CoreGraphics
 import SDWebImage
 import FloatingPanel
 
+protocol InitMapDelegate: AnyObject {
+    
+}
+
+
+
 //MARK: View Controller
 class MapViewController: UIViewController {
     static let title = "MapVC"
@@ -30,7 +36,8 @@ class MapViewController: UIViewController {
     var userLoc = CLLocationCoordinate2D(latitude: 0, longitude: 0)
     
     let fpc = FloatingPanelController()
-
+    
+    var zipRequests: [ZipRequest] = []
 
     // MARK: - Events
     //to be brought in via json file
@@ -62,6 +69,10 @@ class MapViewController: UIViewController {
         btn.layer.masksToBounds = true
         return btn
     }()
+    
+
+    
+    
     
     // MARK: - Button Actions
     @objc private func didTapHomeButton(){
@@ -202,6 +213,7 @@ class MapViewController: UIViewController {
         fpc.delegate = self
         
         let fpcContent = FPCViewController()
+        fpcContent.requests = zipRequests
         fpcContent.configure(userLocation: CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude))
         fpc.layout = ZipFloatingPanelLayout()
         fpcContent.delegate = self
@@ -226,7 +238,6 @@ class MapViewController: UIViewController {
 
         // Set the new appearance
         fpc.surfaceView.appearance = appearance
-        
     }
 
 
@@ -264,7 +275,7 @@ class MapViewController: UIViewController {
         
         mapView.addSubview(zoomToCurrentButton)
         zoomToCurrentButton.translatesAutoresizingMaskIntoConstraints = false
-        zoomToCurrentButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -10).isActive = true
+        zoomToCurrentButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -20).isActive = true
         zoomToCurrentButton.rightAnchor.constraint(equalTo: mapView.rightAnchor, constant: -10).isActive = true
         zoomToCurrentButton.widthAnchor.constraint(equalToConstant: 35).isActive = true
         zoomToCurrentButton.heightAnchor.constraint(equalTo: zoomToCurrentButton.widthAnchor).isActive = true
@@ -586,6 +597,11 @@ extension MapViewController: NewAccountDelegate {
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)
     }
+}
+
+// For Initialization
+extension MapViewController {
+    
 }
 
 
