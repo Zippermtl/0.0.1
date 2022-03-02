@@ -28,7 +28,7 @@ class ZFCardBackView: UIView {
     private var firstNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = .zipTitle
+        label.font = .zipBodyBold
         label.numberOfLines = 1
         label.text = "A"
         label.adjustsFontSizeToFitWidth = true
@@ -39,7 +39,7 @@ class ZFCardBackView: UIView {
     private var lastNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = .zipTitle
+        label.font = .zipBodyBold
         label.numberOfLines = 1
         label.text = "A"
         label.adjustsFontSizeToFitWidth = true
@@ -50,7 +50,7 @@ class ZFCardBackView: UIView {
     private var ageLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = .zipTitle
+        label.font = .zipBodyBold
         label.text = "A"
         return label
     }()
@@ -58,7 +58,7 @@ class ZFCardBackView: UIView {
     private var distanceLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = .zipTitle.withSize(26)
+        label.font = .zipBodyBold
         label.text = "A"
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.5
@@ -68,7 +68,7 @@ class ZFCardBackView: UIView {
     private var usernameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.font = .zipTitle.withSize(26)
+        label.font = .zipTitle.withSize(20)
         label.sizeToFit()
         label.text = "@"
         return label
@@ -107,22 +107,53 @@ class ZFCardBackView: UIView {
         return label
     }()
     
-    private var birthdayLabel: UILabel = {
+    private var joinedDateLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBody
+        label.textColor = .zipVeryLightGray
+        label.font = .zipBody.withSize(16)
         label.sizeToFit()
-        label.text = "@"
+        label.text = "Joined Zipper on January 1st, 2022"
+        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 0
         return label
     }()
     
     
+    private let zipsButton: UIButton = {
+        let btn = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .large) //
+        let img = UIImage(systemName: "person.3", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        btn.setImage(img, for: .normal)
+        btn.backgroundColor = .zipLightGray
+        btn.layer.masksToBounds = true
+        return btn
+    }()
+    
+    private let messageButton: UIButton = {
+        let btn = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium, scale: .large) //, withConfiguration: config
+        let img = UIImage(systemName: "message", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        btn.setImage(img, for: .normal)
+        btn.backgroundColor = .zipLightGray
+        btn.layer.masksToBounds = true
+        return btn
+    }()
+    
+    private let inviteButton: UIButton = {
+        let btn = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium, scale: .large) //, withConfiguration: config
+        let img = UIImage(systemName: "paperplane", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        btn.setImage(img, for: .normal)
+        btn.backgroundColor = .zipLightGray
+        btn.layer.masksToBounds = true
+        return btn
+    }()
+
+    
+    
     //MARK: - Subviews
-    private var scrollView = UIScrollView()
     private var profilePicture = UIImageView()
-    private var userInfoView = UIView()
     private var reportPopUp = DropDown()
-    private var bottomOfScroll = UIView()
     private var reportButton: UIButton = {
         let btn = UIButton()
         btn.setImage(UIImage(named: "report"), for: .normal)
@@ -130,8 +161,8 @@ class ZFCardBackView: UIView {
         return btn
     }()
     
-    let schoolImage = UIImageView(image: UIImage(named: "school"))
-    let birthdayImage = UIImageView(image: UIImage(named: "birthday"))
+    let schoolImage = UIImageView(image: UIImage(systemName: "graduationcap.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
+    let interestsImage = UIImageView(image: UIImage(systemName: "star.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
     
     private var slideView: MTSlideToOpenView = {
         let slider = MTSlideToOpenView(frame: CGRect(x: 0, y: 0, width: 317, height: 56))
@@ -177,12 +208,6 @@ class ZFCardBackView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-//        scrollView.updateContentView(10)
-        if countLayout < 4 {
-            countLayout = countLayout + 1
-            scrollView.contentSize = CGSize(width: frame.width,
-                                            height: bottomOfScroll.frame.maxY - usernameLabel.frame.maxY + 20)
-        }
 
     }
 
@@ -210,8 +235,7 @@ class ZFCardBackView: UIView {
         firstNameLabel.text = user.firstName
         lastNameLabel.text = user.lastName
 
-        ageLabel.text = String(user.age)
-        
+        ageLabel.text = "\(user.age) years old"
         var distance = Double(round(10*(userLoc.distance(from: user.location))/1000))/10
         var unit = "km"
         if NSLocale.current.regionCode == "US" {
@@ -254,7 +278,6 @@ class ZFCardBackView: UIView {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
-        birthdayLabel.text = dateFormatter.string(from: user.birthday)
         
         if user.school != nil {
             schoolLabel.text = user.school!
@@ -287,16 +310,9 @@ class ZFCardBackView: UIView {
         
         slideView.backgroundColor = .clear
 
-        let sliderHolderImg = UIImageView(image: UIImage(named: "sliderHolder")?.withTintColor(.zipVeryLightGray))
-        slideView.sliderHolderView.addSubview(sliderHolderImg)
-        sliderHolderImg.translatesAutoresizingMaskIntoConstraints = false
-        sliderHolderImg.topAnchor.constraint(equalTo: slideView.sliderHolderView.topAnchor).isActive = true
-        sliderHolderImg.leftAnchor.constraint(equalTo: slideView.sliderHolderView.leftAnchor).isActive = true
-        sliderHolderImg.bottomAnchor.constraint(equalTo: slideView.sliderHolderView.bottomAnchor).isActive = true
-        sliderHolderImg.rightAnchor.constraint(equalTo: slideView.sliderHolderView.rightAnchor).isActive = true
-        
-        slideView.thumbnailViewStartingDistance = -10
-        slideView.sliderHolderView.backgroundColor = .clear //.zipBlue.withAlphaComponent(0.1)
+
+//        slideView.thumbnailViewStartingDistance = -10
+        slideView.sliderHolderView.backgroundColor = .zipBlue.withAlphaComponent(0.5) //.zipBlue.withAlphaComponent(0.1)
         slideView.slidingColor = .zipGray//UIColor(red: 60/255, green: 60/255, blue: 60/255, alpha: 1)
         
         let requestedLabel = UILabel()
@@ -312,27 +328,13 @@ class ZFCardBackView: UIView {
         requestedLabel.translatesAutoresizingMaskIntoConstraints = false
         requestedLabel.centerYAnchor.constraint(equalTo: slideView.centerYAnchor).isActive = true
         requestedLabel.centerXAnchor.constraint(equalTo: slideView.centerXAnchor).isActive = true
-        requestedLabel.widthAnchor.constraint(equalToConstant: frame.width-85).isActive = true
+        requestedLabel.leftAnchor.constraint(equalTo: slideView.leftAnchor).isActive = true
+        requestedLabel.rightAnchor.constraint(equalTo: slideView.leftAnchor).isActive = true
 
-        let xButton = UIButton(frame: .zero)
-        xButton.setImage(UIImage(named: "redX"), for: .normal)
-        
-        slideView.draggedView.addSubview(xButton)
-        xButton.translatesAutoresizingMaskIntoConstraints = false
-        xButton.centerYAnchor.constraint(equalTo: requestedLabel.centerYAnchor).isActive = true
 
-//        xButton.topAnchor.constraint(equalTo: requestedLabel.topAnchor).isActive = true
-//        xButton.bottomAnchor.constraint(equalTo: requestedLabel.bottomAnchor).isActive = true
-
-        xButton.rightAnchor.constraint(equalTo: requestedLabel.rightAnchor).isActive = true
-        xButton.heightAnchor.constraint(equalToConstant: requestedLabel.intrinsicContentSize.height).isActive = true
-        xButton.widthAnchor.constraint(equalTo: xButton.heightAnchor).isActive = true
-        
         let sliderTap = UITapGestureRecognizer(target: self, action: #selector(unrequestUser))
         slideView.addGestureRecognizer(sliderTap)
-        
-        let xTap = UITapGestureRecognizer(target: self, action: #selector(unrequestUser))
-        xButton.addGestureRecognizer(xTap)
+
     }
     
     //MARK: - Configure Drop Down
@@ -364,25 +366,27 @@ class ZFCardBackView: UIView {
         //Card FrontView
         addSubview(usernameLabel)
         addSubview(reportButton)
-        addSubview(scrollView)
         
-        scrollView.addSubview(profilePicture)
+        addSubview(profilePicture)
         
-        scrollView.addSubview(userInfoView)
-        userInfoView.addSubview(firstNameLabel)
-        userInfoView.addSubview(lastNameLabel)
-        userInfoView.addSubview(ageLabel)
-        userInfoView.addSubview(distanceLabel)
-        
-        scrollView.addSubview(bioLabel)
-        scrollView.addSubview(schoolImage)
-        scrollView.addSubview(schoolLabel)
-        scrollView.addSubview(interestsLabel)
-        scrollView.addSubview(birthdayImage)
-        scrollView.addSubview(birthdayLabel)
-        addSubview(bottomOfScroll)
+        addSubview(firstNameLabel)
+        addSubview(lastNameLabel)
+        addSubview(ageLabel)
+        addSubview(distanceLabel)
         
         
+        addSubview(bioLabel)
+        addSubview(schoolImage)
+        addSubview(schoolLabel)
+        addSubview(interestsImage)
+        addSubview(interestsLabel)
+        addSubview(joinedDateLabel)
+        
+        
+        addSubview(zipsButton)
+        addSubview(inviteButton)
+        addSubview(messageButton)
+
         addSubview(slideView)
     }
 
@@ -390,11 +394,10 @@ class ZFCardBackView: UIView {
     //MARK: - Add Constraints
     private func configureSubviewLayout(){
         let buffer = CGFloat(10.0)
-        let heightBuffer = CGFloat(20.0)
 
         // Username label
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
-        usernameLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        usernameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 20).isActive = true
         usernameLabel.topAnchor.constraint(equalTo: topAnchor, constant: buffer).isActive = true
 
         
@@ -405,105 +408,102 @@ class ZFCardBackView: UIView {
         reportButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
         reportButton.centerYAnchor.constraint(equalTo: usernameLabel.centerYAnchor).isActive = true
         
-        //ScrollView
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: buffer).isActive = true
-        scrollView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        scrollView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        scrollView.bottomAnchor.constraint(equalTo: slideView.topAnchor).isActive = true
+        // Age label
+        ageLabel.translatesAutoresizingMaskIntoConstraints = false
+        ageLabel.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor).isActive = true
+        ageLabel.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
+
 
         // Profile Picture
-        let pictureHeight = firstNameLabel.intrinsicContentSize.height*2 + ageLabel.intrinsicContentSize.height*2 + buffer
         profilePicture.translatesAutoresizingMaskIntoConstraints = false
-        profilePicture.leftAnchor.constraint(equalTo: scrollView.leftAnchor).isActive = true
-        profilePicture.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        profilePicture.heightAnchor.constraint(equalToConstant: pictureHeight).isActive = true
+        profilePicture.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
+        profilePicture.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 5).isActive = true
+        profilePicture.heightAnchor.constraint(equalToConstant: 80).isActive = true
         profilePicture.widthAnchor.constraint(equalTo: profilePicture.heightAnchor).isActive = true
-
-        // User Info View
-        userInfoView.translatesAutoresizingMaskIntoConstraints = false
-        userInfoView.leftAnchor.constraint(equalTo: profilePicture.rightAnchor, constant: buffer).isActive = true
-        userInfoView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        userInfoView.centerYAnchor.constraint(equalTo: profilePicture.centerYAnchor).isActive = true
-        userInfoView.bottomAnchor.constraint(equalTo: distanceLabel.bottomAnchor).isActive = true
+        profilePicture.layer.masksToBounds = true
+        profilePicture.layer.cornerRadius = 40
         
         // First Name Label
         firstNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        firstNameLabel.leftAnchor.constraint(equalTo: userInfoView.leftAnchor).isActive = true
-        firstNameLabel.rightAnchor.constraint(equalTo: userInfoView.rightAnchor).isActive = true
-        firstNameLabel.topAnchor.constraint(equalTo: userInfoView.topAnchor).isActive = true
+        firstNameLabel.leftAnchor.constraint(equalTo: profilePicture.rightAnchor, constant: 5).isActive = true
+        firstNameLabel.bottomAnchor.constraint(equalTo: lastNameLabel.topAnchor).isActive = true
         
         // Last Name Label
         lastNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        lastNameLabel.leftAnchor.constraint(equalTo: userInfoView.leftAnchor).isActive = true
-        lastNameLabel.rightAnchor.constraint(equalTo: userInfoView.rightAnchor).isActive = true
-        lastNameLabel.topAnchor.constraint(equalTo: firstNameLabel.bottomAnchor).isActive = true
+        lastNameLabel.leftAnchor.constraint(equalTo: firstNameLabel.leftAnchor).isActive = true
+        lastNameLabel.centerYAnchor.constraint(equalTo: profilePicture.centerYAnchor).isActive = true
         
         // Age Label
-        ageLabel.translatesAutoresizingMaskIntoConstraints = false
-        ageLabel.leftAnchor.constraint(equalTo: userInfoView.leftAnchor).isActive = true
-        ageLabel.rightAnchor.constraint(equalTo: userInfoView.rightAnchor).isActive = true
-        ageLabel.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor).isActive = true
-        
-        // Distance Label
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.leftAnchor.constraint(equalTo: userInfoView.leftAnchor).isActive = true
-        distanceLabel.rightAnchor.constraint(equalTo: userInfoView.rightAnchor).isActive = true
-        distanceLabel.topAnchor.constraint(equalTo: ageLabel.bottomAnchor).isActive = true
+        distanceLabel.leftAnchor.constraint(equalTo: firstNameLabel.leftAnchor).isActive = true
+        distanceLabel.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor).isActive = true
 
-        // Bio Label
-        bioLabel.translatesAutoresizingMaskIntoConstraints = false
-        bioLabel.topAnchor.constraint(equalTo: profilePicture.bottomAnchor, constant: buffer).isActive = true
-        bioLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
-        bioLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
+        // Right buttons
+        zipsButton.translatesAutoresizingMaskIntoConstraints = false
+        zipsButton.topAnchor.constraint(equalTo: firstNameLabel.topAnchor).isActive = true
+        zipsButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -20).isActive = true
+        zipsButton.heightAnchor.constraint(equalToConstant:  60).isActive = true
+        zipsButton.widthAnchor.constraint(equalTo: zipsButton.heightAnchor).isActive = true
+        
+        messageButton.translatesAutoresizingMaskIntoConstraints = false
+        messageButton.topAnchor.constraint(equalTo: zipsButton.bottomAnchor, constant: 30).isActive = true
+        messageButton.rightAnchor.constraint(equalTo: zipsButton.rightAnchor).isActive = true
+        messageButton.heightAnchor.constraint(equalTo: zipsButton.heightAnchor).isActive = true
+        messageButton.widthAnchor.constraint(equalTo: messageButton.heightAnchor).isActive = true
+        
+        inviteButton.translatesAutoresizingMaskIntoConstraints = false
+        inviteButton.topAnchor.constraint(equalTo: messageButton.bottomAnchor, constant: 30).isActive = true
+        inviteButton.rightAnchor.constraint(equalTo: zipsButton.rightAnchor).isActive = true
+        inviteButton.heightAnchor.constraint(equalTo: zipsButton.heightAnchor).isActive = true
+        inviteButton.widthAnchor.constraint(equalTo: inviteButton.heightAnchor).isActive = true
+        
+        
+        zipsButton.layer.cornerRadius = 30
+        inviteButton.layer.cornerRadius = 30
+        messageButton.layer.cornerRadius = 30
+
         
         // School Label
         schoolImage.translatesAutoresizingMaskIntoConstraints = false
-        schoolImage.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
-        schoolImage.centerYAnchor.constraint(equalTo: schoolLabel.centerYAnchor).isActive = true
-        schoolImage.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        schoolImage.widthAnchor.constraint(equalTo: schoolImage.heightAnchor).isActive = true
-
+        schoolImage.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
+        schoolImage.topAnchor.constraint(equalTo: profilePicture.bottomAnchor, constant: 30).isActive = true
+        
         schoolLabel.translatesAutoresizingMaskIntoConstraints = false
-        schoolLabel.topAnchor.constraint(equalTo: bioLabel.bottomAnchor, constant: heightBuffer).isActive = true
+        schoolLabel.centerYAnchor.constraint(equalTo: schoolImage.centerYAnchor).isActive = true
         schoolLabel.leftAnchor.constraint(equalTo: schoolImage.rightAnchor, constant: buffer).isActive = true
-        schoolLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
+        schoolLabel.rightAnchor.constraint(equalTo: zipsButton.leftAnchor, constant: -10).isActive = true
+
         
         // Interest Label
+        interestsImage.translatesAutoresizingMaskIntoConstraints = false
+        interestsImage.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
+        interestsImage.topAnchor.constraint(equalTo: schoolImage.bottomAnchor, constant: 30).isActive = true
+        
         interestsLabel.translatesAutoresizingMaskIntoConstraints = false
-        interestsLabel.topAnchor.constraint(equalTo: schoolLabel.bottomAnchor, constant: heightBuffer).isActive = true
-        interestsLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
-        interestsLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
-        
-        // Birthday Label
-        birthdayImage.translatesAutoresizingMaskIntoConstraints = false
-        birthdayImage.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
-        birthdayImage.centerYAnchor.constraint(equalTo: birthdayLabel.centerYAnchor).isActive = true
-        birthdayImage.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        birthdayImage.widthAnchor.constraint(equalTo: birthdayImage.heightAnchor).isActive = true
-        
-        birthdayLabel.translatesAutoresizingMaskIntoConstraints = false
-        birthdayLabel.topAnchor.constraint(equalTo: interestsLabel.bottomAnchor, constant: heightBuffer).isActive = true
-        birthdayLabel.leftAnchor.constraint(equalTo: birthdayImage.rightAnchor, constant: buffer).isActive = true
-        birthdayLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: buffer).isActive = true
+        interestsLabel.centerYAnchor.constraint(equalTo: interestsImage.centerYAnchor).isActive = true
+        interestsLabel.leftAnchor.constraint(equalTo: interestsImage.rightAnchor, constant: buffer).isActive = true
+        interestsLabel.rightAnchor.constraint(equalTo: zipsButton.leftAnchor, constant: -10).isActive = true
 
-        bottomOfScroll.translatesAutoresizingMaskIntoConstraints = false
-        bottomOfScroll.bottomAnchor.constraint(equalTo: birthdayLabel.bottomAnchor).isActive = true
-        bottomOfScroll.topAnchor.constraint(equalTo: birthdayLabel.topAnchor).isActive = true
-        bottomOfScroll.leftAnchor.constraint(equalTo: birthdayLabel.leftAnchor).isActive = true
-        bottomOfScroll.rightAnchor.constraint(equalTo: birthdayLabel.rightAnchor).isActive = true
-
+        joinedDateLabel.translatesAutoresizingMaskIntoConstraints = false
+        joinedDateLabel.leftAnchor.constraint(equalTo: interestsImage.leftAnchor).isActive = true
+        joinedDateLabel.rightAnchor.constraint(equalTo: interestsLabel.rightAnchor).isActive = true
+        joinedDateLabel.bottomAnchor.constraint(equalTo: inviteButton.bottomAnchor).isActive = true
+        
+        
+        // Bio Label
+        bioLabel.translatesAutoresizingMaskIntoConstraints = false
+        bioLabel.topAnchor.constraint(equalTo: inviteButton.bottomAnchor, constant: 20).isActive = true
+        bioLabel.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
+        bioLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
+        
+        
         // SlideView
         slideView.translatesAutoresizingMaskIntoConstraints = false
         slideView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -buffer).isActive = true
         slideView.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
         slideView.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
         slideView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        
-        
-        
-
-
+  
     }
 
 }
