@@ -10,7 +10,7 @@ import UIKit
 class ZipRequestsViewController: UIViewController {
     var headerView = UIView()
     var tableView = UITableView()
-    var requests: [ZipNotification] = []
+    var requests: [ZipRequest] = []
     
     
     // MARK: - Labels
@@ -138,19 +138,43 @@ extension ZipRequestsViewController: UITableViewDataSource {
 
 extension ZipRequestsViewController {
     func generateData(){
-        let request1 = ZipNotification(type: .zipRequest, image: UIImage(named: "ezra1")!, time: TimeInterval(10), hasRead: false)
-        let request2 = ZipNotification(type: .zipRequest, image: UIImage(named: "yianni1")!, time: TimeInterval(10), hasRead: false)
-        let request3 = ZipNotification(type: .zipRequest, image: UIImage(named: "seung1")!, time: TimeInterval(10), hasRead: false)
-        let request4 = ZipNotification(type: .zipRequest, image: UIImage(named: "elias1")!, time: TimeInterval(10), hasRead: false)
-        let request5 = ZipNotification(type: .zipRequest, image: UIImage(named: "gabe1")!, time: TimeInterval(10), hasRead: false)
-        let request6 = ZipNotification(type: .zipRequest, image: UIImage(named: "ezra2")!, time: TimeInterval(10), hasRead: false)
+        guard let picUrl = AppDelegate.userDefaults.value(forKey: "profilePicUrl") as? URL else {
+            return
+        }
+        
+        let ezra = User(userId: "u6502222222",
+                        firstName: "Ezra",
+                        lastName: "Taylor",
+                        pictureURLs: [picUrl])
+        
+        let yianni = User(userId: "u6503333333",
+                        firstName: "Ezra",
+                        lastName: "Taylor",
+                        pictureURLs: [picUrl])
+        
+        let seung = User(userId: "u6504444444",
+                        firstName: "Seung",
+                        lastName: "Choi",
+                        pictureURLs: [picUrl])
+        
+        let gabe = User(userId: "u6505555555",
+                        firstName: "Gabe",
+                        lastName: "Denton",
+                        pictureURLs: [picUrl])
+        
+        let request1 = ZipRequest(fromUser: ezra, time: TimeInterval(10))
+        let request2 = ZipRequest(fromUser: yianni, time: TimeInterval(10))
+        let request3 = ZipRequest(fromUser: seung, time: TimeInterval(10))
+        let request4 = ZipRequest(fromUser: gabe, time: TimeInterval(10))
+
+
+
         
         requests.append(request1)
         requests.append(request2)
         requests.append(request3)
         requests.append(request4)
-        requests.append(request5)
-        requests.append(request6)
+    
 
     }
 }
