@@ -160,8 +160,21 @@ extension MyEventsViewController :  UITableViewDataSource {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
         view.backgroundColor = .zipLightGray
         let title = UILabel()
+        if tableData.count == 2 {
+            switch section{
+            case 0: title.text = "Hosted"
+            case 1: title.text = "Went"
+            default: print("section out of range")
+            }
+        } else {
+            switch section{
+            case 0: title.text = "Hosting"
+            case 1: title.text = "Going"
+            case 2: title.text = "Interested"
+            default: print("section out of range")
+            }
+        }
         
-        title.text = Array(tableData.keys)[section]
         title.font = .zipBody
         title.textColor = .white
         view.addSubview(title)
@@ -174,35 +187,57 @@ extension MyEventsViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch Array(tableData.keys)[section] {
-        case "Hosting": return tableData["Hosting"]!.count
-        case "Going": return tableData["Going"]!.count
-        case "Interested": return tableData["Interested"]!.count
-        case "Hosted": return tableData["Hosted"]!.count
-        case "Went": return tableData["Went"]!.count
-        default: return 0
+        if tableData.count == 2 {
+            switch section{
+            case 0: return tableData["Hosted"]!.count
+            case 1: return tableData["Went"]!.count
+            default: return 0
+            }
+        } else {
+            switch section{
+            case 0: return tableData["Hosting"]!.count
+            case 1: return tableData["Going"]!.count
+            case 2: return tableData["Interested"]!.count
+            default: return 0
+            }
         }
-        
-        
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        var events = [Event]()
-        switch Array(tableData.keys)[indexPath.section] {
-        case "Hosting": events = tableData["Hosting"]!
-        case "Going": events = tableData["Going"]!
-        case "Interested": events = tableData["Interested"]!
-        case "Hosted": events = tableData["Hosted"]!
-        case "Went": events = tableData["Went"]!
-        default: print("section out of range")
+        var sectionName = ""
+        if tableData.count == 2 {
+            switch indexPath.section{
+            case 0: sectionName = "Hosted"
+            case 1: sectionName = "Went"
+            default: print("section out of range")
+            }
+        } else {
+            switch indexPath.section {
+            case 0: sectionName = "Hosting"
+            case 1: sectionName = "Going"
+            case 2: sectionName = "Interested"
+            default: print("section out of range")
+            }
+        }
+        
+        guard let events = tableData[sectionName] else {
+            return
         }
         
         let cellEvent = events[indexPath.row]
         
-        let eventView = EventViewController()
-        eventView.configure(cellEvent)
-        eventView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(eventView, animated: true)
+        if sectionName == "Hosting" || sectionName == "Hosted" {
+            let eventView = MyEventViewController()
+            eventView.configure(cellEvent)
+            eventView.modalPresentationStyle = .overCurrentContext
+            navigationController?.pushViewController(eventView, animated: true)
+        } else {
+            let eventView = EventViewController()
+            eventView.configure(cellEvent)
+            eventView.modalPresentationStyle = .overCurrentContext
+            navigationController?.pushViewController(eventView, animated: true)
+        }
+    
         tableView.deselectRow(at: indexPath, animated: false)
     }
     
