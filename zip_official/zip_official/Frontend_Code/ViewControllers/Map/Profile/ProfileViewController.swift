@@ -224,7 +224,10 @@ class ProfileViewController: UIViewController {
             strongSelf.ageLabel.text = String(strongSelf.user.age)
             strongSelf.photoCountLabel.text = "\(strongSelf.user.pictureURLs.count)"
             strongSelf.tableView.reloadData()
-            strongSelf.profilePictureView.sd_setImage(with: strongSelf.user.pictureURLs[0], completed: nil)
+            guard let profilePicUrl = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? URL else {
+                return
+            }
+            strongSelf.profilePictureView.sd_setImage(with: profilePicUrl, completed: nil)
             
             
             if strongSelf.user.pictureURLs.count > 1 {
