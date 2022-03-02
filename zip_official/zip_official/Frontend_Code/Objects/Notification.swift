@@ -94,3 +94,8 @@ struct ZipNotification {
     let time: TimeInterval
     var hasRead: Bool = false
 }
+
+struct ZipRequest {
+    var fromUser: User
+    let time: TimeInterval
+}
