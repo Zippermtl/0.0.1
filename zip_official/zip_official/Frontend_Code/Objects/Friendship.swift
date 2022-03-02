@@ -8,17 +8,12 @@ public enum FriendshipStatus: Int {
 
 // MARK: Friendship class
 public class Friendship {
-    var receiver: User = User()
+    var receiver = User()
     var status: FriendshipStatus
     
     init(to b: String, status c: FriendshipStatus) {
         status = c
-        DatabaseManager.shared.loadUserProfile(given: b, completion: { [self] result in
-            switch result {
-                case.success(let user): self.receiver = user
-                default: print("error loading user")
-            }
-        })
+        receiver = User(userId: b)
     }
     
     init(to b: User, status c: FriendshipStatus) {
@@ -33,6 +28,7 @@ public func DecodeFriendships(_ values: [String: Any]) -> [Friendship] {
     for elem in values {
         let code = String(describing: elem.value)
         print("String: \(code)")
+        print("elem.key = \(elem.key)")
         if code == "0" {
             friendships.append(Friendship(to: elem.key, status: .REQUESTED_INCOMING))
         } else if code == "1" {
