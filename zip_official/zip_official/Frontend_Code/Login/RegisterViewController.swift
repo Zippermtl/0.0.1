@@ -180,10 +180,6 @@ class RegisterViewController: UIViewController {
                 AppDelegate.userDefaults.set(email, forKey: "email")
                 AppDelegate.userDefaults.set(user.fullName, forKey: "name")
 
-                //Set default ring values
-                AppDelegate.userDefaults.setValue(2000, forKey: "BlueRing")
-                AppDelegate.userDefaults.setValue(5000, forKey: "GreenRing")
-                AppDelegate.userDefaults.setValue(10000, forKey: "PinkRing")
                 
                 DatabaseManager.shared.insertUser(with: user, completion: { success in
                     if success {
