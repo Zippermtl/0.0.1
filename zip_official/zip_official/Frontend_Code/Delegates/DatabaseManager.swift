@@ -126,11 +126,16 @@ extension DatabaseManager {
         })
     }
     public func createUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
-        let userID = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        var name = AppDelegate.userDefaults.value(forKey: "firstName") as! String
-        let last = AppDelegate.userDefaults.value(forKey: "lastName") as! String
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
+              var name = AppDelegate.userDefaults.value(forKey: "firstName") as? String,
+              let last = AppDelegate.userDefaults.value(forKey: "lastName") as? String else {
+                  return
+              }
+        
+        print("USERID = \(userId)")
+        
         name = name + " " + last
-        database.child("UserFastInfo/\(userID)").setValue([
+        database.child("UserFastInfo/\(userId)").setValue([
             "lat": location.coordinate.latitude,
             "long": location.coordinate.longitude,
             "name": name
@@ -145,7 +150,10 @@ extension DatabaseManager {
     }
     
     public func updateLocationUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
-        let userID = AppDelegate.userDefaults.value(forKey: "userId") as? String
+        guard let userID = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        
         database.child("UserFastInfo/\(userID)").updateChildValues([
             "lat": location.coordinate.latitude,
             "long": location.coordinate.longitude
@@ -281,31 +289,31 @@ extension DatabaseManager {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
+            
             guard let fullname = value["name"] as? String else {
                       print("retuning SubView")
                       return
                   }
             let name = fullname.components(separatedBy: " ")
-            var user = User(userId: id,
+            let user = User(userId: id,
                             firstName: name[0],
                             lastName: name[1]
 //                            notificationPreferences: DecodePreferences(notifPrefs)
             )
             let imagesPath = "images/" + id
-            StorageManager.shared.getProfilePicture(path: imagesPath, completion: {  [weak self] result in
+            StorageManager.shared.getProfilePicture(path: imagesPath, completion: { result in
                 switch result {
                 case .success(let url):
                     user.pictureURLs = url
                     print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
                     print(user.pictureURLs)
+                    print("Successfully loaded tableview")
                     completion(.success(user))
-
+                    
                 case .failure(let error):
                     print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
                 }
-                    
             })
-            
         })
     }
     
@@ -572,6 +580,7 @@ extension DatabaseManager {
                         [Int](repeating: 0, count: event.usersInvite.count)
                     )
             )
+            
             let invitePath = "eventInvited/\(event.eventId)"
             // writes eventInvited
             self?.database.child(invitePath).setValue(eventInvites, withCompletionBlock: {[weak self] error, _ in
