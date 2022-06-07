@@ -22,6 +22,7 @@ class ProfileViewController: UIViewController {
     private let tableHeader = UIView()
     private let profilePictureView = UIImageView()
     private let spinner = JGProgressHUD(style: .light)
+    let refreshControl = UIRefreshControl()
     
     // MARK: - Labels
     private let firstnameLabel: UILabel = {
@@ -198,17 +199,23 @@ class ProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
         
-        
-        fetchUser()
+        configureRefresh()
+        fetchUser(completion: nil)
         configureTable()
         configureNavBar()
     }
     
-
-    
-    private func fetchUser() {
-        user.userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+    @objc private func refresh(){
+        photoCountLabel.text = ""
         
+        fetchUser(completion: { [weak self] in
+            self?.refreshControl.endRefreshing()
+        })
+    }
+    
+    private func fetchUser(completion: (() -> Void)? = nil) {
+        user.userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        profilePictureView.image = nil
         spinner.show(in: profilePictureView)
         DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
             guard let strongSelf = self else {
@@ -224,9 +231,13 @@ class ProfileViewController: UIViewController {
             strongSelf.ageLabel.text = String(strongSelf.user.age)
             strongSelf.photoCountLabel.text = "\(strongSelf.user.pictureURLs.count)"
             strongSelf.tableView.reloadData()
-            guard let profilePicUrl = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? URL else {
+            
+            guard let profilePicString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String else {
                 return
             }
+            
+            let profilePicUrl = URL(string: profilePicString)
+            
             strongSelf.profilePictureView.sd_setImage(with: profilePicUrl, completed: nil)
             
             
@@ -236,12 +247,20 @@ class ProfileViewController: UIViewController {
                 strongSelf.photosButton.sd_setImage(with: strongSelf.user.pictureURLs[0], for: .normal, completed: nil)
             }
             
-            
             strongSelf.spinner.dismiss()
-
-                
-           
+            
+            if let complete = completion {
+                complete()
+            }
         })
+    }
+    
+    private func configureRefresh() {
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh",
+                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
+                                                                         NSAttributedString.Key.font: UIFont.zipBody])
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        tableView.addSubview(refreshControl)
     }
     
     //MARK: - Nav Bar Config
@@ -383,16 +402,15 @@ class ProfileViewController: UIViewController {
         tableView.tableHeaderView = tableHeader
         
         //good for iphone 11 pro
-        tableHeader.frame = CGRect(x: 0,
-                                   y: 0,
-                                   width: view.frame.width,
-                                   height: 404 + 15)
+//        tableHeader.frame = CGRect(x: 0,
+//                                   y: 0,
+//                                   width: view.frame.width,
+//                                   height: 404 + 15)
     }
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        print(photosLabel.frame.maxY)
         tableHeader.frame = CGRect(x: 0,
                                    y: 0,
                                    width: view.frame.width,
