@@ -23,30 +23,27 @@ class SMSCodeViewController: UIViewController {
     
     private let logo: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "zipperLogo")
+        imageView.image = UIImage(named: "logopng")
+        imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     
-    private let codeField: UITextField = {
-        let field = UITextField()
-        field.textAlignment = .center
-        field.autocapitalizationType = .none
-        field.autocorrectionType = .no
-        field.returnKeyType = .continue
-        field.layer.cornerRadius = 12
-        field.layer.borderWidth = 1
-        field.layer.borderColor = UIColor.zipLightGray.cgColor
-        field.attributedPlaceholder = NSAttributedString(string: "Enter Code...",
-                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+    private let SMSCodeStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.distribution = .equalSpacing
+        stack.spacing = 15
+        stack.alignment = .center
         
-        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
-        field.leftViewMode = .always
-        field.backgroundColor = .zipLightGray
-        field.tintColor = .white
-        field.textColor = .white
-
-        return field
+        return stack
     }()
+    
+    private let code1 = SMSCodeField()
+    private let code2 = SMSCodeField()
+    private let code3 = SMSCodeField()
+    private let code4 = SMSCodeField()
+    private let code5 = SMSCodeField()
+    private let code6 = SMSCodeField()
     
     private let verifyCodeButton: UIButton = {
         let btn = UIButton()
@@ -58,12 +55,17 @@ class SMSCodeViewController: UIViewController {
         btn.titleLabel?.font = .zipBodyBold.withSize(20)
         return btn
     }()
-
     
     @objc private func didTapLoginButton(){
-        codeField.resignFirstResponder()
-        
-        guard let smsCode = codeField.text, !smsCode.isEmpty else {
+        code1.resignFirstResponder()
+        code2.resignFirstResponder()
+        code3.resignFirstResponder()
+        code4.resignFirstResponder()
+        code5.resignFirstResponder()
+        code6.resignFirstResponder()
+
+        guard let smsCode = getSMSCode(),
+                            !smsCode.isEmpty else {
             return
         }
         
@@ -76,7 +78,20 @@ class SMSCodeViewController: UIViewController {
 //        title = "Log In/Register"
         navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .zipGray
-        codeField.delegate = self
+        code1.delegate = self
+        code2.delegate = self
+        code3.delegate = self
+        code4.delegate = self
+        code5.delegate = self
+        code6.delegate = self
+        
+        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+
         verifyCodeButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         
         
@@ -87,27 +102,41 @@ class SMSCodeViewController: UIViewController {
     private func addSubviews(){
         view.addSubview(scrollView)
         scrollView.addSubview(logo)
-        scrollView.addSubview(codeField)
+        scrollView.addSubview(SMSCodeStack)
+        SMSCodeStack.addArrangedSubview(code1)
+        SMSCodeStack.addArrangedSubview(code2)
+        SMSCodeStack.addArrangedSubview(code3)
+        SMSCodeStack.addArrangedSubview(code4)
+        SMSCodeStack.addArrangedSubview(code5)
+        SMSCodeStack.addArrangedSubview(code6)
         scrollView.addSubview(verifyCodeButton)
     }
     
     override func viewDidLayoutSubviews() {
         scrollView.frame = view.bounds
-        
+
         logo.translatesAutoresizingMaskIntoConstraints = false
         logo.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         logo.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        logo.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5).isActive = true
-        logo.heightAnchor.constraint(equalTo: logo.widthAnchor).isActive = true
+        logo.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        logo.heightAnchor.constraint(equalTo: logo.widthAnchor, multiplier: 0.5).isActive = true
         
-        codeField.translatesAutoresizingMaskIntoConstraints = false
-        codeField.topAnchor.constraint(equalTo: logo.bottomAnchor, constant: 10).isActive = true
-        codeField.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        codeField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1, constant: -20).isActive = true
-        codeField.heightAnchor.constraint(equalToConstant: 52).isActive = true
+        code1.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        code2.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+        code3.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+        code4.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+        code5.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+        code6.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+        
+        SMSCodeStack.translatesAutoresizingMaskIntoConstraints = false
+        SMSCodeStack.topAnchor.constraint(equalTo: logo.bottomAnchor, constant: 10).isActive = true
+        SMSCodeStack.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 30).isActive = true
+        SMSCodeStack.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -30).isActive = true
+        SMSCodeStack.heightAnchor.constraint(equalToConstant: 100).isActive = true
+    
         
         verifyCodeButton.translatesAutoresizingMaskIntoConstraints = false
-        verifyCodeButton.topAnchor.constraint(equalTo: codeField.bottomAnchor, constant: 10).isActive = true
+        verifyCodeButton.topAnchor.constraint(equalTo: SMSCodeStack.bottomAnchor, constant: 10).isActive = true
         verifyCodeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         verifyCodeButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1, constant: -20).isActive = true
         verifyCodeButton.heightAnchor.constraint(equalToConstant: 52).isActive = true
@@ -200,8 +229,68 @@ class SMSCodeViewController: UIViewController {
         })
     }
     
+    
+    private func getSMSCode() -> String? {
+        var out: String? = code1.text
+        for code in SMSCodeStack.arrangedSubviews {
+            
+            guard let c = code as? SMSCodeField,
+                  let text = c.text else {
+                return out
+            }
+            
+            if code == code1 { continue }
+
+            out! += text
+        }
+        return out
+    }
+    
+    @objc private func textFieldDidChange(_ textField: UITextField) {
+        switch textField {
+        case code1: code2.becomeFirstResponder()
+        case code2: code3.becomeFirstResponder()
+        case code3: code4.becomeFirstResponder()
+        case code4: code5.becomeFirstResponder()
+        case code5: code6.becomeFirstResponder()
+        default: textField.resignFirstResponder()
+        }
+    }
+    
 }
 
+
+extension SMSCodeViewController {
+    private class SMSCodeField: UITextField {
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+        }
+        
+        init() {
+            super.init(frame: .zero)
+            config()
+        }
+        
+        private func config(){
+            textAlignment = .center
+            autocapitalizationType = .none
+            autocorrectionType = .no
+            returnKeyType = .continue
+            layer.cornerRadius = 5
+            layer.borderWidth = 1
+            layer.borderColor = UIColor.zipLightGray.cgColor
+            backgroundColor = .zipLightGray
+            font = .zipBody.withSize(30)
+            tintColor = .white
+            textColor = .white
+            
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+    }
+}
 
 
 extension SMSCodeViewController: UITextFieldDelegate {
@@ -213,6 +302,16 @@ extension SMSCodeViewController: UITextFieldDelegate {
         return true
     }
     
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        guard let text = textField.text else {
+            return
+        }
+        
+        if text.count >= 1 {
+            textField.text = ""
+        }
+    }
+
 }
 
 
