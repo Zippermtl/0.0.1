@@ -324,12 +324,14 @@ class ZFCardBackView: UIView {
         requestedLabel.layer.cornerRadius = 8
         requestedLabel.layer.masksToBounds = true
         
+        
         slideView.draggedView.addSubview(requestedLabel)
+        
         requestedLabel.translatesAutoresizingMaskIntoConstraints = false
         requestedLabel.centerYAnchor.constraint(equalTo: slideView.centerYAnchor).isActive = true
         requestedLabel.centerXAnchor.constraint(equalTo: slideView.centerXAnchor).isActive = true
         requestedLabel.leftAnchor.constraint(equalTo: slideView.leftAnchor).isActive = true
-        requestedLabel.rightAnchor.constraint(equalTo: slideView.leftAnchor).isActive = true
+        requestedLabel.rightAnchor.constraint(equalTo: slideView.rightAnchor).isActive = true
 
 
         let sliderTap = UITapGestureRecognizer(target: self, action: #selector(unrequestUser))
