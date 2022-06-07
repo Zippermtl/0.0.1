@@ -21,6 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.windowScene = windowScene
         window?.makeKeyAndVisible()
 
+//        window?.rootViewController = SMSCodeViewController()
         if Auth.auth().currentUser == nil {
             let vc = LoginViewController()
             let navVC = UINavigationController(rootViewController: vc)
@@ -28,10 +29,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else {
             let vc = LoadingViewController()
             window?.rootViewController = vc
-
-//            let vc = MapViewController()
-//            vc.isNewAccount = false
-//            window?.rootViewController = vc
         }
          
     }
