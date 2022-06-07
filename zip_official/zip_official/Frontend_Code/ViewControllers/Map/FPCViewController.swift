@@ -161,7 +161,8 @@ class FPCViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        generateRequests()
+        generateRequests()
+        print("HERE123 " , requests)
         generateEvents()
         view.backgroundColor = .zipGray
         
@@ -186,11 +187,17 @@ class FPCViewController: UIViewController {
         addSubviews()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        zipRequestsTable?.reloadData()
+    }
+    
     public func configure(userLocation: CLLocation) {
         self.userLoc = userLocation
         zipRequestsLabel.text = "Zip Requests (\(requests.count))"
         print("REQUESTS = \(requests)")
         eventsTable?.reloadData()
+        zipRequestsTable?.reloadData()
     }
     
     private func configureCollectionView() {
@@ -460,6 +467,9 @@ extension FPCViewController: UITableViewDelegate, UITableViewDataSource {
             if requests.count != 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: ZipRequestTableViewCell.identifier) as! ZipRequestTableViewCell
                 cell.configure(with: requests[indexPath.row])
+                print("HERE HERE HERE\n" , requests[indexPath.row].fromUser.pictureURLs)
+                print(requests[indexPath.row].fromUser.firstName)
+                print(requests.count)
                 cell.delegate = self
                 return cell
             } else {
@@ -543,10 +553,13 @@ extension FPCViewController: UITextFieldDelegate {
 
 extension FPCViewController {
     func generateRequests(){
-        guard let picUrl = AppDelegate.userDefaults.value(forKey: "profilePicUrl") as? URL else {
+        guard let picString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+              let picUrl = URL(string: picString) else {
             return
         }
         
+        
+            
         let ezra = User(userId: "u6502222222",
                         firstName: "Ezra",
                         lastName: "Taylor",
@@ -571,16 +584,29 @@ extension FPCViewController {
         let request2 = ZipRequest(fromUser: yianni, time: TimeInterval(10))
         let request3 = ZipRequest(fromUser: seung, time: TimeInterval(10))
         let request4 = ZipRequest(fromUser: gabe, time: TimeInterval(10))
-
-
-
+        
+        print("Here321123")
+        print(requests)
+        
         
         requests.append(request1)
-        requests.append(request2)
-        requests.append(request3)
-        requests.append(request4)
-        
+        print()
         print(requests)
+
+        requests.append(request2)
+        print()
+        print(requests)
+
+        requests.append(request3)
+        print()
+        print(requests)
+
+        requests.append(request4)
+        print()
+        print(requests)
+
+        
+     
         zipRequestsLabel.text = "Zip Requests (\(requests.count))"
     }
     
