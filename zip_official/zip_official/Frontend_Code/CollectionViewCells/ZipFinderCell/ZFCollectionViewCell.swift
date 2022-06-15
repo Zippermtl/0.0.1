@@ -21,27 +21,43 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     // Color
     
     //User
-    private var user = User()
-    var userLoc = CLLocation()
+    private var user: User?
 
     // MARK: - SubViews
-    let cardFrontView = ZFCardFrontView()
-    let cardBackView = ZFCardBackView()
+    let cardFrontView: ZFCardFrontView
+    let cardBackView: ZFCardBackView
     
     // MARK: - Subviews
     private var cardView = UIView()
     
     
-    public func configure(with user: User, loc: CLLocation, idPath: Int) {
-        self.user = user
-        self.userLoc = loc
-        self.idPath = idPath
-        
-        print("USER LOCATION = ", user.location)
-        
+    
+    override init(frame: CGRect) {
+        cardFrontView = ZFCardFrontView()
+        cardBackView = ZFCardBackView()
+        super.init(frame: frame)
+
         configureBackground()
         configureCard()
         configureGestureRecognizer()
+    }
+    
+
+    
+    required init?(coder: NSCoder) {
+        cardFrontView = ZFCardFrontView()
+        cardBackView = ZFCardBackView()
+        
+        super.init(coder: coder)
+
+        configureBackground()
+        configureCard()
+        configureGestureRecognizer()
+    }
+    
+    public func configure(user: User, loc: CLLocation, idPath: Int) {
+        cardFrontView.configure(user: user)
+        cardBackView.configure(user: user)
     }
     
     
@@ -64,10 +80,10 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     
     //inits front and back side of card
     private func configureCard(){
-        cardFrontView.frame = cardView.frame
-        cardFrontView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc)
         cardView.addSubview(cardFrontView)
         
+        cardFrontView.frame = cardView.frame
+
         cardFrontView.translatesAutoresizingMaskIntoConstraints = false
         cardFrontView.topAnchor.constraint(equalTo: cardView.topAnchor).isActive = true
         cardFrontView.leftAnchor.constraint(equalTo: cardView.leftAnchor).isActive = true
@@ -75,12 +91,13 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardFrontView.rightAnchor.constraint(equalTo: cardView.rightAnchor).isActive = true
         
         
-        cardBackView.frame = cardView.frame
-        cardBackView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc, url: user.pictureURLs[0])
         cardView.addSubview(cardBackView)
+        cardBackView.frame = cardView.frame
+//        cardBackView.addSubviews()
+//        cardBackView.configureSubviewLayout()
+        
         cardBackView.isHidden = true
         cardBackView.delegate = delegate
-        cardFrontView.userLoc = userLoc
         
         cardBackView.translatesAutoresizingMaskIntoConstraints = false
         cardBackView.topAnchor.constraint(equalTo: cardView.topAnchor).isActive = true
