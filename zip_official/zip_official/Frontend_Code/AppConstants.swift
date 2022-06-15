@@ -223,6 +223,92 @@ extension UIDevice {
     }()
 }
 
+extension UILabel {
+    
+    static func zipSubtitle() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipBodyBold.withSize(18)
+//        label.numberOfLines = 1
+//        label.adjustsFontSizeToFitWidth = true
+//        label.minimumScaleFactor = 0.5
+        label.sizeToFit()
+        label.text = "A"
+
+        return label
+    }
+    
+    static func zipHeader() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipTitle.withSize(24)
+        label.sizeToFit()
+        label.text = "@"
+        return label
+    }
+
+    static func zipSubtitle2() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipBodyBold.withSize(16)
+        label.text = "A"
+        return label
+    }
+    
+    static func zipTextNotiBold() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipBodyBold.withSize(14)
+        label.text = "A"
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.5
+        return label
+    }
+    
+    static func zipTextFill() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipBody.withSize(16)
+        label.sizeToFit()
+        label.text = "@"
+        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 0
+        return label
+    }
+    
+    static func zipTextDetail() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipBody.withSize(12)
+        label.sizeToFit()
+        label.text = "Joined Zipper on January 1st, 2022"
+        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 0
+        return label
+    }
+    
+    static func zipTextPrompt() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.numberOfLines = 0
+        label.font = .zipBody.withSize(14)
+        label.text = "tap to flip"
+        return label
+    }
+    
+    static func zipTextIcon() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.numberOfLines = 0
+        label.font = .zipBody.withSize(12)
+        return label
+    }
+    
+}
+
+
+
+
 
 
 //https://github.com/lionhylra/iOS-UIFont-Names
