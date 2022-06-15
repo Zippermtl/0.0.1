@@ -11,8 +11,8 @@ import CoreLocation
 class ZFSingleCardViewController: UIViewController {
     private var user = User()
 
-    private let cardFrontView = ZFCardFrontView()
-    private let cardBackView = ZFCardBackView()
+    private var cardFrontView: ZFCardFrontView?
+    private var cardBackView: ZFCardBackView?
     private var cardView = UIView()
     
     private let previewLabel: UILabel = {
@@ -40,8 +40,15 @@ class ZFSingleCardViewController: UIViewController {
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.8)
     }
     
+    
     public func configure(user: User) {
         self.user = user
+        cardFrontView = ZFCardFrontView()
+//        cardFrontView?.configure(user: user)
+
+        cardBackView = ZFCardBackView()
+        cardBackView?.configure(user: user)
+        
         configureBackground()
         configureCard()
         configureCloseButton()
@@ -76,13 +83,13 @@ class ZFSingleCardViewController: UIViewController {
     
     //inits front and back side of card
     private func configureCard(){
-        guard let coordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
+        guard let cardFrontView = cardFrontView,
+              let cardBackView = cardBackView
+        else {
             return
         }
-        
-        let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
-        
-        cardFrontView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc)
+                
+        cardFrontView.configure(user: user)
         cardView.addSubview(cardFrontView)
         
         cardFrontView.translatesAutoresizingMaskIntoConstraints = false
@@ -91,11 +98,9 @@ class ZFSingleCardViewController: UIViewController {
         cardFrontView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor).isActive = true
         cardFrontView.rightAnchor.constraint(equalTo: cardView.rightAnchor).isActive = true
         
-        
-        cardBackView.configure(user: user, cellColor: UIColor.zipBlue, loc: userLoc, url: user.pictureURLs[0])
+        cardBackView.configure(user: user)
         cardView.addSubview(cardBackView)
         cardBackView.isHidden = true
-        cardFrontView.userLoc = userLoc
         
         cardBackView.translatesAutoresizingMaskIntoConstraints = false
         cardBackView.topAnchor.constraint(equalTo: cardView.topAnchor).isActive = true
@@ -129,12 +134,18 @@ class ZFSingleCardViewController: UIViewController {
     }
     
     func flip() {
+        guard let cardFrontView = cardFrontView
+        else { return }
+        
         let flipSide: UIView.AnimationOptions = cardFrontView.isHidden ? .transitionFlipFromLeft : .transitionFlipFromRight
         UIView.transition(with: cardView, duration: 0.5, options: flipSide, animations: { [weak self]  () -> Void in
-            self?.cardFrontView.isHidden = !(self?.cardFrontView.isHidden ?? true)
-            self?.cardBackView.isHidden = !(self?.cardBackView.isHidden ?? false)
+            guard let cardFrontView = self?.cardFrontView,
+                  let cardBackView = self?.cardBackView
+            else { return }
+            
+            cardFrontView.isHidden = cardFrontView.isHidden
+            cardBackView.isHidden = cardBackView.isHidden
         }, completion: nil)
     }
-
 
 }
