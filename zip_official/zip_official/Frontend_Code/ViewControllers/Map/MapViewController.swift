@@ -93,8 +93,9 @@ class MapViewController: UIViewController {
 //        createNewUsersInDB()
 //        updateUsersInDB()
         
-        
-        let vc = ProfileViewController()
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
+        else { return }
+        let vc = ProfileViewController(id: userId)
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .overCurrentContext
         present(nav, animated: true, completion: nil)
@@ -144,8 +145,6 @@ class MapViewController: UIViewController {
         if #available(iOS 13.0, *){
             overrideUserInterfaceStyle = .dark
         }
-//        AppDelegate.locationManager.requexstWhenInUseAuthorization()
-
         
         view.backgroundColor = .zipGray
         mapView = MKMapView()
@@ -265,6 +264,8 @@ class MapViewController: UIViewController {
         mapView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
         mapView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
 
+
+        
         view.addSubview(profileButton)
         profileButton.translatesAutoresizingMaskIntoConstraints = false
         profileButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
