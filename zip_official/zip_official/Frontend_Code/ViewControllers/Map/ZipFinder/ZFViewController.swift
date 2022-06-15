@@ -300,7 +300,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
 
         cell.delegate = self
-        cell.configure(with: model, loc: userLoc, idPath: indexPath.row)
+        cell.configure(user: model, loc: userLoc, idPath: indexPath.row)
 //        print(model.location)
         return cell
     }
@@ -318,7 +318,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
 // MARK: UICollectionViewDelegate
 extension ZipFinderViewController: ZFCardBackDelegate {
     func openProfile(_ user: User) {        
-        let userProfileView = OtherProfileViewController(user: user)
+        let userProfileView = OtherProfileViewController(id: user.userId)
         userProfileView.modalPresentationStyle = .overCurrentContext
 
         let transition: CATransition = CATransition()
@@ -334,6 +334,18 @@ extension ZipFinderViewController: ZFCardBackDelegate {
         navigationController?.navigationBar.isHidden = false
         navigationController?.pushViewController(userProfileView, animated: true)
 //        present(userProfileView, animated: false, completion: nil)
+    }
+    
+    func openZips(_ user: User) {
+        //TODO: Implement
+    }
+    
+    func inviteUser(_ user: User) {
+        //TODO: Implement
+    }
+    
+    func messageUser(_ user: User) {
+        //TODO: Implement
     }
 }
 
