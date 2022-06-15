@@ -197,7 +197,7 @@ extension ZipListViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let userProfileView = OtherProfileViewController(user: tableData[indexPath.section][indexPath.row], needsLoadUser: true)
+        let userProfileView = OtherProfileViewController(id: tableData[indexPath.section][indexPath.row].userId)
         userProfileView.modalPresentationStyle = .overCurrentContext
         
         let transition: CATransition = CATransition()
