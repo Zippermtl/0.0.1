@@ -29,6 +29,21 @@ public class User {
     var interestedEvents: [Event] = []
     var notificationPreferences: [String: Bool] = [:] // Notification Preferences
     var friendships: [Friendship] = [] // Friendship Preferences
+    var friendshipStatus: FriendshipStatus = .ACCEPTED
+    
+    func getProfilePicUrl() -> URL {
+        return pictureURLs[0]
+    }
+    
+    func getDistance() -> Double {
+        guard let coordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
+            return 0
+        }
+        let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
+        
+        return userLoc.distance(from: location)
+    }
+    
     
     
     var isInivted: Bool = false
@@ -453,6 +468,7 @@ public class User {
             notificationPreferences = DecodePreferences(enp)
         }
     }
+    
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
     func load(status: Int, completion: @escaping (Bool) -> Void){
         switch status{
@@ -509,4 +525,12 @@ public class User {
             })
         }
     }
+    
+    
+    //TODO: for nic to do
+    func cancelOutGoingRequest() {
+        
+    }
+    
+
 }
