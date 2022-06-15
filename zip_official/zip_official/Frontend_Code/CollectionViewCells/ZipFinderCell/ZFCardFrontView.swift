@@ -12,105 +12,28 @@ import MTSlideToOpen
 import DropDown
 
 class ZFCardFrontView: UIView {
-    // MARK: - Cell Data
-    // Color
-    var cellColor = UIColor.zipBlue.withAlphaComponent(1)
-    
-    
     //User
-    private var user = User()
-    var userLoc = CLLocation()
-    
+    private var user: User?
     
     //MARK: - Subviews
-    private var pictureCollectionLayout = SnappingFlowLayout()
-    var pictureCollectionView = UICollectionView(frame: .zero, collectionViewLayout: SnappingFlowLayout())
-    private var distanceImage = UIImageView(image: UIImage(named: "distanceToWhite"))
-    private var reportPopUp = DropDown()
-    private var dropDownTitles: [String] = []
+    private var pictureCollectionLayout: SnappingFlowLayout
+    var pictureCollectionView: UICollectionView
+    private var reportPopUp: DropDown
+    private var dropDownTitles: [String]
     
     
     //MARK: - Labels
-    private var firstNameLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle
-        return label
-    }()
-    
-    private var lastNameLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.5
-        return label
-    }()
-    
-    
-    private var distanceLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBodyBold
-        label.lineBreakMode = .byCharWrapping
-        label.text = "A"
-        return label
-    }()
-    
-    
-    private var bioLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.numberOfLines = 0
-        label.font = .zipBody
-        return label
-    }()
-    
-    private var tapToFlipLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .zipVeryLightGray
-        label.numberOfLines = 0
-        label.font = .zipBody.withSize(15)
-        label.text = "tap to flip"
-        return label
-    }()
-    
-    private var swipeToViewLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .zipVeryLightGray
-        label.numberOfLines = 0
-        label.font = .zipBody.withSize(15)
-        label.text = "swipe →"
-        return label
-    }()
+    private var firstNameLabel: UILabel
+    private var lastNameLabel: UILabel
+    private var distanceLabel: DistanceLabel
+    private var bioLabel: UILabel
+    private var tapToFlipLabel: UILabel
+    private var swipeToViewLabel: UILabel
     
     //MARK: - Button
-    private var reportButton: UIButton = {
-        let btn = UIButton()
-        btn.setImage(UIImage(named: "report"), for: .normal)
-        btn.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
-        return btn
-    }()
-    
-    private var zipButton: UIButton = {
-        let btn = UIButton()
-        btn.setImage(UIImage(named: "addFilled"), for: .normal)
-        btn.addTarget(self, action: #selector(didTapZipButton), for: .touchUpInside)
-        return btn
-    }()
-    
-    private var requestedButton: UIButton = {
-        let btn = UIButton()
-        btn.frame = CGRect(x: 0, y: 0, width: 75, height: 20)
-        btn.layer.cornerRadius = 10
-        btn.setTitle("Requested", for: .normal)
-        btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = .zipBodyBold
-        btn.addTarget(self, action: #selector(didTapRequestedButton), for: .touchUpInside)
-        btn.backgroundColor = .zipGreen
-        btn.isHidden = true
-        return btn
-    }()
+    private var reportButton: UIButton
+    private var zipButton: UIButton
+    private var requestedButton: UIButton
     
     //MARK: - Button Actions
     @objc private func didTapReportButton(){
@@ -119,13 +42,13 @@ class ZFCardFrontView: UIView {
     }
     
     @objc private func didTapRequestedButton(){
-        print("requested \(user.firstName) \(user.lastName)")
-        let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        let selfUser = User(userId: userId)
-        selfUser.requestFriend(to: user, completion: { error in
-            
-            
-        })
+        print("requested \(user?.firstName) \(user?.lastName)")
+        
+        //TODO: Update with nics new code
+//        selfUser.requestFriend(to: user, completion: { error in
+//
+//
+//        })
         zipButton.isHidden = false
         requestedButton.isHidden = true
     }
@@ -133,26 +56,73 @@ class ZFCardFrontView: UIView {
     @objc private func didTapZipButton(){
         zipButton.isHidden = true
         requestedButton.isHidden = false
-        print("unzip \(user.firstName) \(user.lastName)")
+        print("unzip \(user?.firstName) \(user?.lastName)")
     }
     
-    //MARK: - Configure
-    public func configure(user: User, cellColor: UIColor, loc: CLLocation){
-        backgroundColor = .clear
+    init() {
+        firstNameLabel = UILabel.zipHeader()
+        lastNameLabel = UILabel.zipHeader()
+        bioLabel = UILabel.zipTextFill()
+        distanceLabel = DistanceLabel()
+        tapToFlipLabel = UILabel.zipTextPrompt()
+        swipeToViewLabel = UILabel.zipTextPrompt()
+        dropDownTitles = []
+        reportButton = UIButton()
+        reportPopUp = DropDown()
+        requestedButton = UIButton()
+        zipButton = UIButton()
+        pictureCollectionView = UICollectionView(frame: .zero, collectionViewLayout: SnappingFlowLayout())
+        pictureCollectionLayout = SnappingFlowLayout()
+        
+        super.init(frame: .zero)
         layer.cornerRadius = 20
         
+        swipeToViewLabel.text = "swipe →"
+        tapToFlipLabel.text = "tap to flip"
+        
+        reportButton.setImage(UIImage(named: "report"), for: .normal)
+        reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
+       
+        
+        configurePictures()
+        configureDropDown()
+        addSubviews()
+        configureSubviewLayout()
+        
+        requestedButton.frame = CGRect(x: 0, y: 0, width: 75, height: 20)
+        requestedButton.layer.cornerRadius = 10
+        requestedButton.setTitle("Requested", for: .normal)
+        requestedButton.setTitleColor(.white, for: .normal)
+        requestedButton.titleLabel?.font = .zipBodyBold
+        requestedButton.addTarget(self, action: #selector(didTapRequestedButton), for: .touchUpInside)
+        requestedButton.backgroundColor = .zipGreen
+        requestedButton.isHidden = true
+        
+        
+        zipButton.setImage(UIImage(named: "addFilled"), for: .normal)
+        zipButton.addTarget(self, action: #selector(didTapZipButton), for: .touchUpInside)
+
+        backgroundColor = .clear
+        layer.cornerRadius = 20
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
+    //MARK: - Configure
+    public func configure(user: User){
+       
+        
         self.user = user
-        self.cellColor = cellColor
-        userLoc = loc
+
         
         zipButton.isHidden = false
         requestedButton.isHidden = true
         
         configureLabels()
-        configurePictures()
-        configureDropDown()
-        addSubviews()
-        configureSubviewLayout()
+        
     }
     
     private func configureLabels(){
@@ -166,47 +136,13 @@ class ZFCardFrontView: UIView {
             swipeToViewLabel.font = .zipBody.withSize(10)
         }
         
-//        let name = user.name.components(separatedBy: " ")
-//        self.firstNameLabel.text = name[0]
-//        self.lastNameLabel.text = name[1]
-        
+        guard let user = user else {
+            return
+        }
+                
         firstNameLabel.text = user.firstName
         lastNameLabel.text = user.lastName
-
-        var distance = Double(round(10*(userLoc.distance(from: user.location))/1000))/10
-        var unit = "km"
-        if NSLocale.current.regionCode == "US" {
-            distance = round(10*distance/1.6)/10
-            unit = "miles"
-        }
-        
-        if distance > 10 {
-            let intDistance = Int(distance)
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceLabel.text = "<1 \(unit)"
-            } else if distance >= 500 {
-                distanceLabel.text = ">500 \(unit)"
-            } else {
-                distanceLabel.text = String(intDistance) + " \(unit)"
-            }
-            distanceLabel.textColor = cellColor
-        } else {
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceLabel.text = "<1 \(unit)"
-            } else if distance >= 500 {
-                distanceLabel.text = ">500 \(unit)"
-            } else {
-                distanceLabel.text = String(distance) + " \(unit)"
-            }
-            distanceLabel.textColor = cellColor
-        }
-       
+        distanceLabel.update(distance: user.getDistance())
         bioLabel.text = user.bio
 
     }
@@ -216,6 +152,9 @@ class ZFCardFrontView: UIView {
 //        dropDownTitles = ["Report \(name[0])",
 //                          "Block \(name[0])",
 //                          "Don't show me \(name[0])"]
+        guard let user = user else {
+            return
+        }
         
         dropDownTitles = ["Report \(user.firstName)",
                           "Block \(user.firstName)",
@@ -261,7 +200,6 @@ class ZFCardFrontView: UIView {
         addSubview(bioLabel)
         addSubview(zipButton)
         addSubview(requestedButton)
-        addSubview(distanceImage)
         addSubview(tapToFlipLabel)
         addSubview(swipeToViewLabel)
         
@@ -304,19 +242,12 @@ class ZFCardFrontView: UIView {
         requestedButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer/2).isActive = true
         requestedButton.bottomAnchor.constraint(equalTo: pictureCollectionView.bottomAnchor, constant: -buffer/2).isActive = true
         
-        distanceLabel.textColor = cellColor
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.leftAnchor.constraint(equalTo: distanceImage.rightAnchor).isActive = true
+        distanceLabel.leftAnchor.constraint(equalTo: bioLabel.leftAnchor).isActive = true
         distanceLabel.topAnchor.constraint(equalTo: pictureCollectionView.bottomAnchor, constant: 2).isActive = true
         
-        distanceImage.image = distanceImage.image?.withTintColor(cellColor)
-        distanceImage.translatesAutoresizingMaskIntoConstraints = false
-        distanceImage.centerYAnchor.constraint(equalTo: distanceLabel.centerYAnchor).isActive = true
-        distanceImage.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
-        distanceImage.heightAnchor.constraint(equalToConstant: distanceLabel.intrinsicContentSize.height).isActive = true
-        distanceImage.widthAnchor.constraint(equalTo: distanceImage.heightAnchor).isActive = true
+
     
-        let bioLabelHeight = frame.height - pictureCollectionView.frame.maxY - distanceLabel.intrinsicContentSize.height - 25
         bioLabel.translatesAutoresizingMaskIntoConstraints = false
         bioLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor, constant: 5).isActive = true
         bioLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
@@ -338,6 +269,10 @@ class ZFCardFrontView: UIView {
 //MARK: - Picture Datasource
 extension ZFCardFrontView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let user = user else {
+            return UICollectionViewCell()
+        }
+        
         let model = user.pictureURLs[indexPath.row]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
@@ -347,6 +282,10 @@ extension ZFCardFrontView: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        guard let user = user else {
+            return 0
+        }
+        
         return user.pictureURLs.count
     }
 }
