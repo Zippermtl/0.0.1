@@ -15,7 +15,7 @@ import JGProgressHUD
 class AbstractProfileViewController: UIViewController {
     var user: User
     private var tableView: UITableView?
-    private var tableHeader: UIView?
+    var tableHeader: UIView?
     private var profilePictureView: UIImageView?
     private var spinner: JGProgressHUD?
     private var refreshControl: UIRefreshControl?
@@ -25,55 +25,43 @@ class AbstractProfileViewController: UIViewController {
     private var lastnameLabel: UILabel?
     private var ageLabel: UILabel?
     private var photoCountLabel: UILabel?
-    
-    private var B1Label: UILabel?
-    private var B2Label: UILabel?
-    private var B3Label: UILabel?
 
     // MARK: - Buttons
     var centerActionButton: UIButton?
-    private var B1Button: UIButton?
-    private var B2Button: UIButton?
-    private var B3Button: UIButton?
+    private var B1Button: IconButton
+    private var B2Button: IconButton
+    private var B3Button: IconButton
     
     private var centerActionInfo: (String,UIColor)
-    private var B1Info: (String,UIImage?,UIImage.Configuration)
-    private var B2Info: (String,UIImage?,UIImage.Configuration)
-    private var B3Info: (String,UIImage?,UIImage.Configuration)
-    
+
     private var rightNavBarButton: UIBarButtonItem
     
     @objc open func didTapB1Button(){}
-    @objc open func didTapB3Button(){}
     @objc open func didTapB2Button(){}
+    @objc open func didTapB3Button(){}
     @objc open func didTapCenterActionButton(){}
     @objc open func didTapRightBarButton(){}
     @objc open func didTapPhotos(){}
 
     init(
         id: String,
-        BInfo: [(String,UIImage?,UIImage.Configuration)],
+        B1: IconButton,
+        B2: IconButton,
+        B3: IconButton,
         rightBarButton: UIBarButtonItem,
         centerActionInfo: (String,UIColor)
     ) {
         self.user = User(userId: id)
         
-        if BInfo.count == 3 {
-            B1Info = BInfo[0]
-            B2Info = BInfo[1]
-            B3Info = BInfo[2]
-        } else {
-            let im = UIImage(systemName: "person.3.fill")
-            let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
-            
-            B1Info = ("default",im,config)
-            B2Info = ("default",im,config)
-            B3Info = ("default",im,config)
-        }
+        
         
         self.rightNavBarButton = rightBarButton
         self.centerActionInfo = centerActionInfo
         
+        self.B1Button = B1
+        self.B2Button = B2
+        self.B3Button = B3
+
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -98,14 +86,8 @@ class AbstractProfileViewController: UIViewController {
         lastnameLabel = UILabel()
         ageLabel = UILabel()
         photoCountLabel = UILabel()
-        B3Label = UILabel()
-        B2Label = UILabel()
-        B1Label = UILabel()
 
         centerActionButton = UIButton()
-        B2Button = UIButton()
-        B3Button = UIButton()
-        B1Button = UIButton()
         
         configureRefresh()
         configureLabels()
@@ -207,10 +189,7 @@ class AbstractProfileViewController: UIViewController {
         guard let firstnameLabel = firstnameLabel,
               let lastnameLabel = lastnameLabel,
               let ageLabel = ageLabel,
-              let photoCountLabel = photoCountLabel,
-              let B1Label = B1Label,
-              let B2Label = B2Label,
-              let B3Label = B3Label
+              let photoCountLabel = photoCountLabel
               
         else { return }
 
@@ -234,26 +213,10 @@ class AbstractProfileViewController: UIViewController {
         photoCountLabel.textAlignment = .center
         photoCountLabel.isUserInteractionEnabled = true
 
-        B1Label.text = B1Info.0
-        B1Label.font = .zipBody.withSize(16)
-        B1Label.textColor = .white
-        
-        
-        B2Label.text = B2Info.0
-        B2Label.font = .zipBody.withSize(16)
-        B2Label.textColor = .white
-        
-        
-        B3Label.text = B3Info.0
-        B3Label.font = .zipBody.withSize(16)
-        B3Label.textColor = .white
     }
     
     private func configureButtons() {
         guard let centerActionButton = centerActionButton,
-              let B1Button = B1Button,
-              let B2Button = B2Button,
-              let B3Button = B3Button,
               let photoCountLabel = photoCountLabel,
               let profilePictureView = profilePictureView
         else {
@@ -272,53 +235,10 @@ class AbstractProfileViewController: UIViewController {
         centerActionButton.titleLabel?.textAlignment = .center
         centerActionButton.contentVerticalAlignment = .center
         
-        //BUTTON 1
-        B1Button.backgroundColor = .zipLightGray
-        let B1Icon = UIImageView(image: B1Info.1?
-                                    .withConfiguration(B1Info.2)
-                                    .withRenderingMode(.alwaysOriginal)
-                                    .withTintColor(.white))
-        B1Icon.isExclusiveTouch = false
-        B1Icon.isUserInteractionEnabled = false
-        
-        B1Button.addSubview(B1Icon)
-        B1Icon.translatesAutoresizingMaskIntoConstraints = false
-        B1Icon.centerXAnchor.constraint(equalTo: B1Button.centerXAnchor).isActive = true
-        B1Icon.centerYAnchor.constraint(equalTo: B1Button.centerYAnchor).isActive = true
-        B1Button.layer.masksToBounds = true
-        
-        //BUTTON 2
-        B2Button.backgroundColor = .zipLightGray
-        let B2Icon = UIImageView(image: B2Info.1?
-                                    .withConfiguration(B2Info.2)
-                                    .withRenderingMode(.alwaysOriginal)
-                                    .withTintColor(.white))
-        B2Icon.isExclusiveTouch = false
-        B2Icon.isUserInteractionEnabled = false
-        
-        B2Button.addSubview(B2Icon)
-        B2Icon.translatesAutoresizingMaskIntoConstraints = false
-        B2Icon.centerXAnchor.constraint(equalTo: B2Button.centerXAnchor).isActive = true
-        B2Icon.centerYAnchor.constraint(equalTo: B2Button.centerYAnchor).isActive = true
-        B2Button.layer.masksToBounds = true
-        
-        //BUTTON 3
-        B3Button.backgroundColor = .zipLightGray
-        let B3Icon = UIImageView(image: B3Info.1?
-                                    .withConfiguration(B3Info.2)
-                                    .withRenderingMode(.alwaysOriginal)
-                                    .withTintColor(.white))
-        B3Icon.isExclusiveTouch = false
-        B3Icon.isUserInteractionEnabled = false
-        
-        B3Button.addSubview(B3Icon)
-        B3Icon.translatesAutoresizingMaskIntoConstraints = false
-        B3Icon.centerXAnchor.constraint(equalTo: B3Button.centerXAnchor).isActive = true
-        B3Icon.centerYAnchor.constraint(equalTo: B3Button.centerYAnchor).isActive = true
-        B3Button.layer.masksToBounds = true
-        
+        B1Button.addTarget(self, action: #selector(didTapB1Button), for: .touchUpInside)
+        B2Button.addTarget(self, action: #selector(didTapB2Button), for: .touchUpInside)
+        B3Button.addTarget(self, action: #selector(didTapB3Button), for: .touchUpInside)
 
- 
     }
     
     //MARK: - Nav Bar Config
@@ -363,13 +283,7 @@ class AbstractProfileViewController: UIViewController {
               let lastnameLabel = lastnameLabel,
               let ageLabel = ageLabel,
               let photoCountLabel = photoCountLabel,
-              let B1Label = B1Label,
-              let B2Label = B2Label,
-              let B3Label = B3Label,
               let centerActionButton = centerActionButton,
-              let B1Button = B1Button,
-              let B2Button = B2Button,
-              let B3Button = B3Button,
               let profilePictureView = profilePictureView,
               let tableHeader = tableHeader
         else { return }
@@ -415,40 +329,24 @@ class AbstractProfileViewController: UIViewController {
         tableHeader.addSubview(B2Button)
         B2Button.translatesAutoresizingMaskIntoConstraints = false
         B2Button.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        B2Button.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 15).isActive = true
-        B2Button.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        B2Button.widthAnchor.constraint(equalTo: B2Button.heightAnchor).isActive = true
+        B2Button.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 40).isActive = true
+        B2Button.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        B2Button.setIconDimension(width: 60)
 
-        tableHeader.addSubview(B2Label)
-        B2Label.translatesAutoresizingMaskIntoConstraints = false
-        B2Label.centerXAnchor.constraint(equalTo: B2Button.centerXAnchor).isActive = true
-        B2Label.topAnchor.constraint(equalTo: B2Button.bottomAnchor, constant: 5).isActive = true
-        
         tableHeader.addSubview(B1Button)
         B1Button.translatesAutoresizingMaskIntoConstraints = false
         B1Button.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
         B1Button.topAnchor.constraint(equalTo: B2Button.topAnchor).isActive = true
-        B1Button.heightAnchor.constraint(equalTo: B2Button.heightAnchor).isActive = true
         B1Button.widthAnchor.constraint(equalTo: B2Button.widthAnchor).isActive = true
+        B1Button.setIconDimension(width: 60)
 
-        tableHeader.addSubview(B1Label)
-        B1Label.translatesAutoresizingMaskIntoConstraints = false
-        B1Label.centerXAnchor.constraint(equalTo: B1Button.centerXAnchor).isActive = true
-        B1Label.topAnchor.constraint(equalTo: B2Label.topAnchor).isActive = true
 
         tableHeader.addSubview(B3Button)
         B3Button.translatesAutoresizingMaskIntoConstraints = false
         B3Button.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -35).isActive = true
         B3Button.topAnchor.constraint(equalTo: B2Button.topAnchor).isActive = true
-        B3Button.heightAnchor.constraint(equalToConstant: 60).isActive = true
         B3Button.widthAnchor.constraint(equalTo: B3Button.heightAnchor).isActive = true
-        
-        tableHeader.addSubview(B3Label)
-        B3Label.translatesAutoresizingMaskIntoConstraints = false
-        B3Label.centerXAnchor.constraint(equalTo: B3Button.centerXAnchor).isActive = true
-        B3Label.topAnchor.constraint(equalTo: B2Label.topAnchor).isActive = true
-
-       
+        B3Button.setIconDimension(width: 60)
 
         centerActionButton.layer.cornerRadius = 5
         photoCountLabel.layer.cornerRadius = 15
@@ -463,7 +361,7 @@ class AbstractProfileViewController: UIViewController {
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
         tableHeader.topAnchor.constraint(equalTo: profilePictureView.topAnchor).isActive = true
-        tableHeader.bottomAnchor.constraint(equalTo: B2Label.bottomAnchor,constant: 10).isActive = true
+        tableHeader.bottomAnchor.constraint(equalTo: B2Button.bottomAnchor,constant: 10).isActive = true
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
         tableView.tableHeaderView = tableHeader
@@ -478,8 +376,7 @@ class AbstractProfileViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         guard let tableView = tableView,
-              let tableHeader = tableHeader,
-              let B2Label = B2Label
+              let tableHeader = tableHeader
         else {
             return
         }
@@ -487,7 +384,7 @@ class AbstractProfileViewController: UIViewController {
         tableHeader.frame = CGRect(x: 0,
                                    y: 0,
                                    width: view.frame.width,
-                                   height: B2Label.frame.maxY + 15)
+                                   height: B2Button.frame.maxY + 15)
                 
         tableView.tableHeaderView = tableHeader
         
