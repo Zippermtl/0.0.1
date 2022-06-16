@@ -15,47 +15,88 @@ protocol FPCMapDelegate: AnyObject {
     func openNotifications()
     func openMessages()
     func openFPC()
+    func openZipRequests(requests: [ZipRequest])
+    func openEventInvites(events: [Event])
 }
 
 class FPCViewController: UIViewController {
     weak var delegate: FPCMapDelegate?
+    private var userLoc: CLLocation
+    private var scrollView: UIScrollView
+    private var zipFinderButton: UIButton
+
+    private let searchBar: UITextField
+    private var collectionView: UICollectionView
+
+    private let zipRequestsLabel: UILabel
+    private let eventsLabel: UILabel
+    private let zipRequestsButton: UIButton
+    private let eventsButton: UIButton
+    private var zipRequestsTable: ZipRequestTableView
+    private var eventsTable: EventInvitesTableView
+    private var events: [Event]
+    var requests: [ZipRequest]
     
-    private var userLoc = CLLocation()
+    private let collectionTitles: [String]
+    private let collectionImages: [UIImage?]
+
     
-    private let scrollView = UIScrollView()
     
-    
-    
-    private let zipFinderButton: UIButton = {
-        let btn = UIButton()
-        btn.layer.masksToBounds = true
-        btn.layer.cornerRadius = 20
-        btn.backgroundColor = .zipLightGray
+    init(requests: [ZipRequest], events: [Event]) {
+        self.userLoc = CLLocation()
+        self.scrollView = UIScrollView()
+        self.zipFinderButton = UIButton()
+        self.searchBar = UITextField()
         
+        self.zipRequestsLabel = UILabel.zipTextFill()
+        self.eventsLabel = UILabel.zipTextFill()
+        self.zipRequestsButton = UIButton()
+        self.eventsButton = UIButton()
+        self.requests = requests
+        self.events = events
+        
+        self.zipRequestsTable = ZipRequestTableView(requests: requests)
+        self.eventsTable = EventInvitesTableView(events: events)
+
+        self.collectionTitles = [
+            "Find\nEvents",
+            "Create\nEvent",
+            "Notifications",
+            "Messages"
+        ]
+        
+        self.collectionImages = [
+            UIImage(systemName: "calendar"),
+            UIImage(systemName: "calendar.badge.plus"),
+            UIImage(systemName: "bell.fill"),
+            UIImage(systemName: "message.fill")
+        ]
+        
+        let layout = UICollectionViewFlowLayout()
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        layout.minimumInteritemSpacing = 5
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        
+        super.init(nibName: nil, bundle: nil)
+        addSubviews()
+        configureSubviewLayout()
+
+        
+        zipFinderButton.layer.masksToBounds = true
+        zipFinderButton.layer.cornerRadius = 20
+        zipFinderButton.backgroundColor = .zipLightGray
         let config = UIImage.SymbolConfiguration(scale: .large)
-        let img = UIImage(systemName: "person.fill.badge.plus", withConfiguration: config)
-        
-        let imgView = UIImageView(image: img)
-        imgView.contentMode = .scaleAspectFit
-        imgView.tintColor = .white
-        
-        btn.addSubview(imgView)
-        imgView.translatesAutoresizingMaskIntoConstraints = false
-        imgView.centerXAnchor.constraint(equalTo: btn.centerXAnchor).isActive = true
-        imgView.centerYAnchor.constraint(equalTo: btn.centerYAnchor).isActive = true
-            
-        return btn
-    }()
-    
-    private let searchBar: UITextField = {
-        let tf = UITextField()
-        tf.layer.masksToBounds = true
-        tf.layer.cornerRadius = 20
-        tf.backgroundColor = .zipLightGray
-        tf.tintColor = .white
-        tf.leftViewMode = .always
-        
-        tf.placeholder = "Search for Users or Events"
+        zipFinderButton.setImage(UIImage(systemName: "person.fill.badge.plus", withConfiguration: config)?
+                                 .withRenderingMode(.alwaysOriginal)
+                                 .withTintColor(.white), for: .normal)
+       
+        searchBar.layer.masksToBounds = true
+        searchBar.layer.cornerRadius = 20
+        searchBar.backgroundColor = .zipLightGray
+        searchBar.tintColor = .white
+        searchBar.leftViewMode = .always
+           
+        searchBar.placeholder = "Search for Users or Events"
         
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 30, weight: .unspecified, scale: .small)
         let img = UIImage(systemName: "magnifyingglass", withConfiguration: largeConfig)?
@@ -72,78 +113,43 @@ class FPCViewController: UIViewController {
                                    width: size.width,
                                    height: size.height)
         }
-        tf.leftView = view
-        return tf
+        searchBar.leftView = view
         
-    }()
-    
-    private var collectionView: UICollectionView?
-
-    private let collectionTitles = [
-        "Find\nEvents",
-        "Create\nEvent",
-        "Notifications",
-        "Messages"
-    ]
-    
-    private let collectionImages: [UIImage?] = [
-        UIImage(systemName: "calendar"),
-        UIImage(systemName: "calendar.badge.plus"),
-        UIImage(systemName: "bell.fill"),
-        UIImage(systemName: "message.fill")
-    ]
-    
-    private let zipRequestsLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBody.withSize(16)
-        label.textColor = .zipVeryLightGray
-        label.text = "Zip Requests (0)"
-        return label
-    }()
-    
-    private let zipRequestsButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .clear
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        
+        zipRequestsButton.backgroundColor = .clear
+        let ZRattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
+        zipRequestsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: ZRattributes), for: .normal)
         
-        btn.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: attributes), for: .normal)
-        return btn
-    }()
-    
-    private var zipRequestsTable: UITableView?
-    var requests: [ZipRequest] = []
-
-    private let eventsLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBody.withSize(16)
-        label.textColor = .zipVeryLightGray
-        label.text = "Event Invites (0)"
-        return label
-    }()
-    
-    private let eventsButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .clear
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        
+        eventsButton.backgroundColor = .clear
+        let Eattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
-        
-        btn.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: attributes), for: .normal)
-        return btn
-    }()
+        eventsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: Eattributes), for: .normal)
+    }
     
-    private var eventsTable: UITableView?
-    private var events: [Event] = []
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     
     @objc private func openZipFinder() {
         delegate?.openZipFinder()
     }
     
-    func findEvents() {
+    @objc func findEvents() {
         delegate?.findEvents()
+    }
+    
+    @objc private func didTapZipRequests(){
+        delegate?.openZipRequests(requests: requests)
+    }
+    
+    @objc private func didTapEventInvites(){
+        delegate?.openEventInvites(events: events)
     }
     
     func createEvent() {
@@ -161,50 +167,26 @@ class FPCViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        generateRequests()
-        print("HERE123 " , requests)
-        generateEvents()
         view.backgroundColor = .zipGray
-        
-        //Collection View
-        let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-        layout.minimumInteritemSpacing = 5
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        
-        //Table Views
-        zipRequestsTable = UITableView()
-        eventsTable = UITableView()
         
         //Buttons
         zipFinderButton.addTarget(self, action: #selector(openZipFinder), for: .touchUpInside)
+        zipRequestsButton.addTarget(self, action: #selector(didTapZipRequests), for: .touchUpInside)
+        eventsButton.addTarget(self, action: #selector(didTapEventInvites), for: .touchUpInside)
         
+        zipRequestsTable.FPCDelegate = self
+        eventsTable.FPCDelegate = self
+        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
+        eventsLabel.text = "Event Invites (\(events.count))"
+
         //Search Bar
         searchBar.delegate = self
         
         configureCollectionView()
-        configureTables()
-        addSubviews()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        zipRequestsTable?.reloadData()
-    }
-    
-    public func configure(userLocation: CLLocation) {
-        self.userLoc = userLocation
-        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
-        print("REQUESTS = \(requests)")
-        eventsTable?.reloadData()
-        zipRequestsTable?.reloadData()
-    }
     
     private func configureCollectionView() {
-        guard let collectionView = collectionView else {
-            return
-        }
-        
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
@@ -215,50 +197,10 @@ class FPCViewController: UIViewController {
         collectionView.isScrollEnabled = false
     }
     
-    private func configureTables(){
-        guard let zipRequestsTable = zipRequestsTable,
-              let eventsTable = eventsTable else {
-            return
-        }
 
-        zipRequestsTable.register(ZipRequestTableViewCell.self, forCellReuseIdentifier: ZipRequestTableViewCell.identifier)
-        zipRequestsTable.register(UITableViewCell.self, forCellReuseIdentifier: "noRequests")
-        zipRequestsTable.delegate = self
-        zipRequestsTable.dataSource = self
-        zipRequestsTable.backgroundColor = .clear
-        zipRequestsTable.separatorStyle = .none
-        zipRequestsTable.tableHeaderView = nil
-        zipRequestsTable.tableFooterView = nil
-        zipRequestsTable.sectionIndexBackgroundColor = .zipLightGray
-        zipRequestsTable.separatorColor = .zipSeparator
-        zipRequestsTable.backgroundColor = .clear
-        zipRequestsTable.isScrollEnabled = false
-        zipRequestsTable.bounces = false
-
-        
-        eventsTable.register(EventFinderTableViewCell.self, forCellReuseIdentifier: EventFinderTableViewCell.identifier)
-        eventsTable.register(UITableViewCell.self, forCellReuseIdentifier: "noEvents")
-        eventsTable.delegate = self
-        eventsTable.dataSource = self
-        eventsTable.backgroundColor = .clear
-        eventsTable.separatorStyle = .none
-        eventsTable.tableHeaderView = nil
-        eventsTable.tableFooterView = nil
-        eventsTable.sectionIndexBackgroundColor = .zipLightGray
-        eventsTable.separatorColor = .zipSeparator
-        eventsTable.backgroundColor = .clear
-        eventsTable.isScrollEnabled = false
-        eventsTable.bounces = false
-        
-    }
 
     
     private func addSubviews(){
-        guard let collectionView = collectionView,
-              let zipRequestsTable = zipRequestsTable,
-              let eventsTable = eventsTable else {
-            return
-        }
         view.addSubview(scrollView)
         
         scrollView.addSubview(zipFinderButton)
@@ -273,15 +215,7 @@ class FPCViewController: UIViewController {
 
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        guard let collectionView = collectionView,
-              let zipRequestsTable = zipRequestsTable,
-              let eventsTable = eventsTable else {
-            return
-        }
-        scrollView.updateContentView()
-        
+    private func configureSubviewLayout(){
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 10).isActive = true
         scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
@@ -337,10 +271,16 @@ class FPCViewController: UIViewController {
         eventsTable.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         eventsTable.heightAnchor.constraint(equalToConstant: 360).isActive = true
 
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
 
-        
+        scrollView.updateContentView()
         
     }
+    
+    
     
 }
 
@@ -431,118 +371,6 @@ extension FPCViewController: UICollectionViewDataSource {
         
         return cell
     }
-    
-    
-}
-
-
-
-
-extension FPCViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if tableView == zipRequestsTable {
-            return 90
-        } else {
-            return 120
-        }
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if tableView == zipRequestsTable {
-            if requests.count != 0 {
-                return requests.count
-            }
-            return 1
-        } else {
-            if events.count != 0 {
-                return events.count
-            } else {
-                return 1
-            }
-        }
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if tableView == zipRequestsTable {
-            if requests.count != 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: ZipRequestTableViewCell.identifier) as! ZipRequestTableViewCell
-                cell.configure(with: requests[indexPath.row])
-                print("HERE HERE HERE\n" , requests[indexPath.row].fromUser.pictureURLs)
-                print(requests[indexPath.row].fromUser.firstName)
-                print(requests.count)
-                cell.delegate = self
-                return cell
-            } else {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "noRequests")!
-                cell.backgroundColor = .clear
-                cell.selectionStyle = .none
-                var content = cell.defaultContentConfiguration()
-                content.textProperties.color = .zipVeryLightGray
-                content.textProperties.font = .zipBody.withSize(16)
-                content.textProperties.alignment = .center
-                content.text = "You have no requests"
-                cell.contentConfiguration = content
-                return cell
-            }
-        } else {
-            if events.count != 0 {
-                let cellEvent = events[indexPath.row]
-                let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
-                cell.delegate = self
-                cell.selectionStyle = .none
-                cell.clipsToBounds = true
-                cell.configure(cellEvent, loc: userLoc)
-                return cell
-            } else {
-                let cell = tableView.dequeueReusableCell(withIdentifier: "noEvents")!
-                cell.backgroundColor = .clear
-                cell.selectionStyle = .none
-                var content = cell.defaultContentConfiguration()
-                content.textProperties.color = .zipVeryLightGray
-                content.textProperties.font = .zipBody.withSize(16)
-                content.textProperties.alignment = .center
-                content.text = "There are no available events near you"
-                cell.contentConfiguration = content
-                return cell
-            }
-        }
-        
-    }
-}
-
-extension FPCViewController: UpdateZipRequestsTableDelegate {
-    func deleteZipRequestRow(_ sender: UIButton) {
-        let point = sender.convert(CGPoint.zero, to: zipRequestsTable)
-        guard let indexPath = eventsTable?.indexPathForRow(at: point) else {
-            return
-        }
-        requests.remove(at: indexPath.row)
-        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
-        if requests.count == 0 {
-            zipRequestsTable?.reloadData()
-        } else {
-            zipRequestsTable?.beginUpdates()
-            zipRequestsTable?.deleteRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .top)
-            zipRequestsTable?.endUpdates()
-        }
-    }
-    
-    func deleteEventsRow(_ sender: UIButton) {
-        let point = sender.convert(CGPoint.zero, to: eventsTable)
-        guard let indexPath = eventsTable?.indexPathForRow(at: point) else {
-            return
-        }
-        
-        events.remove(at: indexPath.row)
-        eventsLabel.text = "Event Invites (\(events.count))"
-        if events.count == 0 {
-            eventsTable?.reloadData()
-        } else {
-            eventsTable?.beginUpdates()
-            eventsTable?.deleteRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .top)
-            eventsTable?.endUpdates()
-        }
-    }
 }
 
 extension FPCViewController: UITextFieldDelegate {
@@ -551,140 +379,20 @@ extension FPCViewController: UITextFieldDelegate {
     }
 }
 
-extension FPCViewController {
-    func generateRequests(){
-        guard let picString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
-              let picUrl = URL(string: picString) else {
-            return
-        }
-        
-        
-            
-        let ezra = User(userId: "u6502222222",
-                        firstName: "Ezra",
-                        lastName: "Taylor",
-                        pictureURLs: [picUrl])
-        
-        let yianni = User(userId: "u6503333333",
-                        firstName: "Ezra",
-                        lastName: "Taylor",
-                        pictureURLs: [picUrl])
-        
-        let seung = User(userId: "u6504444444",
-                        firstName: "Seung",
-                        lastName: "Choi",
-                        pictureURLs: [picUrl])
-        
-        let gabe = User(userId: "u6505555555",
-                        firstName: "Gabe",
-                        lastName: "Denton",
-                        pictureURLs: [picUrl])
-        
-        let request1 = ZipRequest(fromUser: ezra, time: TimeInterval(10))
-        let request2 = ZipRequest(fromUser: yianni, time: TimeInterval(10))
-        let request3 = ZipRequest(fromUser: seung, time: TimeInterval(10))
-        let request4 = ZipRequest(fromUser: gabe, time: TimeInterval(10))
-        
-        print("Here321123")
-        print(requests)
-        
-        
-        requests.append(request1)
-        print()
-        print(requests)
 
-        requests.append(request2)
-        print()
-        print(requests)
-
-        requests.append(request3)
-        print()
-        print(requests)
-
-        requests.append(request4)
-        print()
-        print(requests)
-
-        
-     
+extension FPCViewController: FPCTableDelegate {
+    func updateRequestsLabel(requests: [ZipRequest]) {
+        print("running this? ", requests.count)
         zipRequestsLabel.text = "Zip Requests (\(requests.count))"
+        self.requests = requests
     }
     
-    func generateEvents(){
-        var yiannipics = [UIImage]()
-        var interests = [Interests]()
-        
-        interests.append(.skiing)
-        interests.append(.coding)
-        interests.append(.chess)
-        interests.append(.wine)
-        interests.append(.workingOut)
-
-
-        yiannipics.append(UIImage(named: "yianni1")!)
-        yiannipics.append(UIImage(named: "yianni2")!)
-        yiannipics.append(UIImage(named: "yianni3")!)
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd"
-        let yianniBirthday = formatter.date(from: "2001/12/06")!
-        
-        let yianni = User(email: "zavalyia@gmail.com",
-                          username: "yianni_zav",
-                          firstName: "Yianni",
-                          lastName: "Zavaliagkos",
-//                          name: "Yianni Zavaliagkos",
-                          birthday: yianniBirthday,
-                          location: CLLocation(latitude: 51.5013, longitude: -0.2070),
-                          pictures: yiannipics,
-                          bio: "Yianni Zavaliagkos. Second Year at Mcgill. Add my snap and follow my insta @Yianni_Zav. I run this shit. Remember my name when I pass Zuckerberg on Forbes",
-                          school: "McGill University",
-                          interests: interests)
-        
-        
-        let launchEvent = Event(title: "Zipper Launch Party",
-                            hosts: [yianni],
-                            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [yianni],
-                            usersInterested: [yianni],
-                            type: "promoter",
-                            isPublic: true,
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "launchevent")!)
-        
-        let fakeFroshEvent = Event(title: "Fake Ass Frosh",
-                            hosts: [yianni],
-                            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [yianni],
-                            usersInterested: [yianni],
-                            type: "innerCircle",
-                            isPublic: true,
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "muzique")!)
-        
-        let spikeBallEvent = Event(title: "Zipper Spikeball Tournament",
-                            hosts: [yianni],
-                            description: "Zipper Spikeball Tournament",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [yianni],
-                            usersInterested: [yianni],
-                            type: "n/a",
-                            isPublic: true,
-                            startTime: Date(timeIntervalSinceNow: 100000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "spikeball"))
-        
-        events.append(launchEvent)
-        events.append(fakeFroshEvent)
-        events.append(spikeBallEvent)
-
+    func updateEventsLabel(events: [Event]) {
         eventsLabel.text = "Event Invites (\(events.count))"
+        self.events = events
     }
 }
+
+
+
+
