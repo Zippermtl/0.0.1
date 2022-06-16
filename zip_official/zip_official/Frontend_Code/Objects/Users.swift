@@ -556,4 +556,39 @@ public class User {
     static func load(status: Int, completion: @escaping (Bool) -> Void) {
         User.getCurrentUser().load(status: status, completion: {result in completion(result)})
     }
+    
+    // Cancels a friend request
+    func cancelFriendRequest(completion: @escaping (Bool) -> Void) {
+        let current = User.getCurrentUser()
+        current.loadFriendships(completion: { [weak self] error in
+            guard error == nil else {
+                completion(false)
+                return
+            }
+            
+            self?.loadFriendships(completion: { [weak self] error in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+        
+                var index = 0
+                for friendship in current.friendships {
+                    if friendship.receiver.userId == self?.userId {
+                        switch (friendship.status) {
+                            // User has made a friend request
+                            case.REQUESTED_OUTGOING:
+                                current.friendships.remove(at: index)
+                                current.updateFriendships(completion: {result in completion(result)})
+                                self?.popFriend(current, completion: {result in completion(result)})
+                            // Don't do anything
+                            default: return
+                        }
+                        return
+                    }
+                    index += 1
+                }
+            })
+        })
+    }
 }
