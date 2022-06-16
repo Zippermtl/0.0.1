@@ -261,7 +261,7 @@ extension MyEventsViewController :  UITableViewDataSource {
 
         cell.selectionStyle = .none
         cell.clipsToBounds = true
-        cell.configure(cellEvent, loc: CLLocation())
+        cell.configure(cellEvent)
         return cell
     }
 }
