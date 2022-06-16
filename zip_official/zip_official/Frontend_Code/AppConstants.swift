@@ -116,6 +116,9 @@ extension UIFont {
     static var zipSubscript: UIFont {
         return UIFont(name: "HelveticaNeue-Medium", size: 15)!
     }
+    static var zipTextDetail: UIFont {
+        return .zipBody.withSize(12)
+    }
 }
 
 extension DropDown {
@@ -246,6 +249,16 @@ extension UILabel {
         label.text = "@"
         return label
     }
+    
+    static func zipTitle() -> UILabel {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .zipTitle.withSize(28)
+        label.sizeToFit()
+        label.text = "@"
+        return label
+    }
+
 
     static func zipSubtitle2() -> UILabel {
         let label = UILabel()
@@ -279,7 +292,7 @@ extension UILabel {
     static func zipTextDetail() -> UILabel {
         let label = UILabel()
         label.textColor = .zipVeryLightGray
-        label.font = .zipBody.withSize(12)
+        label.font = .zipTextDetail
         label.sizeToFit()
         label.text = "Joined Zipper on January 1st, 2022"
         label.lineBreakMode = .byWordWrapping
