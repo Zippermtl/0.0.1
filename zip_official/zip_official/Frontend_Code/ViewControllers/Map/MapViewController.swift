@@ -95,7 +95,7 @@ class MapViewController: UIViewController {
         
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
-        let vc = ProfileViewController(id: userId)
+        let vc = OtherProfileViewController(id: userId)
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .overCurrentContext
         present(nav, animated: true, completion: nil)
@@ -210,10 +210,11 @@ class MapViewController: UIViewController {
     
     private func configureFloatingPanel() {
         fpc.delegate = self
+        let requests = MapViewController.generateRequests()
+        let events = MapViewController.generateEvents()
         
-        let fpcContent = FPCViewController()
-        fpcContent.requests = zipRequests
-        fpcContent.configure(userLocation: CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude))
+        let fpcContent = FPCViewController(requests: requests, events: events)
+        
         fpc.layout = ZipFloatingPanelLayout()
         fpcContent.delegate = self
         
@@ -433,9 +434,7 @@ extension MapViewController: FPCMapDelegate {
         let vc = ZipMessagesViewController()
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: { [weak self] in
-            self?.fpc.move(to: .tip, animated: true, completion: nil)
-        })
+        present(nav, animated: true, completion: nil)
     }
     
     func openNotifications() {
@@ -443,14 +442,26 @@ extension MapViewController: FPCMapDelegate {
         let vc = NotificationsViewController()
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: { [weak self] in
-            self?.fpc.move(to: .tip, animated: true, completion: nil)
-        })
+        present(nav, animated: true, completion: nil)
         
     }
     
     func openFPC() {
         fpc.move(to: .full, animated: true, completion: nil)
+    }
+    
+    func openZipRequests(requests: [ZipRequest]) {
+        let vc = ZipRequestsViewController(requests: requests)
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true, completion: nil)
+    }
+    
+    func openEventInvites(events: [Event]) {
+        let vc = EventInvitesViewController(events: events)
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true, completion: nil)
     }
 }
 
@@ -1244,7 +1255,146 @@ extension MapViewController {
         let list: [User] = [seung,ezra,yianni,elias,gabe]
         return list
     }
+    
+    static func generateRequests() -> [ZipRequest]{
+        var requests: [ZipRequest] = []
+        guard let picString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+              let picUrl = URL(string: picString) else {
+                  return []
+              }
+        
+        
+        
+        let ezra = User(userId: "u6502222222",
+                        firstName: "Ezra",
+                        lastName: "Taylor",
+                        pictureURLs: [picUrl])
+        
+        let yianni = User(userId: "u6503333333",
+                          firstName: "Ezra",
+                          lastName: "Taylor",
+                          pictureURLs: [picUrl])
+        
+        let seung = User(userId: "u6504444444",
+                         firstName: "Seung",
+                         lastName: "Choi",
+                         pictureURLs: [picUrl])
+        
+        let gabe = User(userId: "u6505555555",
+                        firstName: "Gabe",
+                        lastName: "Denton",
+                        pictureURLs: [picUrl])
+        
+        let request1 = ZipRequest(fromUser: ezra, time: TimeInterval(10))
+        let request2 = ZipRequest(fromUser: yianni, time: TimeInterval(10))
+        let request3 = ZipRequest(fromUser: seung, time: TimeInterval(10))
+        let request4 = ZipRequest(fromUser: gabe, time: TimeInterval(10))
+        
+        print("Here321123")
+        print(requests)
+        
+        
+        requests.append(request1)
+        print()
+        print(requests)
+        
+        requests.append(request2)
+        print()
+        print(requests)
+        
+        requests.append(request3)
+        print()
+        print(requests)
+        
+        requests.append(request4)
+        print()
+        print(requests)
+        
+        
+        return requests
+    }
+    
+    static func generateEvents() -> [Event] {
+        var events: [Event] = []
+        var yiannipics = [UIImage]()
+        var interests = [Interests]()
+        
+        interests.append(.skiing)
+        interests.append(.coding)
+        interests.append(.chess)
+        interests.append(.wine)
+        interests.append(.workingOut)
+        
+        
+        yiannipics.append(UIImage(named: "yianni1")!)
+        yiannipics.append(UIImage(named: "yianni2")!)
+        yiannipics.append(UIImage(named: "yianni3")!)
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        let yianniBirthday = formatter.date(from: "2001/12/06")!
+        
+        let yianni = User(email: "zavalyia@gmail.com",
+                          username: "yianni_zav",
+                          firstName: "Yianni",
+                          lastName: "Zavaliagkos",
+                          //                          name: "Yianni Zavaliagkos",
+                          birthday: yianniBirthday,
+                          location: CLLocation(latitude: 51.5013, longitude: -0.2070),
+                          pictures: yiannipics,
+                          bio: "Yianni Zavaliagkos. Second Year at Mcgill. Add my snap and follow my insta @Yianni_Zav. I run this shit. Remember my name when I pass Zuckerberg on Forbes",
+                          school: "McGill University",
+                          interests: interests)
+        
+        
+        let launchEvent = Event(title: "Zipper Launch Party",
+                                hosts: [yianni],
+                                description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
+                                address: "3781 St. Lauremt Blvd.",
+                                maxGuests: 250,
+                                usersGoing: [yianni],
+                                usersInterested: [yianni],
+                                type: "promoter",
+                                isPublic: true,
+                                startTime: Date(timeIntervalSinceNow: 1000),
+                                duration: TimeInterval(1000),
+                                image: UIImage(named: "launchevent")!)
+        
+        let fakeFroshEvent = Event(title: "Fake Ass Frosh",
+                                   hosts: [yianni],
+                                   description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
+                                   address: "3781 St. Lauremt Blvd.",
+                                   maxGuests: 250,
+                                   usersGoing: [yianni],
+                                   usersInterested: [yianni],
+                                   type: "innerCircle",
+                                   isPublic: true,
+                                   startTime: Date(timeIntervalSinceNow: 1000),
+                                   duration: TimeInterval(1000),
+                                   image: UIImage(named: "muzique")!)
+        
+        let spikeBallEvent = Event(title: "Zipper Spikeball Tournament",
+                                   hosts: [yianni],
+                                   description: "Zipper Spikeball Tournament",
+                                   address: "3781 St. Lauremt Blvd.",
+                                   maxGuests: 250,
+                                   usersGoing: [yianni],
+                                   usersInterested: [yianni],
+                                   type: "n/a",
+                                   isPublic: true,
+                                   startTime: Date(timeIntervalSinceNow: 100000),
+                                   duration: TimeInterval(1000),
+                                   image: UIImage(named: "spikeball"))
+        
+        events.append(launchEvent)
+        events.append(fakeFroshEvent)
+        events.append(spikeBallEvent)
+        
+        return events
+    }
 }
+
+
 
 //Solves the corner problem
 //extension UIButton {
