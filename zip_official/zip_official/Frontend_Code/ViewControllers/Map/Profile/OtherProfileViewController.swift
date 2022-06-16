@@ -59,10 +59,11 @@ class OtherProfileViewController: AbstractProfileViewController {
                                                      action: #selector(didTapRightBarButton))
     
     
-    private var distanceLabel: DistanceLabel?
+    private var distanceLabel: DistanceLabel
     
     init(id: String) {
         let actionButtonInfo = ("ZIPPED", UIColor.zipBlue)
+        distanceLabel = DistanceLabel()
         
         super.init(id: id,
                    B1: IconButton.inviteIcon(),
@@ -72,6 +73,11 @@ class OtherProfileViewController: AbstractProfileViewController {
                    settingsButton,
                    centerActionInfo: actionButtonInfo
         )
+        
+        tableHeader.addSubview(distanceLabel)
+        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        distanceLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        distanceLabel.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 10).isActive = true
     }
     
     required init?(coder: NSCoder) {
@@ -81,28 +87,25 @@ class OtherProfileViewController: AbstractProfileViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        /*
         switch user.friendshipStatus {
         case .ACCEPTED:
-            centerActionButton?.setTitle("Zipped", for: .normal)
-            centerActionButton?.backgroundColor = .zipBlue
+            setZippedState()
         case .REQUESTED_OUTGOING:
-            centerActionButton?.setTitle("Requested", for: .normal)
-            centerActionButton?.backgroundColor = .zipYellow
+            setRequestedState()
         case .REQUESTED_INCOMING:
-            centerActionButton?.setTitle("Accept?", for: .normal)
-            centerActionButton?.backgroundColor = .zipGreen
+            setIncomingRequestState()
 //        case default:
 //            centerActionButton?.setTitle("Zip", for: .normal)
 //            centerActionButton?.backgroundColor = .zipBlue
 //
         }
+         */
         
+        setIncomingRequestState()
+        distanceLabel.update(distance: user.getDistance())
+        centerActionButton.layer.borderColor = UIColor.zipBlue.cgColor
         
-        distanceLabel = DistanceLabel(distance: user.getDistance())
-        tableHeader?.addSubview(distanceLabel!)
-        distanceLabel?.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel?.centerXAnchor.constraint(equalTo: tableHeader!.centerXAnchor).isActive = true
-        distanceLabel?.topAnchor.constraint(equalTo: centerActionButton!.bottomAnchor, constant: 10).isActive = true
 
     }
     
@@ -122,34 +125,58 @@ class OtherProfileViewController: AbstractProfileViewController {
                                                 handler: { [weak self] _ in
                                                     
             //TODO: update with nics new code
-//                user.rejectFriend
+    //                user.unzip
                 
-                self?.centerActionButton?.setTitle("Zip", for: .normal)
-                self?.centerActionButton?.backgroundColor = .zipBlue
+                self?.setNoRelationState()
             }))
             
             actionSheet.addAction(UIAlertAction(title: "No",
                                                 style: .cancel,
                                                 handler: nil))
             
-        case .REQUESTED_OUTGOING:
-            //TODO: update with nics new code
-//                user.cancelOutgoingRequest
-            centerActionButton?.setTitle("Requested", for: .normal)
-            centerActionButton?.backgroundColor = .zipYellow
-        case .REQUESTED_INCOMING:
-            //TODO: update with nics new code
-//            user.acceptFriend
-            centerActionButton?.setTitle("Accept?", for: .normal)
-            centerActionButton?.backgroundColor = .zipGreen
+            present(actionSheet, animated: true)
+        case .REQUESTED_OUTGOING: //
+            //user.unrequest
+            setNoRelationState()
+        case .REQUESTED_INCOMING: // You have now accepted the follow request
+            
+            setZippedState()
+            setNoRelationState()
 //        case default:
-            //TODO: update with nics new code
-//            user.request friend
-//            centerActionButton?.setTitle("Zip", for: .normal)
-//            centerActionButton?.backgroundColor = .zipBlue
+            //request()
+            //setRquestedState()
+
+
 //
         }
     }
+    
+    
+    private func setRequestedState(){
+        centerActionButton.setTitle("Requested", for: .normal)
+        centerActionButton.backgroundColor = .zipVeryLightGray
+        centerActionButton.layer.borderWidth = 0
+    }
+    
+    private func setNoRelationState(){
+        centerActionButton.setTitle("Zip", for: .normal)
+        centerActionButton.backgroundColor = .zipBlue
+        centerActionButton.layer.borderWidth = 0
+    }
+    
+    private func setZippedState(){
+        centerActionButton.setTitle("Zipped", for: .normal)
+        centerActionButton.backgroundColor = .zipGray
+        centerActionButton.layer.borderWidth = 3
+    }
+    
+    private func setIncomingRequestState() {
+        centerActionButton.setTitle("Zip Back", for: .normal)
+        centerActionButton.backgroundColor = .zipBlue
+        centerActionButton.layer.borderWidth = 3
+    }
+    
+
     
     override func didTapB1Button() {
         let myEventsView = MyEventsViewController()
