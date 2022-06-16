@@ -14,20 +14,20 @@ import JGProgressHUD
 
 class AbstractProfileViewController: UIViewController {
     var user: User
-    private var tableView: UITableView?
-    var tableHeader: UIView?
-    private var profilePictureView: UIImageView?
-    private var spinner: JGProgressHUD?
-    private var refreshControl: UIRefreshControl?
+    private var tableView: UITableView
+    var tableHeader: UIView
+    private var profilePictureView: UIImageView
+    private var spinner: JGProgressHUD
+    private var refreshControl: UIRefreshControl
     
     // MARK: - Labels
-    private var firstnameLabel: UILabel?
-    private var lastnameLabel: UILabel?
-    private var ageLabel: UILabel?
-    private var photoCountLabel: UILabel?
+    private var firstnameLabel: UILabel
+    private var lastnameLabel: UILabel
+    private var ageLabel: UILabel
+    private var photoCountLabel: UILabel
 
     // MARK: - Buttons
-    var centerActionButton: UIButton?
+    var centerActionButton: UIButton
     private var B1Button: IconButton
     private var B2Button: IconButton
     private var B3Button: IconButton
@@ -61,8 +61,21 @@ class AbstractProfileViewController: UIViewController {
         self.B1Button = B1
         self.B2Button = B2
         self.B3Button = B3
+        
+        self.spinner = JGProgressHUD(style: .light)
+        self.tableView = UITableView()
+        self.tableHeader = UIView()
+        self.refreshControl = UIRefreshControl()
+        self.profilePictureView = UIImageView()
+        self.firstnameLabel = UILabel.zipTitle()
+        self.lastnameLabel = UILabel.zipTitle()
+        self.ageLabel = UILabel.zipSubtitle2()
+        self.photoCountLabel = UILabel.zipSubtitle2()
+        self.centerActionButton = UIButton()
 
         super.init(nibName: nil, bundle: nil)
+        
+        configureTable()
     }
     
     required init?(coder: NSCoder) {
@@ -74,34 +87,37 @@ class AbstractProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-        spinner = JGProgressHUD(style: .light)
-        tableView = UITableView()
-        tableHeader = UIView()
-        refreshControl = UIRefreshControl()
         
-        profilePictureView = UIImageView()
-        profilePictureView?.isUserInteractionEnabled = true
-        
-        firstnameLabel = UILabel()
-        lastnameLabel = UILabel()
-        ageLabel = UILabel()
-        photoCountLabel = UILabel()
-
-        centerActionButton = UIButton()
         
         configureRefresh()
         configureLabels()
         configureButtons()
         fetchUser(completion: nil)
-        configureTable()
         configureNavBar()
+        
+        self.profilePictureView.isUserInteractionEnabled = true
+        
+//        tableHeader.frame = CGRect(x: 0,
+//                                   y: 0,
+//                                   width: view.frame.width,
+//                                   height: B2Button.frame.maxY + 15)
+
+
+        tableHeader.setNeedsLayout()
+        tableHeader.layoutIfNeeded()
+
+        let height = tableHeader.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        var frame = tableHeader.frame
+        frame.size.height = height
+        tableHeader.frame = frame
+
+        tableView.tableHeaderView = tableHeader
+        
+        print("table height = ", tableHeader.frame.height)
+        
     }
     
     @objc private func refresh(){
-        guard let photoCountLabel = photoCountLabel else {
-            return
-        }
-
         photoCountLabel.text = ""
         
         fetchUser(completion: { [weak self] in
@@ -113,24 +129,10 @@ class AbstractProfileViewController: UIViewController {
     }
     
     private func fetchUser(completion: (() -> Void)? = nil) {
-        guard let profilePictureView = profilePictureView,
-              let spinner = spinner
-        else { return }
-
         profilePictureView.image = nil
         spinner.show(in: profilePictureView)
         DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
-            guard let strongSelf = self,
-                  let tableView = strongSelf.tableView,
-
-                  let firstnameLabel = strongSelf.firstnameLabel,
-                  let lastnameLabel = strongSelf.lastnameLabel,
-                  let ageLabel = strongSelf.ageLabel,
-                  let photoCountLabel = strongSelf.photoCountLabel,
-
-                  let profilePictureView = strongSelf.profilePictureView,
-                  let spinner = strongSelf.spinner
-
+            guard let strongSelf = self
             else {
                 if let complete = completion {
                     complete()
@@ -142,11 +144,11 @@ class AbstractProfileViewController: UIViewController {
                         
             strongSelf.title = "@" + strongSelf.user.username
             
-            firstnameLabel.text = strongSelf.user.firstName
-            lastnameLabel.text = strongSelf.user.lastName
-            ageLabel.text = String(strongSelf.user.age)
-            photoCountLabel.text = "\(strongSelf.user.pictureURLs.count)"
-            tableView.reloadData()
+            strongSelf.firstnameLabel.text = strongSelf.user.firstName
+            strongSelf.lastnameLabel.text = strongSelf.user.lastName
+            strongSelf.ageLabel.text = String(strongSelf.user.age)
+            strongSelf.photoCountLabel.text = "\(strongSelf.user.pictureURLs.count)"
+            strongSelf.tableView.reloadData()
             
             let profileURL: URL
             
@@ -159,11 +161,12 @@ class AbstractProfileViewController: UIViewController {
                 profileURL = strongSelf.user.pictureURLs[0]
             }
             
-            profilePictureView.sd_setImage(with: profileURL, completed: nil)
+            strongSelf.profilePictureView.sd_setImage(with: profileURL, completed: nil)
 
             
-            spinner.dismiss()
-            
+            strongSelf.spinner.dismiss()
+            strongSelf.tableView.reloadData()
+
             if let complete = completion {
                 complete()
             }
@@ -171,13 +174,6 @@ class AbstractProfileViewController: UIViewController {
     }
     
     private func configureRefresh() {
-        guard let tableView = tableView,
-              let refreshControl = refreshControl
-        else {
-            return
-        }
-
-        
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh",
                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
                                                                          NSAttributedString.Key.font: UIFont.zipBody])
@@ -186,13 +182,6 @@ class AbstractProfileViewController: UIViewController {
     }
     
     private func configureLabels() {
-        guard let firstnameLabel = firstnameLabel,
-              let lastnameLabel = lastnameLabel,
-              let ageLabel = ageLabel,
-              let photoCountLabel = photoCountLabel
-              
-        else { return }
-
         firstnameLabel.textColor = .white
         firstnameLabel.font = .zipTitle
         firstnameLabel.sizeToFit()
@@ -216,13 +205,6 @@ class AbstractProfileViewController: UIViewController {
     }
     
     private func configureButtons() {
-        guard let centerActionButton = centerActionButton,
-              let photoCountLabel = photoCountLabel,
-              let profilePictureView = profilePictureView
-        else {
-            return
-        }
-        
         let tapPic = UITapGestureRecognizer(target: self, action: #selector(didTapPhotos))
         let tapLabel = UITapGestureRecognizer(target: self, action: #selector(didTapPhotos))
         profilePictureView.addGestureRecognizer(tapPic)
@@ -257,9 +239,6 @@ class AbstractProfileViewController: UIViewController {
     }
     
     private func configureTable() {
-        guard let tableView = tableView else {
-            return
-        }
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
@@ -278,15 +257,6 @@ class AbstractProfileViewController: UIViewController {
 
     
     private func configureTableHeaderLayout() {
-        guard let tableView = tableView,
-              let firstnameLabel = firstnameLabel,
-              let lastnameLabel = lastnameLabel,
-              let ageLabel = ageLabel,
-              let photoCountLabel = photoCountLabel,
-              let centerActionButton = centerActionButton,
-              let profilePictureView = profilePictureView,
-              let tableHeader = tableHeader
-        else { return }
         
         tableHeader.addSubview(profilePictureView)
         profilePictureView.translatesAutoresizingMaskIntoConstraints = false
@@ -321,8 +291,8 @@ class AbstractProfileViewController: UIViewController {
         
         tableHeader.addSubview(centerActionButton)
         centerActionButton.translatesAutoresizingMaskIntoConstraints = false
-        centerActionButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
-        centerActionButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        centerActionButton.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        centerActionButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
         centerActionButton.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 10).isActive = true
         centerActionButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
        
@@ -348,7 +318,7 @@ class AbstractProfileViewController: UIViewController {
         B3Button.widthAnchor.constraint(equalTo: B3Button.heightAnchor).isActive = true
         B3Button.setIconDimension(width: 60)
 
-        centerActionButton.layer.cornerRadius = 5
+        centerActionButton.layer.cornerRadius = 8
         photoCountLabel.layer.cornerRadius = 15
         B1Button.layer.cornerRadius = 30
         B2Button.layer.cornerRadius = 30
@@ -366,34 +336,15 @@ class AbstractProfileViewController: UIViewController {
         
         tableView.tableHeaderView = tableHeader
         
-        //good for iphone 11 pro
-//        tableHeader.frame = CGRect(x: 0,
-//                                   y: 0,
-//                                   width: view.frame.width,
-//                                   height: 404 + 15)
     }
     
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        guard let tableView = tableView,
-              let tableHeader = tableHeader
-        else {
-            return
-        }
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableHeader.setNeedsLayout()
+        tableHeader.layoutIfNeeded()
+    }
+    
 
-        tableHeader.frame = CGRect(x: 0,
-                                   y: 0,
-                                   width: view.frame.width,
-                                   height: B2Button.frame.maxY + 15)
-                
-        tableView.tableHeaderView = tableHeader
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-    }
     
     @objc private func didTapDismiss(){
         dismiss(animated: true)
@@ -402,6 +353,7 @@ class AbstractProfileViewController: UIViewController {
 
 
 extension AbstractProfileViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 52
     }
