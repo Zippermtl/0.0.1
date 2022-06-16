@@ -213,7 +213,7 @@ public class User {
     
     // Get your own incoming requests
     static func getIncomingRequests(completion: @escaping (Result<[ZipRequest],Error>) -> Void) {
-        User.getCurrentUser().getIncomingRequests(completion: {result in result})
+        User.getCurrentUser().getIncomingRequests(completion: {result in completion(result)})
     }
     
     // Get someone's outgoing requests

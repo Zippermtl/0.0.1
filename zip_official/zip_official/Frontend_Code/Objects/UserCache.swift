@@ -30,22 +30,34 @@ public class UserCache {
         // Create object and store it in the cache
         let u = User(userId: id)
         if (loadFriends) {
-            u.loadFriendships()
+            u.loadFriendships(completion: {result in u.load(status: loadLevel, completion: { [weak self] result in
+                switch result {
+                    case true:
+                        self?.cache[id] = u
+                        self?.increaseSize()
+                        self?.checkBounds()
+                        completion(.success(u))
+                        return
+                    default:
+                        completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
+                        return
+                }
+            })})
+        } else {
+            u.load(status: loadLevel, completion: { [weak self] result in
+                switch result {
+                    case true:
+                        self?.cache[id] = u
+                        self?.increaseSize()
+                        self?.checkBounds()
+                        completion(.success(u))
+                        return
+                    default:
+                        completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
+                        return
+                }
+            })
         }
-        
-        u.load(status: loadLevel, completion: { [weak self] result in
-            switch result {
-                case true:
-                    self?.cache[id] = u
-                    self?.increaseSize()
-                    self?.checkBounds()
-                    completion(.success(u))
-                    return
-                default:
-                    completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
-                    return
-            }
-        })
     }
     
     func putInCache(newUser: User) {
