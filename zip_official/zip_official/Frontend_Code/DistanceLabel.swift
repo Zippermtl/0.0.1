@@ -6,35 +6,27 @@
 //
 
 import UIKit
+import CoreLocation
 
-class DistanceLabel: UILabel {
-    
-    private let distanceImage: NSTextAttachment
-   
+class DistanceLabel: IconLabel {
     init(){
-        distanceImage = NSTextAttachment()
-//        distanceImage.image = UIImage(named: "distanceToWhite")?.withTintColor(.zipBlue)
-        distanceImage.image = UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
-        super.init(frame: .zero)
+        super.init(iconImage: UIImage(systemName: "mappin"))
     }
     
-    init(distance: Double) {
-        distanceImage = NSTextAttachment()
-//        distanceImage.image = UIImage(named: "distanceToWhite")?.withTintColor(.zipBlue)
-        distanceImage.image = UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
-
-        super.init(frame: .zero)
-        textColor = .zipBlue
+    init(labelFont: UIFont, color: UIColor, config: UIImage.Configuration){
+        super.init(iconImage: UIImage(systemName: "mappin")?.withConfiguration(config), labelFont: labelFont, color: color)
+        textColor = color
+    }
+    
+    init(distance: Double, labelFont: UIFont = .zipBody, color: UIColor = .zipBlue) {
+  
+        super.init(iconImage: UIImage(systemName: "mappin"), labelFont: labelFont, color: color)
+        textColor = color
         update(distance: distance)
     }
     
     required init?(coder: NSCoder) {
-        distanceImage = NSTextAttachment()
-//        distanceImage.image = UIImage(named: "distanceToWhite")?.withTintColor(.zipBlue)
-        distanceImage.image = UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
-
-        super.init(coder: coder)
-        textColor = .zipBlue
+        fatalError("init(coder:) has not been implemented")
     }
     
     
@@ -73,11 +65,15 @@ class DistanceLabel: UILabel {
             }
         }
         
-        let attachmentString = NSAttributedString(attachment: distanceImage)
-        let completeString = NSMutableAttributedString(string: "")
-        completeString.append(attachmentString)
-        completeString.append(NSAttributedString(string: distanceText, attributes: [NSAttributedString.Key.font: UIFont.zipBody,
-                                                                                    NSAttributedString.Key.foregroundColor: UIColor.zipBlue]))
-        attributedText = completeString
+        update(string: distanceText)
+    }
+    
+    public func update(location: CLLocation) {
+        guard let coordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
+            return
+        }
+        let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
+        
+        update(distance: userLoc.distance(from: location))
     }
 }
