@@ -18,7 +18,7 @@ class NotificationsViewController: UIViewController {
     var zipRequestsButton = UIButton()
     
     @objc private func didTapZipRequestsButton(){
-        let zipRequests = ZipRequestsViewController()
+        let zipRequests = ZipRequestsViewController(requests: [])
         zipRequests.modalPresentationStyle = .overCurrentContext
         
         let transition: CATransition = CATransition()
