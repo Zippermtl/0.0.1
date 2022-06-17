@@ -283,15 +283,6 @@ extension EventFinderViewController :  UITableViewDataSource {
     
 }
 
-//MARK: -Handle Retap
-extension EventFinderViewController: TabBarReselectHandling {
-    func handleReselect() {
-        if presentedViewController != nil {
-            dismiss(animated: false, completion: nil)
-        }
-    }
-}
-
 
 //MARK: Generate Data
 extension EventFinderViewController {

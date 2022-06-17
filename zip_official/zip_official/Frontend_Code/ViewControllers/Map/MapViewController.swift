@@ -69,18 +69,7 @@ class MapViewController: UIViewController {
         btn.layer.masksToBounds = true
         return btn
     }()
-    
 
-    
-    
-    
-    // MARK: - Button Actions
-    @objc private func didTapHomeButton(){
-        if(ZipperTabBarViewController.userLoc != nil ){
-            zoomToLatestLocation()
-        }
-    }
-    
     @objc private func didTapFilterButton(){
         //        filterButton.isHidden = true
 //        let filtersVC = FiltersViewController()
