@@ -455,7 +455,7 @@ class MyEventViewController: UIViewController {
         let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
         let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
         
-        let eventLoc = CLLocation(latitude: event.coordinates.latitude, longitude: event.coordinates.longitude)
+        let eventLoc = CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude)
         var distance = Double(round(10*(userLoc.distance(from: eventLoc))/1000))/10
         var unit = "km"
         if NSLocale.current.regionCode == "US" {
