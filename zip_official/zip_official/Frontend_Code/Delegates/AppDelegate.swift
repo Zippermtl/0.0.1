@@ -22,12 +22,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        GMSPlacesClient.provideAPIKey("AIzaSyAlXUKYzukB_QHXwWtI3RPGu9bx_nkbuII")
-
         
         
         //FireBase
         FirebaseApp.configure()
+        
+        //connect to googlemaps API
+        GMSPlacesClient.provideAPIKey("AIzaSyAlXUKYzukB_QHXwWtI3RPGu9bx_nkbuII")
 
 //        AppDelegate.userDefaults.setValue("Yianni Zavaliagkos", forKey: "name")
 
@@ -35,7 +36,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         //Apearance Changes
-        UIApplication.shared.statusBarStyle = .lightContent
         applyDropDownAppearanceChanges()
         applyTableViewAppearanceChanges()
         applyNavControllerAppearanceChanges()
