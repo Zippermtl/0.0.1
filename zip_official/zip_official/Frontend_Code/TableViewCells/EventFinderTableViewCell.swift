@@ -138,7 +138,7 @@ class EventFinderTableViewCell: UITableViewCell {
         dateFormatter.dateFormat = "h:mm a"
         timeLabel.update(string: " " + dateFormatter.string(from: event.startTime))
         
-        let eventLoc = CLLocation(latitude: event.coordinates.latitude, longitude: event.coordinates.longitude)
+        let eventLoc = CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude)
         distanceLabel.update(location: eventLoc)
         
         
