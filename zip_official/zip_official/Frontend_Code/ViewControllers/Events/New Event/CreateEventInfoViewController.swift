@@ -173,7 +173,7 @@ class CreateEventInfoViewController: UIViewController {
         if event.maxGuests != 0 {
             capacitySlider.value = Float(event.maxGuests)
         } else {
-            if event.isPublic {
+            if event.isPublic() {
                 capacitySlider.value = 501
                 capacityNumField.text = "∞"
             } else {
