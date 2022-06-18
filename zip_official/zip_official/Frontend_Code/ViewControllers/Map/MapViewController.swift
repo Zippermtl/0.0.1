@@ -75,11 +75,6 @@ class MapViewController: UIViewController {
     
     
     // MARK: - Button Actions
-    @objc private func didTapHomeButton(){
-        if(ZipperTabBarViewController.userLoc != nil ){
-            zoomToLatestLocation()
-        }
-    }
     
     @objc private func didTapFilterButton(){
         //        filterButton.isHidden = true
@@ -331,6 +326,8 @@ extension MapViewController: CLLocationManagerDelegate {
             zoomToLatestLocation()
             mapDidMove = false
         }
+        //MARK: For test code to be added to database only necessary once but leaving for future use if needed
+//        DatabaseManager.shared.makeSampleEvent()
     }
     
     // change auuthorization status
@@ -484,9 +481,9 @@ extension MapViewController: MKMapViewDelegate {
             img.layer.cornerRadius = img.frame.height/2
             img.layer.masksToBounds = true
             img.layer.borderWidth = 1
-            switch eventAnnotation.event.type {
-            case "promoter": img.layer.borderColor = CGColor(red: 1, green: 1, blue: 0, alpha: 1)
-            case "innerCircle": img.layer.borderColor = CGColor(red: 35/255, green: 207/255, blue: 244/255, alpha: 1)
+            switch eventAnnotation.event.getType() {
+            case 2: img.layer.borderColor = CGColor(red: 1, green: 1, blue: 0, alpha: 1)
+            case 1: img.layer.borderColor = CGColor(red: 35/255, green: 207/255, blue: 244/255, alpha: 1)
             default: break
             }
             
@@ -1069,28 +1066,25 @@ extension MapViewController {
 //        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570))
         
 
-        launchEvent = Event(title: "Zipper Launch Party",
-                            coordinates: CLLocationCoordinate2D(latitude: 51.5014, longitude: -0.1419),
+        launchEvent = PromoterEvent(title: "Zipper Launch Party",
+                            coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
                             hosts: [user],
                             description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
                             address: "3781 St. Lauremt Blvd.",
                             maxGuests: 250,
                             usersGoing: [seung,yianni,gabe],
                             usersInterested: [elias,ezra],
-                            type: "promoter",
                             startTime: Date(timeIntervalSinceNow: 1000),
                             duration: TimeInterval(2000),
                             image: UIImage(named: "launchevent")!)
-        
-        randomEvent = Event(title: "Fake Ass Frosh",
-                            coordinates: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570),
+        randomEvent = PublicEvent(title: "Fake Ass Frosh",
+                            coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
                             hosts: [user,gabe,seung,ezra],
                             description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
                             address: "3781 St. Lauremt Blvd.",
                             maxGuests: 250,
                             usersGoing: [ezra,yianni,gabe],
                             usersInterested: [elias,seung],
-                            type: "innerCircle",
                             startTime: Date(timeIntervalSinceNow: 100000),
                             duration: TimeInterval(200),
                             image: UIImage(named: "muzique")!)
@@ -1347,41 +1341,35 @@ extension MapViewController {
                           interests: interests)
         
         
-        let launchEvent = Event(title: "Zipper Launch Party",
+        let launchEvent = PromoterEvent(title: "Zipper Launch Party",
                                 hosts: [yianni],
                                 description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
                                 address: "3781 St. Lauremt Blvd.",
                                 maxGuests: 250,
                                 usersGoing: [yianni],
                                 usersInterested: [yianni],
-                                type: "promoter",
-                                isPublic: true,
                                 startTime: Date(timeIntervalSinceNow: 1000),
                                 duration: TimeInterval(1000),
                                 image: UIImage(named: "launchevent")!)
         
-        let fakeFroshEvent = Event(title: "Fake Ass Frosh",
+        let fakeFroshEvent = PublicEvent(title: "Fake Ass Frosh",
                                    hosts: [yianni],
                                    description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
                                    address: "3781 St. Lauremt Blvd.",
                                    maxGuests: 250,
                                    usersGoing: [yianni],
                                    usersInterested: [yianni],
-                                   type: "innerCircle",
-                                   isPublic: true,
                                    startTime: Date(timeIntervalSinceNow: 1000),
                                    duration: TimeInterval(1000),
                                    image: UIImage(named: "muzique")!)
         
-        let spikeBallEvent = Event(title: "Zipper Spikeball Tournament",
+        let spikeBallEvent = PublicEvent(title: "Zipper Spikeball Tournament",
                                    hosts: [yianni],
                                    description: "Zipper Spikeball Tournament",
                                    address: "3781 St. Lauremt Blvd.",
                                    maxGuests: 250,
                                    usersGoing: [yianni],
                                    usersInterested: [yianni],
-                                   type: "n/a",
-                                   isPublic: true,
                                    startTime: Date(timeIntervalSinceNow: 100000),
                                    duration: TimeInterval(1000),
                                    image: UIImage(named: "spikeball"))
