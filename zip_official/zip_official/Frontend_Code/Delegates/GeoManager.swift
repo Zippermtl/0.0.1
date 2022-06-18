@@ -24,16 +24,25 @@ class GeoManager {
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
+    let geoFireEventRef = Database.database().reference().child("geoEvent/")
+    var geoFireEvent: GeoFire
     
     init(){
         geoFire = GeoFire(firebaseRef: geofireRef)
+        geoFireEvent = GeoFire(firebaseRef: geoFireEventRef)
     }
     
 //    static func safeEmail(email: String) -> String {
 //        let safeEmail = email.replacingOccurrences(of: ".", with: "-").replacingOccurrences(of: "@", with: "-")
 //        return safeEmail
 //    }
-    
+    public func UpdateEventLocation(event: Event){
+        geoFireEvent.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId as! String){ (error) in
+            if (error != nil) {
+                print("An error occured: \(error)")
+            }
+        }
+    }
 
     public func UpdateLocation(location: CLLocation){
         print("got here")
