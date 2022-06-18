@@ -81,7 +81,7 @@ class CompleteEventViewController: UIViewController {
     
     @objc private func didTapCompleteButton(){
         if event.endTime != nil {
-            event.duration = event.endTime! - event.startTime
+            event.duration = event.endTime - event.startTime
         } else {
             event.duration = 0
         }
@@ -94,7 +94,7 @@ class CompleteEventViewController: UIViewController {
         event.usersInvite = zipList.filter{$0.isInivted}
         event.eventId = event.createEventId
 
-        if !event.isPublic {
+        if !event.isPublic() {
             guard !event.usersInvite.isEmpty else {
                 let alert = UIAlertController(title: "Private Events Must Have At Least One Invite",
                                               message: "Invite a user to continue",
