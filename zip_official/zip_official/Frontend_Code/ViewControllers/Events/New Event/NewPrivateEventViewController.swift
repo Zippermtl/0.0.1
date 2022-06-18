@@ -386,7 +386,7 @@ class NewPrivateEventViewController: UIViewController {
         }
 
         event.title = title
-        event.isPublic = false
+//        event.isPublic = false
         event.description = desc
         event.eventId = event.createEventId
         
@@ -397,6 +397,8 @@ class NewPrivateEventViewController: UIViewController {
         event.hosts = [host]
         
         DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
+            
+            
             if success {
                 let actionSheet = UIAlertController(title: "Successfull Created an Event",
                                                     message: "View your event in your profile",
@@ -826,7 +828,7 @@ extension NewPrivateEventViewController: GMSAutocompleteViewControllerDelegate {
             locationTxt.text = name + " " + address
         }
         
-        event.coordinates = place.coordinate
+        event.coordinates = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
         event.address = address
         event.locationName = name
         navigationController?.popViewController(animated: true)
