@@ -13,12 +13,13 @@ import CoreLocation
 
 
 
+
 /// Manager object to read and write to firebase
 class DatabaseManager {
     /// Shared instance of  the  class
     static let shared = DatabaseManager()
     
-    private let database = Database.database().reference()
+    internal let database = Database.database().reference()
     
     private var verificationId: String?
     
@@ -548,65 +549,66 @@ extension DatabaseManager {
 }
 
 //MARK: - Event Management
-extension DatabaseManager {
-    public func createEvent(event: Event, completion: @escaping (Bool) -> Void) {
-        let path = "eventProfiles/\(event.eventId)/"
-        database.child(path).setValue([
-            "title" : event.title,
-            //MARK: Change when we switch to multiple hosts
-            "host" : ["userId" : event.hosts[0].userId, "name" : event.hosts[0].fullName],
-            "description" : event.description,
-            "address" : event.address,
-            "isPublic" : event.isPublic,
-            "startTime" : event.startTimeString,
-            "duration" : event.duration,
-            "maxCapacity" : event.maxGuests
-        ], withCompletionBlock: { [weak self] error, _ in
-            guard error == nil else {
-                print("failed to write to database")
-                completion(false)
-                return
-            }
-            
-            completion(true)
-            
-            print("userids = \(event.usersInvite.map{$0.userId})")
-            
-            
-            let eventInvites: [String:Int] = Dictionary(
-                uniqueKeysWithValues:
-                    zip (
-                        event.usersInvite.map{$0.userId},
-                        [Int](repeating: 0, count: event.usersInvite.count)
-                    )
-            )
-            
-            let invitePath = "eventInvited/\(event.eventId)"
-            // writes eventInvited
-            self?.database.child(invitePath).setValue(eventInvites, withCompletionBlock: {[weak self] error, _ in
-                guard error == nil else {
-                    print("failed to write to database")
-                    completion(false)
-                    return
-                }
-                
-
-                
-                let tableViewPath = "eventTableView/\(event.eventId)"
-                self?.database.child(tableViewPath).updateChildValues([
-                    "title" : event.title,
-                    "coordinates" : ["lat" : event.coordinates.latitude, "long" : event.coordinates.longitude],
-                    "numGoing" : 0,
-                    "maxCapacity" : event.maxGuests
-                ], withCompletionBlock: { error, _ in
-                    guard error == nil else {
-                        print("failed to write to database")
-                        completion(false)
-                        return
-                    }
-                    
-                    completion(true)
-                })
+//extension DatabaseManager {
+    //MARK: GABE COME BACK TO
+//    public func createEvent(event: Event, completion: @escaping (Bool) -> Void) {
+//        let path = "eventProfiles/\(event.eventId)/"
+//        database.child(path).setValue([
+//            "title" : event.title,
+//            //MARK: Change when we switch to multiple hosts
+//            "host" : ["userId" : event.hosts[0].userId, "name" : event.hosts[0].fullName],
+//            "description" : event.description,
+//            "address" : event.address,
+//            "isPublic" : event.isPublic,
+//            "startTime" : event.startTimeString,
+//            "duration" : event.duration,
+//            "maxCapacity" : event.maxGuests
+//        ], withCompletionBlock: { [weak self] error, _ in
+//            guard error == nil else {
+//                print("failed to write to database")
+//                completion(false)
+//                return
+//            }
+//
+//            completion(true)
+//
+//            print("userids = \(event.usersInvite.map{$0.userId})")
+//
+//
+//            let eventInvites: [String:Int] = Dictionary(
+//                uniqueKeysWithValues:
+//                    zip (
+//                        event.usersInvite.map{$0.userId},
+//                        [Int](repeating: 0, count: event.usersInvite.count)
+//                    )
+//            )
+//
+//            let invitePath = "eventInvited/\(event.eventId)"
+//            // writes eventInvited
+//            self?.database.child(invitePath).setValue(eventInvites, withCompletionBlock: {[weak self] error, _ in
+//                guard error == nil else {
+//                    print("failed to write to database")
+//                    completion(false)
+//                    return
+//                }
+//
+//
+//
+//                let tableViewPath = "eventTableView/\(event.eventId)"
+//                self?.database.child(tableViewPath).updateChildValues([
+//                    "title" : event.title,
+//                    "coordinates" : ["lat" : event.coordinates.latitude, "long" : event.coordinates.longitude],
+//                    "numGoing" : 0,
+//                    "maxCapacity" : event.maxGuests
+//                ], withCompletionBlock: { error, _ in
+//                    guard error == nil else {
+//                        print("failed to write to database")
+//                        completion(false)
+//                        return
+//                    }
+//
+//                    completion(true)
+//                })
                 
 //                let userMapEvents: [String:String] = Dictionary(
 //                    uniqueKeysWithValues:
@@ -625,10 +627,10 @@ extension DatabaseManager {
 //                    }
 //
 //                })
-            })
-        })
-    }
-}
+//            })
+//        })
+//    }
+//}
 
 //MARK: - Sending messages / conversations
 extension DatabaseManager {
