@@ -304,7 +304,8 @@ class CreateEventViewController: UIViewController {
         endTimeLabel.isHidden = true
         closeEndTimeButton.isHidden = true
         
-        event.endTime = nil
+        //TODO: Check this Yianni
+        event.endTime = Date()
     }
     
     @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
@@ -348,7 +349,8 @@ class CreateEventViewController: UIViewController {
     }
 
     @objc private func switchValueChanged(_ sender: UISwitch) {
-        event.isPublic = !sender.isOn
+//        event.isPublic = !sender.isOn
+        //TODO: Yianni Fix
     }
     
     override func viewDidLoad() {
@@ -518,8 +520,7 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
         } else {
             locationField.text = name + ", " + address.split(separator: ",")[0]
         }
-        
-        event.coordinates = place.coordinate
+        event.coordinates = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
         event.address = address
         event.locationName = name
         navigationController?.popViewController(animated: true)
