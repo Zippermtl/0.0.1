@@ -69,7 +69,6 @@ class MapViewController: UIViewController {
         btn.layer.masksToBounds = true
         return btn
     }()
-    
 
     
     
