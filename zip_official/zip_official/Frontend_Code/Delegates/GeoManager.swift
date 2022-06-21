@@ -24,8 +24,13 @@ class GeoManager {
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
+    
     let geoFireEventRef = Database.database().reference().child("geoEvent/")
     var geoFireEvent: GeoFire
+    
+    var eventIdList: [Event] = []
+    var loadedEvent: [Event] = []
+    var alreadyReadySeenEvent: [String] = []
     
     init(){
         geoFire = GeoFire(firebaseRef: geofireRef)
@@ -37,7 +42,7 @@ class GeoManager {
 //        return safeEmail
 //    }
     public func UpdateEventLocation(event: Event){
-        geoFireEvent.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId as! String){ (error) in
+        geoFireEvent.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
             if (error != nil) {
                 print("An error occured: \(error)")
             }
@@ -64,7 +69,42 @@ class GeoManager {
             }
         })
     }
+    
+    public func GetEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let query = self.geoFireEvent.query(at: center, withRadius: range)
+        query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
+            guard let strongSelf = self else {
+                return
+            }
+            if(strongSelf.eventIdList.count > max){
+                query.removeAllObservers()
+            }
+            strongSelf.eventIsValid(key: key)
+        })
+        
+    }
 
+    public func eventIsValid(key: String){
+        if(!alreadyReadySeenEvent.contains(key)){
+            DatabaseManager.shared.loadEvent(key: key) { [weak self] result in
+                guard let strongSelf = self else {
+                    return
+                }
+//                guard strongSelf = self {
+//                    return
+//                }
+                switch result{
+                case .success(let event):
+                    GeoManager.shared.loadedEvent.append(event)
+                    strongSelf.alreadyReadySeenEvent.append(key)
+                case .failure(let error):
+                    print(error)
+                }
+                
+            }
+        }
+    }
     public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
         print("Entering GetUserByLoc, range = \(range) max = \(max)")
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
