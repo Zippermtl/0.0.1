@@ -132,7 +132,10 @@ public class Event {
             image = im
         }
     }
-    public func pull(){
+    //MARK: accessory function for yianni to pull for visuals if needed:
+    // ex sponsor events could return an even with the visual appened on
+    // the picture etc this is the pull for map if it is needed
+    public func pullVisual(){
         fatalError("Must Override!")
     }
     public func isPublic() -> Bool {
