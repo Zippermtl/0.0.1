@@ -28,7 +28,7 @@ class GeoManager {
     let geoFireEventRef = Database.database().reference().child("geoEvent/")
     var geoFireEvent: GeoFire
     
-    var eventIdList: [Event] = []
+//    var eventIdList: [Event] = []
     var loadedEvent: [Event] = []
     var alreadyReadySeenEvent: [String] = []
     
@@ -77,7 +77,7 @@ class GeoManager {
             guard let strongSelf = self else {
                 return
             }
-            if(strongSelf.eventIdList.count > max){
+            if(strongSelf.loadedEvent.count > max){
                 query.removeAllObservers()
             }
             strongSelf.eventIsValid(key: key)
@@ -87,6 +87,7 @@ class GeoManager {
 
     public func eventIsValid(key: String){
         if(!alreadyReadySeenEvent.contains(key)){
+            alreadyReadySeenEvent.append(key)
             DatabaseManager.shared.loadEvent(key: key) { [weak self] result in
                 guard let strongSelf = self else {
                     return
@@ -99,6 +100,7 @@ class GeoManager {
                     GeoManager.shared.loadedEvent.append(event)
                     strongSelf.alreadyReadySeenEvent.append(key)
                 case .failure(let error):
+                    strongSelf.alreadyReadySeenEvent.removeAll(where: { $0 == key})
                     print(error)
                 }
                 
