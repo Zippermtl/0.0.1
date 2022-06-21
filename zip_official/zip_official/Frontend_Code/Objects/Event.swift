@@ -31,9 +31,16 @@ public class Event {
     var startTime: Date = Date()
     var endTime: Date = Date()
     var duration: TimeInterval = TimeInterval(1)
+    var imageUrl: URL = URL(string: "a")!
     var image: UIImage? = UIImage(named: "launchevent")
     
     var startTimeString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: startTime)
+    }
+    
+    var endTimeString: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter.string(from: startTime)
@@ -51,7 +58,34 @@ public class Event {
         return true
     }
     
-    public func update(eventId Id: String = "", title tit: String = "", coordinates loc: CLLocation = CLLocation(), hosts host: [User] = [], description desc: String = "", address addy: String = "", locationName locName: String = "", maxGuests maxG: Int = -1, usersGoing ugoing: [User] = [], usersInterested uinterested: [User] = [], usersInvite uinvite: [User] = [], startTime stime: Date = Date(), endTime etime: Date = Date(), duration dur: TimeInterval = TimeInterval(1), image im: UIImage? = UIImage(named: "launchevent")){
+    public func out(){
+        print(eventId)
+        print(title)
+        print(coordinates.coordinate.latitude)
+        print(coordinates.coordinate.longitude)
+        print(hosts[0].userId)
+        print(description)
+        print(maxGuests)
+        print(startTimeString)
+        print(endTimeString)
+        print(imageUrl)
+    }
+    
+    public func update(eventId Id: String = "",
+                       title tit: String = "",
+                       coordinates loc: CLLocation = CLLocation(),
+                       hosts host: [User] = [],
+                       description desc: String = "",
+                       address addy: String = "",
+                       locationName locName: String = "",
+                       maxGuests maxG: Int = -1,
+                       usersGoing ugoing: [User] = [],
+                       usersInterested uinterested: [User] = [],
+                       usersInvite uinvite: [User] = [],
+                       startTime stime: Date = Date(),
+                       endTime etime: Date = Date(),
+                       duration dur: TimeInterval = TimeInterval(1),
+                       image im: UIImage? = UIImage(named: "launchevent")){
         if(Id != self.eventId){
             eventId = Id
         }
@@ -121,7 +155,24 @@ public class Event {
     public func getType() -> Int{
         return 0
     }
-    init(eventId Id: String = "", title tit: String = "", coordinates loc: CLLocation = CLLocation(), hosts host: [User] = [], description desc: String = "", address addy: String = "", locationName locName: String = "", maxGuests maxG: Int = 0, usersGoing ugoing: [User] = [], usersInterested uinterested: [User] = [], usersInvite uinvite: [User] = [], startTime stime: Date = Date(), endTime etime: Date = Date(), duration dur: TimeInterval = TimeInterval(1), image im: UIImage? = UIImage(named: "launchevent")) {
+    init(eventId Id: String = "",
+         title tit: String = "",
+         coordinates loc: CLLocation = CLLocation(),
+         hosts host: [User] = [],
+         description desc: String = "",
+         address addy: String = "",
+         locationName locName: String = "",
+         maxGuests maxG: Int = 0,
+         usersGoing ugoing: [User] = [],
+         usersInterested uinterested: [User] = [],
+         usersInvite uinvite: [User] = [],
+         startTime stime: Date = Date(),
+         endTime etime: Date = Date(),
+         duration dur: TimeInterval = TimeInterval(1),
+         image im: UIImage? = UIImage(named: "launchevent"),
+         imageURL url: URL = URL(string: "a")!,
+         endTimeString ets: String = "",
+         startTimeString sts: String = "") {
         eventId = Id
         title = tit
         coordinates = loc
@@ -137,6 +188,17 @@ public class Event {
         endTime = etime
         duration = dur
         image = im
+        imageUrl = url
+        if(ets != ""){
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            endTime = formatter.date(from: ets)!
+        }
+        if(sts != ""){
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            endTime = formatter.date(from: sts)!
+        }
     }
 }
 
@@ -200,4 +262,40 @@ public class FriendsEvent: PrivateEvent {
     override public func getType() -> Int {
         return 4
     }
+}
+
+public func createEvent(eventId Id: String = "",
+                        title tit: String = "",
+                        coordinates loc: CLLocation = CLLocation(),
+                        hosts host: [User] = [],
+                        description desc: String = "",
+                        address addy: String = "",
+                        locationName locName: String = "",
+                        maxGuests maxG: Int = 0,
+                        usersGoing ugoing: [User] = [],
+                        usersInterested uinterested: [User] = [],
+                        usersInvite uinvite: [User] = [],
+                        startTime stime: Date = Date(),
+                        endTime etime: Date = Date(),
+                        duration dur: TimeInterval = TimeInterval(1),
+                        image im: UIImage? = UIImage(named: "launchevent"),
+                        imageURL url: URL = URL(string: "a")!,
+                        endTimeString ets: String = "",
+                        startTimeString sts: String = "",
+                        type t: Int = -1) -> Event{
+    switch t{
+    case 0:
+        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+    case 1:
+        return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+    case 2:
+        return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+    case 3:
+        return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+    case 4:
+        return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+    default:
+        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+    }
+    
 }
