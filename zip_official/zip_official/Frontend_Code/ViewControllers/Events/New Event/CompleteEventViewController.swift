@@ -109,9 +109,15 @@ class CompleteEventViewController: UIViewController {
             }
         }
         
-        
+        var FUCKMYASS = ""
+        //MARK: Fuckmyass is the variable which contains the string of the url of the picture
+        // the code below was written by Yianni and was originally if success a else b has been
+        // rewritten to be switch: case success a case failure b
+        // note this is with a and b being code blocks excluding the code obviously written by me
         DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
-            if success {
+            switch success{
+            case .success(let a):
+                FUCKMYASS = a
                 let actionSheet = UIAlertController(title: "Successfull Created an Event",
                                                     message: "View your event in your profile",
                                                     preferredStyle: .actionSheet)
@@ -122,8 +128,8 @@ class CompleteEventViewController: UIViewController {
                 
                 self?.present(actionSheet, animated: true)
                 self?.dismiss(animated: true, completion: nil)
-                
-            } else {
+            case .failure(let error):
+                print(error)
                 let actionSheet = UIAlertController(title: "Failed to Create Your Event",
                                                     message: "Make sure all the information you entered is correct or try again later.",
                                                     preferredStyle: .actionSheet)
