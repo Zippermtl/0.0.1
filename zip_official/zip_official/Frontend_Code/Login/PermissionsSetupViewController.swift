@@ -195,9 +195,7 @@ class PermissionsSetupViewController: UIViewController {
                             vc.modalTransitionStyle = .crossDissolve
                             self?.present(vc, animated: true, completion: nil)
                         } else {
-                            let vc = MapViewController()
-                            vc.isNewAccount = true
-                            vc.configureLocationServices()
+                            let vc = MapViewController(isNewAccount: true)
                             vc.modalPresentationStyle = .fullScreen
                             self?.present(vc, animated: true, completion: nil)
                         }
