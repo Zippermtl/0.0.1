@@ -2,12 +2,13 @@
 //  UserCache.swift
 //  zip_official
 //
-//
+//  Created by Nicolas Almerge
+
 import Foundation
 
 
 public class UserCache {
-    private let USER_SIZE = class_getInstanceSize(User.self);
+    private let USER_SIZE = class_getInstanceSize(User.self)
     private static let instance = UserCache()
 
     private var cache = Dictionary<String, User>()
@@ -18,6 +19,10 @@ public class UserCache {
     
     static func get() -> UserCache {
         return instance
+    }
+    
+    func getUsersCached() -> Dictionary<String, User> {
+        return cache
     }
     
     func loadUser(id: String, loadLevel: Int = 0, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void) {
@@ -118,6 +123,9 @@ public class UserCache {
     
     private func decreaseSize() {
         byteSize -= USER_SIZE
+        if (byteSize < 0) {
+            byteSize = 0
+        }
     }
     
     private func checkBounds() {

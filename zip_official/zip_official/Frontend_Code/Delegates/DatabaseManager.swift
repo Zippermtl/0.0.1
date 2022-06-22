@@ -282,7 +282,77 @@ extension DatabaseManager {
             
         })
     }
-    
+
+    public func loadEvent(eventId: String, completion: @escaping (Result<Event, Error>) -> Void) {
+        database.child("eventProfiles/\(eventId)").observeSingleEvent(of: .value, with: { snapshot in
+            guard let value = snapshot.value as? [String: Any] else {
+                print("Failed to fetch event profile")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+
+            guard let title = value["title"] as? String,
+                  let coordinates = value["coordinates"] as? [String: Double],
+                  let hosts = value["hosts"] as? [String: Any],
+                  let description = value["description"] as? String,
+                  let address = value["address"] as? String,
+                  let max = value["max"] as? Int,
+                  let usersGoing = value["usersGoing"] as? [String: Any],
+                  let usersInvite = value["usersInvite"] as? [String: Any],
+                  let type = value["type"] as? String,
+                  let startTime = value["startTime"] as? String,
+                  let endTime = value["endTime"] as? String? else {
+                print("Retuning here")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            
+            var newHosts: [User] = []
+            for hostId in hosts.keys {
+                newHosts.append(User(userId: hostId))
+            }
+            
+            var newUsersGoing: [User] = []
+            for id in usersGoing.keys {
+                newUsersGoing.append(User(userId: id))
+            }
+            
+            var newUsersInvite: [User] = []
+            for id in usersInvite.keys {
+                newUsersInvite.append(User(userId: id))
+            }
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // Set locale to reliable US_POSIX
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            
+            let newStartTime = dateFormatter.date(from: startTime)!
+            var newEndTime: Date? = nil
+            
+            if let _endTime = endTime {
+                newEndTime = dateFormatter.date(from: _endTime)!
+            }
+            
+            completion(.success(Event(
+                eventId: eventId,
+                title: title,
+                coordinates: CLLocationCoordinate2D(
+                    latitude: coordinates["lat"] ?? 0,
+                    longitude: coordinates["long"] ?? 0
+                ),
+                hosts: newHosts,
+                description: description,
+                address: address,
+                maxGuests: max,
+                usersGoing: newUsersGoing,
+                usersInvite: newUsersInvite,
+                type: type,
+                startTime: newStartTime,
+                endTime: newEndTime
+            )))
+        })
+    }
+
     public func loadUserProfileSubViewNoLoc(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
         database.child("UserFastInfo/\(id)").observeSingleEvent(of: .value, with: { snapshot in
             guard let value = snapshot.value as? [String: Any] else {

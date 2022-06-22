@@ -7,6 +7,7 @@
 import Foundation
 import MapKit
 
+
 public class User {
     var userId: String = ""
     var email: String = ""
@@ -47,6 +48,10 @@ public class User {
     var isInivted: Bool = false
 
     init() {}
+    
+    init(userId id: String) {
+        userId = id
+    }
 
     // Gets you, magnificent and great user
     static func getCurrentUser() -> User {
