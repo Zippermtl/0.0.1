@@ -16,8 +16,7 @@ class LoadingViewController: UIViewController {
 
      //info that needs to be loaded
     var zipRequests: [ZipRequest] = []
-
-    
+    var events: [Event] = []
     
     
     private let logo: UIImageView = {
@@ -87,60 +86,82 @@ class LoadingViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        checkLocationServices()
-    }
-    
-    private func checkLocationServices() {
-
-        let manager = CLLocationManager()
-        if !CLLocationManager.locationServicesEnabled() || manager.authorizationStatus == .denied {
-            let vc = LocationDeniedViewController()
-            vc.modalPresentationStyle = .overFullScreen
-            vc.modalTransitionStyle = .crossDissolve
-            present(vc, animated: true, completion: nil)
-        } else {
-            loadZipRequests()
+        guard isLocationEnabled() == true else {
+            locationDenied()
+            return
         }
+
+        loadLaunchData(completion: { [weak self] error in
+            guard error == nil else {
+                return
+            }
+            self?.presentMap()
+        })
+        
+        
     }
     
-    private func loadZipRequests() {
+    private func isLocationEnabled() -> Bool {
+        let manager = CLLocationManager()
+        return CLLocationManager.locationServicesEnabled() || manager.authorizationStatus != .denied
+    }
+    
+    private func locationDenied() {
+        let vc = LocationDeniedViewController()
+        vc.modalPresentationStyle = .overFullScreen
+        vc.modalTransitionStyle = .crossDissolve
+        present(vc, animated: true, completion: nil)
+    }
+    
+    private func loadLaunchData(completion: @escaping ((Error?) -> Void)){
+        loadZipRequests(completion: { [weak self] error in
+            completion(error)
+            
+        })
+    }
+    
+    private func loadEvents(completion: @escaping ((Error?) -> Void)) {
+//        GeoManager.shared.GetEventByLocation(range: <#T##Double#>, max: <#T##Int#>, completion: <#T##() -> Void#>)
+    }
+    
+    private func loadZipRequests(completion: @escaping ((Error?) -> Void)) {
         
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
         
-        let user = User(userId: userId)
-        user.getIncomingRequests(completion: { [weak self] results in
-            
+        DataStorageManager.shared.selfUser.getIncomingRequests(completion: { [weak self] results in
             switch results {
             case .success(let requests):
                 self?.zipRequests = requests
-                
-                if requests.count != 0 {
-                    let imagesPath = "images/" + requests[0].fromUser.userId
-                    StorageManager.shared.getProfilePicture(path: imagesPath, completion: { result in
-                        switch result {
-                        case .success(let url):
-                            requests[0].fromUser.pictureURLs.append(contentsOf: url)
-                            print("IN LOADING1 ", requests[0].fromUser.pictureURLs)
-
-                            print("Success in loading???")
-                            print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                            print("Successfully loaded tableview")
-                            
-                            self?.presentMap()
-
-                        case .failure(let error):
-                            print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
-                        }
-                    })
-                }
-               
-                
-                print("IN LOADING ", requests[0].fromUser.pictureURLs)
+                completion(nil)
+//                if requests.count != 0 {
+//                    let imagesPath = "images/" + requests[0].fromUser.userId
+//                    StorageManager.shared.getProfilePicture(path: imagesPath, completion: { result in
+//                        switch result {
+//                        case .success(let url):
+//                            requests[0].fromUser.pictureURLs.append(contentsOf: url)
+//                            print("IN LOADING1 ", requests[0].fromUser.pictureURLs)
+//
+//                            print("Success in loading???")
+//                            print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+//                            print("Successfully loaded tableview")
+//                            
+//                            completion(nil)
+//
+//                        case .failure(let error):
+//                            print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+//                            completion(error)
+//                        }
+//                    })
+//                }
+//
+//
+//                print("IN LOADING ", requests[0].fromUser.pictureURLs)
                 
             case .failure(let error):
                 print("failed to initialize zip requests on launch with error \(error)")
+                completion(error)
             }
             
             // present map regaurdless?
@@ -150,9 +171,7 @@ class LoadingViewController: UIViewController {
     }
     
     private func presentMap(){
-        let vc = MapViewController()
-        vc.isNewAccount = false
-        vc.zipRequests = zipRequests
+        let vc = MapViewController(isNewAccount: false)
         print("ZIP REQUESTS = \(zipRequests)")
         vc.modalPresentationStyle = .overFullScreen
         vc.modalTransitionStyle = .crossDissolve
