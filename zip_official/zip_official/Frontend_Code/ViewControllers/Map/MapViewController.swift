@@ -28,62 +28,75 @@ protocol InitMapDelegate: AnyObject {
 
 //MARK: View Controller
 class MapViewController: UIViewController {
-    static let title = "MapVC"
-    static let profileIdentifier = "profile"
-
-    var isNewAccount = false
-    let locationManager = CLLocationManager()
-    var userLoc = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+    private var isNewAccount: Bool
+    private let locationManager: CLLocationManager
+    private var userLoc: CLLocationCoordinate2D
     
-    let fpc = FloatingPanelController()
+    private let fpc: FloatingPanelController
     
-    var zipRequests: [ZipRequest] = []
-
-    // MARK: - Events
-    //to be brought in via json file
-    //func loadEventData()
-    var user = User()
-    var launchEvent = Event()
-    var randomEvent = Event()
+    private var events: [Event]
     
-    // MARK: - Data
-    private var events: [Event] = []
-    
-    // MARK: - Subviews
-    private var mapView: MKMapView?
-    
-    private var profileButton = UIButton()
-    
-    var guardingGeoFireCalls = false
-    
-    var mapDidMove = true
-    private let zoomToCurrentButton : UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .zipVeryLightGray.withAlphaComponent(0.7)
-        btn.layer.borderColor = UIColor.zipVeryLightGray.cgColor
-        btn.layer.borderWidth = 1
-        btn.setImage(UIImage(systemName: "location")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        btn.imageView?.contentMode = .scaleToFill
-        btn.contentMode = .scaleToFill
-        btn.layer.cornerRadius = 8
-        btn.layer.masksToBounds = true
-        return btn
-    }()
+    private let mapView: MKMapView
+    private let profileButton: UIButton
+    private let zoomToCurrentButton : UIButton
 
     
+    var guardingGeoFireCalls: Bool
     
+    var mapDidMove: Bool
+
     
-    // MARK: - Button Actions
-    
-    @objc private func didTapFilterButton(){
-        //        filterButton.isHidden = true
-//        let filtersVC = FiltersViewController()
-//        filtersVC.delegate = self
-//        filtersVC.modalPresentationStyle = .overCurrentContext
-//        present(filtersVC, animated: true, completion: nil)
+    init(isNewAccount: Bool){
+        self.isNewAccount = isNewAccount
+        self.events = []
+        
+        self.locationManager = CLLocationManager()
+        
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        self.userLoc = CLLocationCoordinate2D(latitude: loc[0], longitude: loc[1])
+        
+        self.mapView = MKMapView()
+        self.fpc = FloatingPanelController()
+        self.zoomToCurrentButton = UIButton()
+        self.profileButton = UIButton()
+        
+        self.mapDidMove = true
+        self.guardingGeoFireCalls = false
+ 
+        super.init(nibName: nil, bundle: nil)
+        view.backgroundColor = .zipGray
+        definesPresentationContext = true
+        
+        mapView.showsCompass = false
+        mapView.pointOfInterestFilter = .excludingAll
+        mapView.showsUserLocation = true
+        
+        zoomToCurrentButton.backgroundColor = .zipVeryLightGray.withAlphaComponent(0.7)
+        zoomToCurrentButton.layer.borderColor = UIColor.zipVeryLightGray.cgColor
+        zoomToCurrentButton.layer.borderWidth = 1
+        zoomToCurrentButton.setImage(UIImage(systemName: "location")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        zoomToCurrentButton.imageView?.contentMode = .scaleToFill
+        zoomToCurrentButton.contentMode = .scaleToFill
+        zoomToCurrentButton.layer.cornerRadius = 8
+        zoomToCurrentButton.layer.masksToBounds = true
+        
+        
+        zoomToCurrentButton.addTarget(self, action: #selector(didTapZoom), for: .touchUpInside)
+        profileButton.addTarget(self, action: #selector(didTapProfileButton), for: .touchUpInside)
+        
+        addSubviews()
+        configureSubviewLayout()
+        configureLocationServices()
+        configureProfilePicture()
+        configureFloatingPanel()
+        configureNavBar()
     }
     
-    @objc func didTapProfileButton() {
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc private func didTapProfileButton() {
 //        createNewUsersInDB()
 //        updateUsersInDB()
         
@@ -102,10 +115,6 @@ class MapViewController: UIViewController {
     }
     
     private func zoomToLatestLocation(){
-        guard let mapView = mapView else {
-            return
-        }
-        
         //change 20000,20000 so that it fits all 3 rings
         let zoomDistance = CGFloat(2000)
         let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: zoomDistance,longitudinalMeters: zoomDistance)
@@ -113,7 +122,6 @@ class MapViewController: UIViewController {
     }
 
     private func hideZoomButton() {
-        
         UIView.animate(withDuration: 0.2, delay: 0, animations: {
             self.zoomToCurrentButton.alpha = 0
         }, completion: { finished in
@@ -139,43 +147,27 @@ class MapViewController: UIViewController {
         if #available(iOS 13.0, *){
             overrideUserInterfaceStyle = .dark
         }
-        
-        view.backgroundColor = .zipGray
-        mapView = MKMapView()
-
-        mapView?.showsCompass = false
-        mapView?.pointOfInterestFilter = .excludingAll
-        
-        configureLocationServices()
-        
-        zoomToCurrentButton.addTarget(self, action: #selector(didTapZoom), for: .touchUpInside)
+    
 
         
-        generateTestData()
+
         
-        definesPresentationContext = true
-        configureProfilePicture()
-        configureNavBar()
-        configureSubviews()
-        configureFloatingPanel()
+        
+
         configureAnnotations()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.navigationBar.setTitleVerticalPositionAdjustment(0, for: .default)
-        navigationController?.navigationBar.isHidden = true
-        
-        if presentedViewController != nil {
-            presentedViewController?.dismiss(animated: false, completion: nil)
-        }
+//        if presentedViewController != nil {
+//            presentedViewController?.dismiss(animated: false, completion: nil)
+//        }
     }
     
 
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-//        isNewAccount = true
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -237,68 +229,58 @@ class MapViewController: UIViewController {
 
     //MARK: - Nav Bar Config
     private func configureNavBar(){
+        navigationController?.navigationBar.setTitleVerticalPositionAdjustment(0, for: .default)
         navigationController?.navigationBar.isHidden = true
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-
     }
     
    
     
     
     //MARK: - Configure Subviews
-    private func configureSubviews(){
-        guard let mapView = mapView else {
-            return
-        }
-        
-        mapView.showsUserLocation = true
+    private func addSubviews(){
         view.addSubview(mapView)
+        view.addSubview(profileButton)
+        mapView.addSubview(zoomToCurrentButton)
+    }
+    
+    private func configureSubviewLayout() {
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         mapView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -45).isActive = true
         mapView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
         mapView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-
-
         
-        view.addSubview(profileButton)
         profileButton.translatesAutoresizingMaskIntoConstraints = false
         profileButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         profileButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
         profileButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         profileButton.widthAnchor.constraint(equalTo: profileButton.heightAnchor).isActive = true
-        profileButton.addTarget(self, action: #selector(didTapProfileButton), for: .touchUpInside)
         
-        mapView.addSubview(zoomToCurrentButton)
         zoomToCurrentButton.translatesAutoresizingMaskIntoConstraints = false
         zoomToCurrentButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -20).isActive = true
         zoomToCurrentButton.rightAnchor.constraint(equalTo: mapView.rightAnchor, constant: -10).isActive = true
         zoomToCurrentButton.widthAnchor.constraint(equalToConstant: 35).isActive = true
         zoomToCurrentButton.heightAnchor.constraint(equalTo: zoomToCurrentButton.widthAnchor).isActive = true
-
     }
-    
 
     //MARK: - Annotation Config
     // regisers annotation views and adds them to map
     func configureAnnotations(){
-        guard let mapView = mapView else {
-            return
-        }
         mapView.delegate = self
         mapView.register(MKAnnotationView.self, forAnnotationViewWithReuseIdentifier: EventAnnotation.identifier)
 
         //Events
         // MARK: London
-        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 51.5014, longitude: -0.1419))
-        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570))
+//        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 51.5014, longitude: -0.1419))
+//        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570))
         
         //MARK: Montreal
 //        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 45.5317, longitude: -73.5873))
 //        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 45.4817, longitude: -73.4873))
         
-        mapView.addAnnotation(event1)
-        mapView.addAnnotation(event2)
+//        mapView.addAnnotation(event1)
+//        mapView.addAnnotation(event2)
     }
 
 }
@@ -482,9 +464,8 @@ extension MapViewController: MKMapViewDelegate {
             img.layer.masksToBounds = true
             img.layer.borderWidth = 1
             switch eventAnnotation.event.getType() {
-            case 2: img.layer.borderColor = CGColor(red: 1, green: 1, blue: 0, alpha: 1)
-            case 1: img.layer.borderColor = CGColor(red: 35/255, green: 207/255, blue: 244/255, alpha: 1)
-            default: break
+            case .Promoter, .Event, .Public: img.layer.borderColor = CGColor(red: 1, green: 1, blue: 0, alpha: 1)
+            case .Private, .Friends: img.layer.borderColor = CGColor(red: 35/255, green: 207/255, blue: 244/255, alpha: 1)
             }
             
             annotationView.canShowCallout = false
@@ -532,17 +513,13 @@ extension MapViewController: FloatingPanelControllerDelegate {
 // MARK: UIGestureRecognizerDelegate
 extension MapViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        guard let mapView = mapView else {
-            return false
-        }
-        
         if touch.view is MKAnnotationView {
             mapView.isZoomEnabled = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 guard let strongSelf = self else {
                     return
                 }
-                strongSelf.mapView!.isZoomEnabled = true
+                strongSelf.mapView.isZoomEnabled = true
             }
             return false
         }
@@ -1005,29 +982,31 @@ extension MapViewController {
                          bio: "Hey, I'm Seung, rapper/producer and head of Zipper design and marketing",
                          school: "McGill University")
         
-        var ezra = User(email: "ezrataylor55@gmail.com",
-                         username: "ezrataylor55",
-                         firstName: "Ezra",
-                         lastName: "Taylor",
-//                         name: "Ezra Taylor",
-                         zipped: false,
-                         birthday: ezraBirthday,
-                         location: CLLocation(latitude: 51.5313, longitude: -0.1570),
-                         pictures: ezrapics,
-                         bio: "What's good, I'm Ezra, rapper/producer, sports enthusiast and head of Zipper legal and finance",
-                         school: "McGill University")
+        var ezra = User(userId: "u2158018458",
+                        email: "ezrataylor55@gmail.com",
+                        username: "ezrataylor55",
+                        firstName: "Ezra",
+                        lastName: "Taylor",
+                        //                         name: "Ezra Taylor",
+                        zipped: false,
+                        birthday: ezraBirthday,
+                        location: CLLocation(latitude: 51.5313, longitude: -0.1570),
+                        pictures: ezrapics,
+                        bio: "What's good, I'm Ezra, rapper/producer, sports enthusiast and head of Zipper legal and finance",
+                        school: "McGill University")
         
-        var yianni = User(email: "zavalyia@gmail.com",
-                         username: "yianni_zav",
-                         firstName: "Yianni",
-                         lastName: "Zavaliagkos",
-//                          name: "Yianni Zavaliagkos",
-                         zipped: true,
-                         birthday: yianniBirthday,
-                         location: CLLocation(latitude: 51.5013, longitude: -0.2070),
-                         pictures: yiannipics,
-                         bio: "Yianni. I run this shit. Know the name",
-                         school: "McGill Univeristy")
+        var yianni = User(userId: "u9789070602",
+                          email: "zavalyia@gmail.com",
+                          username: "yianni_zav",
+                          firstName: "Yianni",
+                          lastName: "Zavaliagkos",
+                          //                          name: "Yianni Zavaliagkos",
+                          zipped: true,
+                          birthday: yianniBirthday,
+                          location: CLLocation(latitude: 51.5013, longitude: -0.2070),
+                          pictures: yiannipics,
+                          bio: "Yianni. I run this shit. Know the name",
+                          school: "McGill Univeristy")
 
         var elias = User(email: "elias.levy@vanderbilt.edu",
                          username: "elias.levy",
@@ -1053,7 +1032,6 @@ extension MapViewController {
                         bio: "Hello, I'm Mason Dental-Tools. Swim fast do Math eat Ass. In that order",
                         school: "Vanderbilt University")
         
-        user = yianni
         
 //        //Montreal
 //        seung.location = CLLocation(latitude: 45.5017, longitude: -73.5673)
@@ -1066,28 +1044,28 @@ extension MapViewController {
 //        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570))
         
 
-        launchEvent = PromoterEvent(title: "Zipper Launch Party",
-                            coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
-                            hosts: [user],
-                            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [seung,yianni,gabe],
-                            usersInterested: [elias,ezra],
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(2000),
-                            image: UIImage(named: "launchevent")!)
-        randomEvent = PublicEvent(title: "Fake Ass Frosh",
-                            coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
-                            hosts: [user,gabe,seung,ezra],
-                            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [ezra,yianni,gabe],
-                            usersInterested: [elias,seung],
-                            startTime: Date(timeIntervalSinceNow: 100000),
-                            duration: TimeInterval(200),
-                            image: UIImage(named: "muzique")!)
+//        launchEvent = PromoterEvent(title: "Zipper Launch Party",
+//                            coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
+//                            hosts: [user],
+//                            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
+//                            address: "3781 St. Lauremt Blvd.",
+//                            maxGuests: 250,
+//                            usersGoing: [seung,yianni,gabe],
+//                            usersInterested: [elias,ezra],
+//                            startTime: Date(timeIntervalSinceNow: 1000),
+//                            duration: TimeInterval(2000),
+//                            image: UIImage(named: "launchevent")!)
+//        randomEvent = PublicEvent(title: "Fake Ass Frosh",
+//                            coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
+//                            hosts: [user,gabe,seung,ezra],
+//                            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
+//                            address: "3781 St. Lauremt Blvd.",
+//                            maxGuests: 250,
+//                            usersGoing: [ezra,yianni,gabe],
+//                            usersInterested: [elias,seung],
+//                            startTime: Date(timeIntervalSinceNow: 100000),
+//                            duration: TimeInterval(200),
+//                            image: UIImage(named: "muzique")!)
     }
     
     
@@ -1183,7 +1161,7 @@ extension MapViewController {
                          school: "McGill University",
                          interests: seunginterests)
         
-        var ezra = User(userId: "u6505555555",
+        var ezra = User(userId: "u2158018458",
                         email: "ezrataylor55@gmail.com",
                          username: "ezrataylor55",
                          firstName: "Ezra",
@@ -1197,7 +1175,7 @@ extension MapViewController {
                          school: "McGill University",
                          interests: ezrainterests)
         
-        var yianni = User(userId: "u6501111111",
+        var yianni = User(userId: "u9789070602",
                           email: "zavalyia@gmail.com",
                          username: "yianni_zav",
                          firstName: "Yianni",
@@ -1211,19 +1189,6 @@ extension MapViewController {
                          school: "McGill Univeristy",
                          interests: yianniinterests)
 
-        var elias = User(userId: "u6502222222",
-                         email: "elias.levy@vanderbilt.edu",
-                         username: "elias.levy",
-                         firstName: "Elias",
-                         lastName: "Levy",
-//                         name: "Elias Levy",
-                         zipped: true,
-                         birthday: eliasBirthday,
-                         location: CLLocation(latitude: 51.5013, longitude: -0.5070), //CLLocation(latitude: 45.671, longitude: -73.6073),
-                         pictures: eliaspics,
-                         bio: "Hey guys, I'm elias, robotics enthusiast and musician. One of the newest Zipper members. I developed the back end of the app basically making things work behind the scenes",
-                         school: "Vanderbilt University",
-                         interests: eliasinterests)
         
         var gabe = User(userId: "u6503333333",
                         email: "mason.g.denton@vanderbilt.edu",
@@ -1246,7 +1211,7 @@ extension MapViewController {
 //        elias.location = CLLocation(latitude: 45.6717, longitude: -73.6073)
 //        gabe.location = CLLocation(latitude: 45.5017, longitude: -73.6073)
         
-        let list: [User] = [seung,ezra,yianni,elias,gabe]
+        let list: [User] = [seung,ezra,yianni,gabe]
         return list
     }
     
