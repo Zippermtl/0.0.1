@@ -129,7 +129,7 @@ extension DatabaseManager {
             "eventProfiles/\(event.eventId)/coordinates/long" : event.coordinates.coordinate.longitude,
             "eventProfiles/\(event.eventId)/description" : event.description,
             "eventProfiles/\(event.eventId)/address" : event.address,
-            "eventProfiles/\(event.eventId)/type" : event.getType(),
+            "eventProfiles/\(event.eventId)/type" : event.getType().rawValue,
             "eventProfiles/\(event.eventId)/startTime" : event.startTimeString,
 //            "eventProfiles/\(event.eventId)/duration" : event.duration,
             "eventProfiles/\(event.eventId)/endTime" : event.endTimeString,
