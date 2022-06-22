@@ -21,7 +21,7 @@ public class Event {
     var address: String = ""
     var locationName: String = ""
 //Mark: Will comment out once fixed Yianni's old code
-    var maxGuests: Int
+    var maxGuests: Int = -1
     var usersGoing: [User] = []
     var usersInterested: [User] = []
     var usersInvite: [User] = []
@@ -59,16 +59,20 @@ public class Event {
     }
     
     public func out(){
-        print(eventId)
-        print(title)
-        print(coordinates.coordinate.latitude)
-        print(coordinates.coordinate.longitude)
-        print(hosts[0].userId)
-        print(description)
-        print(maxGuests)
-        print(startTimeString)
-        print(endTimeString)
-        print(imageUrl)
+        print("ID: ", eventId)
+        print("Title : ", title)
+        print("Lat: ", coordinates.coordinate.latitude)
+        print("Long : ", coordinates.coordinate.longitude)
+        print("Host :", hosts[0].userId)
+        print("Bio: ", description)
+        print("Max guests: ", maxGuests)
+        print("Start Time: ", startTimeString)
+        print("End Time: ", endTimeString)
+        print("Img URL: ", imageUrl)
+        print("Users Invited")
+        for i in usersInvite{
+            print(i.userId)
+        }
     }
     
     public func update(eventId Id: String = "",
@@ -132,32 +136,22 @@ public class Event {
             image = im
         }
     }
+    
     //MARK: accessory function for yianni to pull for visuals if needed:
     // ex sponsor events could return an even with the visual appened on
     // the picture etc this is the pull for map if it is needed
     public func pullVisual(){
         fatalError("Must Override!")
     }
+
     public func isPublic() -> Bool {
-        let type = getType()
-        switch type{
-        case 0:
-            return true
-        case 1:
-            return true
-        case 2:
-            return true
-        case 3:
-            return false
-        case 4:
-            return false
-        default:
-            return false
-        }
+        return true
     }
-    public func getType() -> Int{
-        return 0
+        
+    public func getType() -> EventType {
+        return EventType.Event
     }
+        
     init(eventId Id: String = "",
          title tit: String = "",
          coordinates loc: CLLocation = CLLocation(),
@@ -214,9 +208,14 @@ public class PublicEvent: Event {
         return false
     }
     
-    override public func getType() -> Int {
-        return 1
+    public override func getType() -> EventType {
+        return .Public
     }
+    
+    public override func isPublic() -> Bool {
+        return true
+    }
+    
 }
 
 public class PromoterEvent: PublicEvent {
@@ -224,8 +223,8 @@ public class PromoterEvent: PublicEvent {
     override public func dispatch(user:User) -> Bool {
         return true
     }
-    override public func getType() -> Int {
-        return 2
+    override public func getType() -> EventType {
+        return .Promoter
     }
 }
 
@@ -246,8 +245,8 @@ public class PrivateEvent: Event {
 //        }
 //        return false
     }
-    override public func getType() -> Int {
-        return 3
+    override public func getType() -> EventType {
+        return .Private
     }
 }
 
@@ -262,8 +261,8 @@ public class FriendsEvent: PrivateEvent {
             return false
         }
     }
-    override public func getType() -> Int {
-        return 4
+    override public func getType() -> EventType {
+        return .Friends
     }
 }
 
@@ -285,20 +284,17 @@ public func createEvent(eventId Id: String = "",
                         imageURL url: URL = URL(string: "a")!,
                         endTimeString ets: String = "",
                         startTimeString sts: String = "",
-                        type t: Int = -1) -> Event{
+                        type t: EventType = .Event) -> Event{
     switch t{
-    case 0:
+    case .Event:
         return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
-    case 1:
+    case .Public:
         return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
-    case 2:
+    case .Promoter:
         return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
-    case 3:
+    case .Private:
         return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
-    case 4:
+    case .Friends:
         return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
-    default:
-        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
     }
-    
 }
