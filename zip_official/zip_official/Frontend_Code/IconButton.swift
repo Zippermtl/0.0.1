@@ -9,56 +9,59 @@ import UIKit
 
 class IconButton: UIButton {
 
-    var iconView: UIImageView?
-    var iconBG: UIView
+    var iconButton: UIButton
+    
+    
+    
     
     init(text: String, icon: UIImage?, config: UIImage.Configuration) {
-        iconBG = UIView()
+        iconButton = UIButton()
 
         super.init(frame: .zero)
         
         
-        iconView = UIImageView(image: icon!
-                                .withConfiguration(config)
-                                .withRenderingMode(.alwaysOriginal)
-                                .withTintColor(.white))
+        
+        iconButton.setImage(icon!.withConfiguration(config)
+                                 .withRenderingMode(.alwaysOriginal)
+                                 .withTintColor(.white),
+                            for: .normal)
 
         
-        iconView?.isExclusiveTouch = false
-        iconView?.isUserInteractionEnabled = false
-        iconView?.contentMode = .scaleAspectFit
         
         
-        iconBG.backgroundColor = .zipLightGray
-        addSubview(iconBG)
-        iconBG.translatesAutoresizingMaskIntoConstraints = false
-        iconBG.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        iconBG.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        iconBG.layer.masksToBounds = true
+        iconButton.contentMode = .scaleAspectFit
         
-        iconBG.addSubview(iconView!)
-        iconView?.translatesAutoresizingMaskIntoConstraints = false
-        iconView?.centerXAnchor.constraint(equalTo: iconBG.centerXAnchor).isActive = true
-        iconView?.centerYAnchor.constraint(equalTo: iconBG.centerYAnchor).isActive = true
-        iconView?.layer.masksToBounds = true
+        addSubview(iconButton)
+        iconButton.translatesAutoresizingMaskIntoConstraints = false
+        iconButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        iconButton.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        iconButton.layer.masksToBounds = true
+        
+        iconButton.backgroundColor = .zipLightGray
         
         let label = UILabel.zipTextIcon()
         label.text = text
         
+        label.textAlignment = .center
+        
         addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        label.topAnchor.constraint(equalTo: iconBG.bottomAnchor, constant: 5).isActive = true
+        label.topAnchor.constraint(equalTo: iconButton.bottomAnchor, constant: 5).isActive = true
         label.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
     }
     
     public func setIconDimension(width: CGFloat) {
-        iconBG.translatesAutoresizingMaskIntoConstraints = false
-        iconBG.widthAnchor.constraint(equalToConstant: width).isActive = true
-        iconBG.heightAnchor.constraint(equalTo: iconBG.widthAnchor).isActive = true
+        iconButton.translatesAutoresizingMaskIntoConstraints = false
+        iconButton.widthAnchor.constraint(equalToConstant: width).isActive = true
+        iconButton.heightAnchor.constraint(equalTo: iconButton.widthAnchor).isActive = true
         
-        iconBG.layer.cornerRadius = width/2
+        iconButton.layer.cornerRadius = width/2
+    }
 
+    
+    func iconAddTarget(_ target: Any?, action: Selector, for controlEvents: UIControl.Event) {
+        iconButton.addTarget(target, action: action, for: controlEvents)
     }
     
     required init?(coder: NSCoder) {
