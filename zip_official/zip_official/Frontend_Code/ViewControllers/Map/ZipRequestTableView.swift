@@ -60,8 +60,6 @@ extension ZipRequestTableView: UITableViewDelegate, UITableViewDataSource {
         if requests.count != 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: ZipRequestTableViewCell.identifier) as! ZipRequestTableViewCell
             cell.configure(with: requests[indexPath.row])
-            print(requests[indexPath.row].fromUser.firstName)
-            print(requests.count)
             cell.delegate = self
             return cell
         } else {
