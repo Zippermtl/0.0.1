@@ -10,164 +10,193 @@ import CoreLocation
 import RSKImageCropper
 import DropDown
 import GooglePlaces
+import RealmSwift
 
-protocol MaintainEventDelegate: AnyObject {
-    func updateEvent(event: Event)
-}
 
 class CreateEventViewController: UIViewController {
-    var event = Event()
+    var event = PrivateEvent()
 
-    private let eventNameLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBodyBold
-        label.textColor = .white
-        label.text = "Event Name:"
-        return label
-    }()
+    private let eventNameLabel: UILabel
+    private let startTimeLabel: UILabel
+    private let locationLabel: UILabel
+    private let endTimeLabel: UILabel
     
-    private let dateAndTimeLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBodyBold
-        label.textColor = .white
-        label.text = "Date/Time: "
-        return label
-    }()
+    private let endDatePicker: UIDatePicker
+    private let endTimePicker: UIDatePicker
     
-    private let locationLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBodyBold
-        label.textColor = .white
-        label.text = "Event Location:"
-        return label
-    }()
+    private let eventNameField: UITextField
+    private let startDateField: UITextField
+    private let startTimeField: UITextField
+    private let endDateField: UITextField
     
-    private let privacyLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBodyBold
-        label.textColor = .white
-        label.text = "Private Event?"
-        return label
-    }()
+    private let endTimeField: UITextField
     
-    private let endTimeLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBodyBold
-        label.textColor = .white
-        label.text = "End Time: "
-        label.isHidden = true
-        return label
-    }()
+    private let locationField: UITextField
     
-    private let privacySwitch = UISwitch()
+    private let continueButton: UIButton
+    
+    private let pageStatus1: StatusCheckView
+    private let pageStatus2: StatusCheckView
+    private let pageStatus3: StatusCheckView
+    
+    init() {
+        self.eventNameLabel = UILabel.zipTextFill()
+        self.startTimeLabel = UILabel.zipTextFill()
+        self.locationLabel = UILabel.zipTextFill()
+        self.endTimeLabel = UILabel.zipTextFill()
+        
+        self.eventNameField = UITextField()
+        self.startDateField = UITextField()
+        self.startTimeField = UITextField()
+        self.endDateField = UITextField()
+        self.endTimeField = UITextField()
+        self.locationField = UITextField()
+        
+        self.pageStatus1 = StatusCheckView()
+        self.pageStatus2 = StatusCheckView()
+        self.pageStatus3 = StatusCheckView()
+        
+        self.endDatePicker = UIDatePicker()
+        self.endTimePicker = UIDatePicker()
+        
+        self.continueButton = UIButton()
 
-    private let eventNameField: UITextField = {
-        let field = UITextField()
-        field.returnKeyType = .continue
-        field.borderStyle = .roundedRect
-        field.attributedPlaceholder = NSAttributedString(string: "Ex. Ezra's Birthday Bash",
-                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
-                                                                      NSAttributedString.Key.font: UIFont.zipBodyBold])
+        super.init(nibName: nil, bundle: nil)
+
+        eventNameLabel.text = "Event Name:"
+        startTimeLabel.text = "Start Time: "
+        locationLabel.text = "Event Location"
+        endTimeLabel.text = "End Time: "
         
-        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
-        field.leftViewMode = .always
-        field.backgroundColor = .zipLightGray
-        field.tintColor = .white
-        field.textColor = .white
-        field.font = .zipBodyBold
-        return field
-    }()
+        continueButton.setTitle("CONTINUE", for: .normal)
+        continueButton.backgroundColor = .zipBlue
+        continueButton.setTitleColor(.white, for: .normal)
+        continueButton.layer.cornerRadius = 15
+        continueButton.layer.masksToBounds = true
+        continueButton.titleLabel?.font = .zipBodyBold//.withSize(20)
+       
+        pageStatus1.select()
+        
+        configureTextFields()
+    }
     
-    var dateField: UITextField = {
-        let tf = UITextField()
-        tf.attributedPlaceholder = NSAttributedString(string: "Date",
-                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        tf.font = .zipBody
-        tf.borderStyle = .roundedRect
-        tf.tintColor = .white
-        tf.backgroundColor = .zipLightGray
-        tf.textColor = .white
-        tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0
-        tf.textAlignment = .center
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func configureTextFields() {
+        endDatePicker.datePickerMode = .date
+        endDatePicker.minuteInterval = 15
+        endDatePicker.preferredDatePickerStyle = .inline
+        endDatePicker.minimumDate = Date()
+        endDatePicker.addTarget(self, action: #selector(endDateChanged), for: .valueChanged)
 
         
-        let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .date
-        datePicker.minuteInterval = 15
-        datePicker.preferredDatePickerStyle = .inline
+        endDateField.inputView = endDatePicker
+        
+        
+        endTimePicker.datePickerMode = .time
+        endTimePicker.minuteInterval = 15
+        endTimePicker.preferredDatePickerStyle = .wheels
+        endTimePicker.addTarget(self, action: #selector(endTimeChanged), for: .valueChanged)
 
-        datePicker.minimumDate = Date()
-        tf.inputView = datePicker
+        endTimeField.inputView = endTimePicker
         
-        datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
-        return tf
-    }()
-    
-    var startTimeField: UITextField = {
-        let tf = UITextField()
-        tf.attributedPlaceholder = NSAttributedString(string: "Time",
+        eventNameField.returnKeyType = .continue
+        eventNameField.borderStyle = .roundedRect
+        eventNameField.attributedPlaceholder = NSAttributedString(string: "Ex. Ezra's Birthday Bash",
+                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
+                                                                               NSAttributedString.Key.font: UIFont.zipBodyBold])
+        
+        eventNameField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
+        eventNameField.leftViewMode = .always
+        eventNameField.backgroundColor = .zipLightGray
+        eventNameField.tintColor = .white
+        eventNameField.textColor = .white
+        eventNameField.font = .zipBodyBold
+
+        
+        startDateField.attributedPlaceholder = NSAttributedString(string: "Date",
+                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+        startDateField.font = .zipBody
+        startDateField.borderStyle = .roundedRect
+        startDateField.tintColor = .white
+        startDateField.backgroundColor = .zipLightGray
+        startDateField.textColor = .white
+        startDateField.adjustsFontSizeToFitWidth = true
+        startDateField.minimumFontSize = 10.0
+        startDateField.textAlignment = .center
+
+            
+        let startDatePicker = UIDatePicker()
+        startDatePicker.datePickerMode = .date
+        startDatePicker.minuteInterval = 15
+        startDatePicker.preferredDatePickerStyle = .inline
+        
+        startDatePicker.minimumDate = Date()
+        startDateField.inputView = startDatePicker
+            
+        startDatePicker.addTarget(self, action: #selector(startDateChanged), for: .valueChanged)
+        
+
+        startTimeField.attributedPlaceholder = NSAttributedString(string: "Time",
+                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+        startTimeField.font = .zipBody
+        startTimeField.borderStyle = .roundedRect
+        startTimeField.tintColor = .white
+        startTimeField.backgroundColor = .zipLightGray
+        startTimeField.textColor = .white
+        startTimeField.adjustsFontSizeToFitWidth = true
+        startTimeField.minimumFontSize = 10.0
+        startTimeField.textAlignment = .center
+            
+        let startTimePicker = UIDatePicker()
+        startTimePicker.datePickerMode = .time
+        startTimePicker.minuteInterval = 15
+        startTimePicker.preferredDatePickerStyle = .wheels
+        startTimeField.inputView = startTimePicker
+            
+        startTimePicker.addTarget(self, action: #selector(startTimeChanged), for: .valueChanged)
+        
+        
+        endTimeField.attributedPlaceholder = NSAttributedString(string: "Date",
                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        tf.font = .zipBody
-        tf.borderStyle = .roundedRect
-        tf.tintColor = .white
-        tf.backgroundColor = .zipLightGray
-        tf.textColor = .white
-        tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0
-        tf.textAlignment = .center
+        endTimeField.font = .zipBody
+        endTimeField.borderStyle = .roundedRect
+        endTimeField.tintColor = .white
+        endTimeField.backgroundColor = .zipLightGray
+        endTimeField.textColor = .white
+        endTimeField.adjustsFontSizeToFitWidth = true
+        endTimeField.minimumFontSize = 10.0
+        endTimeField.textAlignment = .center
         
-        let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .time
-        datePicker.minuteInterval = 15
-        datePicker.preferredDatePickerStyle = .wheels
-        tf.inputView = datePicker
         
-        datePicker.addTarget(self, action: #selector(startTimeChanged), for: .valueChanged)
-        return tf
-    }()
-    
-    var endTimeField: UITextField = {
-        let tf = UITextField()
-        tf.isHidden = true
-        tf.attributedPlaceholder = NSAttributedString(string: "Time",
-                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        tf.font = .zipBody
-        tf.borderStyle = .roundedRect
-        tf.tintColor = .white
-        tf.backgroundColor = .zipLightGray
-        tf.textColor = .white
-        tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0
-        tf.textAlignment = .center
+        endDateField.attributedPlaceholder = NSAttributedString(string: "Time",
+                                                                attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+        endDateField.font = .zipBody
+        endDateField.borderStyle = .roundedRect
+        endDateField.tintColor = .white
+        endDateField.backgroundColor = .zipLightGray
+        endDateField.textColor = .white
+        endDateField.adjustsFontSizeToFitWidth = true
+        endDateField.minimumFontSize = 10.0
+        endDateField.textAlignment = .center
         
-        let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .time
-        datePicker.minuteInterval = 15
-        datePicker.preferredDatePickerStyle = .wheels
-        tf.inputView = datePicker
+        locationField.attributedPlaceholder = NSAttributedString(string: "Enter Your Event Location",
+                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+        locationField.font = .zipBody
+        locationField.borderStyle = .roundedRect
+        locationField.tintColor = .white
+        locationField.backgroundColor = .zipLightGray
+        locationField.textColor = .white
+        locationField.adjustsFontSizeToFitWidth = true
+        locationField.minimumFontSize = 10.0
         
-        datePicker.addTarget(self, action: #selector(endTimeChanged), for: .valueChanged)
-        return tf
-    }()
-    
-    private var locationField: UITextField = {
-        let tf = UITextField()
-        tf.attributedPlaceholder = NSAttributedString(string: "Enter Your Event Location",
-                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        tf.font = .zipBody
-        tf.borderStyle = .roundedRect
-        tf.tintColor = .white
-        tf.backgroundColor = .zipLightGray
-        tf.textColor = .white
-        tf.adjustsFontSizeToFitWidth = true
-        tf.minimumFontSize = 10.0
-        
-        tf.rightViewMode = .always
+        locationField.rightViewMode = .always
         let view = UIView()
         let symbol = UIImage(systemName: "chevron.right")?
-                                .withRenderingMode(.alwaysOriginal)
-                                .withTintColor(.zipVeryLightGray)
+            .withRenderingMode(.alwaysOriginal)
+            .withTintColor(.zipVeryLightGray)
         let btn = UIImageView(image: symbol)
         view.addSubview(btn)
         btn.translatesAutoresizingMaskIntoConstraints = false
@@ -176,45 +205,30 @@ class CreateEventViewController: UIViewController {
         btn.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         btn.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -5).isActive = true
         
-        tf.rightView = view
+        locationField.rightView = view
         
-        return tf
-    }()
     
-    private let continueButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("CONTINUE", for: .normal)
-        btn.backgroundColor = .zipBlue
-        btn.setTitleColor(.white, for: .normal)
-        btn.layer.cornerRadius = 15
-        btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
-        return btn
-    }()
+    }
     
-    private let closeEndTimeButton: UIButton = {
-        let btn = UIButton()
-        btn.isHidden = true
-        btn.setImage(UIImage(systemName: "xmark")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray), for: .normal)
-        return btn
-    }()
+    private func checkStartBeforeEnd() {
+        if event.startTime > event.endTime {
+            endTimeField.text = ""
+            endDateField.text = ""
+        }
+        
+        endTimePicker.minimumDate = Date(timeInterval: TimeInterval(3600), since: event.startTime)
+        endDatePicker.minimumDate = event.startTime
+    }
     
-    private let pageStatus1: StatusCheckView = {
-        let s = StatusCheckView()
-        s.select()
-        return s
-    }()
-    
-    private let pageStatus2 = StatusCheckView()
-    private let pageStatus3 = StatusCheckView()
-    
-    @objc func dateChanged(sender: UIDatePicker){
+    @objc func startDateChanged(sender: UIDatePicker){
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        dateField.text = formatter.string(from: sender.date)
+        startDateField.text = formatter.string(from: sender.date)
         
         event.startTime = combineDateWithTime(date: sender.date, time: event.startTime) ?? event.startTime
+        
+        checkStartBeforeEnd()
     }
 
     @objc func startTimeChanged(sender: UIDatePicker){
@@ -224,6 +238,24 @@ class CreateEventViewController: UIViewController {
         startTimeField.text = formatter.string(from: sender.date)
         
         event.startTime = combineDateWithTime(date: event.startTime, time: sender.date)!
+        
+        checkStartBeforeEnd()
+    }
+    
+    @objc func endDateChanged(sender: UIDatePicker){
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        endDateField.text = formatter.string(from: sender.date)
+        
+        event.endTime = combineDateWithTime(date: sender.date, time: event.endTime) ?? event.endTime
+        
+        let diff = Calendar.current.dateComponents([.day], from: event.startTime, to: event.endTime)
+        if diff.day == 0 {
+            endTimePicker.minimumDate = Date(timeInterval: TimeInterval(3600), since: event.startTime)
+        } else {
+            endTimePicker.minimumDate = .none
+        }
     }
     
     @objc func endTimeChanged(sender: UIDatePicker){
@@ -252,68 +284,40 @@ class CreateEventViewController: UIViewController {
         return calendar.date(from: mergedComponments as DateComponents)
     }
     
-    private let addEndTimeButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .clear
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
-                                                         .foregroundColor: UIColor.zipVeryLightGray,
-                                                         .underlineStyle: NSUnderlineStyle.single.rawValue]
-        
-        btn.setAttributedTitle(NSMutableAttributedString(string: "Add End Time +", attributes: attributes), for: .normal)
-        return btn
-    }()
-    
     @objc private func didTapContinueButton(){
         guard eventNameField.text != "",
-              dateField.text != "",
+              startDateField.text != "",
               startTimeField.text != "",
+              endTimeField.text != "",
+              endDateField.text != "",
               locationField.text != "",
               let eventTitle = eventNameField.text
         else {
-                  let alert = UIAlertController(title: "Complete All Fields To Conitnue",
-                                                      message: "",
-                                                      preferredStyle: .alert)
-
-                  alert.addAction(UIAlertAction(title: "Continue",
-                                                      style: .cancel,
-                                                      handler: nil))
-
-                  present(alert, animated: true)
+//                  let alert = UIAlertController(title: "Complete All Fields To Conitnue",
+//                                                      message: "",
+//                                                      preferredStyle: .alert)
+//
+//                  alert.addAction(UIAlertAction(title: "Continue",
+//                                                      style: .cancel,
+//                                                      handler: nil))
+//
+//                  present(alert, animated: true)
             return
         }
         
         event.title = eventTitle
         
-        let vc = CreateEventInfoViewController()
-        vc.delegate = self
-        vc.event = event
+        let vc = CreateEventInfoViewController(event: event)
         navigationController?.pushViewController(vc, animated: true)
     }
 
-    
-    @objc private func didTapAddEndTimeButton(){
-        addEndTimeButton.isHidden = true
-        endTimeField.isHidden = false
-        endTimeLabel.isHidden = false
-        closeEndTimeButton.isHidden = false
-    }
-    
-    @objc private func didTapCloseEndTimeButton(){
-        addEndTimeButton.isHidden = false
-        endTimeField.isHidden = true
-        endTimeLabel.isHidden = true
-        closeEndTimeButton.isHidden = true
-        
-        //TODO: Check this Yianni
-        event.endTime = Date()
-    }
+
     
     @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         eventNameField.resignFirstResponder()
-        dateField.resignFirstResponder()
+        startDateField.resignFirstResponder()
         startTimeField.resignFirstResponder()
         endTimeField.resignFirstResponder()
-
     }
     
     @objc private func openSearch(){
@@ -348,19 +352,12 @@ class CreateEventViewController: UIViewController {
         navigationController?.pushViewController(autocompleteController, animated: true)
     }
 
-    @objc private func switchValueChanged(_ sender: UISwitch) {
-//        event.isPublic = !sender.isOn
-        //TODO: Yianni Fix
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        privacySwitch.isOn = true
         view.backgroundColor = .zipGray
         configureNavBar()
-        privacySwitch.addTarget(self, action: #selector(switchValueChanged(_:)), for: .valueChanged)
-        addEndTimeButton.addTarget(self, action: #selector(didTapAddEndTimeButton), for: .touchUpInside)
-        closeEndTimeButton.addTarget(self, action: #selector(didTapCloseEndTimeButton), for: .touchUpInside)
+        
         continueButton.addTarget(self, action: #selector(didTapContinueButton), for: .touchUpInside)
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
@@ -390,19 +387,20 @@ class CreateEventViewController: UIViewController {
     private func addSubviews(){
         view.addSubview(eventNameLabel)
         view.addSubview(eventNameField)
-        view.addSubview(dateAndTimeLabel)
-        view.addSubview(dateField)
+        
+        view.addSubview(startTimeLabel)
+        view.addSubview(startDateField)
         view.addSubview(startTimeField)
-        view.addSubview(addEndTimeButton)
-        view.addSubview(locationLabel)
-        view.addSubview(dateAndTimeLabel)
+        
         view.addSubview(endTimeLabel)
+        view.addSubview(endDateField)
         view.addSubview(endTimeField)
-        view.addSubview(closeEndTimeButton)
+        
+        view.addSubview(locationLabel)
+        
         view.addSubview(locationLabel)
         view.addSubview(locationField)
-        view.addSubview(privacyLabel)
-        view.addSubview(privacySwitch)
+     
         
         view.addSubview(continueButton)
         view.addSubview(pageStatus1)
@@ -422,50 +420,40 @@ class CreateEventViewController: UIViewController {
         eventNameField.leftAnchor.constraint(equalTo: eventNameLabel.leftAnchor).isActive = true
         eventNameField.rightAnchor.constraint(equalTo: eventNameLabel.rightAnchor).isActive = true
 
-        dateAndTimeLabel.translatesAutoresizingMaskIntoConstraints = false
-        dateAndTimeLabel.topAnchor.constraint(equalTo: eventNameField.bottomAnchor, constant: 40).isActive = true
-        dateAndTimeLabel.leftAnchor.constraint(equalTo: eventNameField.leftAnchor).isActive = true
+        startTimeLabel.translatesAutoresizingMaskIntoConstraints = false
+        startTimeLabel.topAnchor.constraint(equalTo: eventNameField.bottomAnchor, constant: 40).isActive = true
+        startTimeLabel.leftAnchor.constraint(equalTo: eventNameField.leftAnchor).isActive = true
         
-        dateField.translatesAutoresizingMaskIntoConstraints = false
-        dateField.leftAnchor.constraint(equalTo: dateAndTimeLabel.rightAnchor, constant: 5).isActive = true
-        dateField.centerYAnchor.constraint(equalTo: dateAndTimeLabel.centerYAnchor).isActive = true
+        startDateField.translatesAutoresizingMaskIntoConstraints = false
+        startDateField.leftAnchor.constraint(equalTo: startTimeLabel.rightAnchor, constant: 5).isActive = true
+        startDateField.centerYAnchor.constraint(equalTo: startTimeLabel.centerYAnchor).isActive = true
         
         startTimeField.translatesAutoresizingMaskIntoConstraints = false
-        startTimeField.leftAnchor.constraint(equalTo: dateField.rightAnchor, constant: 5).isActive = true
-        startTimeField.centerYAnchor.constraint(equalTo: dateAndTimeLabel.centerYAnchor).isActive = true
-        
-        addEndTimeButton.translatesAutoresizingMaskIntoConstraints = false
-        addEndTimeButton.topAnchor.constraint(equalTo: dateAndTimeLabel.bottomAnchor, constant: 10).isActive = true
-        addEndTimeButton.leftAnchor.constraint(equalTo: dateAndTimeLabel.leftAnchor).isActive = true
+        startTimeField.leftAnchor.constraint(equalTo: startDateField.rightAnchor, constant: 10).isActive = true
+        startTimeField.centerYAnchor.constraint(equalTo: startTimeLabel.centerYAnchor).isActive = true
         
         endTimeLabel.translatesAutoresizingMaskIntoConstraints = false
-        endTimeLabel.topAnchor.constraint(equalTo: dateField.bottomAnchor, constant: 10).isActive = true
-        endTimeLabel.leftAnchor.constraint(equalTo: closeEndTimeButton.rightAnchor, constant: 10).isActive = true
+        endTimeLabel.topAnchor.constraint(equalTo: startDateField.bottomAnchor, constant: 20).isActive = true
+        endTimeLabel.leftAnchor.constraint(equalTo: startTimeLabel.leftAnchor).isActive = true
+        
+        endDateField.translatesAutoresizingMaskIntoConstraints = false
+        endDateField.leftAnchor.constraint(equalTo: startDateField.leftAnchor).isActive = true
+        endDateField.centerYAnchor.constraint(equalTo: endTimeLabel.centerYAnchor).isActive = true
         
         endTimeField.translatesAutoresizingMaskIntoConstraints = false
-        endTimeField.centerYAnchor.constraint(equalTo: endTimeLabel.centerYAnchor).isActive = true
+        endTimeField.centerYAnchor.constraint(equalTo: endDateField.centerYAnchor).isActive = true
         endTimeField.leftAnchor.constraint(equalTo: startTimeField.leftAnchor).isActive = true
         
-        closeEndTimeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeEndTimeButton.centerYAnchor.constraint(equalTo: endTimeLabel.centerYAnchor).isActive = true
-        closeEndTimeButton.leftAnchor.constraint(equalTo: eventNameLabel.leftAnchor).isActive = true
-        
         locationLabel.translatesAutoresizingMaskIntoConstraints = false
-        locationLabel.topAnchor.constraint(equalTo: addEndTimeButton.bottomAnchor, constant: 40).isActive = true
-        locationLabel.leftAnchor.constraint(equalTo: addEndTimeButton.leftAnchor).isActive = true
+        locationLabel.topAnchor.constraint(equalTo: endTimeLabel.bottomAnchor, constant: 40).isActive = true
+        locationLabel.leftAnchor.constraint(equalTo: endTimeLabel.leftAnchor).isActive = true
         
         locationField.translatesAutoresizingMaskIntoConstraints = false
         locationField.topAnchor.constraint(equalTo: locationLabel.bottomAnchor, constant: 10).isActive = true
         locationField.leftAnchor.constraint(equalTo: locationLabel.leftAnchor).isActive = true
         locationField.rightAnchor.constraint(equalTo: eventNameLabel.rightAnchor).isActive = true
         
-        privacyLabel.translatesAutoresizingMaskIntoConstraints = false
-        privacyLabel.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 40).isActive = true
-        privacyLabel.leftAnchor.constraint(equalTo: locationField.leftAnchor).isActive = true
         
-        privacySwitch.translatesAutoresizingMaskIntoConstraints = false
-        privacySwitch.centerYAnchor.constraint(equalTo: privacyLabel.centerYAnchor).isActive = true
-        privacySwitch.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
         
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40).isActive = true
@@ -535,8 +523,3 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
     }
 }
 
-extension CreateEventViewController: MaintainEventDelegate {
-    func updateEvent(event: Event) {
-        self.event = event
-    }
-}
