@@ -25,16 +25,21 @@ class GeoManager {
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
     
-    let geoFireEventRef = Database.database().reference().child("geoEvent/")
-    var geoFireEvent: GeoFire
+    let geoFireEventRefPromoter = Database.database().reference().child("geoEvent/Promoter")
+    let geoFireEventRefPublic = Database.database().reference().child("geoEvent/Public")
+    var geoFireEventPublic: GeoFire
+    var geoFireEventPromoter: GeoFire
     
 //    var eventIdList: [Event] = []
     var loadedEvent: [Event] = []
     var alreadyReadySeenEvent: [String] = []
     
+    var eventRange: Double = 0
+    
     init(){
         geoFire = GeoFire(firebaseRef: geofireRef)
-        geoFireEvent = GeoFire(firebaseRef: geoFireEventRef)
+        geoFireEventPublic = GeoFire(firebaseRef: geoFireEventRefPublic)
+        geoFireEventPromoter = GeoFire(firebaseRef: geoFireEventRefPromoter)
     }
     
 //    static func safeEmail(email: String) -> String {
@@ -42,16 +47,24 @@ class GeoManager {
 //        return safeEmail
 //    }
     public func UpdateEventLocation(event: Event){
-        geoFireEvent.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
-            if (error != nil) {
-                print("An error occured: \(error)")
+        if(event.getType() == EventType.Promoter){
+            geoFireEventPromoter.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
+                if (error != nil) {
+                    print("An error occured: \(error)")
+                }
+            }
+        } else if (event.getType() == EventType.Public){
+            geoFireEventPublic.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
+                if (error != nil) {
+                    print("An error occured: \(error)")
+                }
             }
         }
+        //MARK: GABE COME BACK TOO
     }
 
     public func UpdateLocation(location: CLLocation){
         print("got here")
-
         let userID = AppDelegate.userDefaults.value(forKey: "userId")
         geoFire.setLocation(CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), forKey: userID as! String){ (error) in
             if (error != nil) {
@@ -70,19 +83,42 @@ class GeoManager {
         })
     }
     
-    public func GetEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+    public func GetPromoterEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        let query = self.geoFireEvent.query(at: center, withRadius: range)
-        query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
-            guard let strongSelf = self else {
-                return
-            }
-            if(strongSelf.loadedEvent.count > max){
-                query.removeAllObservers()
-            }
-            strongSelf.eventIsValid(key: key)
-        })
-        
+        if (range < eventRange){
+            eventRange = range
+            
+            let query = self.geoFireEventPromoter.query(at: center, withRadius: range)
+            
+            query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
+                guard let strongSelf = self else {
+                    return
+                }
+                if(strongSelf.loadedEvent.count > max){
+                    query.removeAllObservers()
+                }
+                strongSelf.eventIsValid(key: key)
+            })
+        }
+    }
+    
+    public func GetPublicEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        if (range < eventRange){
+            eventRange = range
+            
+            let query = self.geoFireEventPublic.query(at: center, withRadius: range)
+            
+            query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
+                guard let strongSelf = self else {
+                    return
+                }
+                if(strongSelf.loadedEvent.count > max){
+                    query.removeAllObservers()
+                }
+                strongSelf.eventIsValid(key: key)
+            })
+        }
     }
 
     public func eventIsValid(key: String){
