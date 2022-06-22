@@ -159,8 +159,6 @@ class SMSCodeViewController: UIViewController {
                     return
                 }
                 
-
-                
                 if exists {
                     //user already exists
                     let user = User(userId: strongSelf.userId)
@@ -180,40 +178,14 @@ class SMSCodeViewController: UIViewController {
                                 return
                             }
                             
-                            
-                            let vc = MapViewController()
+                            let vc = LoadingViewController()
                             vc.modalPresentationStyle = .fullScreen
-                            AppDelegate.locationManager.requestWhenInUseAuthorization()
-
-                            // get basic user profile - username, userId, name
-                            AppDelegate.userDefaults.set(strongSelf.userId, forKey: "userId")
-                            
-
-                            if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
-                                print("location services not enabled")
-                                let vc = LocationDeniedViewController()
-                                vc.modalPresentationStyle = .overFullScreen
-                                vc.modalTransitionStyle = .crossDissolve
-                                strongSelf.present(vc, animated: true, completion: nil)
-                            } else {
-                                let vc = MapViewController()
-                                vc.isNewAccount = false
-                                vc.configureLocationServices()
-                                vc.modalPresentationStyle = .fullScreen
-                                strongSelf.present(vc, animated: true, completion: nil)
-                            }
-                            
                             DispatchQueue.main.async {
                                 strongSelf.spinner.dismiss()
                             }
                             
-                            // make sure to check if location is already enabled
-                            // have to request if its straight log in on first device
-                            
-                            
                             strongSelf.present(vc, animated: true, completion: nil)
-                            
-                            
+    
                         }
                         
                     })
