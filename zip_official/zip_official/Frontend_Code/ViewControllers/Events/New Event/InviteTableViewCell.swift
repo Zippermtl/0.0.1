@@ -8,8 +8,8 @@
 import UIKit
 
 protocol InviteTableViewCellDelegate: AnyObject {
-    func inviteUser()
-    func uninviteUser()
+    func inviteUser(user: User)
+    func uninviteUser(user: User)
 }
 
 class InviteTableViewCell: UITableViewCell {
@@ -50,10 +50,12 @@ class InviteTableViewCell: UITableViewCell {
     @objc private func didTapAdd(_ sender: UIButton){
         if sender.isSelected {
             sender.isSelected = false
-            user.isInivted = false
+            delegate?.uninviteUser(user: user)
         } else {
             sender.isSelected = true
             user.isInivted = true
+            delegate?.inviteUser(user: user)
+
         }
     }
     
