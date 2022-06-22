@@ -8,11 +8,22 @@
 import UIKit
 
 class CompleteEventViewController: UIViewController {
-    var event = Event()
+    var event: Event
+    var invitedUsers: [User]
+
+    
+    init(event: Event) {
+        self.event = event
+        self.invitedUsers = []
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private let tableView = UITableView()
     var zipList: [User] = MapViewController.getTestUsers()
-    
     
     let inviteAllButton: UIButton = {
         let btn = UIButton()
@@ -69,6 +80,8 @@ class CompleteEventViewController: UIViewController {
                 cell.addButton.isSelected = true
             }
         }
+        
+        invitedUsers = zipList
     }
     
     @objc private func didTapClearButton(){
@@ -80,44 +93,26 @@ class CompleteEventViewController: UIViewController {
     }
     
     @objc private func didTapCompleteButton(){
-        if event.endTime != nil {
-            event.duration = event.endTime - event.startTime
-        } else {
-            event.duration = 0
-        }
         
+        completeButton.isEnabled = false
         let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
                         firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
                         lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
         
         event.hosts = [host]
-        event.usersInvite = zipList.filter{$0.isInivted}
+        event.usersInvite = invitedUsers
         event.eventId = event.createEventId
 
-        if !event.isPublic() {
-            guard !event.usersInvite.isEmpty else {
-                let alert = UIAlertController(title: "Private Events Must Have At Least One Invite",
-                                              message: "Invite a user to continue",
-                                              preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: "Continue",
-                                              style: .cancel,
-                                              handler: nil))
-                
-                present(alert, animated: true)
-                return
-            }
-        }
         
-        var FUCKMYASS = ""
+        event.out()
+        
         //MARK: Fuckmyass is the variable which contains the string of the url of the picture
         // the code below was written by Yianni and was originally if success a else b has been
         // rewritten to be switch: case success a case failure b
         // note this is with a and b being code blocks excluding the code obviously written by me
         DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
-            switch success{
+            switch success {
             case .success(let a):
-                FUCKMYASS = a
                 let actionSheet = UIAlertController(title: "Successfull Created an Event",
                                                     message: "View your event in your profile",
                                                     preferredStyle: .actionSheet)
@@ -128,6 +123,7 @@ class CompleteEventViewController: UIViewController {
                 
                 self?.present(actionSheet, animated: true)
                 self?.dismiss(animated: true, completion: nil)
+                self?.completeButton.isEnabled = true
             case .failure(let error):
                 print(error)
                 let actionSheet = UIAlertController(title: "Failed to Create Your Event",
@@ -261,8 +257,23 @@ extension CompleteEventViewController: UITableViewDataSource {
         cell.layoutIfNeeded()
         
         cell.configure(zipList[indexPath.row])
-
+        cell.delegate = self
         return cell
+    }
+    
+    
+}
+
+
+extension CompleteEventViewController : InviteTableViewCellDelegate {
+    func inviteUser(user: User) {
+        invitedUsers.append(user)
+        
+        
+    }
+    
+    func uninviteUser(user: User) {
+        invitedUsers = invitedUsers.filter({ $0.userId != user.userId })
     }
     
     
