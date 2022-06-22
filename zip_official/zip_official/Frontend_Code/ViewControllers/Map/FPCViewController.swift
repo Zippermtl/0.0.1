@@ -34,11 +34,21 @@ class FPCViewController: UIViewController {
     private let eventsButton: UIButton
     private var zipRequestsTable: ZipRequestTableView
     private var eventsTable: EventInvitesTableView
+    private var searchTable: SearchBarTableView
+    private var searchBg: UIView
     private var events: [Event]
     var requests: [ZipRequest]
     
-    private let collectionTitles: [String]
-    private let collectionImages: [UIImage?]
+    private let findEventsIcon: IconButton
+    private let createEventIcon: IconButton
+    private let notificationIcon: IconButton
+    private let messagesIcon: IconButton
+    
+    private let icons: [IconButton]
+
+    
+    private var dismissTap: UITapGestureRecognizer?
+    private var dismissTapCV: UITapGestureRecognizer?
 
     
     
@@ -55,33 +65,38 @@ class FPCViewController: UIViewController {
         self.requests = requests
         self.events = events
         
+        self.searchBg = UIView()
         self.zipRequestsTable = ZipRequestTableView(requests: requests)
         self.eventsTable = EventInvitesTableView(events: events)
-
-        self.collectionTitles = [
-            "Find\nEvents",
-            "Create\nEvent",
-            "Notifications",
-            "Messages"
-        ]
+        self.searchTable = SearchBarTableView(eventData: events)
         
-        self.collectionImages = [
-            UIImage(systemName: "calendar"),
-            UIImage(systemName: "calendar.badge.plus"),
-            UIImage(systemName: "bell.fill"),
-            UIImage(systemName: "message.fill")
-        ]
+        let iconConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
+        self.findEventsIcon = IconButton(text: "Find\nEvents", icon: UIImage(systemName: "calendar"), config: iconConfig )
+        self.createEventIcon = IconButton(text: "Create\nEvent", icon: UIImage(systemName: "calendar.badge.plus"), config: iconConfig )
+        self.notificationIcon = IconButton(text: "Notifications", icon: UIImage(systemName: "bell.fill"), config: iconConfig )
+        self.messagesIcon = IconButton(text:  "Messages", icon: UIImage(systemName: "message.fill"), config: iconConfig )
+        
+        self.icons = [findEventsIcon, createEventIcon, notificationIcon, messagesIcon]
         
         let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+//        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         layout.minimumInteritemSpacing = 5
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
+        
         super.init(nibName: nil, bundle: nil)
+        
+        dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
+        dismissTapCV = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
+
+        view.addGestureRecognizer(dismissTap!)
+        collectionView.addGestureRecognizer(dismissTapCV!)
+        dismissTap?.delegate = self
+        dismissTapCV?.delegate = self
+        
         addSubviews()
         configureSubviewLayout()
 
-        
         zipFinderButton.layer.masksToBounds = true
         zipFinderButton.layer.cornerRadius = 20
         zipFinderButton.backgroundColor = .zipLightGray
@@ -112,6 +127,8 @@ class FPCViewController: UIViewController {
                                    y: (view.frame.height-size.height)/2,
                                    width: size.width,
                                    height: size.height)
+            
+            
         }
         searchBar.leftView = view
         
@@ -128,6 +145,14 @@ class FPCViewController: UIViewController {
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         eventsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: Eattributes), for: .normal)
+        
+        searchBg.isHidden = true
+        searchTable.isHidden = true
+        
+        messagesIcon.iconButton.addTarget(self, action: #selector(openMessages), for: .touchUpInside)
+        findEventsIcon.iconButton.addTarget(self, action: #selector(findEvents), for: .touchUpInside)
+        createEventIcon.iconButton.addTarget(self, action: #selector(createEvent), for: .touchUpInside)
+        notificationIcon.iconButton.addTarget(self, action: #selector(openNotifications), for: .touchUpInside)
     }
     
     
@@ -135,6 +160,11 @@ class FPCViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    @objc private func dismissKeyboardTouchOutside(){
+        print("tap is gay")
+        view.endEditing(true)
+    }
+
     
     @objc private func openZipFinder() {
         delegate?.openZipFinder()
@@ -152,15 +182,16 @@ class FPCViewController: UIViewController {
         delegate?.openEventInvites(events: events)
     }
     
-    func createEvent() {
+    @objc func createEvent() {
         delegate?.createEvent()
     }
     
-    func openNotifications(){
+    @objc func openNotifications(){
         delegate?.openNotifications()
     }
     
-    func openMessages(){
+    @objc func openMessages(){
+        print("OPEN MESSAGES")
         delegate?.openMessages()
     }
 
@@ -181,6 +212,8 @@ class FPCViewController: UIViewController {
 
         //Search Bar
         searchBar.delegate = self
+        searchBar.clearButtonMode = .whileEditing
+        
         
         configureCollectionView()
     }
@@ -212,7 +245,11 @@ class FPCViewController: UIViewController {
         scrollView.addSubview(eventsLabel)
         scrollView.addSubview(eventsButton)
         scrollView.addSubview(eventsTable)
+        
+        scrollView.addSubview(searchBg)
+        searchBg.addSubview(searchTable)
 
+        scrollView.bringSubviewToFront(searchBg)
     }
     
     private func configureSubviewLayout(){
@@ -234,6 +271,20 @@ class FPCViewController: UIViewController {
         searchBar.topAnchor.constraint(equalTo: zipFinderButton.topAnchor).isActive = true
         searchBar.bottomAnchor.constraint(equalTo: zipFinderButton.bottomAnchor).isActive = true
         searchBar.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -12).isActive = true
+
+        
+        searchBg.translatesAutoresizingMaskIntoConstraints = false
+        searchBg.topAnchor.constraint(equalTo: searchBar.bottomAnchor).isActive = true
+        searchBg.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        searchBg.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        searchBg.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        searchBg.backgroundColor = .zipGray
+        
+        searchTable.translatesAutoresizingMaskIntoConstraints = false
+        searchTable.topAnchor.constraint(equalTo: searchBg.topAnchor).isActive = true
+        searchTable.bottomAnchor.constraint(equalTo: searchBg.bottomAnchor).isActive = true
+        searchTable.leftAnchor.constraint(equalTo: searchBg.leftAnchor).isActive = true
+        searchTable.rightAnchor.constraint(equalTo: searchBg.rightAnchor).isActive = true
 
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -315,7 +366,7 @@ extension FPCViewController: UICollectionViewDelegate {
 
 extension FPCViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return collectionTitles.count
+        return icons.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -323,52 +374,16 @@ extension FPCViewController: UICollectionViewDataSource {
         cell.backgroundColor = .zipGray
         
         let cellWidth = view.frame.width*0.2*0.8
+        let icon = icons[indexPath.row]
+        icon.setIconDimension(width: cellWidth)
+        
+        cell.contentView.addSubview(icon)
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        icon.topAnchor.constraint(equalTo: cell.contentView.topAnchor).isActive = true
+        icon.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor).isActive = true
+        icon.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor).isActive = true
+        
 
-//        let cellBg = UIView( )
-        
-        let imgBg = UIView()
-        imgBg.backgroundColor = .zipLightGray
-        imgBg.layer.cornerRadius = cellWidth/2
-        imgBg.layer.masksToBounds = true
-        
-        let imgView = UIImageView()
-        let icon = collectionImages[indexPath.row]
-        imgView.image = icon
-        imgView.tintColor = .white
-        imgView.backgroundColor = .clear
-        imgView.layer.masksToBounds = true
-        imgView.layer.cornerRadius = 10
-        imgView.contentScaleFactor = 0.5
-        
-        imgBg.addSubview(imgView)
-        imgView.translatesAutoresizingMaskIntoConstraints = false
-        imgView.centerXAnchor.constraint(equalTo: imgBg.centerXAnchor).isActive = true
-        imgView.centerYAnchor.constraint(equalTo: imgBg.centerYAnchor).isActive = true
-        imgView.heightAnchor.constraint(equalTo: imgBg.heightAnchor, multiplier: 0.75).isActive = true
-        imgView.widthAnchor.constraint(equalTo: imgView.heightAnchor).isActive = true
-        
-        cell.contentView.addSubview(imgBg)
-        imgBg.translatesAutoresizingMaskIntoConstraints = false
-        imgBg.topAnchor.constraint(equalTo: cell.contentView.topAnchor).isActive = true
-        imgBg.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor).isActive = true
-        imgBg.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        imgBg.heightAnchor.constraint(equalTo: imgBg.widthAnchor).isActive = true
-        
-        
-        let label = UILabel()
-        label.text = collectionTitles[indexPath.row]
-        label.textColor = .white
-        label.font = .zipBody.withSize(14)
-        label.textAlignment = .center
-        label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 0
-        
-        cell.contentView.addSubview(label)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor).isActive = true
-        label.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor).isActive = true
-        label.topAnchor.constraint(equalTo: imgView.bottomAnchor, constant: 10).isActive = true
-        
         return cell
     }
 }
@@ -376,7 +391,24 @@ extension FPCViewController: UICollectionViewDataSource {
 extension FPCViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         delegate?.openFPC()
+        searchTable.isHidden = false
+        searchBg.isHidden = false
     }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField.text == "" {
+            searchTable.isHidden = true
+            searchBg.isHidden = true
+        }
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        print("clearing")
+        textField.endEditing(true)
+        
+        return true
+    }
+    
 }
 
 
@@ -394,5 +426,8 @@ extension FPCViewController: FPCTableDelegate {
 }
 
 
-
-
+extension FPCViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        return !(touch.view is UIControl) && !(touch.view is IconButton)
+    }
+}
