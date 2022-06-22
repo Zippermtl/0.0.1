@@ -8,8 +8,16 @@
 import UIKit
 
 class CreateEventInfoViewController: UIViewController {
-    var event = Event()
-    weak var delegate: MaintainEventDelegate?
+    var event: Event
+    
+    init(event: Event) {
+        self.event = event
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     var didUpdatePicture = false
     
@@ -77,8 +85,7 @@ class CreateEventInfoViewController: UIViewController {
         
         event.description = descriptionField.text
         
-        let vc = CompleteEventViewController()
-        vc.event = event
+        let vc = CompleteEventViewController(event: event)
         navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -99,7 +106,8 @@ class CreateEventInfoViewController: UIViewController {
         let img = UIImageView()
         img.contentMode = .scaleAspectFit
         img.tintColor = .white
-        img.image = UIImage(systemName: "plus")
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold, scale: .medium)
+        img.image = UIImage(systemName: "camera", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         img.isUserInteractionEnabled = true
         return img
     }()
@@ -207,11 +215,7 @@ class CreateEventInfoViewController: UIViewController {
         layoutSubviews()
         configureSlider()
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        delegate?.updateEvent(event: event)
-    }
+
     
     
     private func configureCollectionView() {
@@ -274,11 +278,11 @@ class CreateEventInfoViewController: UIViewController {
         eventPicture.translatesAutoresizingMaskIntoConstraints = false
         eventPicture.topAnchor.constraint(equalTo: eventPictureLabel.bottomAnchor, constant: 10).isActive = true
         eventPicture.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        eventPicture.widthAnchor.constraint(equalToConstant: view.frame.width/2).isActive = true
+        eventPicture.widthAnchor.constraint(equalToConstant: view.frame.width/4).isActive = true
         eventPicture.heightAnchor.constraint(equalTo: eventPicture.widthAnchor).isActive = true
         
         eventPicture.layer.masksToBounds = true
-        eventPicture.layer.cornerRadius = view.frame.width/4
+        eventPicture.layer.cornerRadius = view.frame.width/8
         eventPicture.layer.borderColor = UIColor.zipYellow.cgColor
         eventPicture.layer.borderWidth = 2
         
