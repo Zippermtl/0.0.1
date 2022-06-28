@@ -232,8 +232,7 @@ extension MyEventsViewController :  UITableViewDataSource {
             eventView.modalPresentationStyle = .overCurrentContext
             navigationController?.pushViewController(eventView, animated: true)
         } else {
-            let eventView = EventViewController()
-            eventView.configure(cellEvent)
+            let eventView = EventViewController(event: cellEvent)
             eventView.modalPresentationStyle = .overCurrentContext
             navigationController?.pushViewController(eventView, animated: true)
         }
