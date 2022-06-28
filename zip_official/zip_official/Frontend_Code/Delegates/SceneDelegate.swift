@@ -28,10 +28,42 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let navVC = UINavigationController(rootViewController: vc)
             window?.rootViewController = navVC
         } else {
-            let vc = LoadingViewController()
-            window?.rootViewController = vc
+            
+            if checkUserDefaults() {
+                window?.rootViewController = LoadingViewController()
+            } else {
+                do {
+                    try FirebaseAuth.Auth.auth().signOut()
+                    let domain = Bundle.main.bundleIdentifier!
+                    UserDefaults.standard.removePersistentDomain(forName: domain)
+                    UserDefaults.standard.synchronize()
+                    
+                    let vc = LoginViewController()
+                    let navVC = UINavigationController(rootViewController: vc)
+                    window?.rootViewController = navVC
+                }
+                catch {
+                    print("Failed to Logout User")
+                }
+            }
         }
          
+    }
+    
+    private func checkUserDefaults() -> Bool {
+        guard   AppDelegate.userDefaults.value(forKey: "userId") != nil,
+                AppDelegate.userDefaults.value(forKey: "username") != nil,
+                AppDelegate.userDefaults.value(forKey: "name") != nil,
+                AppDelegate.userDefaults.value(forKey: "firstName") != nil,
+                AppDelegate.userDefaults.value(forKey: "lastName") != nil,
+                AppDelegate.userDefaults.value(forKey: "lastName") != nil,
+                AppDelegate.userDefaults.value(forKey: "profilePictureUrl") != nil,
+                AppDelegate.userDefaults.value(forKey: "birthday") != nil,
+                AppDelegate.userDefaults.value(forKey: "picNum") != nil
+        else {
+            return false
+        }
+        return true
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
