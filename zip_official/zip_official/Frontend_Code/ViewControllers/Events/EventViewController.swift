@@ -14,191 +14,141 @@ import JGProgressHUD
 class EventViewController: UIViewController {
     //MARK: Event Data
     var event: Event = Event()
-    var timer: Timer!
-    var isGoing = false
-    var isSaved = false
+    private var timer: Timer!
+    private var isGoing: Bool
+    private var isSaved: Bool
+    
+    private let refreshControl: UIRefreshControl
+
+    private let titleLabel: UILabel
+
 
     // MARK: - SubViews
 
     //    private var pictureCollectionView: UICollectionView!
-    private let tableView = UITableView()
-    private let tableHeader = UIView()
-    private let tableFooter = UIView()
+    private let tableView: UITableView
+    private let tableHeader: UIView
+    private let tableFooter: UIView
     
-    private let eventPhotoView: UIImageView = {
-        let imgView = UIImageView()
-        imgView.layer.borderWidth = 3
-        imgView.layer.borderColor = UIColor.zipYellow.cgColor
-        return imgView
-    }()
-    private let spinner = JGProgressHUD(style: .light)
+    private let eventPhotoView: UIImageView
+    private let spinner: JGProgressHUD
     
     // MARK: - Labels
-    private let countDownLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle
-        label.sizeToFit()
-        return label
-    }()
-    
-    private let hostLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .zipVeryLightGray
-        label.font = .zipTitle.withSize(16)
-        label.sizeToFit()
-        return label
-    }()
-    
-    private let userCountLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .zipVeryLightGray
-        label.font = .zipTitle.withSize(16)
-        label.sizeToFit()
-        return label
-    }()
-    
-    private let distanceView = UIView()
-    
-    private let distanceLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle.withSize(18)
-        label.sizeToFit()
-        return label
-    }()
-    
-    private let distanceImage: UIImageView = {
-        let imgView = UIImageView()
-        imgView.image = UIImage(named: "distanceToWhite")
-        return imgView
-    }()
+    private let countDownLabel: UILabel
+    private let hostLabel: UILabel
+    private let userCountLabel: UILabel
+    private let distanceLabel: DistanceLabel
     
     // MARK: - Buttons
-    private let goingButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .zipLightGray
-        btn.layer.borderWidth = 1
-        btn.layer.borderColor = UIColor.white.cgColor
-        
-        btn.setTitle("GOING", for: .normal)
-        btn.titleLabel?.textColor = .zipVeryLightGray
-        btn.titleLabel?.font = .zipBodyBold
-        btn.titleLabel?.textAlignment = .center
-        btn.contentVerticalAlignment = .center
-        return btn
-    }()
+    private let goingButton: UIButton
     
-    private let saveButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .zipLightGray
-        
-        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
-        let img = UIImage(systemName: "square.and.arrow.down.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        let icon = UIImageView(image: img)
-        icon.isExclusiveTouch = false
-        icon.isUserInteractionEnabled = false
-        
-        btn.addSubview(icon)
-        icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.centerXAnchor.constraint(equalTo: btn.centerXAnchor).isActive = true
-        icon.centerYAnchor.constraint(equalTo: btn.centerYAnchor).isActive = true
+    private let saveButton: IconButton
+    private let inviteButton: IconButton
+    private let participantsButton: IconButton
+    
+    
+   
+    
+    private let zipListButton: UIButton
+    
+    
+    init(event: Event) {
+        self.event = event
+        self.isGoing = false
+        self.isSaved = false
+        self.refreshControl = UIRefreshControl()
+        self.tableView = UITableView()
+        self.tableFooter = UIView()
+        self.tableHeader = UIView()
+        self.eventPhotoView = UIImageView()
+        self.spinner = JGProgressHUD(style: .light)
+        self.countDownLabel = UILabel.zipTitle()
+        self.hostLabel = UILabel.zipTextPrompt()
+        self.titleLabel = UILabel.zipHeader()
+        self.distanceLabel = DistanceLabel()
+        self.userCountLabel = UILabel.zipTextPrompt()
+        userCountLabel.textColor = .zipVeryLightGray
 
-        btn.layer.masksToBounds = true
-        return btn
-    }()
-    
-    private let inviteButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .zipLightGray
+        self.goingButton = UIButton()
+        self.zipListButton = UIButton()
         
-        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
-        let img = UIImage(systemName: "calendar.badge.plus", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        let icon = UIImageView(image: img)
-        icon.isExclusiveTouch = false
-        icon.isUserInteractionEnabled = false
+        self.inviteButton = IconButton(text: "Invite",
+                                       icon: UIImage(systemName: "calendar.badge.plus")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+                                       config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
+        self.saveButton = IconButton(text: "Save",
+                                     icon: UIImage(systemName: "square.and.arrow.down.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+                                     config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
         
-        btn.addSubview(icon)
-        icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.centerXAnchor.constraint(equalTo: btn.centerXAnchor).isActive = true
-        icon.centerYAnchor.constraint(equalTo: btn.centerYAnchor).isActive = true
+        self.participantsButton = IconButton.zipsIcon()
+        participantsButton.setTextLabel(s: "Participants")
 
-        btn.layer.masksToBounds = true
-        return btn
-    }()
-    
-    private let buyTicketsButton: UIButton = {
-        let btn = UIButton()
-        btn.backgroundColor = .zipLightGray
         
-        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
-        let img = UIImage(systemName: "ticket.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        let icon = UIImageView(image: img)
-        icon.isExclusiveTouch = false
-        icon.isUserInteractionEnabled = false
+        super.init(nibName: nil, bundle: nil)
         
-        btn.addSubview(icon)
-        icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.centerXAnchor.constraint(equalTo: btn.centerXAnchor).isActive = true
-        icon.centerYAnchor.constraint(equalTo: btn.centerYAnchor).isActive = true
-
-        btn.layer.masksToBounds = true
-        return btn
-    }()
-    
-    
-    private let inviteLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Invite"
-        label.font = .zipBody.withSize(16)
-        label.textColor = .white
-        return label
-    }()
-    
-    private let buyTicketsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Buy Tickets"
-        label.font = .zipBody.withSize(16)
-        label.textColor = .white
-        return label
-    }()
-    
-    private let saveLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Save"
-        label.font = .zipBody.withSize(16)
-        label.textColor = .white
-        return label
-    }()
-    
-    private let zipListButton: UIButton = {
-        let btn = UIButton()        
+        
+        goingButton.backgroundColor = .zipLightGray
+        goingButton.layer.borderWidth = 1
+        goingButton.layer.borderColor = UIColor.white.cgColor
+           
+        goingButton.setTitle("GOING", for: .normal)
+        goingButton.titleLabel?.textColor = .zipVeryLightGray
+        goingButton.titleLabel?.font = .zipBodyBold
+        goingButton.titleLabel?.textAlignment = .center
+        goingButton.contentVerticalAlignment = .center
+      
+        
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
         let img = UIImage(systemName: "chevron.compact.up", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         let icon = UIImageView(image: img)
         icon.isExclusiveTouch = false
         icon.isUserInteractionEnabled = false
         
-        btn.addSubview(icon)
+        zipListButton.addSubview(icon)
         icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.topAnchor.constraint(equalTo: btn.topAnchor).isActive = true
-        icon.centerXAnchor.constraint(equalTo: btn.centerXAnchor).isActive = true
+        icon.topAnchor.constraint(equalTo: zipListButton.topAnchor).isActive = true
+        icon.centerXAnchor.constraint(equalTo: zipListButton.centerXAnchor).isActive = true
         
         let label = UILabel()
         label.font = .zipBody
         label.textColor = .zipVeryLightGray
         label.text = "Zip List"
         
-        btn.addSubview(label)
+        zipListButton.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.topAnchor.constraint(equalTo: icon.bottomAnchor).isActive = true
-        label.centerXAnchor.constraint(equalTo: btn.centerXAnchor).isActive = true
+        label.centerXAnchor.constraint(equalTo: zipListButton.centerXAnchor).isActive = true
 
-        btn.layer.masksToBounds = true
-        return btn
-    }()
+        zipListButton.layer.masksToBounds = true
+        
+        
+        eventPhotoView.layer.borderWidth = 3
+        eventPhotoView.layer.borderColor = UIColor.zipYellow.cgColor
+        
+        hostLabel.isUserInteractionEnabled = true
+        let hostTap = UITapGestureRecognizer(target: self, action: #selector(didTapHost))
+        hostLabel.addGestureRecognizer(hostTap)
+        
+        userCountLabel.isUserInteractionEnabled = true
+        let userTap = UITapGestureRecognizer(target: self, action: #selector(didTapZipListButton))
+        userCountLabel.addGestureRecognizer(userTap)
+        
+        configureNavBar()
+        configureTable()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
 
+    @objc private func refresh(){        
+        fetchEvent(completion: { [weak self] in
+            guard let refreshControl = self?.refreshControl else {
+                return
+            }
+            refreshControl.endRefreshing()
+        })
+    }
     
     //MARK: - Button Actions
     @objc private func didTapReportButton(){
@@ -221,7 +171,7 @@ class EventViewController: UIViewController {
         }
     }
     
-    @objc private func didTapBuyTicketsButton(){
+    @objc private func didTapParticipantsButton(){
         print("Buy Tickets tapped")
     }
     
@@ -267,53 +217,58 @@ class EventViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
+        
+        fetchEvent(completion: nil)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        configureTimer()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-    }
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidAppear(animated)
         timer.invalidate()
     }
     
-    //MARK: - Config
-    public func configure(_ event: Event){
-        self.event = event
-        
-        eventPhotoView.image = event.image
-        
-        hostLabel.isUserInteractionEnabled = true
-        let hostTap = UITapGestureRecognizer(target: self, action: #selector(didTapHost))
-        hostLabel.addGestureRecognizer(hostTap)
-        
-        userCountLabel.isUserInteractionEnabled = true
-        let userTap = UITapGestureRecognizer(target: self, action: #selector(didTapZipListButton))
-        userCountLabel.addGestureRecognizer(userTap)
-        
-        configureNavBar()
-        configureLabels()
-        configureTable()
-
+    private func fetchEvent(completion: (() -> Void)? = nil) {
+        DatabaseManager.shared.loadEvent(key: event.eventId, completion: { [weak self] result in
+            switch result {
+            case .success(let event):
+                guard let strongSelf = self else {
+                    if let complete = completion {
+                        complete()
+                    }
+                    return
+                }
+                strongSelf.event = event
+                strongSelf.configureLabels()
+                strongSelf.eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
+                strongSelf.timer = Timer.scheduledTimer(timeInterval: 0.1, target: strongSelf, selector: #selector(strongSelf.updateTime), userInfo: nil, repeats: true)
+                print("EVENT TITLE = \(event.title)")
+                strongSelf.tableView.reloadData()
+                
+                if let complete = completion {
+                    complete()
+                }
+            case .failure(let error):
+                print("error loading event: \(error)")
+                if let complete = completion {
+                    complete()
+                }
+            }
+        })
     }
+    
+    private func configureRefresh() {
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh",
+                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
+                                                                         NSAttributedString.Key.font: UIFont.zipBody])
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        tableView.addSubview(refreshControl)
+    }
+    
+    
     //MARK: - Nav Bar Config
     private func configureNavBar(){
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        
-        let titleLabel = UILabel()
-        titleLabel.font = .zipTitle.withSize(27)
-        titleLabel.textColor = .white
-        titleLabel.adjustsFontSizeToFitWidth = true
-        titleLabel.minimumScaleFactor = 0.3
-        titleLabel.text = event.title
 
-        navigationItem.titleView = titleLabel
         
         let reportButton = UIButton(type: .system)
         reportButton.setImage(UIImage(systemName: "ellipsis")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
@@ -363,31 +318,15 @@ class EventViewController: UIViewController {
         countDownLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
         countDownLabel.topAnchor.constraint(equalTo: eventPhotoView.bottomAnchor, constant: 5).isActive = true
 
-        tableHeader.addSubview(distanceView)
-        distanceView.addSubview(distanceLabel)
-        distanceView.addSubview(distanceImage)
-
-        distanceView.translatesAutoresizingMaskIntoConstraints = false
-        distanceView.topAnchor.constraint(equalTo: countDownLabel.bottomAnchor).isActive = true
-        distanceView.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        distanceView.rightAnchor.constraint(equalTo: distanceLabel.rightAnchor).isActive = true
-        distanceView.leftAnchor.constraint(equalTo: distanceImage.leftAnchor).isActive = true
-        distanceView.heightAnchor.constraint(equalTo: distanceImage.heightAnchor).isActive = true
-
+        tableHeader.addSubview(distanceLabel)
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.rightAnchor.constraint(equalTo: distanceView.rightAnchor).isActive = true
-        distanceLabel.centerYAnchor.constraint(equalTo: distanceView.centerYAnchor).isActive = true
-        
-        distanceImage.translatesAutoresizingMaskIntoConstraints = false
-        distanceImage.rightAnchor.constraint(equalTo: distanceLabel.leftAnchor).isActive = true
-        distanceImage.centerYAnchor.constraint(equalTo: distanceLabel.centerYAnchor).isActive = true
-        distanceImage.heightAnchor.constraint(equalToConstant: 25).isActive = true
-        distanceImage.widthAnchor.constraint(equalTo: distanceImage.heightAnchor).isActive = true
+        distanceLabel.topAnchor.constraint(equalTo: countDownLabel.bottomAnchor).isActive = true
+        distanceLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
 
         tableHeader.addSubview(hostLabel)
         hostLabel.translatesAutoresizingMaskIntoConstraints = false
         hostLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        hostLabel.topAnchor.constraint(equalTo: distanceView.bottomAnchor).isActive = true
+        hostLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor).isActive = true
         
         tableHeader.addSubview(goingButton)
         goingButton.translatesAutoresizingMaskIntoConstraints = false
@@ -401,64 +340,53 @@ class EventViewController: UIViewController {
         userCountLabel.topAnchor.constraint(equalTo: goingButton.bottomAnchor, constant: 5).isActive = true
         userCountLabel.centerXAnchor.constraint(equalTo: goingButton.centerXAnchor).isActive = true
         
-        
-        tableHeader.addSubview(buyTicketsButton)
-        buyTicketsButton.translatesAutoresizingMaskIntoConstraints = false
-        buyTicketsButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        buyTicketsButton.topAnchor.constraint(equalTo: userCountLabel.bottomAnchor, constant: 10).isActive = true
-        buyTicketsButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        buyTicketsButton.widthAnchor.constraint(equalTo: buyTicketsButton.heightAnchor).isActive = true
+        tableHeader.addSubview(participantsButton)
+        participantsButton.translatesAutoresizingMaskIntoConstraints = false
+        participantsButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        participantsButton.topAnchor.constraint(equalTo: userCountLabel.bottomAnchor, constant: 10).isActive = true
 
-        tableHeader.addSubview(buyTicketsLabel)
-        buyTicketsLabel.translatesAutoresizingMaskIntoConstraints = false
-        buyTicketsLabel.centerXAnchor.constraint(equalTo: buyTicketsButton.centerXAnchor).isActive = true
-        buyTicketsLabel.topAnchor.constraint(equalTo: buyTicketsButton.bottomAnchor, constant: 5).isActive = true
+        participantsButton.setIconDimension(width: 60)
 
         tableHeader.addSubview(saveButton)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
         saveButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -35).isActive = true
-        saveButton.topAnchor.constraint(equalTo: buyTicketsButton.topAnchor).isActive = true
-        saveButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        saveButton.widthAnchor.constraint(equalTo: saveButton.heightAnchor).isActive = true
+        saveButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
+        saveButton.setIconDimension(width: 60)
         
-        tableHeader.addSubview(saveLabel)
-        saveLabel.translatesAutoresizingMaskIntoConstraints = false
-        saveLabel.centerXAnchor.constraint(equalTo: saveButton.centerXAnchor).isActive = true
-        saveLabel.topAnchor.constraint(equalTo: buyTicketsLabel.topAnchor).isActive = true
-
         tableHeader.addSubview(inviteButton)
         inviteButton.translatesAutoresizingMaskIntoConstraints = false
         inviteButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
-        inviteButton.topAnchor.constraint(equalTo: buyTicketsButton.topAnchor).isActive = true
-        inviteButton.heightAnchor.constraint(equalTo: buyTicketsButton.heightAnchor).isActive = true
-        inviteButton.widthAnchor.constraint(equalTo: buyTicketsButton.widthAnchor).isActive = true
-
-        tableHeader.addSubview(inviteLabel)
-        inviteLabel.translatesAutoresizingMaskIntoConstraints = false
-        inviteLabel.centerXAnchor.constraint(equalTo: inviteButton.centerXAnchor).isActive = true
-        inviteLabel.topAnchor.constraint(equalTo: buyTicketsLabel.topAnchor).isActive = true
+        inviteButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
+        inviteButton.setIconDimension(width: 60)
+        
+        
+        tableHeader.translatesAutoresizingMaskIntoConstraints = false
+        tableHeader.topAnchor.constraint(equalTo: eventPhotoView.topAnchor).isActive = true
+        tableHeader.bottomAnchor.constraint(equalTo: inviteButton.bottomAnchor, constant: 30).isActive = true
+        tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
 
         goingButton.layer.cornerRadius = 5
-        buyTicketsButton.layer.cornerRadius = 30
+        participantsButton.layer.cornerRadius = 30
         saveButton.layer.cornerRadius = 30
         inviteButton.layer.cornerRadius = 30
         
         goingButton.addTarget(self, action: #selector(didTapGoingButton), for: .touchUpInside)
-        saveButton.addTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
-        inviteButton.addTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
         
-        tableHeader.translatesAutoresizingMaskIntoConstraints = false
-        tableHeader.topAnchor.constraint(equalTo: eventPhotoView.topAnchor).isActive = true
-        tableHeader.bottomAnchor.constraint(equalTo: buyTicketsLabel.bottomAnchor).isActive = true
-        tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        saveButton.iconAddTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
+        inviteButton.iconAddTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+        participantsButton.iconAddTarget(self, action: #selector(didTapParticipantsButton), for: .touchUpInside)
         
         tableView.tableHeaderView = tableHeader
         
-        //good for iphone 11 pro
-        tableHeader.frame = CGRect(x: 0,
-                                   y: 0,
-                                   width: view.frame.width,
-                                   height: 404 + 15)
+        tableHeader.setNeedsLayout()
+        tableHeader.layoutIfNeeded()
+
+        let height = tableHeader.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        var frame = tableHeader.frame
+        frame.size.height = height
+        tableHeader.frame = frame
+
+        tableView.tableHeaderView = tableHeader
     }
     
     private func configureTableFooterLayout() {
@@ -473,21 +401,17 @@ class EventViewController: UIViewController {
         tableView.tableFooterView = tableFooter
         zipListButton.addTarget(self, action: #selector(didTapZipListButton), for: .touchUpInside)
 
-        tableFooter.frame = CGRect(x: 0,
-                                   y: 0,
-                                   width: view.frame.width,
-                                   height: 60)
+        tableHeader.setNeedsLayout()
+        tableHeader.layoutIfNeeded()
+
+        let height = tableFooter.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        var frame = tableFooter.frame
+        frame.size.height = height
+        tableFooter.frame = frame
+
+        tableView.tableFooterView = tableFooter
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        tableHeader.frame = CGRect(x: 0,
-                                   y: 0,
-                                   width: view.frame.width,
-                                   height: buyTicketsLabel.frame.maxY + 15)
-                
-        tableView.tableHeaderView = tableHeader
-    }
 
     //MARK: - Label Config
     private func configureLabels(){
@@ -499,48 +423,14 @@ class EventViewController: UIViewController {
         
         hostLabel.attributedText = NSAttributedString(string: "Hosted by " + event.hosts[0].fullName, attributes: attributes)
         
-        let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
+        distanceLabel.update(location: event.coordinates)
         
-        let eventLoc = CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude)
-        var distance = Double(round(10*(userLoc.distance(from: eventLoc))/1000))/10
-        var unit = "km"
-        if NSLocale.current.regionCode == "US" {
-            distance = round(10*distance/1.6)/10
-            unit = "miles"
-        }
-        
-        if distance > 10 {
-            let intDistance = Int(distance)
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceLabel.text = "<1 \(unit) away"
-            } else if distance >= 500 {
-                distanceLabel.text = ">500 \(unit) away"
-            } else {
-                distanceLabel.text = String(intDistance) + " \(unit) away"
-            }
-        } else {
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceLabel.text = "<1 \(unit) away"
-            } else if distance >= 500 {
-                distanceLabel.text = ">500 \(unit) away"
-            } else {
-                distanceLabel.text = String(distance) + " \(unit) away"
-            }
-        }
+        titleLabel.text = event.title
+        navigationItem.titleView = titleLabel
+
     }
     
-    //MARK: - Timer Config
-    private func configureTimer(){
-        timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
-    }
-    
+
     @objc func updateTime() {
         let userCalendar = Calendar.current
         // Set Current Date
@@ -565,15 +455,11 @@ class EventViewController: UIViewController {
         }
         
         if currentDate >= event.startTime {
-            countDownLabel.text = "See You There!"
+            countDownLabel.text = "LIVE"
             // Stop Timer
             timer.invalidate()
         }
     }
-    
-
-    
-
 }
 
 
