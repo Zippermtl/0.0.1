@@ -55,7 +55,7 @@ class CompleteEventViewController: UIViewController {
     
     private let completeButton: UIButton = {
         let btn = UIButton()
-        btn.setTitle("CREATE EVENT", for: .normal)
+        btn.setTitle("Create Event", for: .normal)
         btn.backgroundColor = .zipBlue
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 15
@@ -103,9 +103,7 @@ class CompleteEventViewController: UIViewController {
         event.usersInvite = invitedUsers
         event.eventId = event.createEventId
 
-        
-        event.out()
-        
+                
         //MARK: Fuckmyass is the variable which contains the string of the url of the picture
         // the code below was written by Yianni and was originally if success a else b has been
         // rewritten to be switch: case success a case failure b
@@ -144,7 +142,7 @@ class CompleteEventViewController: UIViewController {
         super.viewDidLoad()
         myZipsLabel.text = "My Zips (\(zipList.count)):"
         view.backgroundColor = .zipGray
-        title = "INVITE GUESTS"
+        title = "Invite Guests"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
         configureTable()
