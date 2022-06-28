@@ -12,12 +12,22 @@ import CoreLocation
 import GeoFire
 import CoreData
 
-public enum EventType: Int {
+public enum EventType: Int, CustomStringConvertible {
     case Event = 0
     case Public = 1
     case Promoter = 2
     case Private = 3
     case Friends = 4
+    
+    public var description: String {
+        switch self {
+        case .Event: return "Event"
+        case .Public: return "Public Event"
+        case .Private: return "Private Event"
+        case .Friends: return "Zips Event"
+        case .Promoter: return "Promoter Event"
+        }
+    }
 }
 
 extension DatabaseManager {
@@ -62,7 +72,7 @@ extension DatabaseManager {
                   let userHost = value["hosts"] as? [String : String],
                   let title = value["title"] as? String,
                   let type = value["type"] as? Int,
-                  let usersGoing = value["usersGoing"] as? [String : String],
+//                  let usersGoing = value["usersGoing"] as? [String : String],
 //                  let usersInterested = value["usersInterested"] as? [String : String],
                   let max = value["max"] as? Int,
                   let userInvite = value["usersInvite"] as? [String : String] else {
@@ -81,10 +91,10 @@ extension DatabaseManager {
                 host.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
             }
             var going: [User] = []
-            for (key, value) in usersGoing {
-                let componentsName = value.description.components(separatedBy: " ")
-                going.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
-            }
+//            for (key, value) in usersGoing {
+//                let componentsName = value.description.components(separatedBy: " ")
+//                going.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
+//            }
 //            var interested: [User] = []
 //            for (key, value) in usersInterested {
 //                let componentsName = value.description.components(separatedBy: " ")
