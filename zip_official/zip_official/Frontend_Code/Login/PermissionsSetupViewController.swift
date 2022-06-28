@@ -175,6 +175,7 @@ class PermissionsSetupViewController: UIViewController {
                 
                 
                 
+                
                 let fileName = strongSelf.user.profilePictureFileName
                 
                 
@@ -186,6 +187,7 @@ class PermissionsSetupViewController: UIViewController {
                         print("Storage Manager Error: \(error)")
                     }
                     
+                    DataStorageManager.shared.updateUser()
                     
                     DispatchQueue.main.async {
                         if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
