@@ -32,7 +32,7 @@ class EventFinderViewController: UIViewController {
     var publicButton: UIButton = {
         let btn = UIButton()
         btn.backgroundColor = .zipVeryLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
-        btn.setTitle("PUBLIC", for: .normal)
+        btn.setTitle("Public", for: .normal)
         btn.titleLabel?.textColor = .white
         btn.titleLabel?.font = .zipBodyBold
         btn.titleLabel?.textAlignment = .center
@@ -44,7 +44,7 @@ class EventFinderViewController: UIViewController {
     var privateButton: UIButton = {
         let btn = UIButton()
         btn.backgroundColor = .zipLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
-        btn.setTitle("PRIVATE", for: .normal)
+        btn.setTitle("Private", for: .normal)
         btn.titleLabel?.textColor = .white
         btn.titleLabel?.font = .zipBodyBold
         btn.titleLabel?.textAlignment = .center
@@ -127,7 +127,7 @@ class EventFinderViewController: UIViewController {
     
     
     private func configureNavBar(){
-        navigationItem.title = "EVENTS"
+        navigationItem.title = "Find Events"
 
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage.init(named: "add")!.withRenderingMode(.alwaysOriginal),
@@ -258,8 +258,7 @@ extension EventFinderViewController :  UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cellEvent = tableData[indexPath.section][indexPath.row]
         
-        let eventView = EventViewController()
-        eventView.configure(cellEvent)
+        let eventView = EventViewController(event: cellEvent)
         eventView.modalPresentationStyle = .overCurrentContext
         
         navigationController?.pushViewController(eventView, animated: true)
