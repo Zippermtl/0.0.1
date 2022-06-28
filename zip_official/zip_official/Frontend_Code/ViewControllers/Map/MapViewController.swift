@@ -20,17 +20,21 @@ import CoreGraphics
 import SDWebImage
 import FloatingPanel
 
+extension MKMapView {
+    var zoomLevel: Double {
+        return log2(360 * ((Double(self.frame.size.width) / 256) / self.region.span.longitudeDelta)) - 1
+    }
+}
+
 protocol InitMapDelegate: AnyObject {
     
 }
-
 
 
 //MARK: View Controller
 class MapViewController: UIViewController {
     private var isNewAccount: Bool
     private let locationManager: CLLocationManager
-    private var userLoc: CLLocationCoordinate2D
     
     private let fpc: FloatingPanelController
     
@@ -39,6 +43,8 @@ class MapViewController: UIViewController {
     private let mapView: MKMapView
     private let profileButton: UIButton
     private let zoomToCurrentButton : UIButton
+
+    private let DEFAULT_ZOOM_DISTANCE = CGFloat(2000)
 
     
     var guardingGeoFireCalls: Bool
@@ -49,12 +55,7 @@ class MapViewController: UIViewController {
     init(isNewAccount: Bool){
         self.isNewAccount = isNewAccount
         self.events = []
-        
         self.locationManager = CLLocationManager()
-        
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        self.userLoc = CLLocationCoordinate2D(latitude: loc[0], longitude: loc[1])
-        
         self.mapView = MKMapView()
         self.fpc = FloatingPanelController()
         self.zoomToCurrentButton = UIButton()
@@ -102,7 +103,7 @@ class MapViewController: UIViewController {
         
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
-        let vc = OtherProfileViewController(id: userId)
+        let vc = ProfileViewController(id: userId)
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .overCurrentContext
         present(nav, animated: true, completion: nil)
@@ -116,9 +117,11 @@ class MapViewController: UIViewController {
     
     private func zoomToLatestLocation(){
         //change 20000,20000 so that it fits all 3 rings
-        let zoomDistance = CGFloat(2000)
-        let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: zoomDistance,longitudinalMeters: zoomDistance)
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        let userLoc = CLLocationCoordinate2D(latitude: loc[0], longitude: loc[1])
+        let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: DEFAULT_ZOOM_DISTANCE,longitudinalMeters: DEFAULT_ZOOM_DISTANCE)
         mapView.setRegion(zoomRegion, animated: true)
+        correctAnnotationSizes()
     }
 
     private func hideZoomButton() {
@@ -147,14 +150,12 @@ class MapViewController: UIViewController {
         if #available(iOS 13.0, *){
             overrideUserInterfaceStyle = .dark
         }
-    
-
-        
-
-        
-        
 
         configureAnnotations()
+        
+        let pinchGR = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture))
+        pinchGR.delegate = self
+        self.mapView.addGestureRecognizer(pinchGR)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -268,19 +269,32 @@ class MapViewController: UIViewController {
     // regisers annotation views and adds them to map
     func configureAnnotations(){
         mapView.delegate = self
-        mapView.register(MKAnnotationView.self, forAnnotationViewWithReuseIdentifier: EventAnnotation.identifier)
+        mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
+        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
+
 
         //Events
         // MARK: London
-//        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 51.5014, longitude: -0.1419))
-//        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570))
+        
+        let e1Url = URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6503333333%2Fprofile_picture.png?alt=media&token=1b83e75e-6147-4da6-bd52-1eee539bbc61")!
+        
+        let e1 = PromoterEvent(eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+                               coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
+                               imageURL: e1Url)
+//        let e1 = PromoterEvent(coordinates: CLLocation(latitude: 42.456160, longitude: -71.251080), imageURL: e1Url)
+
+        let e2 = PrivateEvent(eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+                              coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
+                              imageURL: e1Url)
+        let event1 = EventAnnotation(event: e1)
+        let event2 = EventAnnotation(event: e2)
         
         //MARK: Montreal
 //        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 45.5317, longitude: -73.5873))
 //        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 45.4817, longitude: -73.4873))
         
-//        mapView.addAnnotation(event1)
-//        mapView.addAnnotation(event2)
+        mapView.addAnnotation(event1)
+        mapView.addAnnotation(event2)
     }
 
 }
@@ -290,9 +304,8 @@ extension MapViewController: CLLocationManagerDelegate {
         
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let latestLocation = locations.first else { return }
-        userLoc = latestLocation.coordinate
         
-        AppDelegate.userDefaults.set([userLoc.latitude, userLoc.longitude], forKey: "userLoc")
+        AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
 
         if !guardingGeoFireCalls {
             GeoManager.shared.UpdateLocation(location: latestLocation)
@@ -340,7 +353,9 @@ extension MapViewController: FPCMapDelegate {
     func openZipFinder() {
         let zipFinder = ZipFinderViewController()
         zipFinder.delegate = self
-        zipFinder.userLoc = CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude)
+        
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        zipFinder.userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         
         let vc = UINavigationController(rootViewController: zipFinder)
         vc.modalPresentationStyle = .overCurrentContext
@@ -353,60 +368,15 @@ extension MapViewController: FPCMapDelegate {
         let vc = EventFinderViewController()
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: { [weak self] in
-            self?.fpc.move(to: .tip, animated: true, completion: nil)
-        })
+        present(nav, animated: true, completion: nil)
         
     }
     
     func createEvent() {
-        let vc = CreateEventViewController()
+        let vc = EventTypeSelectViewController()
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: { [weak self] in
-            self?.fpc.move(to: .tip, animated: true, completion: nil)
-        })
-        
-//        let actionSheet = UIAlertController(title: "Create an Event",
-//                                            message: "Which type of event would you like to create",
-//                                            preferredStyle: .actionSheet)
-//        actionSheet.addAction(UIAlertAction(title: "Private",
-//                                            style: .default,
-//                                            handler: { [weak self] _ in
-//            let privateEvent = NewPrivateEventViewController()
-//            let nav = UINavigationController(rootViewController: privateEvent)
-//            nav.modalPresentationStyle = .fullScreen
-//            self?.present(nav, animated: true, completion: { [weak self] in
-//                self?.fpc.move(to: .tip, animated: true, completion: nil)
-//            })
-//        }))
-//
-//        actionSheet.addAction(UIAlertAction(title: "Public",
-//                                            style: .default,
-//                                            handler: { [weak self] _ in
-//            let publicEvent = NewPublicEventViewController()
-//            let nav = UINavigationController(rootViewController: publicEvent)
-//            nav.modalPresentationStyle = .fullScreen
-//            self?.present(nav, animated: true, completion: { [weak self] in
-//                self?.fpc.move(to: .tip, animated: true, completion: nil)
-//            })
-//        }))
-//
-//        actionSheet.addAction(UIAlertAction(title: "Promoter",
-//                                            style: .default,
-//                                            handler: { [weak self] _ in
-//            let publicEvent = NewPublicEventViewController()
-//            let nav = UINavigationController(rootViewController: publicEvent)
-//            nav.modalPresentationStyle = .fullScreen
-//            self?.present(nav, animated: true, completion: { [weak self] in
-//                self?.fpc.move(to: .tip, animated: true, completion: nil)
-//            })
-//        }))
-//
-//        actionSheet.addAction(UIAlertAction(title: "Cancel",
-//                                            style: .default,
-//                                            handler: nil))
-//        present(actionSheet, animated: true)
+        present(nav, animated: true, completion: nil)
     }
     
     func openMessages() {
@@ -449,50 +419,52 @@ extension MapViewController: FPCMapDelegate {
 // MARK: MKMapViewDelegate
 extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        guard let eventAnnotation = annotation as? EventAnnotation else {
+            return nil
+        }
         
-        if let eventAnnotation = annotation as? EventAnnotation {
-            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: EventAnnotation.identifier) else {
+        switch eventAnnotation.event.getType() {
+        case .Private, .Public, .Friends:
+            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PrivateEventAnnotationView.identifier) as? PrivateEventAnnotationView else {
                 return MKAnnotationView()
             }
-            
-            let img = UIImageView(image: eventAnnotation.event.image)
-            annotationView.addSubview(img)
-            annotationView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
-
-            img.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
-            img.layer.cornerRadius = img.frame.height/2
-            img.layer.masksToBounds = true
-            img.layer.borderWidth = 1
-            switch eventAnnotation.event.getType() {
-            case .Promoter, .Event, .Public: img.layer.borderColor = CGColor(red: 1, green: 1, blue: 0, alpha: 1)
-            case .Private, .Friends: img.layer.borderColor = CGColor(red: 35/255, green: 207/255, blue: 244/255, alpha: 1)
-            }
+            annotationView.configure(event: eventAnnotation.event)
             
             annotationView.canShowCallout = false
             return annotationView
+            
+        case .Promoter:
+            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PromoterEventAnnotationView.identifier) as? PromoterEventAnnotationView else {
+                return MKAnnotationView()
+            }
+            annotationView.configure(event: eventAnnotation.event)
+            
+            annotationView.canShowCallout = false
+            return annotationView
+            
+        case .Event:
+            return MKAnnotationView()
         }
 
-        return nil
     }
     
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
         if let annotation = view.annotation as? EventAnnotation {
-            let eventVC = EventViewController()
-            eventVC.configure(annotation.event)
+            let eventVC = EventViewController(event: annotation.event)
             
             let nav = UINavigationController(rootViewController: eventVC)
             nav.modalPresentationStyle = .fullScreen
             nav.modalTransitionStyle = .coverVertical
             present(nav, animated: true, completion: nil)
-//            navigationController?.navigationBar.isHidden = false
-//            navigationController?.pushViewController(eventVC, animated: true)
+            
             mapView.deselectAnnotation(view.annotation, animated: false)
         }
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        correctAnnotationSizes()
         if mapDidMove {
             showZoomButton()
         } else {
@@ -503,15 +475,34 @@ extension MapViewController: MKMapViewDelegate {
     
 }
 
-//MARK: Floating Panel Delegate
-extension MapViewController: FloatingPanelControllerDelegate {
-    func floatingPanelWillBeginDragging(_ fpc: FloatingPanelController) {
-
-    }
-}
-
-// MARK: UIGestureRecognizerDelegate
 extension MapViewController: UIGestureRecognizerDelegate {
+    @objc func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
+        if sender.state == .ended {
+//            correctAnnotationSizes()
+        }
+    }
+    
+    private func correctAnnotationSizes(){
+        for annotation in mapView.annotations {
+            if annotation is MKUserLocation {
+                continue
+            }
+            guard let annotationView = self.mapView.view(for: annotation) as? EventAnnotationView else { continue }
+//            let scale = -1 * sqrt(1 - pow(mapView.zoomLevel / 20, 2.0)) + 1.4
+            print(mapView.zoomLevel)
+            let scale = mapView.zoomLevel/13
+            annotationView.updateSize(scale: scale)
+//            annotationView.transform = CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale))
+            
+//            annotationView.set
+//            annotationView.centerOffset =
+        }
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         if touch.view is MKAnnotationView {
             mapView.isZoomEnabled = false
@@ -525,7 +516,17 @@ extension MapViewController: UIGestureRecognizerDelegate {
         }
         return true
     }
+    
 }
+
+
+//MARK: Floating Panel Delegate
+extension MapViewController: FloatingPanelControllerDelegate {
+    func floatingPanelWillBeginDragging(_ fpc: FloatingPanelController) {
+
+    }
+}
+
 
 extension MapViewController: FilterVCDelegate {
     func updateRings() {
