@@ -53,8 +53,6 @@ class AbstractProfileViewController: UIViewController {
     ) {
         self.user = User(userId: id)
         
-        
-        
         self.rightNavBarButton = rightBarButton
         self.centerActionInfo = centerActionInfo
         
