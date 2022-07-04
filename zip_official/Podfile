@@ -28,7 +28,7 @@ pod 'Firebase/Crashlytics'
 
 
 pod 'GeoFire', '~> 4.0'
-
+pod 'mailcore2-ios'
 
 
 end
