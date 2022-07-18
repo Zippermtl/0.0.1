@@ -10,12 +10,11 @@ import CoreLocation
 import RSKImageCropper
 import DropDown
 import GooglePlaces
-import RealmSwift
 
 
 class CreateEventViewController: UIViewController {
-    var event = PrivateEvent()
-
+    var event: Event
+    
     private let eventNameLabel: UILabel
     private let startTimeLabel: UILabel
     private let locationLabel: UILabel
@@ -24,11 +23,11 @@ class CreateEventViewController: UIViewController {
     private let endDatePicker: UIDatePicker
     private let endTimePicker: UIDatePicker
     
+    
     private let eventNameField: UITextField
     private let startDateField: UITextField
     private let startTimeField: UITextField
     private let endDateField: UITextField
-    
     private let endTimeField: UITextField
     
     private let locationField: UITextField
@@ -39,7 +38,8 @@ class CreateEventViewController: UIViewController {
     private let pageStatus2: StatusCheckView
     private let pageStatus3: StatusCheckView
     
-    init() {
+    init(event: Event) {
+        self.event = event
         self.eventNameLabel = UILabel.zipTextFill()
         self.startTimeLabel = UILabel.zipTextFill()
         self.locationLabel = UILabel.zipTextFill()
@@ -68,7 +68,7 @@ class CreateEventViewController: UIViewController {
         locationLabel.text = "Event Location"
         endTimeLabel.text = "End Time: "
         
-        continueButton.setTitle("CONTINUE", for: .normal)
+        continueButton.setTitle("Continue", for: .normal)
         continueButton.backgroundColor = .zipBlue
         continueButton.setTitleColor(.white, for: .normal)
         continueButton.layer.cornerRadius = 15
@@ -159,7 +159,7 @@ class CreateEventViewController: UIViewController {
         startTimePicker.addTarget(self, action: #selector(startTimeChanged), for: .valueChanged)
         
         
-        endTimeField.attributedPlaceholder = NSAttributedString(string: "Date",
+        endTimeField.attributedPlaceholder = NSAttributedString(string: "Time",
                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
         endTimeField.font = .zipBody
         endTimeField.borderStyle = .roundedRect
@@ -171,7 +171,7 @@ class CreateEventViewController: UIViewController {
         endTimeField.textAlignment = .center
         
         
-        endDateField.attributedPlaceholder = NSAttributedString(string: "Time",
+        endDateField.attributedPlaceholder = NSAttributedString(string: "Date",
                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
         endDateField.font = .zipBody
         endDateField.borderStyle = .roundedRect
@@ -370,11 +370,11 @@ class CreateEventViewController: UIViewController {
     }
     
     @objc private func didTapDismiss(){
-        dismiss(animated: true)
+        navigationController?.popViewController(animated: true)
     }
     
     private func configureNavBar(){
-        title = "CREATE EVENT"
+        title = "Create Event"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
 
         let dismissButton = UIButton(type: .system)

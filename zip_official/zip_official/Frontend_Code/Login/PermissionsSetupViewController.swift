@@ -171,7 +171,8 @@ class PermissionsSetupViewController: UIViewController {
                 AppDelegate.userDefaults.set((strongSelf.user.firstName), forKey: "firstName")
                 AppDelegate.userDefaults.set((strongSelf.user.lastName), forKey: "lastName")
                 AppDelegate.userDefaults.set((strongSelf.user.birthday), forKey: "birthday")
-                AppDelegate.userDefaults.set(0, forKey: "picNum")
+                AppDelegate.userDefaults.set(1, forKey: "picNum")
+                
                 
                 
                 
@@ -186,6 +187,7 @@ class PermissionsSetupViewController: UIViewController {
                         print("Storage Manager Error: \(error)")
                     }
                     
+                    DataStorageManager.shared.updateUser()
                     
                     DispatchQueue.main.async {
                         if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {

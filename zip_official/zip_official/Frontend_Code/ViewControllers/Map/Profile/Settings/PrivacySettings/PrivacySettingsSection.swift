@@ -10,7 +10,7 @@ enum PrivacySettingsSection: Int, CaseIterable, CustomStringConvertible {
     
     var description: String {
         switch self {
-        case .General: return "General".uppercased()
+        case .General: return "General"
         }
     }
 }

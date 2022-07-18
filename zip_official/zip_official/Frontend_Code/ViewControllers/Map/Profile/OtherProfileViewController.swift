@@ -11,66 +11,22 @@ import MapKit
 import CoreLocation
 import SDWebImage
 import JGProgressHUD
-import MTSlideToOpen
 
 
-//
-//  SecondViewController.swift
-//  zip_official
-//
-//  Created by Yianni Zavaliagkos on 6/2/21.
-//
-
-
-import UIKit
-import MapKit
-import CoreLocation
-import SDWebImage
-import JGProgressHUD
-
-/*
- 
- let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
- let img = UIImage(systemName: "calendar", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
- 
- let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .large)
- let img = UIImage(systemName: "person.3.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
- 
- 
- let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
- let img = UIImage(systemName: "calendar", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
- let icon = UIImageView(image: img)
- 
- 
- 
- 
- 
- 
- */
-
-
-class OtherProfileViewController: AbstractProfileViewController {
-    private let settingsButton = UIBarButtonItem(image: UIImage.init(systemName: "ellipsis")!
-                                                    .withRenderingMode(.alwaysOriginal)
-                                                    .withTintColor(.white),
-                                                     landscapeImagePhone: nil,
-                                                     style: .plain,
-                                                     target: self,
-                                                     action: #selector(didTapRightBarButton))
-    
-    
+class OtherProfileViewController: AbstractProfileViewController  {
     private var distanceLabel: DistanceLabel
     
     init(id: String) {
-        let actionButtonInfo = ("ZIPPED", UIColor.zipBlue)
+        let actionButtonInfo = ("Zipped", UIColor.zipBlue)
+        let reportIcon = UIImage(systemName: "ellipsis")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+
         distanceLabel = DistanceLabel()
         
         super.init(id: id,
                    B1: IconButton.inviteIcon(),
                    B2: IconButton.messageIcon(),
                    B3: IconButton.zipsIcon(),
-                   rightBarButton:
-                   settingsButton,
+                   rightBarButtonIcon: reportIcon,
                    centerActionInfo: actionButtonInfo
         )
         
@@ -82,6 +38,11 @@ class OtherProfileViewController: AbstractProfileViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    override func didTapRightBarButton() {
+        let vc = ReportViewController(user: user)
+        vc.modalPresentationStyle = .overCurrentContext
+        present(vc, animated: false, completion: nil)
     }
     
     override func viewDidLoad() {
@@ -109,9 +70,7 @@ class OtherProfileViewController: AbstractProfileViewController {
 
     }
     
-    override func didTapRightBarButton() {
-
-    }
+    
     
     override func didTapCenterActionButton() {
         switch user.friendshipStatus {
@@ -142,15 +101,15 @@ class OtherProfileViewController: AbstractProfileViewController {
             
             setZippedState()
             setNoRelationState()
-//        case default:
-            //request()
-            //setRquestedState()
-
-
-//
+        case .NO_RELATION:
+            request()
+            setRequestedState()
         }
     }
     
+    private func request() {
+        
+    }
     
     private func setRequestedState(){
         centerActionButton.setTitle("Requested", for: .normal)
@@ -179,9 +138,9 @@ class OtherProfileViewController: AbstractProfileViewController {
 
     
     override func didTapB1Button() {
-        let myEventsView = MyEventsViewController()
-        myEventsView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(myEventsView, animated: true)
+        let vc = InviteUserToEventViewController()
+        vc.modalPresentationStyle = .overCurrentContext
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     override func didTapB2Button() {
@@ -189,7 +148,7 @@ class OtherProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB3Button() {
-        let myZipsView = MyZipsViewController()
+        let myZipsView = MyZipsViewController(user: user)
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)
     }
@@ -200,6 +159,8 @@ class OtherProfileViewController: AbstractProfileViewController {
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: true)
     }
-
-
+    
+    override func didTapDismiss(){
+        navigationController?.popViewController(animated: true)
+    }
 }

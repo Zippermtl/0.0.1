@@ -36,7 +36,7 @@ class SettingsCellTableViewCell: UITableViewCell {
     
     lazy var disclosureIndicator: UIView = {
         let view = UIView()
-        let img = UIImageView(image: UIImage(named: "upArrow"))
+        let img = UIImageView(image: UIImage(systemName: "chevron.forward")?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
         view.addSubview(img)
         img.translatesAutoresizingMaskIntoConstraints = false
         img.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true

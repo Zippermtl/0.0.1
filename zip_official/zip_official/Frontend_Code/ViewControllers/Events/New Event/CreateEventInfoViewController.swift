@@ -19,6 +19,27 @@ class CreateEventInfoViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    private let continueButton: UIButton = {
+        let btn = UIButton()
+        btn.setTitle("Continue", for: .normal)
+        btn.backgroundColor = .zipBlue
+        btn.setTitleColor(.white, for: .normal)
+        btn.layer.cornerRadius = 15
+        btn.layer.masksToBounds = true
+        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
+        return btn
+    }()
+    
+    private let pageStatus2: StatusCheckView = {
+        let s = StatusCheckView()
+        s.select()
+        return s
+    }()
+    
+    private let pageStatus1 = StatusCheckView()
+    private let pageStatus3 = StatusCheckView()
+    
     var didUpdatePicture = false
     
     private let eventPictureLabel: UILabel = {
@@ -68,27 +89,6 @@ class CreateEventInfoViewController: UIViewController {
     
     let capacitySlider = ResizeSlider()
     
-    @objc private func didTapContinueButton(){
-        guard descriptionField.text != nil,
-              didUpdatePicture == true else {
-            let alert = UIAlertController(title: "Complete All Fields To Conitnue",
-                                          message: "",
-                                          preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Continue",
-                                          style: .cancel,
-                                          handler: nil))
-            
-            present(alert, animated: true)
-            return
-        }
-        
-        event.description = descriptionField.text
-        
-        let vc = CompleteEventViewController(event: event)
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
     var descriptionField: UITextView = {
         let tf = UITextView()
         tf.font = .zipBody
@@ -130,26 +130,7 @@ class CreateEventInfoViewController: UIViewController {
 //        UIImage(systemName: "music.mic")
 
     ]
-    
-    private let continueButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("CONTINUE", for: .normal)
-        btn.backgroundColor = .zipBlue
-        btn.setTitleColor(.white, for: .normal)
-        btn.layer.cornerRadius = 15
-        btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
-        return btn
-    }()
-    
-    private let pageStatus2: StatusCheckView = {
-        let s = StatusCheckView()
-        s.select()
-        return s
-    }()
-    
-    private let pageStatus1 = StatusCheckView()
-    private let pageStatus3 = StatusCheckView()
+
     
     @objc func sliderChanged(_ sender: UISlider){
         if sender.value == 501 {
@@ -167,10 +148,74 @@ class CreateEventInfoViewController: UIViewController {
         capacityNumField.resignFirstResponder()
     }
     
+    @objc private func didTapContinueButton(){
+        if event.getType() == .Public {
+            continueButton.isEnabled = false
+            let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
+                            firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
+                            lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
+            
+            event.hosts = [host]
+            event.eventId = event.createEventId
+                    
+            //MARK: Fuckmyass is the variable which contains the string of the url of the picture
+            // the code below was written by Yianni and was originally if success a else b has been
+            // rewritten to be switch: case success a case failure b
+            // note this is with a and b being code blocks excluding the code obviously written by me
+            DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
+                switch success {
+                case .success(let a):
+                    let actionSheet = UIAlertController(title: "Successfull Created an Event",
+                                                        message: "View your event in your profile",
+                                                        preferredStyle: .actionSheet)
+                    
+                    actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                        style: .cancel,
+                                                        handler: nil))
+                    
+                    self?.present(actionSheet, animated: true)
+                    self?.dismiss(animated: true, completion: nil)
+                    self?.continueButton.isEnabled = true
+                case .failure(let error):
+                    print(error)
+                    let actionSheet = UIAlertController(title: "Failed to Create Your Event",
+                                                        message: "Make sure all the information you entered is correct or try again later.",
+                                                        preferredStyle: .actionSheet)
+                    
+                    actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                        style: .cancel,
+                                                        handler: nil))
+                    
+                    self?.present(actionSheet, animated: true)
+                }
+            })
+
+        } else {
+            guard descriptionField.text != nil,
+                  didUpdatePicture == true else {
+                let alert = UIAlertController(title: "Complete All Fields To Conitnue",
+                                              message: "",
+                                              preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Continue",
+                                              style: .cancel,
+                                              handler: nil))
+                
+                present(alert, animated: true)
+                return
+            }
+            
+            event.description = descriptionField.text
+            
+            let vc = CompleteEventViewController(event: event)
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-        title = "CUSTOMIZE EVENT"
+        title = "Customize Event"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
         if event.description != "" {
@@ -467,6 +512,16 @@ extension CreateEventInfoViewController: UIImagePickerControllerDelegate, UINavi
 extension CreateEventInfoViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.text = ""
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let numString = textField.text,
+              let num = Float(numString) else {
+            return
+        }
+        
+        capacitySlider.value = num
+        sliderChanged(capacitySlider)
     }
 }
 

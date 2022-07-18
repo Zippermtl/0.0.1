@@ -77,7 +77,7 @@ class SettingsCategoryViewController: UIViewController {
             [NSAttributedString.Key.font: UIFont.zipTitle.withSize(20),
              NSAttributedString.Key.foregroundColor: UIColor.white]
         
-        navigationItem.title = category.description.uppercased()
+        navigationItem.title = category.description
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
     }
     

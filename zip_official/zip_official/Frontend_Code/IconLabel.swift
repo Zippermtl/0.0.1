@@ -8,31 +8,59 @@
 import UIKit
 
 class IconLabel: UILabel {
+    open override var text: String? {
+        didSet {
+            labelText = self.text ?? ""
+            update(string: labelText)
+        }
+    }
     
+    var spacing: Int = 0 {
+        didSet {
+            update(string: labelText)
+            var spaces = ""
+            for _ in 0...spacing {
+                spaces += " "
+            }
+            labelText = spaces + labelText
+        }
+    }
+
     private let icon: NSTextAttachment
     private var labelFont: UIFont
     private var color: UIColor
+    private var labelText: String
     
     init(iconImage: UIImage?){
         self.labelFont = .zipBody
         self.color = .zipBlue
+        self.labelText = ""
+        
         icon = NSTextAttachment()
-        icon.image = iconImage?.withRenderingMode(.alwaysOriginal).withTintColor(self.color)
         
         super.init(frame: .zero)
+        guard let iconImage = iconImage else {
+            return
+        }
+
+        icon.image = iconImage.withRenderingMode(.alwaysOriginal).withTintColor(self.color)
     }
     
     init(iconImage: UIImage?, labelFont: UIFont, color: UIColor) {
         self.labelFont = labelFont
         self.color = color
+        self.labelText = ""
         icon = NSTextAttachment()
-
-        icon.image = iconImage?.withRenderingMode(.alwaysOriginal).withTintColor(color)
-
         
         super.init(frame: .zero)
+        guard let iconImage = iconImage else {
+            return
+        }
+
+        icon.image = iconImage.withRenderingMode(.alwaysOriginal).withTintColor(self.color)
+        
         textColor = color
-        update(string: "")
+        update(string: labelText)
     }
     
     required init?(coder: NSCoder) {
@@ -41,6 +69,11 @@ class IconLabel: UILabel {
     
     
     public func update(string s: String){
+        labelText = ""
+        for _ in 0...spacing {
+            labelText += " "
+        }
+        labelText += s
         let attachmentString = NSAttributedString(attachment: icon)
         let completeString = NSMutableAttributedString(string: "")
         completeString.append(attachmentString)
@@ -48,4 +81,9 @@ class IconLabel: UILabel {
                                                                          NSAttributedString.Key.foregroundColor: self.color]))
         attributedText = completeString
     }
+    
+    public func setIcon(newIcon: UIImage?) {
+        icon.image = newIcon
+    }
+    
 }

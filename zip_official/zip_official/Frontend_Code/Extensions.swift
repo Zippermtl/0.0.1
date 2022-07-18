@@ -59,6 +59,16 @@ extension String {
         tempLabel.sizeToFit()
         return tempLabel.frame.height
     }
+    
+    var imgNumber: String {
+        if self.contains("profile_picture") { return "!profile_picture" }
+        
+        if let range = self.range(of: "img")?.upperBound {
+            return String(self[range...])
+        }
+        
+        return ""
+    }
 }
 
 
@@ -112,5 +122,12 @@ public func getDistanceLabel(user: User) -> String {
         } else {
             return String(distance) + " \(unit)"
         }
+    }
+}
+
+extension Date {
+    func convertToTimeZone(initTimeZone: TimeZone, timeZone: TimeZone) -> Date {
+         let delta = TimeInterval(timeZone.secondsFromGMT(for: self) - initTimeZone.secondsFromGMT(for: self))
+         return addingTimeInterval(delta)
     }
 }

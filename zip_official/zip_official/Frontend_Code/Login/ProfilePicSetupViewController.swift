@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import UIImageCropper
 
 class ProfilePicSetupViewController: UIViewController {
     var user = User()
@@ -112,6 +113,7 @@ class ProfilePicSetupViewController: UIViewController {
         picErrorLabel.isHidden = true
         // push to final setup page
         user.pictures.append(pic)
+        user.picNum = 1
         let vc = PermissionsSetupViewController()
         vc.user = user
         navigationController?.pushViewController(vc, animated: true)
@@ -253,6 +255,8 @@ extension ProfilePicSetupViewController: UIImagePickerControllerDelegate, UINavi
     
     func presentCamera(){
         let vc = UIImagePickerController()
+//        let cropper = UIImageCropper(cropRatio: 2/3)
+//        cropper.picker = vc
         vc.sourceType = .camera
         vc.delegate = self
         vc.allowsEditing = true

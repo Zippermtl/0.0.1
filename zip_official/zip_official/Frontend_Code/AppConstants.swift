@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import DropDown
 import RSKImageCropper
+import UIImageCropper
 
 extension UIColor {
     
@@ -104,9 +105,27 @@ extension UIColor {
 }
 
 extension UIFont {
-    static var zipTitle: UIFont {
-        return UIFont(name: "HelveticaNeue-Bold", size: 30)!
-    }
+    static var zipFontRegular: UIFont {  return UIFont(name: "HelveticaNeue", size: 12)!  }
+    static var zipFontMedium: UIFont {  return UIFont(name: "HelveticaNeue-Bold", size: 12)!  }
+    static var zipFontSemiBold: UIFont {  return UIFont(name: "HelveticaNeue-Medium", size: 12)!  }
+
+    static var zipHeader: UIFont {  return UIFont.zipFontSemiBold.withSize(24)  }
+    static var zipSubtitle: UIFont {  return UIFont.zipFontSemiBold.withSize(18)  }
+    static var zipSubtitle2: UIFont {  return UIFont.zipFontSemiBold.withSize(16)  }
+    static var zipSubtitle3: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
+    static var zipTitle: UIFont {  return UIFont.zipFontSemiBold.withSize(28)  }
+    static var zipTextDetail: UIFont {  return UIFont.zipFontRegular.withSize(12)  }
+    static var zipTextDetail2: UIFont {  return UIFont.zipFontRegular.withSize(10)  }
+    static var zipTextFill: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
+    static var zipTextFillBold: UIFont {  return UIFont.zipFontSemiBold.withSize(16)  }
+    static var zipTextIcon: UIFont {  return UIFont.zipFontRegular.withSize(12)  }
+    static var zipTextNoti: UIFont {  return UIFont.zipFontMedium.withSize(14)  }
+    static var zipTextNotiBold: UIFont {  return UIFont.zipFontSemiBold.withSize(14)  }
+    static var zipTextPrompt: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
+    static var zipTextPrompt2: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
+    static var zipTextPrompt3: UIFont {  return UIFont.zipFontMedium.withSize(14)  }
+    static var zipTextPrompt4: UIFont {  return UIFont.zipFontMedium.withSize(14)  }
+
     static var zipBody: UIFont {
         return UIFont(name: "HelveticaNeue-Medium", size: 18)!
     }
@@ -116,10 +135,110 @@ extension UIFont {
     static var zipSubscript: UIFont {
         return UIFont(name: "HelveticaNeue-Medium", size: 15)!
     }
-    static var zipTextDetail: UIFont {
-        return .zipBody.withSize(12)
+
+}
+
+extension UILabel {
+    static let DEFAULT_TEXTCOLOR = UIColor.white
+    static func zipHeader() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipHeader
+        return label
+    }
+    static func zipSubtitle() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipSubtitle
+        return label
+    }
+    static func zipSubtitle2() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipSubtitle2
+        return label
+    }
+    static func zipSubtitle3() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipSubtitle3
+        return label
+    }
+    static func zipTitle() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTitle
+        return label
+    }
+    static func zipTextDetail() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipTextDetail
+        return label
+    }
+    static func zipTextDetail2() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipTextDetail2
+        return label
+    }
+    static func zipTextFill() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTextFill
+        return label
+    }
+    static func zipTextFillBold() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTextFillBold
+        return label
+    }
+    static func zipTextIcon() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTextIcon
+        return label
+    }
+    static func zipTextNoti() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTextNoti
+        return label
+    }
+    static func zipTextNotiBold() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTextNotiBold
+        return label
+    }
+    static func zipTextPrompt() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipTextPrompt
+        return label
+    }
+    static func zipTextPrompt2() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipTextPrompt2
+        return label
+    }
+    static func zipTextPrompt3() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipTextPrompt3
+        return label
+    }
+    static func zipTextPrompt4() -> UILabel {
+        let label = UILabel()
+        label.textColor = .zipVeryLightGray
+        label.font = .zipTextPrompt4
+        return label
     }
 }
+
+
 
 extension DropDown {
     func setEdgeInsets(){
@@ -226,102 +345,13 @@ extension UIDevice {
     }()
 }
 
-extension UILabel {
-    
-    static func zipSubtitle() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBodyBold.withSize(18)
-//        label.numberOfLines = 1
-//        label.adjustsFontSizeToFitWidth = true
-//        label.minimumScaleFactor = 0.5
-        label.sizeToFit()
-        label.text = "A"
-
-        return label
-    }
-    
-    static func zipHeader() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle.withSize(24)
-        label.sizeToFit()
-        label.text = "@"
-        return label
-    }
-    
-    static func zipTitle() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle.withSize(28)
-        label.sizeToFit()
-        label.text = "@"
-        return label
-    }
 
 
-    static func zipSubtitle2() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBodyBold.withSize(16)
-        label.text = "A"
-        return label
-    }
-    
-    static func zipTextNotiBold() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBodyBold.withSize(14)
-        label.text = "A"
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.5
-        return label
-    }
-    
-    static func zipTextFill() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBody.withSize(16)
-        label.sizeToFit()
-        label.text = "@"
-        label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 0
-        return label
-    }
-    
-    static func zipTextDetail() -> UILabel {
-        let label = UILabel()
-        label.textColor = .zipVeryLightGray
-        label.font = .zipTextDetail
-        label.sizeToFit()
-        label.text = "Joined Zipper on January 1st, 2022"
-        label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 0
-        return label
-    }
-    
-    static func zipTextPrompt() -> UILabel {
-        let label = UILabel()
-        label.textColor = .zipVeryLightGray
-        label.numberOfLines = 0
-        label.font = .zipBody.withSize(14)
-        label.text = "tap to flip"
-        return label
-    }
-    
-    static func zipTextIcon() -> UILabel {
-        let label = UILabel()
-        label.textColor = .white
-        label.numberOfLines = 0
-        label.font = .zipBody.withSize(12)
-        return label
-    }
-    
+
+
+extension UIImageCropper {
+    static let CROP_RATIO: Double = 7/10
 }
-
-
-
-
 
 
 //https://github.com/lionhylra/iOS-UIFont-Names

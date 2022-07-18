@@ -10,24 +10,19 @@ import UIKit
 class IconButton: UIButton {
 
     var iconButton: UIButton
-    
-    
-    
+    var iconLabel: UILabel
     
     init(text: String, icon: UIImage?, config: UIImage.Configuration) {
         iconButton = UIButton()
+        iconLabel = UILabel.zipTextIcon()
 
         super.init(frame: .zero)
-        
-        
         
         iconButton.setImage(icon!.withConfiguration(config)
                                  .withRenderingMode(.alwaysOriginal)
                                  .withTintColor(.white),
                             for: .normal)
 
-        
-        
         
         iconButton.contentMode = .scaleAspectFit
         
@@ -38,17 +33,20 @@ class IconButton: UIButton {
         iconButton.layer.masksToBounds = true
         
         iconButton.backgroundColor = .zipLightGray
+    
+        iconLabel.text = text
+        iconLabel.textAlignment = .center
+        iconLabel.numberOfLines = 0
         
-        let label = UILabel.zipTextIcon()
-        label.text = text
-        
-        label.textAlignment = .center
-        
-        addSubview(label)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        label.topAnchor.constraint(equalTo: iconButton.bottomAnchor, constant: 5).isActive = true
-        label.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        addSubview(iconLabel)
+        iconLabel.translatesAutoresizingMaskIntoConstraints = false
+        iconLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        iconLabel.topAnchor.constraint(equalTo: iconButton.bottomAnchor, constant: 5).isActive = true
+        iconLabel.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     public func setIconDimension(width: CGFloat) {
@@ -64,8 +62,13 @@ class IconButton: UIButton {
         iconButton.addTarget(target, action: action, for: controlEvents)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+
+    public func setTextLabel(s: String) {
+        iconLabel.text = s
+    }
+    
+    public func setIcon(icon: UIImage) {
+        iconButton.setImage(icon, for: .normal)
     }
     
     
@@ -90,7 +93,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "Invite",
             icon:  UIImage(systemName: "paperplane")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
         )
     }
     

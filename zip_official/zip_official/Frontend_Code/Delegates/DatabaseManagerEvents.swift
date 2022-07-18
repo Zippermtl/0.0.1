@@ -12,12 +12,32 @@ import CoreLocation
 import GeoFire
 import CoreData
 
-public enum EventType: Int {
+public enum EventType: Int, CustomStringConvertible {
     case Event = 0
     case Public = 1
     case Promoter = 2
     case Private = 3
     case Friends = 4
+    
+    public var description: String {
+        switch self {
+        case .Event: return "Event"
+        case .Public: return "Public Event"
+        case .Private: return "Private Event"
+        case .Friends: return "Zips Event"
+        case .Promoter: return "Promoter Event"
+        }
+    }
+    
+    public var color: UIColor {
+        switch self {
+        case .Event: return .zipYellow
+        case .Public: return .zipGreen
+        case .Private: return .zipBlue
+        case .Friends: return .zipBlue
+        case .Promoter: return .zipYellow
+        }
+    }
 }
 
 extension DatabaseManager {
@@ -53,16 +73,16 @@ extension DatabaseManager {
                 return
             }
             print("big succccc sample")
-            guard let startTime = value["startTime"] as? String,
+            guard let startTimeString = value["startTime"] as? String,
                   let coordinates = value["coordinates"] as? [String : Double],
                   let addy = value["address"] as? String,
                   let desc = value["description"] as? String,
 //                  let dur = value["duration"] as? Int,
-                  let endTime = value["endTime"] as? String,
+                  let endTimeString = value["endTime"] as? String,
                   let userHost = value["hosts"] as? [String : String],
                   let title = value["title"] as? String,
                   let type = value["type"] as? Int,
-                  let usersGoing = value["usersGoing"] as? [String : String],
+//                  let usersGoing = value["usersGoing"] as? [String : String],
 //                  let usersInterested = value["usersInterested"] as? [String : String],
                   let max = value["max"] as? Int,
                   let userInvite = value["usersInvite"] as? [String : String] else {
@@ -81,10 +101,10 @@ extension DatabaseManager {
                 host.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
             }
             var going: [User] = []
-            for (key, value) in usersGoing {
-                let componentsName = value.description.components(separatedBy: " ")
-                going.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
-            }
+//            for (key, value) in usersGoing {
+//                let componentsName = value.description.components(separatedBy: " ")
+//                going.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
+//            }
 //            var interested: [User] = []
 //            for (key, value) in usersInterested {
 //                let componentsName = value.description.components(separatedBy: " ")
@@ -93,6 +113,17 @@ extension DatabaseManager {
             let imagePath = "Event/" + key
             print("got to image path")
             print(imagePath)
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
+            let startTime = formatter.date(from: startTimeString)!
+            let endTime = formatter.date(from: endTimeString)!
+
+            print("IN LOAD String: \(startTimeString)")
+            print("IN LOAD time: \(startTime)")
+
+            
             StorageManager.shared.getProfilePicture(path: imagePath) { result in
                 switch result{
                 case .success(let url):
@@ -106,9 +137,9 @@ extension DatabaseManager {
                                                                                 maxGuests: max,
                                                                                 usersGoing: going,
                                                                                 usersInvite: usersInvited,
+                                                                                startTime: endTime,
+                                                                                endTime: startTime,
                                                                                 imageURL: url[0],
-                                                                                endTimeString: endTime,
-                                                                                startTimeString: startTime,
                                                                                 type: EventType(rawValue: type)!)))
                 case .failure(let error):
                     print("failed to make event")

@@ -7,15 +7,13 @@
 
 import UIKit
 
-protocol GrowingCellProtocol: AnyObject {
-    func updateHeightOfRow(_ cell: GrowingCellTableViewCell, _ textView: UITextView)
-    func updateValue(value: String)
-}
+
 
 class GrowingCellTableViewCell: UITableViewCell {
     static let identifier = "GrowingIdentifier"
     
     weak var cellDelegate: GrowingCellProtocol?
+    
     var textView: UITextView = {
         let textView = UITextView()
         

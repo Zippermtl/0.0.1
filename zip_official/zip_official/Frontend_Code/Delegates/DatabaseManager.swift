@@ -68,13 +68,19 @@ extension DatabaseManager {
     
     /// Inserts new user to database
     public func insertUser(with user: User, completion: @escaping (Bool) -> Void){
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        let joinDate =  formatter.string(from: Date())
         database.child("userProfiles/\(user.userId)").setValue([
+            "id": user.userId,
             "username": user.username,
             "firstName": user.firstName,
             "lastName": user.lastName,
             "birthday": user.birthdayString,
             "notifications": EncodePreferences(user.notificationPreferences),
-            "picNum": user.picNum
+            "picNum": user.picNum,
+            "school": "",
+            "joinDate": joinDate
         ], withCompletionBlock: { [weak self] error, _ in
             guard error == nil else{
                 print("failed to write to database")
@@ -126,6 +132,7 @@ extension DatabaseManager {
             })
         })
     }
+    
     public func createUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
               var name = AppDelegate.userDefaults.value(forKey: "firstName") as? String,
@@ -233,12 +240,10 @@ extension DatabaseManager {
                 return
             }
 
-            guard let firstName = value["firstName"] as? String,
+           guard let firstName = value["firstName"] as? String,
                   let lastName = value["lastName"] as? String,
                   let username = value["username"] as? String,
-                  let school = value["school"] as? String,
                   let bio = value["bio"] as? String,
-                  let interestsInt = value["interests"] as? [Int],
                   let picNum = value["picNum"] as? Int,
 //                  let notifPrefs = value["notifications"] as? Int,
                   let birthdayString = value["birthday"] as? String else {
@@ -246,6 +251,11 @@ extension DatabaseManager {
                       return
                   }
             
+            let interestsInt = value["interests"] as? [Int] ?? []
+            let notifPrefs = value["notifications"] as? Int ?? 0
+            let school = value["school"] as? String ?? ""
+            
+            let joinDateString = value["joinDate"] as? String ?? ""
             
             
             let interests = interestsInt.map({Interests(rawValue: $0)!})
@@ -254,6 +264,12 @@ extension DatabaseManager {
             dateFormatter.dateFormat = "MM-dd-yy"
             let birthday = dateFormatter.date(from: birthdayString)!
             
+            if joinDateString == "" {
+                user.joinDate = Date()
+            } else {
+                user.joinDate = dateFormatter.date(from: joinDateString)!
+            }
+            
             user.updateUser(username: username,
                             firstName: firstName,
                             lastName: lastName,
@@ -261,9 +277,11 @@ extension DatabaseManager {
                             picNum: picNum,
                             bio: bio,
                             school: school,
-                            interests: interests
-//                            notificationPreferences: DecodePreferences(notifPrefs)
+                            interests: interests,
+                            notificationPreferences: DecodePreferences(notifPrefs)
             )
+            
+            
             
             let imagesPath = "images/" + user.userId
             StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: picNum, completion: {  [weak self] result in
@@ -280,76 +298,6 @@ extension DatabaseManager {
                     
             })
             
-        })
-    }
-
-    public func loadEvent(eventId: String, completion: @escaping (Result<Event, Error>) -> Void) {
-        database.child("eventProfiles/\(eventId)").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [String: Any] else {
-                print("Failed to fetch event profile")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-
-            guard let title = value["title"] as? String,
-                  let coordinates = value["coordinates"] as? [String: Double],
-                  let hosts = value["hosts"] as? [String: Any],
-                  let description = value["description"] as? String,
-                  let address = value["address"] as? String,
-                  let max = value["max"] as? Int,
-                  let usersGoing = value["usersGoing"] as? [String: Any],
-                  let usersInvite = value["usersInvite"] as? [String: Any],
-                  let type = value["type"] as? String,
-                  let startTime = value["startTime"] as? String,
-                  let endTime = value["endTime"] as? String? else {
-                print("Retuning here")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-            
-            var newHosts: [User] = []
-            for hostId in hosts.keys {
-                newHosts.append(User(userId: hostId))
-            }
-            
-            var newUsersGoing: [User] = []
-            for id in usersGoing.keys {
-                newUsersGoing.append(User(userId: id))
-            }
-            
-            var newUsersInvite: [User] = []
-            for id in usersInvite.keys {
-                newUsersInvite.append(User(userId: id))
-            }
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // Set locale to reliable US_POSIX
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-            
-            let newStartTime = dateFormatter.date(from: startTime)!
-            var newEndTime: Date? = nil
-            
-            if let _endTime = endTime {
-                newEndTime = dateFormatter.date(from: _endTime)!
-            }
-            
-            completion(.success(Event(
-                eventId: eventId,
-                title: title,
-                coordinates: CLLocationCoordinate2D(
-                    latitude: coordinates["lat"] ?? 0,
-                    longitude: coordinates["long"] ?? 0
-                ),
-                hosts: newHosts,
-                description: description,
-                address: address,
-                maxGuests: max,
-                usersGoing: newUsersGoing,
-                usersInvite: newUsersInvite,
-                type: type,
-                startTime: newStartTime,
-                endTime: newEndTime
-            )))
         })
     }
 
@@ -429,12 +377,14 @@ extension DatabaseManager {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
+            
             guard let fullname = value["name"] as? String,
                   let lat = value["lat"] as? Double,
                   let long = value["long"] as? Double else {
                       print("retuning SubView")
                       return
                   }
+
             let name = fullname.components(separatedBy: " ")
             var user = User(userId: id,
                             firstName: name[0],

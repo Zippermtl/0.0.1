@@ -21,7 +21,14 @@ class SchoolSearchViewController: UIViewController, UpdateSchoolProtocol {
     var searchBar = UISearchBar()
     
     var tableView = UITableView()
-    var allData: [String] = ["None", "McGill University","Harvard University","Vanderbilt University","Concordia University","Boston College","Boston University","Massachusetts Institue of Technology"]
+    var allData: [String] = ["None",
+                             "McGill University",
+                             "Harvard University",
+                             "Vanderbilt University",
+                             "Concordia University",
+                             "Boston College",
+                             "Boston University",
+                             "Massachusetts Institue of Technology"]
     var filteredData: [String] = []
     
     
@@ -45,12 +52,14 @@ class SchoolSearchViewController: UIViewController, UpdateSchoolProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-        navigationItem.title = "SCHOOL"
+        navigationItem.title = "Edit School"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
                                                             style: UIBarButtonItem.Style.done,
                                                             target: self,
                                                             action: #selector(didTapDoneButton))
         
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+
         searchBar.backgroundColor = .red
         searchBar.delegate = self
         searchBar.tintColor = .zipGray

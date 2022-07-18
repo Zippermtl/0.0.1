@@ -1,40 +1,44 @@
 //
-//  HostsViewController.swift
+//  ZipListViewController.swift
 //  zip_official
 //
-//  Created by Yianni Zavaliagkos on 9/21/21.
+//  Created by Yianni Zavaliagkos on 7/26/21.
 //
 
 import UIKit
+import CoreLocation
 
 class HostsViewController: UIViewController {
-    let tableView = UITableView()
-    var hosts: [User] = []
+    var tableView: UITableView
+    var event: Event
+  
+    init(event: Event) {
+        self.event = event
+        self.tableView = UITableView()
+        super.init(nibName: nil, bundle: nil)
+        
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.title = "Hosts"
+        
+        configureTable()
+        addSubviews()
+        configureSubviewLayout()
+    }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
+    //MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
     }
     
-    public func configure(_ users: [User]){
-        hosts = users
-        for idx in 0...hosts.count-1 {
-            hosts[idx].zipped = false
-        }
-        
-        configureNavBar()
-        configureTable()
-        configureSubviews()
-    }
-    
-    private func configureNavBar(){
-        navigationItem.title = "HOSTS"
-        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-    }
-    
+    //MARK: - Table Config
     private func configureTable(){
-        //upcoming events table
-        tableView.register(ZipListTableViewCell.self, forCellReuseIdentifier: ZipListTableViewCell.notZippedIdentifier)
+        tableView.register(MyZipsTableViewCell.self, forCellReuseIdentifier: MyZipsTableViewCell.identifier)
 
         tableView.delegate = self
         tableView.dataSource = self
@@ -46,15 +50,21 @@ class HostsViewController: UIViewController {
         tableView.separatorColor = .zipSeparator
     }
     
-    private func configureSubviews(){
+
+
+    
+    private func addSubviews(){
         view.addSubview(tableView)
-        
+    }
+    
+    //MARK: - Layout Subviews
+    private func configureSubviewLayout(){
+        // Public Table
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
-        tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-
+        tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
 
 }
@@ -62,19 +72,22 @@ class HostsViewController: UIViewController {
 
 extension HostsViewController :  UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+        return 90
     }
+    
 }
 
 //MARK: TableDataSource
 extension HostsViewController :  UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return hosts.count
+        return event.hosts.count
     }
     
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let userProfileView = OtherProfileViewController(id: hosts[indexPath.row].userId)
+        
+        let userProfileView = OtherProfileViewController(id: event.hosts[indexPath.row].userId)
         userProfileView.modalPresentationStyle = .overCurrentContext
         
         let transition: CATransition = CATransition()
@@ -84,21 +97,21 @@ extension HostsViewController :  UITableViewDataSource {
         transition.subtype = CATransitionSubtype.fromRight
         view.window!.layer.add(transition, forKey: nil)
         navigationController?.pushViewController(userProfileView, animated: true)
+        
     }
-     
     
+ 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let user = hosts[indexPath.row]
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: ZipListTableViewCell.notZippedIdentifier, for: indexPath) as! ZipListTableViewCell
-        
-        
+            
+        let cell = tableView.dequeueReusableCell(withIdentifier: MyZipsTableViewCell.identifier, for: indexPath) as! MyZipsTableViewCell
+
+        let user = event.hosts[indexPath.row]
+
         cell.selectionStyle = .none
         cell.clipsToBounds = true
-
-
         cell.configure(user)
         return cell
     }
 }
+
 

@@ -31,9 +31,23 @@ public class User {
     var notificationPreferences: [String: Bool] = [:] // Notification Preferences
     var friendships: [Friendship] = [] // Friendship Preferences
     var friendshipStatus: FriendshipStatus = .ACCEPTED
+    
+    
+    var joinDate = Date()
 
-    func getProfilePicUrl() -> URL {
+    var profilePicUrl : URL {
         return pictureURLs[0]
+    }
+    
+    var otherPictureUrls: [URL] {
+        if pictureURLs.count > 1 {
+            return Array(pictureURLs[1 ..< pictureURLs.count])
+        }
+        return []
+    }
+    
+    var otherPicNum: Int {
+        return picNum-1
     }
 
     func getDistance() -> Double {
@@ -44,6 +58,84 @@ public class User {
 
         return userLoc.distance(from: location)
     }
+    
+    func getDistanceString() -> String {
+        var distanceText = ""
+        var unit = "km"
+        var distance = Double(round(10*(getDistance())/1000))/10
+
+        if NSLocale.current.regionCode == "US" {
+            distance = round(10*distance/1.6)/10
+            unit = "miles"
+        }
+        
+        if distance > 10 {
+            let intDistance = Int(distance)
+            if distance <= 1 {
+                if unit == "miles" {
+                    unit = "mile"
+                }
+                distanceText = "<1 \(unit)"
+            } else if distance >= 500 {
+                distanceText = ">500 \(unit)"
+            } else {
+                distanceText = String(intDistance) + " \(unit)"
+            }
+        } else {
+            if distance <= 1 {
+                if unit == "miles" {
+                    unit = "mile"
+                }
+                distanceText = "<1 \(unit)"
+            } else if distance >= 500 {
+                distanceText = ">500 \(unit)"
+            } else {
+                distanceText = String(distance) + " \(unit)"
+            }
+        }
+        
+        return distanceText
+    }
+    
+    var safeId: String {
+        var safeID = userId.replacingOccurrences(of: ".", with: "-")
+        safeID = safeID.replacingOccurrences(of: "@", with: "-")
+        return safeID
+    }
+    
+    var picturesPath: String {
+        return "images/\(safeId)/"
+    }
+    
+    var profilePictureFileName: String {
+        return "\(safeId)/profile_picture.png"
+    }
+    
+    var fullName: String {
+        return firstName + " " + lastName
+    }
+    
+    var birthdayString: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter.string(from: birthday)
+    }
+    
+    var interestsString: String {
+        return interests.map{$0.description}.joined(separator: ", ")
+    }
+    
+    var numTableviewCells: Int {
+        var out = 0
+        if bio != "" { out+=1 }
+        if school != "" { out+=1 }
+        if interests != [] { out+=1 }
+        return out
+    }
+    
+    var hasBio: Bool { return bio != ""}
+    var hasSchool: Bool { return school != nil}
+    var hasInterests: Bool { return interests != []}
 
     var isInivted: Bool = false
 
@@ -144,6 +236,39 @@ public class User {
                     print("Error loading friends")
             }
         })
+    }
+    
+    func report(reason: String) {
+        let smtpSession = MCOSMTPSession()
+        smtpSession.hostname = "smtp.gmail.com"
+        smtpSession.username = "contact.zippermtl@gmail.com"
+        smtpSession.password = "PASSWORD_INSERT_HERE"
+        smtpSession.port = 465
+        smtpSession.authType = MCOAuthType.saslPlain
+        smtpSession.connectionType = MCOConnectionType.TLS
+        smtpSession.connectionLogger = {(connectionID, type, data) in
+            if data != nil {
+                if let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue){
+                    NSLog("Connectionlogger: \(string)")
+                }
+            }
+        }
+
+        let builder = MCOMessageBuilder()
+        builder.header.to = [MCOAddress(displayName: "Zipper MTL", mailbox: "contact.zippermtl@gmail.com")!]
+        builder.header.from = MCOAddress(displayName: "Zipper App", mailbox: "contact.zippermtl@gmail.com")
+        builder.header.subject = "User Report"
+        builder.htmlBody = "<p><b>\(userId)</b> was reported!</p><p>Reason: \(reason).</p>"
+
+        let rfc822Data = builder.data()
+        let sendOperation = smtpSession.sendOperation(with: rfc822Data)
+        sendOperation!.start {(error) -> Void in
+            if (error != nil) {
+                NSLog("Error sending email: \(String(describing: error))")
+            } else {
+                NSLog("Successfully sent email!")
+            }
+        }
     }
 
     // Load your own friendships
@@ -391,33 +516,7 @@ public class User {
         })
     }
 
-    var safeId: String {
-        var safeID = userId.replacingOccurrences(of: ".", with: "-")
-        safeID = safeID.replacingOccurrences(of: "@", with: "-")
-        return safeID
-    }
-    
-    var picturesPath: String {
-        return "images/\(safeId)/"
-    }
-    
-    var profilePictureFileName: String {
-        return "\(safeId)/profile_picture.png"
-    }
-    
-    var fullName: String {
-        return firstName + " " + lastName
-    }
-    
-    var birthdayString: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: birthday)
-    }
-    
-    var interestsString: String {
-        return "Interests: " + interests.map{$0.description}.joined(separator: ", ")
-    }
+   
     
     func updateUser(email em: String = "",
                     username us: String = "",

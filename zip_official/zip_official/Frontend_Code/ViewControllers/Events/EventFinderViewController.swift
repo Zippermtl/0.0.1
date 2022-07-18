@@ -32,7 +32,7 @@ class EventFinderViewController: UIViewController {
     var publicButton: UIButton = {
         let btn = UIButton()
         btn.backgroundColor = .zipVeryLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
-        btn.setTitle("PUBLIC", for: .normal)
+        btn.setTitle("Public", for: .normal)
         btn.titleLabel?.textColor = .white
         btn.titleLabel?.font = .zipBodyBold
         btn.titleLabel?.textAlignment = .center
@@ -44,7 +44,7 @@ class EventFinderViewController: UIViewController {
     var privateButton: UIButton = {
         let btn = UIButton()
         btn.backgroundColor = .zipLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
-        btn.setTitle("PRIVATE", for: .normal)
+        btn.setTitle("Private", for: .normal)
         btn.titleLabel?.textColor = .white
         btn.titleLabel?.font = .zipBodyBold
         btn.titleLabel?.textAlignment = .center
@@ -69,40 +69,8 @@ class EventFinderViewController: UIViewController {
     }
     
     @objc private func didTapAddButton(){
-        let actionSheet = UIAlertController(title: "Create an Event",
-                                            message: "Which type of event would you like to create",
-                                            preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "Private",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-                                                let privateEvent = NewPrivateEventViewController()
-                                                privateEvent.modalPresentationStyle = .overCurrentContext
-                                                self?.navigationController?.pushViewController(privateEvent, animated: true)
-                                                print("new event tapped")
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Public",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-                                                let publicEvent = NewPublicEventViewController()
-                                                publicEvent.modalPresentationStyle = .overCurrentContext
-                                                self?.navigationController?.pushViewController(publicEvent, animated: true)
-                                                print("new event tapped")
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Promoter",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-                                                let publicEvent = NewPublicEventViewController()
-                                                publicEvent.modalPresentationStyle = .overCurrentContext
-                                                self?.navigationController?.pushViewController(publicEvent, animated: true)
-                                                print("new event tapped")
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Cancel",
-                                            style: .default,
-                                            handler: nil))
-        present(actionSheet, animated: true)
+        let vc = EventTypeSelectViewController()
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func didTapDismiss(){
@@ -127,7 +95,7 @@ class EventFinderViewController: UIViewController {
     
     
     private func configureNavBar(){
-        navigationItem.title = "EVENTS"
+        navigationItem.title = "Find Events"
 
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage.init(named: "add")!.withRenderingMode(.alwaysOriginal),
@@ -258,8 +226,7 @@ extension EventFinderViewController :  UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cellEvent = tableData[indexPath.section][indexPath.row]
         
-        let eventView = EventViewController()
-        eventView.configure(cellEvent)
+        let eventView = EventViewController(event: cellEvent)
         eventView.modalPresentationStyle = .overCurrentContext
         
         navigationController?.pushViewController(eventView, animated: true)
@@ -274,7 +241,6 @@ extension EventFinderViewController :  UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cellEvent = tableData[indexPath.section][indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
-
         cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.configure(cellEvent)

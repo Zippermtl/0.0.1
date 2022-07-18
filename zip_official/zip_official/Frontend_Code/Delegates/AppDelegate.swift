@@ -94,7 +94,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            let backImage = UIImage(named: "navBarBack")?.withRenderingMode(.alwaysOriginal)
             let backImage = UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
 
-            let titleAttributes = [NSAttributedString.Key.font: UIFont.zipTitle.withSize(27),
+            let titleAttributes = [NSAttributedString.Key.font: UIFont.zipHeader,
                                    NSAttributedString.Key.foregroundColor: UIColor.white]
             appearance.configureWithOpaqueBackground()
             appearance.backgroundColor = .zipGray
