@@ -101,6 +101,20 @@ extension EventTypeSelectViewController: UITableViewDataSource {
                            bulletPoints: tableData[.Promoter]!,
                            color: .zipYellow,
                            icon: UIImage(systemName: "globe")!.withRenderingMode(.alwaysOriginal).withTintColor(.white))
+            let comingSoonView = UIView()
+            comingSoonView.backgroundColor = .zipGray.withAlphaComponent(0.85)
+            
+            let view = cell.contentView
+            
+            view.addSubview(comingSoonView)
+            comingSoonView.translatesAutoresizingMaskIntoConstraints = false
+            comingSoonView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            comingSoonView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+            comingSoonView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+            comingSoonView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+            
+            cell.selectionStyle = .none
+            
         default: return UITableViewCell()
         }
         
@@ -119,8 +133,9 @@ extension EventTypeSelectViewController: UITableViewDataSource {
             let vc = CreateEventViewController(event: PublicEvent())
             navigationController?.pushViewController(vc, animated: true)
         case 2:
-            let vc = CreateEventViewController(event: PromoterEvent())
-            navigationController?.pushViewController(vc, animated: true)
+            break
+//            let vc = CreateEventViewController(event: PromoterEvent())
+//            navigationController?.pushViewController(vc, animated: true)
         default: break
         }
     }

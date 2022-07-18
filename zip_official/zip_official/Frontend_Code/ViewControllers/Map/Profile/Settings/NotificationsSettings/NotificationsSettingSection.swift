@@ -16,10 +16,10 @@ enum NotificationsSettingsSection: Int, CaseIterable, CustomStringConvertible {
     
     var description: String {
         switch self {
-        case .General: return "General".uppercased()
-        case .Zips: return "Zips".uppercased()
-        case .Messages: return "Messages".uppercased()
-        case .Events: return "Events".uppercased()
+        case .General: return "General"
+        case .Zips: return "Zips"
+        case .Messages: return "Messages"
+        case .Events: return "Events"
         }
     }
 }

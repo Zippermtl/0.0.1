@@ -76,14 +76,14 @@ class SettingsPageViewController: UIViewController {
     
     //MARK: - NavBar config
     private func configureNavBar(){
-        navigationItem.title = "SETTINGS"
+        navigationItem.title = "Settings"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
     }
 
     
     //MARK: - Table Config
     private func configureTable(){
-        tableView.register(EventFinderTableViewCell.self, forCellReuseIdentifier: EventFinderTableViewCell.identifier)
+        tableView.register(SettingsCatagoryTableViewCell.self, forCellReuseIdentifier: SettingsCatagoryTableViewCell.identifier)
         tableView.delegate = self
         tableView.dataSource = self
         tableView.backgroundColor = .zipGray
@@ -187,31 +187,65 @@ extension SettingsPageViewController :  UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: SettingsCatagoryTableViewCell.identifier, for: indexPath) as! SettingsCatagoryTableViewCell
         guard let catagory = SettingsCategory(rawValue: indexPath.row) else { return UITableViewCell() }
-        
-        cell.clipsToBounds = true
-        cell.backgroundColor = .clear
-        cell.selectionStyle = .none
-        
-        let outlineView = UIView()
-        let width = cell.frame.width
-        let height = cell.frame.height
-        outlineView.frame = CGRect(x: 10, y: 10, width: width-20, height: height-20)
-        outlineView.layer.cornerRadius = 15
-        outlineView.backgroundColor = .zipLightGray
-        cell.addSubview(outlineView)
-
-        let catagoryLabel = UILabel()
-        catagoryLabel.text = catagory.description.uppercased()
-        catagoryLabel.textColor = .white
-        catagoryLabel.font = .zipBodyBold
-        outlineView.addSubview(catagoryLabel)
-        
-        catagoryLabel.translatesAutoresizingMaskIntoConstraints = false
-        catagoryLabel.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        catagoryLabel.centerXAnchor.constraint(equalTo: outlineView.centerXAnchor).isActive = true
-
+        cell.configure(catagory: catagory)
         return cell
+    }
+}
+
+extension SettingsPageViewController {
+    internal class SettingsCatagoryTableViewCell: UITableViewCell {
+        static let identifier = "catagory_cell"
+        
+        private let outlineView: UIView
+        private let catagoryLabel: UILabel
+        
+        override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+            self.catagoryLabel = UILabel.zipTextFill()
+            self.outlineView = UIView()
+            super.init(style: style, reuseIdentifier: reuseIdentifier)
+            contentView.backgroundColor = .zipGray
+            
+            clipsToBounds = true
+            backgroundColor = .clear
+            selectionStyle = .none
+            
+            outlineView.layer.cornerRadius = 15
+            outlineView.backgroundColor = .zipLightGray
+            
+            contentView.addSubview(outlineView)
+            outlineView.addSubview(catagoryLabel)
+            
+            outlineView.translatesAutoresizingMaskIntoConstraints = false
+            outlineView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5).isActive = true
+            outlineView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5).isActive = true
+            outlineView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -5).isActive = true
+            outlineView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 5).isActive = true
+
+            catagoryLabel.translatesAutoresizingMaskIntoConstraints = false
+            catagoryLabel.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
+            catagoryLabel.centerXAnchor.constraint(equalTo: outlineView.centerXAnchor).isActive = true
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        override func awakeFromNib() {
+            super.awakeFromNib()
+            // Initialization code
+        }
+
+        override func setSelected(_ selected: Bool, animated: Bool) {
+            super.setSelected(selected, animated: animated)
+
+            // Configure the view for the selected state
+        }
+        
+        public func configure(catagory: SettingsCategory){
+            catagoryLabel.text = catagory.description
+        }
+
     }
 }

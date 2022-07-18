@@ -171,7 +171,7 @@ class SMSCodeViewController: UIViewController {
                         AppDelegate.userDefaults.set((user.lastName), forKey: "lastName")
                         AppDelegate.userDefaults.set((user.birthday), forKey: "birthday")
                         AppDelegate.userDefaults.set(0, forKey: "picNum")
-                        AppDelegate.userDefaults.set(user.pictureURLs[0].description, forKey: "profilePictureUrl")
+                        AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
 
                         DispatchQueue.main.async {
                             guard let strongSelf = self else {

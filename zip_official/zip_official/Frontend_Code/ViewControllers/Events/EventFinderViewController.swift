@@ -69,40 +69,8 @@ class EventFinderViewController: UIViewController {
     }
     
     @objc private func didTapAddButton(){
-        let actionSheet = UIAlertController(title: "Create an Event",
-                                            message: "Which type of event would you like to create",
-                                            preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "Private",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-                                                let privateEvent = NewPrivateEventViewController()
-                                                privateEvent.modalPresentationStyle = .overCurrentContext
-                                                self?.navigationController?.pushViewController(privateEvent, animated: true)
-                                                print("new event tapped")
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Public",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-                                                let publicEvent = NewPublicEventViewController()
-                                                publicEvent.modalPresentationStyle = .overCurrentContext
-                                                self?.navigationController?.pushViewController(publicEvent, animated: true)
-                                                print("new event tapped")
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Promoter",
-                                            style: .default,
-                                            handler: { [weak self] _ in
-                                                let publicEvent = NewPublicEventViewController()
-                                                publicEvent.modalPresentationStyle = .overCurrentContext
-                                                self?.navigationController?.pushViewController(publicEvent, animated: true)
-                                                print("new event tapped")
-        }))
-        
-        actionSheet.addAction(UIAlertAction(title: "Cancel",
-                                            style: .default,
-                                            handler: nil))
-        present(actionSheet, animated: true)
+        let vc = EventTypeSelectViewController()
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func didTapDismiss(){
@@ -273,7 +241,6 @@ extension EventFinderViewController :  UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cellEvent = tableData[indexPath.section][indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
-
         cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.configure(cellEvent)

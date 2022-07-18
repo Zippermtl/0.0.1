@@ -33,10 +33,10 @@ class IconButton: UIButton {
         iconButton.layer.masksToBounds = true
         
         iconButton.backgroundColor = .zipLightGray
-        
+    
         iconLabel.text = text
-        
         iconLabel.textAlignment = .center
+        iconLabel.numberOfLines = 0
         
         addSubview(iconLabel)
         iconLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -67,6 +67,10 @@ class IconButton: UIButton {
         iconLabel.text = s
     }
     
+    public func setIcon(icon: UIImage) {
+        iconButton.setImage(icon, for: .normal)
+    }
+    
     
     
     static func eventsIcon() -> IconButton {
@@ -89,7 +93,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "Invite",
             icon:  UIImage(systemName: "paperplane")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
         )
     }
     

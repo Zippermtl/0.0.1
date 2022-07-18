@@ -10,7 +10,6 @@ import CoreLocation
 import RSKImageCropper
 import DropDown
 import GooglePlaces
-import RealmSwift
 
 
 class CreateEventViewController: UIViewController {
@@ -24,11 +23,11 @@ class CreateEventViewController: UIViewController {
     private let endDatePicker: UIDatePicker
     private let endTimePicker: UIDatePicker
     
+    
     private let eventNameField: UITextField
     private let startDateField: UITextField
     private let startTimeField: UITextField
     private let endDateField: UITextField
-    
     private let endTimeField: UITextField
     
     private let locationField: UITextField
@@ -69,7 +68,7 @@ class CreateEventViewController: UIViewController {
         locationLabel.text = "Event Location"
         endTimeLabel.text = "End Time: "
         
-        continueButton.setTitle("CONTINUE", for: .normal)
+        continueButton.setTitle("Continue", for: .normal)
         continueButton.backgroundColor = .zipBlue
         continueButton.setTitleColor(.white, for: .normal)
         continueButton.layer.cornerRadius = 15

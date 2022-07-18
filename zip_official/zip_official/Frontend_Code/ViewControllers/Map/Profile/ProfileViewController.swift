@@ -34,23 +34,15 @@ import JGProgressHUD
 
 
 class ProfileViewController: AbstractProfileViewController {
-    private let settingsButton = UIBarButtonItem(image: UIImage.init(named: "navBarSettings")!.withRenderingMode(.alwaysOriginal),
-                                                     landscapeImagePhone: nil,
-                                                     style: .plain,
-                                                     target: self,
-                                                     action: #selector(didTapRightBarButton))
-    
-    
     
     init(id: String) {
         let actionButtonInfo = ("EDIT", UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1))
-        
+        let settingsIcon = UIImage(systemName: "gearshape.fill")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         super.init(id: id,
                    B1: IconButton.eventsIcon(),
                    B2: IconButton.myCardIcon(),
                    B3: IconButton.zipsIcon(),
-                   rightBarButton:
-                   settingsButton,
+                   rightBarButtonIcon: settingsIcon,
                    centerActionInfo: actionButtonInfo
         )
     }
@@ -73,9 +65,8 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapCenterActionButton() {
-        let editView = EditProfileViewController()
+        let editView = EditProfileViewController(user: user)
         editView.modalPresentationStyle = .overCurrentContext
-        editView.configure(with: user)
         
         let transition: CATransition = CATransition()
         transition.duration = 0.3
@@ -87,17 +78,21 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB1Button() {
+        print("tapping events")
         let myEventsView = MyEventsViewController()
         myEventsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myEventsView, animated: true)
     }
     
     override func didTapB2Button() {
-        
+        let cardPreview = ZFSingleCardViewController()
+        cardPreview.configure(user: user)
+        cardPreview.modalPresentationStyle = .overCurrentContext
+        present(cardPreview, animated: true)
     }
     
     override func didTapB3Button() {
-        let myZipsView = MyZipsViewController()
+        let myZipsView = MyZipsViewController(user: user)
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)
     }

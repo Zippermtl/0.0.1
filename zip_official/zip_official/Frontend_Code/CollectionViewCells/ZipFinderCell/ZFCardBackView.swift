@@ -36,6 +36,7 @@ class ZFCardBackView: UIView {
     private var schoolLabel: UILabel
     private var interestsLabel: UILabel
     private var joinedDateLabel: UILabel
+    private var tapToFlipLabel: UILabel
     
     
     private let zipsButton: IconButton
@@ -67,9 +68,13 @@ class ZFCardBackView: UIView {
         joinedDateLabel = UILabel.zipTextDetail()
         interestsLabel = UILabel.zipTextFill()
         distanceLabel = DistanceLabel()
+        tapToFlipLabel = UILabel.zipTextPrompt()
+
         
-        schoolImage = UIImageView(image: UIImage(systemName: "graduationcap.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
-        interestsImage = UIImageView(image: UIImage(systemName: "star.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold, scale: .large)
+
+        schoolImage = UIImageView(image: UIImage(systemName: "graduationcap.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
+        interestsImage = UIImageView(image: UIImage(systemName: "star.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
         profilePicture = UIImageView()
         
         slideView = MTSlideToOpenView(frame: CGRect(x: 0, y: 0, width: 317, height: 56))
@@ -110,11 +115,14 @@ class ZFCardBackView: UIView {
         lastNameLabel.addGestureRecognizer(lastNameTap)
         
        
-        
+        schoolLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        schoolImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         interestsLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         interestsImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         interestsLabel.numberOfLines = 2
         interestsLabel.lineBreakMode = .byWordWrapping
+        
+        tapToFlipLabel.text = "tap to flip"
         
         addSubviews()
         configureSubviewLayout()
@@ -154,6 +162,9 @@ class ZFCardBackView: UIView {
     
     @objc private func unrequestUser(){
         slideView.resetStateWithAnimation(true)
+        slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
+        slideView.thumnailImageView.backgroundColor = .zipBlue
+
     }
     
     
@@ -164,7 +175,7 @@ class ZFCardBackView: UIView {
         backgroundColor = .clear
         self.user = user
         
-        profilePicture.sd_setImage(with: user.getProfilePicUrl(), completed: nil)
+        profilePicture.sd_setImage(with: user.profilePicUrl, completed: nil)
         usernameLabel.text = "@" + user.username
         firstNameLabel.text = user.firstName
         lastNameLabel.text = user.lastName
@@ -174,7 +185,8 @@ class ZFCardBackView: UIView {
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
-        
+        joinedDateLabel.text = "Join Zipper on " + dateFormatter.string(from: user.joinDate)
+
         if user.school != nil {
             schoolLabel.text = user.school!
         }
@@ -182,39 +194,36 @@ class ZFCardBackView: UIView {
         if user.interests.count != 0 {
             interestsLabel.text = "Interests: " + user.interests.map{$0.description}.joined(separator: ", ")
         }
+        
 
     }
     
     //MARK: - Configure Slider
     private func configureSlider(){
         slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
-        slideView.thumnailImageView.backgroundColor = .clear
+        slideView.thumnailImageView.backgroundColor = .zipBlue
+        slideView.thumnailImageView.contentMode = .scaleAspectFit
         slideView.thumbnailViewStartingDistance = -10
-        slideView.backgroundColor = .zipGray
+        slideView.backgroundColor = .clear
         
 //        slideView.
-        slideView.sliderViewTopDistance = 11
+        slideView.sliderViewTopDistance = 8
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
         slideView.sliderTextLabel.text = ""
         slideView.textLabel.text = ""
-        
-        slideView.backgroundColor = .clear
-
 
 //        slideView.thumbnailViewStartingDistance = -10
         slideView.sliderHolderView.backgroundColor = .zipBlue.withAlphaComponent(0.5) //.zipBlue.withAlphaComponent(0.1)
-        slideView.slidingColor = .zipGray//UIColor(red: 60/255, green: 60/255, blue: 60/255, alpha: 1)
+        slideView.slidingColor = .clear
+            //.zipBlue.withAlphaComponent(0.5)
         
-        let requestedLabel = UILabel()
-        requestedLabel.text = "REQUESTED"
-        requestedLabel.font = .zipTitle
-        requestedLabel.textColor = .zipBlue
+        let requestedLabel = UILabel.zipSubtitle2()
+        requestedLabel.text = "Requested"
+        requestedLabel.textColor = .white
         requestedLabel.textAlignment = .center
-        requestedLabel.backgroundColor = UIColor(red: 60/255, green: 60/255, blue: 60/255, alpha: 1)
         requestedLabel.layer.cornerRadius = 8
         requestedLabel.layer.masksToBounds = true
-        
         
         slideView.draggedView.addSubview(requestedLabel)
         
@@ -278,6 +287,7 @@ class ZFCardBackView: UIView {
         addSubview(messageButton)
 
         addSubview(slideView)
+        addSubview(tapToFlipLabel)
     }
     
     
@@ -334,12 +344,12 @@ class ZFCardBackView: UIView {
         zipsButton.widthAnchor.constraint(equalToConstant:  60).isActive = true
         
         messageButton.translatesAutoresizingMaskIntoConstraints = false
-        messageButton.topAnchor.constraint(equalTo: zipsButton.bottomAnchor, constant: 30).isActive = true
+        messageButton.topAnchor.constraint(equalTo: zipsButton.bottomAnchor, constant: 20).isActive = true
         messageButton.rightAnchor.constraint(equalTo: zipsButton.rightAnchor).isActive = true
         messageButton.widthAnchor.constraint(equalTo: zipsButton.widthAnchor).isActive = true
         
         inviteButton.translatesAutoresizingMaskIntoConstraints = false
-        inviteButton.topAnchor.constraint(equalTo: messageButton.bottomAnchor, constant: 30).isActive = true
+        inviteButton.topAnchor.constraint(equalTo: messageButton.bottomAnchor, constant: 20).isActive = true
         inviteButton.rightAnchor.constraint(equalTo: zipsButton.rightAnchor).isActive = true
         inviteButton.widthAnchor.constraint(equalTo: zipsButton.widthAnchor).isActive = true
         
@@ -348,23 +358,21 @@ class ZFCardBackView: UIView {
         schoolImage.translatesAutoresizingMaskIntoConstraints = false
         schoolImage.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
         schoolImage.topAnchor.constraint(equalTo: profilePicture.bottomAnchor, constant: 30).isActive = true
-        
+
         schoolLabel.translatesAutoresizingMaskIntoConstraints = false
         schoolLabel.centerYAnchor.constraint(equalTo: schoolImage.centerYAnchor).isActive = true
         schoolLabel.leftAnchor.constraint(equalTo: schoolImage.rightAnchor, constant: buffer).isActive = true
         schoolLabel.rightAnchor.constraint(equalTo: zipsButton.leftAnchor, constant: -10).isActive = true
 
-        
         // Interest Label
         interestsImage.translatesAutoresizingMaskIntoConstraints = false
-        interestsImage.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
+        interestsImage.centerXAnchor.constraint(equalTo: schoolImage.centerXAnchor).isActive = true
         interestsImage.topAnchor.constraint(equalTo: schoolImage.bottomAnchor, constant: 30).isActive = true
-        interestsImage.widthAnchor.constraint(equalTo: interestsImage.heightAnchor).isActive = true
         
         
         interestsLabel.translatesAutoresizingMaskIntoConstraints = false
         interestsLabel.centerYAnchor.constraint(equalTo: interestsImage.centerYAnchor).isActive = true
-        interestsLabel.leftAnchor.constraint(equalTo: interestsImage.rightAnchor, constant: buffer).isActive = true
+        interestsLabel.leftAnchor.constraint(equalTo: schoolLabel.leftAnchor).isActive = true
         interestsLabel.rightAnchor.constraint(equalTo: zipsButton.leftAnchor, constant: -10).isActive = true
 
         joinedDateLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -382,11 +390,15 @@ class ZFCardBackView: UIView {
         
         // SlideView
         slideView.translatesAutoresizingMaskIntoConstraints = false
-        slideView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -buffer).isActive = true
+        slideView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20).isActive = true
         slideView.leftAnchor.constraint(equalTo: leftAnchor, constant: buffer).isActive = true
         slideView.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
         slideView.heightAnchor.constraint(equalToConstant: 50).isActive = true
   
+        tapToFlipLabel.translatesAutoresizingMaskIntoConstraints = false
+        tapToFlipLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        tapToFlipLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5).isActive = true
+        
     }
 
 }
@@ -394,6 +406,24 @@ class ZFCardBackView: UIView {
 //MARK: - Slider Delegate
 extension ZFCardBackView: MTSlideToOpenDelegate {
     func mtSlideToOpenDelegateDidFinish(_ sender: MTSlideToOpenView) {
+        
+        let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
+        guard let imgA = UIImage(systemName: "xmark.circle.fill", withConfiguration: cfg)?.withTintColor(.zipBlue, renderingMode: .alwaysOriginal) else {
+            fatalError("Could not load SF Symbol: \("xmark.circle.fill")!")
+        }
+        
+        guard let cgRef = imgA.cgImage else {
+            fatalError("Could not get cgImage!")
+        }
+        
+        let imgB = UIImage(cgImage: cgRef, scale: imgA.scale, orientation: imgA.imageOrientation)
+                    .withTintColor(.zipBlue, renderingMode: .alwaysOriginal)
+        
+        slideView.thumnailImageView.image = imgB
+        slideView.thumnailImageView.backgroundColor = .white
+        
+        
+        
         print("should zip here")
     }
     

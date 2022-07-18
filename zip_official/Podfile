@@ -7,16 +7,18 @@ pod 'GooglePlaces', '6.0.0'
 
 
 pod 'JGProgressHUD'
-pod 'RealmSwift'
 pod 'SDWebImage'
+
 
 #UIKit
 pod 'MARKRangeSlider'
 pod 'MessageKit'
 pod 'DropDown'
 pod 'MTSlideToOpen'
-pod 'RSKImageCropper'
+pod 'PMAlertController' 
 pod 'FloatingPanel'
+pod 'RSKImageCropper'
+pod 'UIImageCropper'
 
 #FireBase
 pod 'Firebase/Core'

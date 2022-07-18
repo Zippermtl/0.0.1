@@ -9,207 +9,52 @@ import UIKit
 import CoreLocation
 
 
-class ZipListTableViewCell: UITableViewCell {
-
+class ZipListTableViewCell: AbstractUserTableViewCell {
     static let zippedIdentifier = "zippedListUser"
     static let notZippedIdentifier = "notZippedListUser"
-
-    //MARK: - User Data
-    var userLoc = CLLocation()
-    var user = User()
-    var pictureView = UIImageView()
-    var outlineView = UIView()
-    var infoView = UIView()
     
-    let distanceImage = UIImageView(image: UIImage(named: "distanceToWhite")!)
-
+    private let requestButton: UIButton
     
-    private var firstNameLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle.withSize(18)
-        label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 0
-        label.textAlignment = .left
-        label.sizeToFit()
-        label.text = "A"
-        return label
-    }()
     
-    private var lastNameLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipTitle.withSize(18)
-        label.lineBreakMode = .byWordWrapping
-        label.numberOfLines = 0
-        label.textAlignment = .left
-        label.sizeToFit()
-        label.text = "A"
-        return label
-    }()
-    
-    private var distanceLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .zipBody
-        label.numberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        requestButton = UIButton()
         
-        label.sizeToFit()
-        return label
-    }()
-    
-    var addButton = UIButton()
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-    }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-        // Configure the view for the selected state
-    }
-
-    //MARK: - Button Actions
-    @objc private func didTapAddButton(_ sender: UIButton){
-//        print("add tapped for user \(user.name)")
-        print("add tapped for user \(user.firstName) \(user.lastName)")
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        extraInfoLabel = UILabel.zipTextNoti()
+        
+        requestButton.addTarget(self, action: #selector(didTapRequest), for: .touchUpInside)
+        
+        let addImg = UIImage(systemName: "plus.circle.fill")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let requestImg = UIImage(systemName: "arrow.forward.circle.fill")!.withRenderingMode(.alwaysOriginal).withTintColor(.zipYellow)
+        requestButton.setImage(addImg, for: .normal)
+        requestButton.setImage(requestImg, for: .selected)
     }
     
-    //MARK: - Configure
-    public func configure(_ user: User){
-        backgroundColor = .clear
-
-        self.user = user
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
-
-        configureBackground()
-        configureLabels()
-        configureButtons()
-        configurePicture()
-        addSubviews()
-        configureSubviewLayout()
-    }
-    
-    //MARK: - prepare for Reuse
-    override func prepareForReuse() {
-        firstNameLabel.text = ""
-        lastNameLabel.text = ""
-        distanceLabel.text = ""
-        addButton.isHidden = true
-    }
-    
-    //MARK: - Background Config
-    private func configureBackground(){
-        contentView.addSubview(outlineView)
-        outlineView.frame = CGRect(x: 10, y: 10, width: contentView.frame.width-20, height: contentView.frame.height-20)
-        outlineView.layer.cornerRadius = 10
-        outlineView.backgroundColor = .zipLightGray
+    override func configure(_ user: User) {
+        super.configure(user)
+        extraInfoLabel.text = "@" + user.username
         
-        
-        if user.zipped {
-            outlineView.layer.borderWidth = 3
-            outlineView.layer.borderColor =  UIColor.zipBlue.cgColor
-        } else {
-            outlineView.layer.borderWidth = 0
-        }
-        
-    }
-
-    
-    
-    //MARK: - Label Config
-    private func configureLabels(){
-//        let name = user.name.components(separatedBy: " ")
-//
-//        firstNameLabel.text = name[0]
-//        lastNameLabel.text = name[1]
-        
-        firstNameLabel.text = user.firstName
-        lastNameLabel.text = user.lastName
-        
-        let distance = Double(round(10*(userLoc.distance(from: user.location))/1000))/10
-        
-        
-        distanceLabel.textColor = .zipBlue
-        distanceImage.image = distanceImage.image?.withTintColor(.zipBlue)
-            
-
-        distanceLabel.text = String(distance) + " km"
-
-        
-    }
-    
-    private func configureButtons(){
-        addButton.setBackgroundImage(UIImage(named: "add"), for: .normal)
-        addButton.addTarget(self, action: #selector(didTapAddButton(_:)), for: .touchUpInside)
-    }
-    
-    //MARK: -Add Subviews
-    private func addSubviews(){
-        outlineView.addSubview(pictureView)
-        outlineView.addSubview(firstNameLabel)
-        outlineView.addSubview(lastNameLabel)
-        outlineView.addSubview(distanceLabel)
-        outlineView.addSubview(distanceImage)
-        
-        outlineView.addSubview(addButton)
-        
-        if user.zipped {
-            addButton.isHidden = true
-        } else {
-            addButton.isHidden = false
+        switch user.friendshipStatus {
+        case .NO_RELATION:
+            requestButton.isHidden = true
+            requestButton.isSelected = false
+        case .REQUESTED_INCOMING:
+            requestButton.isHidden = true
+            requestButton.isSelected = false
+        case .REQUESTED_OUTGOING:
+            requestButton.isHidden = false
+            requestButton.isSelected = true
+        case .ACCEPTED:
+            requestButton.isHidden = true
         }
     }
     
-    private func configurePicture(){
-        pictureView = UIImageView(image: user.pictures[0])
-        pictureView.layer.masksToBounds = true
-        pictureView.layer.cornerRadius = 10
-    }
-   
-
-    //MARK: - Layout Subviews
-    private func configureSubviewLayout(){
-        pictureView.translatesAutoresizingMaskIntoConstraints = false
-        pictureView.leftAnchor.constraint(equalTo: outlineView.leftAnchor, constant: 10).isActive = true
-        pictureView.topAnchor.constraint(equalTo: outlineView.topAnchor, constant: 5).isActive = true
-        pictureView.bottomAnchor.constraint(equalTo: outlineView.bottomAnchor, constant: -5).isActive = true
-        pictureView.widthAnchor.constraint(equalTo: pictureView.heightAnchor).isActive = true
-
-        firstNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        firstNameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 10).isActive = true
-        firstNameLabel.bottomAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        
-        lastNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        lastNameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 10).isActive = true
-        lastNameLabel.topAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        
-        addButton.translatesAutoresizingMaskIntoConstraints = false
-        addButton.rightAnchor.constraint(equalTo: outlineView.rightAnchor, constant: -10).isActive = true
-        addButton.centerYAnchor.constraint(equalTo: distanceLabel.centerYAnchor).isActive = true
-        addButton.heightAnchor.constraint(equalToConstant: distanceLabel.intrinsicContentSize.height*1.5).isActive = true
-        addButton.widthAnchor.constraint(equalTo: addButton.heightAnchor).isActive = true
-
-        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-        distanceImage.translatesAutoresizingMaskIntoConstraints = false
-        distanceImage.centerYAnchor.constraint(equalTo: distanceLabel.centerYAnchor).isActive = true
-        distanceImage.rightAnchor.constraint(equalTo: distanceLabel.leftAnchor).isActive = true
-        distanceImage.heightAnchor.constraint(equalToConstant: distanceLabel.intrinsicContentSize.height).isActive = true
-        distanceImage.widthAnchor.constraint(equalTo: distanceImage.heightAnchor).isActive = true
-        
-        
-        if user.zipped {
-            distanceLabel.rightAnchor.constraint(equalTo: outlineView.rightAnchor, constant: -10).isActive = true
-        } else {
-            distanceLabel.rightAnchor.constraint(equalTo: addButton.leftAnchor, constant: 0).isActive = true
-        }
-        
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
-    
+    @objc private func didTapRequest(){
+        
+    }
     
 }
-

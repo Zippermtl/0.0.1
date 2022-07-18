@@ -28,11 +28,20 @@ public class EventCache {
     func runOnStart() {
         let date = Date()
         for id in cache.keys {
+<<<<<<< Updated upstream
             if let endtime = cache[id]?.endTime {
                 switch endtime.compare(date) {
                 case .orderedAscending: cache.removeValue(forKey: id)
                 default: break
                 }
+=======
+            guard let endtime = cache[id]?.endTime else {
+                continue
+            }
+            switch endtime.compare(date) {
+            case .orderedAscending: cache.removeValue(forKey: id)
+            default: break
+>>>>>>> Stashed changes
             }
         }
     }

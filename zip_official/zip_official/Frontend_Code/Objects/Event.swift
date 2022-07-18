@@ -46,6 +46,52 @@ public class Event {
         return formatter.string(from: startTime)
     }
     
+    func getDistance() -> Double {
+        guard let userCoordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
+            return 0
+        }
+        let userLoc = CLLocation(latitude: userCoordinates[0], longitude: userCoordinates[1])
+
+        return userLoc.distance(from: coordinates)
+    }
+    
+    func getDistanceString() -> String {
+        var distanceText = ""
+        var unit = "km"
+        var distance = Double(round(10*(getDistance())/1000))/10
+
+        if NSLocale.current.regionCode == "US" {
+            distance = round(10*distance/1.6)/10
+            unit = "miles"
+        }
+        
+        if distance > 10 {
+            let intDistance = Int(distance)
+            if distance <= 1 {
+                if unit == "miles" {
+                    unit = "mile"
+                }
+                distanceText = "<1 \(unit)"
+            } else if distance >= 500 {
+                distanceText = ">500 \(unit)"
+            } else {
+                distanceText = String(intDistance) + " \(unit)"
+            }
+        } else {
+            if distance <= 1 {
+                if unit == "miles" {
+                    unit = "mile"
+                }
+                distanceText = "<1 \(unit)"
+            } else if distance >= 500 {
+                distanceText = ">500 \(unit)"
+            } else {
+                distanceText = String(distance) + " \(unit)"
+            }
+        }
+        return distanceText + " away"
+    }
+    
     var createEventId: String {
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return ""

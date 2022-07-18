@@ -8,7 +8,24 @@
 import UIKit
 
 class IconLabel: UILabel {
+    open override var text: String? {
+        didSet {
+            labelText = self.text ?? ""
+            update(string: labelText)
+        }
+    }
     
+    var spacing: Int = 0 {
+        didSet {
+            update(string: labelText)
+            var spaces = ""
+            for _ in 0...spacing {
+                spaces += " "
+            }
+            labelText = spaces + labelText
+        }
+    }
+
     private let icon: NSTextAttachment
     private var labelFont: UIFont
     private var color: UIColor
@@ -52,7 +69,11 @@ class IconLabel: UILabel {
     
     
     public func update(string s: String){
-        labelText = s
+        labelText = ""
+        for _ in 0...spacing {
+            labelText += " "
+        }
+        labelText += s
         let attachmentString = NSAttributedString(attachment: icon)
         let completeString = NSMutableAttributedString(string: "")
         completeString.append(attachmentString)
@@ -64,4 +85,5 @@ class IconLabel: UILabel {
     public func setIcon(newIcon: UIImage?) {
         icon.image = newIcon
     }
+    
 }

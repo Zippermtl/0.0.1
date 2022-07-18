@@ -9,83 +9,60 @@ import UIKit
 import CoreLocation
 
 class MyZipsViewController: UIViewController {
-    var userLoc = CLLocation()
-
-    var tableView = UITableView()
-    var myZips: [User] = MapViewController.getTestUsers()
+    var tableView: UITableView
+    var myZips: [User]
+    var tableData: [User]
+    var searchBar: UISearchBar
     
-    //MARK: - Subviews
+    var user: User
     
-    // MARK: - Labels
-
-    
+    init(user: User) {
+        self.user = user
+        tableView = UITableView()
+        myZips = MapViewController.getTestUsers()
+        tableData = myZips
+        searchBar = UISearchBar()
+        super.init(nibName: nil, bundle: nil)
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
-    //MARK: - Button Config
-//    let sortSwtich: UISwitch = {
-//        let sortSwitch = UISwitch(frame: .zero)
-//        sortSwitch.isOn = false
-//        sortSwitch.addTarget(self, action: #selector(sortList), for: .valueChanged)
-//        return sortSwitch
-//    }()
-    
-    var inviteFriendsButton: UIButton = {
-        let btn =  UIButton(frame: CGRect(x: 0, y: 0, width: 300, height: 25))
-        btn.backgroundColor = UIColor(red: 137/255, green: 197/255, blue: 156/255, alpha: 1)
-        btn.setTitle("INVITE FRIENDS", for: .normal)
-        btn.titleLabel?.textColor = .white
-        btn.titleLabel?.font = .zipBodyBold
-        btn.titleLabel?.textAlignment = .center
-        btn.contentVerticalAlignment = .center
-        btn.layer.cornerRadius = btn.titleLabel!.intrinsicContentSize.height/2
-        btn.addTarget(self, action: #selector(didTapInviteFriendsButton), for: .touchUpInside)
-
-        return btn
-    }()
-
-
-    //MARK: - Button Actions
-    @objc private func sortList(_ sender: UISwitch){
-        if !sender.isOn {
-//            myZips.sort(by: { $0.name < $1.name})
-            myZips.sort(by: { $0.firstName < $1.firstName})
-
-            tableView.reloadData()
-        } else {
-            myZips.sort(by: { $0.distance < $1.distance})
-            tableView.reloadData()
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
         }
+        
+        if user.userId == userId {
+            navigationItem.title = "My Zips"
+        } else {
+            navigationItem.title = "\(user.firstName)'s Zips"
+        }
+
+        configureTable()
+        configureSubviewLayout()
     }
     
-    @objc private func didTapInviteFriendsButton(){
-        print("Invite Friends tapped")
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     //MARK: - viewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         
-        configureNavBar()
-        configureTableData()
-        configureSwitch()
-        configureTable()
-        configureSubviewLayout()
-    }
-    
-    private func configureNavBar() {
-        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.title = "MY ZIPS"
         
-        let sortSwitch = UISwitch(frame: .zero)
-        sortSwitch.isOn = false
-        sortSwitch.addTarget(self, action: #selector(sortList(_:)), for: .valueChanged)
-        let barBtn = UIBarButtonItem(customView: sortSwitch)
-        
-        navigationItem.rightBarButtonItem = barBtn
     }
 
+    
+    private func fetchUsers(){
+        user.loadFriendships(completion: { [weak self] error in
+            guard error == nil,
+                  let strongSelf = self else {
+                return
+            }
+        
+            strongSelf.tableData = (strongSelf.user.friendships.filter({ $0.status == .ACCEPTED }).map({ $0.receiver }))
+            
+        })
+    }
     
     //MARK: - Table Config
     private func configureTable(){
@@ -103,50 +80,36 @@ class MyZipsViewController: UIViewController {
         
 //        myZips.sort(by: { $0.name < $1.name})
         myZips.sort(by: { $0.firstName < $1.firstName})
+        
+        configureSearchbar()
+    }
+    
+    private func configureSearchbar(){
+        searchBar.searchBarStyle = UISearchBar.Style.default
+        searchBar.barStyle = .black
+        searchBar.backgroundColor = .zipGray
+        searchBar.barTintColor = .zipGray
 
+        searchBar.placeholder = " Search..."
+        searchBar.sizeToFit()
+        searchBar.isTranslucent = false
+        searchBar.backgroundImage = UIImage()
+        searchBar.delegate = self
+        tableView.tableHeaderView = searchBar
     }
     
-    private func configureTableData(){
-        for index in 0..<myZips.count {
-            myZips[index].distance = Double(round(10*(userLoc.distance(from: myZips[index].location))/1000))/10
-        }
-    }
-    
-    private func configureSwitch(){
-//        sortSwitch.trackImage = UIImage(named: "whiteBackground")
-//        sortSwitch.thumbImage = UIImage(named: "close")
-//
-//
-//
-//
-//
-//        sortSwitch.clipsToBounds = true
-//        sortSwitch.offString = "Abc"
-//        sortSwitch.offLabel.textColor = .zipGray
-//        sortSwitch.offLabel.font = .zipBody
-//        sortSwitch.onString = "Off"
-//        sortSwitch.onLabel.textColor = .zipGray
-//        sortSwitch.onLabel.font = .zipBody
-    }
+
     
     //MARK: - Layout Subviews
     private func configureSubviewLayout(){
-        view.addSubview(inviteFriendsButton)
         view.addSubview(tableView)
         
         // TableView
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.topAnchor.constraint(equalTo: inviteFriendsButton.bottomAnchor, constant: 10).isActive = true
+        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        
-        //Invite Friends
-        inviteFriendsButton.translatesAutoresizingMaskIntoConstraints = false
-        inviteFriendsButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        inviteFriendsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
-        inviteFriendsButton.widthAnchor.constraint(equalToConstant: inviteFriendsButton.titleLabel!.intrinsicContentSize.width + 20).isActive = true
-        inviteFriendsButton.heightAnchor.constraint(equalToConstant: inviteFriendsButton.titleLabel!.intrinsicContentSize.height).isActive = true
     }
 
     
@@ -165,7 +128,7 @@ extension MyZipsViewController :  UITableViewDelegate {
 extension MyZipsViewController :  UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return myZips.count
+        return tableData.count
     }
     
 
@@ -189,12 +152,26 @@ extension MyZipsViewController :  UITableViewDataSource {
             
         let cell = tableView.dequeueReusableCell(withIdentifier: MyZipsTableViewCell.identifier, for: indexPath) as! MyZipsTableViewCell
 
-        let user = myZips[indexPath.row]
+        let user = tableData[indexPath.row]
 
         cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.configure(user)
         return cell
+    }
+}
+
+
+extension MyZipsViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange textSearched: String) {
+        if textSearched == "" {
+            tableData = myZips
+        } else {
+            tableData = myZips.filter({ $0.fullName.contains(textSearched) || $0.username.contains(textSearched)})
+        }
+        tableView.reloadData()
+
+ 
     }
 }
 

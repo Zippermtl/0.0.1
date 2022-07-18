@@ -513,6 +513,16 @@ extension CreateEventInfoViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.text = ""
     }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let numString = textField.text,
+              let num = Float(numString) else {
+            return
+        }
+        
+        capacitySlider.value = num
+        sliderChanged(capacitySlider)
+    }
 }
 
 extension CreateEventInfoViewController: UITextViewDelegate {

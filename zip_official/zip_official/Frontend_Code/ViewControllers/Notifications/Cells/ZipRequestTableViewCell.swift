@@ -95,7 +95,7 @@ class ZipRequestTableViewCell: UITableViewCell {
             }
             switch results {
             case .success(let user):
-                strongSelf.cellImage.sd_setImage(with: user.pictureURLs[0], completed: nil)
+                strongSelf.cellImage.sd_setImage(with: user.profilePicUrl, completed: nil)
                 strongSelf.cellText.text = "\(request.fromUser.fullName) Zipped you!"
             case .failure(let error):
                 print("failed to load user in zip request tableview cell: \(error)")

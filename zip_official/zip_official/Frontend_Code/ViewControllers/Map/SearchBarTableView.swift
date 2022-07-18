@@ -138,26 +138,11 @@ extension SearchBarTableView: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cellEvent = eventData[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
-        cell.delegate = self
         cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.configure(cellEvent)
         cell.backgroundColor = .zipGray
         return cell
-        
-        
     }
     
-    
-}
-
-
-extension SearchBarTableView: UpdateZipRequestsTableDelegate {
-    func deleteZipRequestRow(_ sender: UIButton) {
-        
-    }
-    
-    func deleteEventsRow(_ sender: UIButton) {
-        
-    }
 }

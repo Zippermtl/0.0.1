@@ -8,129 +8,61 @@
 import UIKit
 
 
-protocol UpdateInterestsProtocol {
+protocol UpdateInterestsProtocol: AnyObject {
     func updateInterests(_ interests: [Interests])
 }
 
-class InterestSelectionViewController: UIViewController, UpdateInterestsProtocol {
-    
-    var userInterests: [Interests] = []
+class InterestSelectionViewController: UIViewController {
+    var interests: [Interests] = []
     var delegate: UpdateInterestsProtocol?
+    var collectionView: UICollectionView
 
-    let interestLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBody.withSize(26)
-        label.textColor = .white
-        label.numberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
-        return label
-    }()
-    
-    let countLabel: UILabel = {
-        let label = UILabel()
-        label.font = .zipBody.withSize(26)
-        label.textColor = .zipVeryLightGray
-        return label
-    }()
-    
-    let clearButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("clear", for: .normal)
-        btn.titleLabel?.font = .zipBody
-        btn.setTitleColor(.systemBlue, for: .normal)
-        btn.addTarget(self, action: #selector(didTapClearButton), for: .touchUpInside)
-        return btn
-    }()
-    
-    var collectionView: UICollectionView?
-
-    func updateInterests(_ interests: [Interests]) {
-        delegate?.updateInterests(userInterests)
+    init(interests: [Interests]){
+        self.interests = interests
+        let layout = LeftOrientedFlowLayout()
+        layout.minimumLineSpacing = 5
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        
+        super.init(nibName: nil, bundle: nil)
+        
+        collectionView.register(InterestsCollectionViewCell.self, forCellWithReuseIdentifier: InterestsCollectionViewCell.identifier)
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.backgroundColor = .zipGray
+        view.addSubview(collectionView)
+        
+        
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        collectionView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        collectionView.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 10).isActive = true
     }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+
     
     @objc private func didTapDoneButton(){
-        updateInterests(userInterests)
+        delegate?.updateInterests(interests)
         navigationController?.popViewController(animated: true)
-    }
-    
-    @objc private func didTapClearButton(){
-        userInterests = []
-        collectionView?.reloadData()
-        interestLabel.text = "Interests: " + userInterests.map{$0.description}.joined(separator: ", ")
-//        countLabel.text = userInterests.count.description + "0/5"
-
     }
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "INTERESTS"
+        view.backgroundColor = .zipGray
+        navigationItem.title = "Edit Interests"
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
                                                             style: UIBarButtonItem.Style.done,
                                                             target: self,
                                                             action: #selector(didTapDoneButton))
-        view.backgroundColor = .zipGray
-        configureCollectionView()
-        
-
-       
-        interestLabel.text = "Interests: " + userInterests.map{$0.description}.joined(separator: ", ")
-        countLabel.text = userInterests.count.description + "/5"
-        
-        view.addSubview(interestLabel)
-        view.addSubview(countLabel)
-        view.addSubview(clearButton)
-        view.addSubview(collectionView!)
         
     }
-    
-
-
-    
-    override func viewWillLayoutSubviews() {
-        interestLabel.translatesAutoresizingMaskIntoConstraints = false
-        interestLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        interestLabel.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 10).isActive = true
-        interestLabel.rightAnchor.constraint(equalTo: clearButton.leftAnchor, constant: -10).isActive = true
-        
-        countLabel.translatesAutoresizingMaskIntoConstraints = false
-        countLabel.bottomAnchor.constraint(equalTo: interestLabel.centerYAnchor).isActive = true
-        countLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
-        countLabel.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        
-        clearButton.translatesAutoresizingMaskIntoConstraints = false
-        clearButton.topAnchor.constraint(equalTo: countLabel.bottomAnchor).isActive = true
-        clearButton.centerXAnchor.constraint(equalTo: countLabel.centerXAnchor).isActive = true
-
-        
-        collectionView?.translatesAutoresizingMaskIntoConstraints = false
-        collectionView?.translatesAutoresizingMaskIntoConstraints = false
-        collectionView?.topAnchor.constraint(equalTo: interestLabel.bottomAnchor, constant: 10).isActive = true
-        collectionView?.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 5).isActive = true
-        collectionView?.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -5).isActive = true
-        collectionView?.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-    }
-    
-
-    private func configureCollectionView() {
-        let layout = LeftOreintedFlowLayout()
-        layout.minimumLineSpacing = 5
-
-        
-        collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
-        collectionView?.register(InterestsCollectionViewCell.self, forCellWithReuseIdentifier: InterestsCollectionViewCell.identifier)
-        
-        collectionView?.dataSource = self
-        collectionView?.delegate = self
-
-        
-        collectionView?.backgroundColor = .zipGray
-        view.addSubview(collectionView!)
-    }
-    
-    
-
-
 }
 
 
@@ -142,55 +74,44 @@ extension InterestSelectionViewController: UICollectionViewDelegateFlowLayout {
                       height: 40)
         
     }
-    
-
 }
 
 //MARK: - CollectionView DataSource
 extension InterestSelectionViewController: UICollectionViewDataSource {
-    
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return Interests.allCases.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: InterestsCollectionViewCell.identifier, for: indexPath) as! InterestsCollectionViewCell
-
         let cellInterest = Interests.allCases[indexPath.row]
-        cell.label.text = cellInterest.description
-        cell.tag = Interests.allCases[indexPath.row].rawValue
-        cell.label.textColor = .white
-        cell.label.font = .zipBody
-        
-
-        cell.configure()
-        cell.layer.borderWidth = 2
-        cell.layer.borderColor = UIColor.zipLightGray.cgColor
-        cell.layer.cornerRadius = 20
-        
-        if userInterests.contains(cellInterest) {
-            cell.label.textColor = .zipBlue
-            cell.layer.borderColor = UIColor.zipBlue.cgColor
+        cell.configure(interest: cellInterest)
+        if interests.contains(cellInterest) {
+            cell.isSelected = true
+            cell.select()
         }
-        
+        cell.tag = indexPath.row
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.cellForItem(at: indexPath) as! InterestsCollectionViewCell
-        let idx = userInterests.firstIndex(of: Interests.init(rawValue: cell.tag)!)
+        let idx = interests.firstIndex(of: Interests.init(rawValue: cell.tag)!)
         if  idx != nil{
-            userInterests.remove(at: idx!)
+            interests.remove(at: idx!)
             collectionView.reloadData()
-        } else if userInterests.count < 5 {
-            userInterests.append(Interests.init(rawValue: cell.tag) ?? .acting)
-            collectionView.reloadData()
-        }
-        userInterests.sort(by: {$0.rawValue < $1.rawValue})
-        interestLabel.text = "Interests: " + userInterests.map{$0.description}.joined(separator: ", ")
-        countLabel.text = userInterests.count.description + "/5"
+            cell.isSelected = !cell.isSelected
+            cell.select()
 
+
+        } else if interests.count < 5 {
+            interests.append(Interests.init(rawValue: cell.tag) ?? .acting)
+            collectionView.reloadData()
+            cell.isSelected = !cell.isSelected
+            cell.select()
+
+        }
+        interests.sort(by: {$0.rawValue < $1.rawValue})
     }
     
     func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
@@ -201,7 +122,128 @@ extension InterestSelectionViewController: UICollectionViewDataSource {
 }
 
 
-class LeftOreintedFlowLayout : UICollectionViewFlowLayout {
+extension InterestSelectionViewController {
+    private class InterestsCollectionViewCell: UICollectionViewCell {
+        static let identifier = "interestsCell"
+
+        
+        var bg: UIView
+        var interestLabel: UILabel
+        override init(frame: CGRect) {
+            bg = UIView()
+            interestLabel = UILabel.zipSubtitle()
+            
+            super.init(frame: frame)
+            bg.layer.masksToBounds = true
+            bg.backgroundColor = .zipLightGray
+            bg.layer.masksToBounds = true
+            bg.layer.cornerRadius = 20
+            contentView.backgroundColor = .clear
+            
+            interestLabel.textAlignment = .center
+            
+            addSubviews()
+            configureSubviewLayout()
+        }
+        
+        required init?(coder: NSCoder) {
+            bg = UIView()
+            interestLabel = UILabel.zipTextFill()
+            
+            super.init(coder: coder)
+        }
+        
+        
+        public func configure(interest: Interests){
+            interestLabel.text = interest.description
+            switch isSelected{
+            case true: bg.backgroundColor = .zipBlue
+            case false: bg.backgroundColor = .zipLightGray
+            }
+        }
+        
+        private func addSubviews(){
+            contentView.addSubview(bg)
+            bg.addSubview(interestLabel)
+
+        }
+        
+        private func configureSubviewLayout(){
+            bg.translatesAutoresizingMaskIntoConstraints = false
+            bg.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+            bg.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+            bg.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
+            bg.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
+            
+            interestLabel.translatesAutoresizingMaskIntoConstraints = false
+            interestLabel.rightAnchor.constraint(equalTo: bg.rightAnchor).isActive = true
+            interestLabel.leftAnchor.constraint(equalTo: bg.leftAnchor).isActive = true
+            interestLabel.centerYAnchor.constraint(equalTo: bg.centerYAnchor).isActive = true
+        }
+        
+        public func select(){
+            switch isSelected{
+            case true: bg.backgroundColor = .zipBlue
+            case false: bg.backgroundColor = .zipLightGray
+            }
+        }
+        
+        
+    }
+}
+
+class CenterOrientedFlowLayout : UICollectionViewFlowLayout {
+    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        guard let attributes = super.layoutAttributesForElements(in: rect) else {
+            return nil
+        }
+        
+        var rows = [CollectionViewRow]()
+        var currentRowY: CGFloat = -1
+        
+        for attribute in attributes {
+            if currentRowY != attribute.frame.origin.y {
+                currentRowY = attribute.frame.origin.y
+                rows.append(CollectionViewRow(spacing: 10))
+            }
+            rows.last?.add(attribute: attribute)
+        }
+        rows.forEach { $0.centerLayout(collectionViewWidth: collectionView?.frame.width ?? 0) }
+        return rows.flatMap { $0.attributes }
+    }
+    
+    private class CollectionViewRow {
+        var attributes = [UICollectionViewLayoutAttributes]()
+        var spacing: CGFloat = 0
+
+        init(spacing: CGFloat) {
+            self.spacing = spacing
+        }
+
+        func add(attribute: UICollectionViewLayoutAttributes) {
+            attributes.append(attribute)
+        }
+        
+        var rowWidth: CGFloat {
+            return attributes.reduce(0, { result, attribute -> CGFloat in
+                return result + attribute.frame.width
+            }) + CGFloat(attributes.count - 1) * spacing
+        }
+        
+        func centerLayout(collectionViewWidth: CGFloat) {
+            let padding = (collectionViewWidth - rowWidth) / 2
+            var offset = padding
+            for attribute in attributes {
+                attribute.frame.origin.x = offset
+                offset += attribute.frame.width + spacing
+            }
+        }
+    }
+}
+
+
+
+class LeftOrientedFlowLayout : UICollectionViewFlowLayout {
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         let attributes = super.layoutAttributesForElements(in: rect)

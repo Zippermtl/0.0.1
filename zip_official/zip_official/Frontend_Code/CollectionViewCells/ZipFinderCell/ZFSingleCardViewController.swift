@@ -19,7 +19,7 @@ class ZFSingleCardViewController: UIViewController {
         let label = UILabel()
         label.font = .zipTitle
         label.textColor = .white
-        label.text = "PREVIEW"
+        label.text = "Preview"
         return label
     }()
     
@@ -44,7 +44,7 @@ class ZFSingleCardViewController: UIViewController {
     public func configure(user: User) {
         self.user = user
         cardFrontView = ZFCardFrontView()
-//        cardFrontView?.configure(user: user)
+        cardFrontView?.configure(user: user)
 
         cardBackView = ZFCardBackView()
         cardBackView?.configure(user: user)
@@ -75,7 +75,7 @@ class ZFSingleCardViewController: UIViewController {
 
     
         cardView.layer.cornerRadius = 20
-        cardView.layer.borderColor = UIColor.zipBlue.cgColor
+        cardView.layer.borderColor = UIColor.white.cgColor
         cardView.layer.borderWidth = 4
         cardView.backgroundColor = .zipGray
         
@@ -143,8 +143,8 @@ class ZFSingleCardViewController: UIViewController {
                   let cardBackView = self?.cardBackView
             else { return }
             
-            cardFrontView.isHidden = cardFrontView.isHidden
-            cardBackView.isHidden = cardBackView.isHidden
+            cardFrontView.isHidden = !cardFrontView.isHidden
+            cardBackView.isHidden = !cardBackView.isHidden
         }, completion: nil)
     }
 

@@ -15,40 +15,55 @@ class MyEventsViewController: UIViewController {
     
     var eventData: [String:[String:[Event]]] =
     [
-        "Upcoming" : ["Hosting" : [],
-                      "Going" : [],
-                      "Interested" : []],
-        "Previous" : ["Hosted" : [],
-                      "Went" : []]
+        "Going" : ["Today" : [],
+                   "Upcoming" : [],
+                   "Previous" : []],
+        "Saved" : ["Today" : [],
+                   "Upcoming" : []],
+        "Hosting" : ["Today" : [],
+                     "Upcoming" : [],
+                     "Previous": []],
     ]
     
     var tableData: [String:[Event]] =
     [
-        "Hosting" : [Event](),
-        "Going" : [Event](),
-        "Interested" : [Event]()
+        "Today" : [],
+        "Upcoming" : [],
+        "Previous" : []
     ]
     
     // MARK: - Buttons
-    var upcomingButton = UIButton()
-    var previousButton = UIButton()
+    var goingButton = UIButton()
+    var savedButton = UIButton()
+    var hostingButton = UIButton()
     
     // MARK: - Button Actions
     @objc private func didTapBackButton(){
         dismiss(animated: true, completion: nil)
     }
     
-    @objc private func didTapUpcomingButton() {
-        upcomingButton.backgroundColor = .zipVeryLightGray
-        previousButton.backgroundColor = .zipLightGray
-        tableData = eventData["Upcoming"]!
+    @objc private func didTapGoingButton() {
+        goingButton.backgroundColor = .zipVeryLightGray
+        savedButton.backgroundColor = .zipLightGray
+        hostingButton.backgroundColor = .zipLightGray
+        tableData = eventData["Going"]!
         tableView.reloadData()
     }
     
-    @objc private func didTapPreviousButton() {
-        previousButton.backgroundColor = .zipVeryLightGray
-        upcomingButton.backgroundColor = .zipLightGray
-        tableData = eventData["Previous"]!
+    @objc private func didTapSavedButton() {
+        savedButton.backgroundColor = .zipVeryLightGray
+        goingButton.backgroundColor = .zipLightGray
+        hostingButton.backgroundColor = .zipLightGray
+
+        tableData = eventData["Saved"]!
+        tableView.reloadData()
+    }
+    
+    @objc private func didTapHostingButton() {
+        savedButton.backgroundColor = .zipLightGray
+        goingButton.backgroundColor = .zipLightGray
+        hostingButton.backgroundColor = .zipVeryLightGray
+        tableData = eventData["Hosting"]!
         tableView.reloadData()
     }
 
@@ -65,7 +80,7 @@ class MyEventsViewController: UIViewController {
     }
     
     private func configureNavBar() {
-        navigationItem.title = "MY EVENTS"
+        navigationItem.title = "My Events"
     }
     
     //MARK: - Table Config
@@ -81,61 +96,81 @@ class MyEventsViewController: UIViewController {
         tableView.sectionIndexBackgroundColor = .zipLightGray
         tableView.separatorColor = .zipSeparator
         
-        tableData = eventData["Upcoming"]!
+        tableData = eventData["Going"]!
     }
     
     //MARK: - Button Config
     private func configureButtons(){
-        let width = view.frame.size.width
-        upcomingButton = UIButton(frame: CGRect(x: 0, y: 0, width: width/2-20, height: 40))
-        upcomingButton.backgroundColor = .zipVeryLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
-        upcomingButton.setTitle("UPCOMING", for: .normal)
-        upcomingButton.titleLabel?.textColor = .white
-        upcomingButton.titleLabel?.font = .zipBodyBold
-        upcomingButton.titleLabel?.textAlignment = .center
-        upcomingButton.contentVerticalAlignment = .center
-        upcomingButton.layer.cornerRadius = 10
+        goingButton.backgroundColor = .zipVeryLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
+        goingButton.setTitle("Going", for: .normal)
+        goingButton.titleLabel?.textColor = .white
+        goingButton.titleLabel?.font = .zipSubtitle2
+        goingButton.titleLabel?.textAlignment = .center
+        goingButton.contentVerticalAlignment = .center
+        goingButton.layer.cornerRadius = 10
         
-        previousButton = UIButton(frame: CGRect(x: 0, y: 0, width: width/2-20, height: 40))
-        previousButton.backgroundColor = .zipLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
-        previousButton.setTitle("PREVIOUS", for: .normal)
-        previousButton.titleLabel?.textColor = .white
-        previousButton.titleLabel?.font = .zipBodyBold
-        previousButton.titleLabel?.textAlignment = .center
-        previousButton.contentVerticalAlignment = .center
-        previousButton.layer.cornerRadius = 10
+        savedButton.backgroundColor = .zipLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
+        savedButton.setTitle("Saved", for: .normal)
+        savedButton.titleLabel?.textColor = .white
+        savedButton.titleLabel?.font = .zipSubtitle2
+        savedButton.titleLabel?.textAlignment = .center
+        savedButton.contentVerticalAlignment = .center
+        savedButton.layer.cornerRadius = 10
         
-        upcomingButton.addTarget(self, action: #selector(didTapUpcomingButton), for: .touchUpInside)
-        previousButton.addTarget(self, action: #selector(didTapPreviousButton), for: .touchUpInside)
+        hostingButton.backgroundColor = .zipLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
+        hostingButton.setTitle("Hosting", for: .normal)
+        hostingButton.titleLabel?.textColor = .white
+        hostingButton.titleLabel?.font = .zipSubtitle2
+        hostingButton.titleLabel?.textAlignment = .center
+        hostingButton.contentVerticalAlignment = .center
+        hostingButton.layer.cornerRadius = 10
         
+        goingButton.addTarget(self, action: #selector(didTapGoingButton), for: .touchUpInside)
+        savedButton.addTarget(self, action: #selector(didTapSavedButton), for: .touchUpInside)
+        hostingButton.addTarget(self, action: #selector(didTapHostingButton), for: .touchUpInside)
+
     }
     
     
     //MARK: - Layout Subviews
     private func configureSubviewLayout(){
         view.addSubview(tableView)
-        view.addSubview(upcomingButton)
-        view.addSubview(previousButton)
+
         // TableView
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.topAnchor.constraint(equalTo: upcomingButton.bottomAnchor, constant: 10).isActive = true
+        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         
         // Public Button
-        upcomingButton.translatesAutoresizingMaskIntoConstraints = false
-        upcomingButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 20).isActive = true
-        upcomingButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
-        upcomingButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        let header = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
+        header.addSubview(goingButton)
+        header.addSubview(savedButton)
+        header.addSubview(hostingButton)
+        
+        goingButton.translatesAutoresizingMaskIntoConstraints = false
+        goingButton.leftAnchor.constraint(equalTo: header.leftAnchor, constant: 10).isActive = true
+        goingButton.topAnchor.constraint(equalTo: header.topAnchor).isActive = true
+        goingButton.bottomAnchor.constraint(equalTo: header.bottomAnchor).isActive = true
+        goingButton.rightAnchor.constraint(equalTo: savedButton.leftAnchor, constant: -10).isActive = true
         
         // Private Button
-        previousButton.translatesAutoresizingMaskIntoConstraints = false
-        previousButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20).isActive = true
-        previousButton.leftAnchor.constraint(equalTo: upcomingButton.rightAnchor, constant: 10).isActive = true
-        previousButton.widthAnchor.constraint(equalTo: upcomingButton.widthAnchor).isActive = true
-        previousButton.topAnchor.constraint(equalTo: upcomingButton.topAnchor).isActive = true
-        previousButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        savedButton.translatesAutoresizingMaskIntoConstraints = false
+        savedButton.centerXAnchor.constraint(equalTo: header.centerXAnchor).isActive = true
+        savedButton.topAnchor.constraint(equalTo: header.topAnchor).isActive = true
+        savedButton.bottomAnchor.constraint(equalTo: header.bottomAnchor).isActive = true
+        savedButton.widthAnchor.constraint(equalTo: goingButton.widthAnchor).isActive = true
+        
+        
+        hostingButton.translatesAutoresizingMaskIntoConstraints = false
+        hostingButton.rightAnchor.constraint(equalTo: header.rightAnchor, constant: -10).isActive = true
+        hostingButton.topAnchor.constraint(equalTo: header.topAnchor).isActive = true
+        hostingButton.bottomAnchor.constraint(equalTo: header.bottomAnchor).isActive = true
+        hostingButton.leftAnchor.constraint(equalTo: savedButton.rightAnchor, constant: 10).isActive = true
+        
+        tableView.tableHeaderView = header
     }
 
 }
@@ -160,22 +195,24 @@ extension MyEventsViewController :  UITableViewDataSource {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
         view.backgroundColor = .zipLightGray
         let title = UILabel()
-        if tableData.count == 2 {
+        if tableData.count == 1 {
+            title.text = ""
+        } else if tableData.count == 2 {
             switch section{
-            case 0: title.text = "Hosted"
-            case 1: title.text = "Went"
+            case 0: title.text = "Today"
+            case 1: title.text = "Upcoming"
             default: print("section out of range")
             }
         } else {
             switch section{
-            case 0: title.text = "Hosting"
-            case 1: title.text = "Going"
-            case 2: title.text = "Interested"
+            case 0: title.text = "Today"
+            case 1: title.text = "Upcoming"
+            case 2: title.text = "Previous"
             default: print("section out of range")
             }
         }
         
-        title.font = .zipBody
+        title.font = .zipTextNoti
         title.textColor = .white
         view.addSubview(title)
         title.translatesAutoresizingMaskIntoConstraints = false
@@ -187,57 +224,27 @@ extension MyEventsViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if tableData.count == 1 {
+            return tableData["Previous"]!.count
+        }
         if tableData.count == 2 {
             switch section{
-            case 0: return tableData["Hosted"]!.count
-            case 1: return tableData["Went"]!.count
+            case 0: return tableData["Today"]!.count
+            case 1: return tableData["Upcoming"]!.count
             default: return 0
             }
         } else {
             switch section{
-            case 0: return tableData["Hosting"]!.count
-            case 1: return tableData["Going"]!.count
-            case 2: return tableData["Interested"]!.count
+            case 0: return tableData["Today"]!.count
+            case 1: return tableData["Upcoming"]!.count
+            case 2: return tableData["Previous"]!.count
             default: return 0
             }
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        var sectionName = ""
-        if tableData.count == 2 {
-            switch indexPath.section{
-            case 0: sectionName = "Hosted"
-            case 1: sectionName = "Went"
-            default: print("section out of range")
-            }
-        } else {
-            switch indexPath.section {
-            case 0: sectionName = "Hosting"
-            case 1: sectionName = "Going"
-            case 2: sectionName = "Interested"
-            default: print("section out of range")
-            }
-        }
-        
-        guard let events = tableData[sectionName] else {
-            return
-        }
-        
-        let cellEvent = events[indexPath.row]
-        
-        if sectionName == "Hosting" || sectionName == "Hosted" {
-            let eventView = MyEventViewController()
-            eventView.configure(cellEvent)
-            eventView.modalPresentationStyle = .overCurrentContext
-            navigationController?.pushViewController(eventView, animated: true)
-        } else {
-            let eventView = EventViewController(event: cellEvent)
-            eventView.modalPresentationStyle = .overCurrentContext
-            navigationController?.pushViewController(eventView, animated: true)
-        }
-    
-        tableView.deselectRow(at: indexPath, animated: false)
+ 
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -247,11 +254,9 @@ extension MyEventsViewController :  UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var events = [Event]()
         switch Array(tableData.keys)[indexPath.section] {
-        case "Hosting": events = tableData["Hosting"]!
-        case "Going": events = tableData["Going"]!
-        case "Interested": events = tableData["Interested"]!
-        case "Hosted": events = tableData["Hosted"]!
-        case "Went": events = tableData["Went"]!
+        case "Today": events = tableData["Today"]!
+        case "Upcoming": events = tableData["Upcoming"]!
+        case "Previous": events = tableData["Previous"]!
         default: print("section out of range")
         }
         
@@ -330,9 +335,9 @@ extension MyEventsViewController {
                             duration: TimeInterval(1000),
                             image: UIImage(named: "spikeball"))
         
-        eventData["Upcoming"]?["Hosting"]?.append(launchEvent)
-        eventData["Upcoming"]?["Going"]?.append(spikeBallEvent)
-        eventData["Upcoming"]?["Interested"]?.append(fakeFroshEvent)
+        eventData["Going"]?["Today"]?.append(launchEvent)
+        eventData["Going"]?["Upcoming"]?.append(spikeBallEvent)
+        eventData["Going"]?["Previous"]?.append(fakeFroshEvent)
 
     }
     

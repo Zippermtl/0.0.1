@@ -10,12 +10,17 @@ import UIKit
 class PictureCollectionViewCell: UICollectionViewCell {
     static let identifier = "PictureCollectionViewCell"
     private var picture = UIImageView()
-    var cornerRadius = CGFloat(0)
 //    private var pictureContainer = UIView()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.backgroundColor = .clear
+        contentView.addSubview(picture)
+        picture.translatesAutoresizingMaskIntoConstraints = false
+        picture.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        picture.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+        picture.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
+        picture.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
     }
     
     required init?(coder: NSCoder) {
@@ -24,23 +29,7 @@ class PictureCollectionViewCell: UICollectionViewCell {
     
     public func configure(with url: URL) {
         picture.sd_setImage(with: url, completed: nil)
-        
-        contentView.addSubview(picture)
-        picture.layer.masksToBounds = true
-        picture.layer.cornerRadius = cornerRadius
-
-        picture.translatesAutoresizingMaskIntoConstraints = false
-        picture.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
-        picture.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
-        picture.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
-        picture.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
     }
-    
-//    override func prepareForReuse() {
-//        super.prepareForReuse()
-//        picture = UIImage()
-//        pictureContainer = UIView()
-//    }
 }
 
 

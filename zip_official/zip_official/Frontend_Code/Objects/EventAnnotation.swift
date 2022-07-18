@@ -43,10 +43,8 @@ class EventAnnotationView: MKAnnotationView {
         self.liveLabel = IconLabel(iconImage: nil, labelFont: .zipBodyBold.withSize(6), color: .white)
 
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)
-        centerOffset = CGPoint(x: -EventAnnotationView.length/2, y: -EventAnnotationView.length/2)
-        
-        
+        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)        
+        layer.anchorPoint = CGPoint(x:0 , y: 0)
         
         addSubviews()
         configureSubviews()
@@ -63,8 +61,8 @@ class EventAnnotationView: MKAnnotationView {
         
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)
-        centerOffset = CGPoint(x: 0, y: -frame.size.height / 2)
-        
+        layer.anchorPoint = CGPoint(x:0 , y: 0)
+
         addSubviews()
         configureSubviews()
     }

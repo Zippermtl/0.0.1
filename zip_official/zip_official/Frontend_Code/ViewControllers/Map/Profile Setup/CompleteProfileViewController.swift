@@ -392,13 +392,6 @@ extension CompleteProfileViewController :  UITableViewDataSource {
             schoolSearch.delegate = self
             schoolSearch.modalPresentationStyle = .overCurrentContext
             navigationController?.pushViewController(schoolSearch, animated: true)
-        } else if indexPath.section == 4 {
-            let interestSelection = InterestSelectionViewController()
-            interestSelection.delegate = self
-            interestSelection.userInterests = user.interests
-            interestSelection.modalPresentationStyle = .overCurrentContext
-            navigationController?.pushViewController(interestSelection, animated: true)
-
         }
     }
 }
@@ -542,8 +535,8 @@ extension CompleteProfileViewController: GrowingCellProtocol {
         user.bio = value
     }
     
-    func updateHeightOfRow(_ cell: GrowingCellTableViewCell, _ textView: UITextView) {
-        let size = textView.bounds.size
+    func updateHeightOfRow(_ cell: UITableViewCell, _ view: UIView) {
+        let size = view.bounds.size
         let newSize = tableView.sizeThatFits(CGSize(width: size.width,
                                                         height: CGFloat.greatestFiniteMagnitude))
         if size.height != newSize.height {

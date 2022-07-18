@@ -18,7 +18,7 @@ class DistanceLabel: IconLabel {
         textColor = color
     }
     
-    init(distance: Double, labelFont: UIFont = .zipBody, color: UIColor = .zipBlue) {
+    init(distance: Double, labelFont: UIFont = .zipTextFillBold, color: UIColor = .zipBlue) {
   
         super.init(iconImage: UIImage(systemName: "mappin"), labelFont: labelFont, color: color)
         textColor = color

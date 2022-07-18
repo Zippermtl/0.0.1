@@ -295,7 +295,10 @@ final class StorageManager {
                     print("got a url")
                     if(i == size-1){
 //                        printOn.pictureURLs = picURLs
+                        picURLs = picURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
+
                         completion(.success(picURLs))
+                        
                     }
                 })
             } else {
@@ -314,18 +317,22 @@ final class StorageManager {
                     print("got a url")
                     if(picURLs.count == size){
 //                        printOn.pictureURLs = picURLs
+                        picURLs = picURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
+
                         completion(.success(picURLs))
                     }
                 })
             }
         }
     }
+    
     //MARK: Yianni Please Read Below
     //I don't really understand this function to be honest and can't tell how it works, I would just run a for on the grab
     //instead of list all but don't know how to do properly so I didn't do it. To get the number of pictures used the line
     //var size = GetNumberOfPictures()
     //and it should work
     public func getAllImages(path: String, picNum: Int = -1, completion: @escaping (Result<[URL], Error>) -> Void ) {
+        
         print("picNum in getAllImages is \(picNum)")
         var counter = 0
         var picURLs: [URL] = []
@@ -423,7 +430,7 @@ final class StorageManager {
 //                    }
 //                }
 //            }
-            
+            urls = urls.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
             completion(.success(urls.map({ URL(string: $0.description)! })))
             
         })

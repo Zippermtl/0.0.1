@@ -4,6 +4,8 @@ public enum FriendshipStatus: Int {
     case REQUESTED_INCOMING = 0
     case REQUESTED_OUTGOING = 1
     case ACCEPTED = 2
+    case NO_RELATION = 3
+    
 }
 
 // MARK: Friendship class

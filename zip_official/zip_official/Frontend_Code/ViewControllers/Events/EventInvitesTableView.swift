@@ -16,7 +16,7 @@ class EventInvitesTableView: UITableView {
         self.events = events
         super.init(frame: .zero, style: .plain)
 
-        register(EventFinderTableViewCell.self, forCellReuseIdentifier: EventFinderTableViewCell.identifier)
+        register(FPCEventTableViewCell.self, forCellReuseIdentifier: FPCEventTableViewCell.identifier)
         register(UITableViewCell.self, forCellReuseIdentifier: "noEvents")
         delegate = self
         dataSource = self
@@ -54,7 +54,7 @@ extension EventInvitesTableView: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if events.count != 0 {
             let cellEvent = events[indexPath.row]
-            let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: FPCEventTableViewCell.identifier, for: indexPath) as! FPCEventTableViewCell
             cell.delegate = self
             cell.selectionStyle = .none
             cell.clipsToBounds = true

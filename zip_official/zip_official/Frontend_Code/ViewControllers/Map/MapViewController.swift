@@ -100,6 +100,10 @@ class MapViewController: UIViewController {
     @objc private func didTapProfileButton() {
 //        createNewUsersInDB()
 //        updateUsersInDB()
+//
+        
+//        let vc = OtherProfileViewController(id: "u2158018458")
+
         
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
@@ -107,6 +111,9 @@ class MapViewController: UIViewController {
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .overCurrentContext
         present(nav, animated: true, completion: nil)
+        
+        let str = "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fimg0.png?alt=media&token=e939c550-6c2b-4049-b863-07ba87db1ffe"
+        print(str.imgNumber)
     }
     
     @objc private func didTapZoom(){
@@ -278,8 +285,16 @@ class MapViewController: UIViewController {
         
         let e1Url = URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6503333333%2Fprofile_picture.png?alt=media&token=1b83e75e-6147-4da6-bd52-1eee539bbc61")!
         
-        let e1 = PromoterEvent(eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd h:m a"
+        let startTime = formatter.date(from: "2022/07/08 12:30 PM")!
+        let endTime = formatter.date(from: "2022/07/08 1:30 PM")!
+        
+        let e1 = PromoterEvent(eventId: "u6501111111_Live-Check_Jul 8, 2022 at 11:08:47 AM EDT",
                                coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
+                               startTime: startTime,
+                               endTime: endTime,
                                imageURL: e1Url)
 //        let e1 = PromoterEvent(coordinates: CLLocation(latitude: 42.456160, longitude: -71.251080), imageURL: e1Url)
 
@@ -452,7 +467,7 @@ extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
         if let annotation = view.annotation as? EventAnnotation {
-            let eventVC = EventViewController(event: annotation.event)
+            let eventVC = MyEventViewController(event: annotation.event)
             
             let nav = UINavigationController(rootViewController: eventVC)
             nav.modalPresentationStyle = .fullScreen
@@ -1176,6 +1191,8 @@ extension MapViewController {
                          school: "McGill University",
                          interests: ezrainterests)
         
+        ezra.friendshipStatus = .NO_RELATION
+        
         var yianni = User(userId: "u9789070602",
                           email: "zavalyia@gmail.com",
                          username: "yianni_zav",
@@ -1190,6 +1207,7 @@ extension MapViewController {
                          school: "McGill Univeristy",
                          interests: yianniinterests)
 
+        yianni.friendshipStatus = .REQUESTED_OUTGOING
         
         var gabe = User(userId: "u6503333333",
                         email: "mason.g.denton@vanderbilt.edu",
@@ -1306,30 +1324,46 @@ extension MapViewController {
                           school: "McGill University",
                           interests: interests)
         
+        let e1Url = URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6503333333%2Fprofile_picture.png?alt=media&token=1b83e75e-6147-4da6-bd52-1eee539bbc61")!
         
-        let launchEvent = PromoterEvent(title: "Zipper Launch Party",
-                                hosts: [yianni],
-                                description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
-                                address: "3781 St. Lauremt Blvd.",
-                                maxGuests: 250,
-                                usersGoing: [yianni],
-                                usersInterested: [yianni],
-                                startTime: Date(timeIntervalSinceNow: 1000),
-                                duration: TimeInterval(1000),
-                                image: UIImage(named: "launchevent")!)
+   
         
-        let fakeFroshEvent = PublicEvent(title: "Fake Ass Frosh",
-                                   hosts: [yianni],
-                                   description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
-                                   address: "3781 St. Lauremt Blvd.",
-                                   maxGuests: 250,
-                                   usersGoing: [yianni],
-                                   usersInterested: [yianni],
-                                   startTime: Date(timeIntervalSinceNow: 1000),
-                                   duration: TimeInterval(1000),
-                                   image: UIImage(named: "muzique")!)
+        let launchEvent = PromoterEvent(
+            eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+            title: "Zipper Launch Party",
+            hosts: [yianni],
+            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
+            address: "3781 St. Lauremt Blvd.",
+            maxGuests: 250,
+            usersGoing: [yianni],
+            usersInterested: [yianni],
+            startTime: Date(timeIntervalSinceNow: 1000),
+            endTime:  Date(timeIntervalSinceNow: 900000),
+            image: UIImage(named: "launchevent")!
+        )
         
-        let spikeBallEvent = PublicEvent(title: "Zipper Spikeball Tournament",
+        launchEvent.imageUrl = e1Url
+        
+        
+        let fakeFroshEvent = PrivateEvent(
+            eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+            title: "Fake Ass Frosh",
+            hosts: [yianni],
+            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
+            address: "3781 St. Lauremt Blvd.",
+            maxGuests: 250,
+            usersGoing: [yianni],
+            usersInterested: [yianni],
+            startTime: Date(timeIntervalSinceNow: 1000),
+            endTime:  Date(timeIntervalSinceNow: 900000),
+            image: UIImage(named: "muzique")!)
+        
+        fakeFroshEvent.imageUrl = e1Url
+
+        
+        let spikeBallEvent = PublicEvent(
+            eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+            title: "Zipper Spikeball Tournament",
                                    hosts: [yianni],
                                    description: "Zipper Spikeball Tournament",
                                    address: "3781 St. Lauremt Blvd.",
@@ -1337,9 +1371,11 @@ extension MapViewController {
                                    usersGoing: [yianni],
                                    usersInterested: [yianni],
                                    startTime: Date(timeIntervalSinceNow: 100000),
-                                   duration: TimeInterval(1000),
+                                   endTime:  Date(timeIntervalSinceNow: 900000),
                                    image: UIImage(named: "spikeball"))
         
+        spikeBallEvent.imageUrl = e1Url
+
         events.append(launchEvent)
         events.append(fakeFroshEvent)
         events.append(spikeBallEvent)

@@ -15,12 +15,16 @@ class EditPicturesCollectionViewCell: UICollectionViewCell {
     weak var delegate: EditPicturesCollectionViewCellDelegate?
     var picture = UIImageView()
 
-    var cornerRadius = CGFloat(0)
+    var cornerRadius = CGFloat(5)
     
     let xButton: UIButton = {
         let btn = UIButton()
-        btn.setImage(UIImage(systemName: "xmark.square.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray), for: .normal)
+        let img = UIImage(systemName: "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        btn.setImage(img, for: .normal)
+        
         btn.addTarget(self, action: #selector(didTapDeleteButton), for: .touchUpInside)
+        btn.contentMode = .scaleAspectFit
+        btn.imageView?.contentMode = .scaleAspectFit
         btn.isHidden = true
         return btn
     }()
@@ -32,20 +36,6 @@ class EditPicturesCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.backgroundColor = .clear
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    public func configure(pictureHolder: PictureHolder) {
-        xButton.addTarget(self, action: #selector(didTapDeleteButton), for: .touchUpInside)
-        
-        if pictureHolder.isUrl() {
-            picture.sd_setImage(with: pictureHolder.url, completed: nil)
-        } else {
-            picture.image = pictureHolder.image
-        }
         
         contentView.addSubview(picture)
         picture.layer.masksToBounds = true
@@ -57,10 +47,48 @@ class EditPicturesCollectionViewCell: UICollectionViewCell {
         picture.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
         picture.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
         
+        
         contentView.addSubview(xButton)
         xButton.translatesAutoresizingMaskIntoConstraints = false
-        xButton.topAnchor.constraint(equalTo: picture.topAnchor).isActive = true
-        xButton.rightAnchor.constraint(equalTo: picture.rightAnchor).isActive = true
+        xButton.centerYAnchor.constraint(equalTo: picture.topAnchor).isActive = true
+        xButton.centerXAnchor.constraint(equalTo: picture.rightAnchor).isActive = true
+        xButton.heightAnchor.constraint(equalTo: xButton.widthAnchor).isActive = true
+//        xButton.backgroundColor = .zipBlue
+        
+        guard let bg =  xButton.imageView else {
+            return
+        }
+        bg.backgroundColor = .zipBlue
+        bg.layer.masksToBounds = true
+        
+        
+        xButton.layer.masksToBounds = true
+        
+        xButton.addTarget(self, action: #selector(didTapDeleteButton), for: .touchUpInside)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let bg =  xButton.imageView else {
+            return
+        }
+        
+        bg.layer.cornerRadius = bg.frame.height/2
+//        xButton.layer.cornerRadius = xButton.frame.height/2
+//        print("width = \(xButton.frame.width) height = \(xButton.frame.height)")
 
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    public func configure(pictureHolder: PictureHolder) {
+        
+        if pictureHolder.isUrl() {
+            picture.sd_setImage(with: pictureHolder.url, completed: nil)
+        } else {
+            picture.image = pictureHolder.image
+        }
     }
 }

@@ -39,6 +39,6 @@ class EventInvitesViewController: UIViewController {
         dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
         
-        title = "EVENT INVINTES"
+        title = "Event Invites"
     }
 }
