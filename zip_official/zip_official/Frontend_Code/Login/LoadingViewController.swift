@@ -91,13 +91,14 @@ class LoadingViewController: UIViewController {
             return
         }
 
-        loadLaunchData(completion: { [weak self] error in
-            guard error == nil,
-                  let strongSelf = self else {
-                return
-            }
-            strongSelf.presentMap()
-        })
+        presentMap()
+//        loadLaunchData(completion: { [weak self] error in
+//            guard error == nil,
+//                  let strongSelf = self else {
+//                return
+//            }
+//            strongSelf.presentMap()
+//        })
         
         
     }
