@@ -62,7 +62,7 @@ class CreateEventViewController: UIViewController {
         self.continueButton = UIButton()
 
         super.init(nibName: nil, bundle: nil)
-
+        
         eventNameLabel.text = "Event Name:"
         startTimeLabel.text = "Start Time: "
         locationLabel.text = "Event Location"
