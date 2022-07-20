@@ -35,7 +35,7 @@ class ZipListTableViewCell: AbstractUserTableViewCell {
         extraInfoLabel.text = "@" + user.username
         
         switch user.friendshipStatus {
-        case .NO_RELATION:
+        case .none:
             requestButton.isHidden = true
             requestButton.isSelected = false
         case .REQUESTED_INCOMING:
