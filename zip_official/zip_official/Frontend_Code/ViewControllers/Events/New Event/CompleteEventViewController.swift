@@ -101,6 +101,9 @@ class CompleteEventViewController: UIViewController {
         
         event.hosts = [host]
         event.usersInvite = invitedUsers
+        event.usersInvite.append(host)
+        event.usersGoing.append(host)
+
         event.eventId = event.createEventId
 
                 
@@ -122,6 +125,7 @@ class CompleteEventViewController: UIViewController {
                 self?.present(actionSheet, animated: true)
                 self?.dismiss(animated: true, completion: nil)
                 self?.completeButton.isEnabled = true
+                self?.dismiss(animated: true, completion: nil)
             case .failure(let error):
                 print(error)
                 let actionSheet = UIAlertController(title: "Failed to Create Your Event",
