@@ -152,6 +152,17 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
         return UITableView.automaticDimension
     }
     
+    func saveTitleFunc(_ s: String) {
+        
+    }
+    
+    func saveDescriptionFunc(_ s: String) {
+        
+    }
+    
+    func saveLocationFunc(_ s: String) {
+        
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.row {
@@ -162,7 +173,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
             return cell
         case 1: // Title
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Title", content: event.title)
+            cell.configure(label: "Title", content: event.title, saveFunc: saveTitleFunc(_:))
             cell.selectionStyle = .none
             cell.cellDelegate = self
             return cell
@@ -175,14 +186,14 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
             return cell
         case 3: // location
             let cell = tableView.dequeueReusableCell(withIdentifier: EditEventLocationTableViewCell.identifier, for: indexPath) as! EditEventLocationTableViewCell
-            cell.configure(event: event)
+            cell.configure(event: event, saveFunc: saveLocationFunc(_:))
             cell.GMSDelegate = self
             cell.cellDelegate = self
             cell.selectionStyle = .none
             return cell
         case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Description", content: event.description)
+            cell.configure(label: "Description", content: event.description, saveFunc: saveDescriptionFunc(_:))
             cell.selectionStyle = .none
             cell.cellDelegate = self
             return cell
