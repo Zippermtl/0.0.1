@@ -6,178 +6,183 @@
 //
 import Foundation
 import FirebaseDatabase
+import FirebaseFirestore
+import FirebaseFirestoreSwift
+import CodableFirebase
 import MessageKit
 import FirebaseAuth
 import CoreLocation
 import GeoFire
 import CoreData
 
-public enum EventType: Int, CustomStringConvertible {
+extension Timestamp: TimestampType {}
+
+public enum EventType: Int {
     case Event = 0
     case Public = 1
     case Promoter = 2
     case Private = 3
     case Friends = 4
+}
+
+//for future, enumerate event type
+public class EventCoder: Codable {
+    var title: String
+    var coordinates: [String: Double]
+    var hosts: [String: String]
+    var description: String
+    var address: String
+    var maxGuests: Int
+    var usersGoing: [String: String]
+    var usersInvite: [String: String]
+    var startTime: Timestamp
+    var endTime: Timestamp
+    var type: Int
     
-    public var description: String {
-        switch self {
-        case .Event: return "Event"
-        case .Public: return "Public Event"
-        case .Private: return "Private Event"
-        case .Friends: return "Zips Event"
-        case .Promoter: return "Promoter Event"
-        }
+    enum CodingKeys: String, CodingKey {
+        case title
+        case coordinates
+        case hosts
+        case description
+        case address
+        case maxGuests = "max"
+        case usersGoing
+        case usersInvite
+        case startTime
+        case endTime
+        case type
     }
     
-    public var color: UIColor {
-        switch self {
-        case .Event: return .zipYellow
-        case .Public: return .zipGreen
-        case .Private: return .zipBlue
-        case .Friends: return .zipBlue
-        case .Promoter: return .zipYellow
-        }
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.title = try container.decode(String.self, forKey: .title)
+        self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
+        self.hosts = try container.decode([String:String].self, forKey: .hosts)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.address = try container.decode(String.self, forKey: .address)
+        self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
+        self.usersGoing = try container.decode([String:String].self, forKey: .usersGoing)
+        self.usersInvite = try container.decode([String:String].self, forKey: .usersInvite)
+        self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
+        self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
+        self.type = try container.decode(Int.self, forKey: .type)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        try container.encode(coordinates, forKey: .coordinates)
+        try container.encode(hosts, forKey: .hosts)
+        try container.encode(description, forKey: .description)
+        try container.encode(address, forKey: .address)
+        try container.encode(maxGuests, forKey: .maxGuests)
+        try container.encode(usersGoing, forKey: .usersGoing)
+        try container.encode(usersInvite, forKey: .usersInvite)
+        try container.encode(startTime, forKey: .startTime)
+        try container.encode(endTime, forKey: .endTime)
+    }
+    
+    public func createEvent() -> Event {
+        return zip_official.createEvent(
+            title: title,
+            coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
+            hosts: hosts.keys.map( { User(userId: $0 )} ),
+            description: description,
+            address: address,
+            maxGuests: maxGuests,
+            usersGoing: usersGoing.keys.map( { User(userId: $0 )} ),
+            usersInvite: usersInvite.keys.map( { User(userId: $0 )} ),
+            startTime: startTime.dateValue(),
+            endTime: endTime.dateValue(),
+            type: EventType(rawValue: type) ?? .Event
+        )
     }
 }
 
 extension DatabaseManager {
     
-//    public func updateEvent(path: String, updateDetails: Event, completion: @escaping (Result<Any, Error>) -> Void) {
-//        // write later
-//        //MARK: Yianni job for front end integration
-//        completion(.success(value))
-//    }
+    //    public func updateEvent(path: String, updateDetails: Event, completion: @escaping (Result<Any, Error>) -> Void) {
+    //        // write later
+    //        //MARK: Yianni job for front end integration
+    //        completion(.success(value))
+    //    }
     
     //MARK: INCOMPLETE WILL COME BACK TOO
-//    public func PullEvent(path: String, type: Int, completion: @escaping (Result<Any, Error>) -> Void) {
-//        database.child("EventFull/\(path)").observeSingleEvent(of: .value, with: { snapshot in
-//            guard let value = snapshot.value as? [String: Any] else {
-//                print("failed to fetch user profile")
-//                completion(.failure(DatabaseError.failedToFetch))
-//                return
-//            }
-//            guard let fullname = value["name"] as? String else {
-//                      print("retuning SubView")
-//                      return
-//            }
-//            completion(.success(value))
-//        }
-//    }
+    //    public func PullEvent(path: String, type: Int, completion: @escaping (Result<Any, Error>) -> Void) {
+    //        database.child("EventFull/\(path)").observeSingleEvent(of: .value, with: { snapshot in
+    //            guard let value = snapshot.value as? [String: Any] else {
+    //                print("failed to fetch user profile")
+    //                completion(.failure(DatabaseError.failedToFetch))
+    //                return
+    //            }
+    //            guard let fullname = value["name"] as? String else {
+    //                      print("retuning SubView")
+    //                      return
+    //            }
+    //            completion(.success(value))
+    //        }
+    //    }
     
     public func loadEvent(key: String, completion: @escaping (Result<Event, Error>) -> Void){
-        let path = "eventProfiles/" + key
-        database.child(path).observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [String: Any] else {
-                print("failed to fetch user profile")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-            print("big succccc sample")
-            guard let startTimeString = value["startTime"] as? String,
-                  let coordinates = value["coordinates"] as? [String : Double],
-                  let addy = value["address"] as? String,
-                  let desc = value["description"] as? String,
-//                  let dur = value["duration"] as? Int,
-                  let endTimeString = value["endTime"] as? String,
-                  let userHost = value["hosts"] as? [String : String],
-                  let title = value["title"] as? String,
-                  let type = value["type"] as? Int,
-//                  let usersGoing = value["usersGoing"] as? [String : String],
-//                  let usersInterested = value["usersInterested"] as? [String : String],
-                  let max = value["max"] as? Int,
-                  let userInvite = value["usersInvite"] as? [String : String] else {
-                      print("Data Failed")
-                      return
-                  }
-            print("data good")
-            var usersInvited: [User] = []
-            for (key, value) in userInvite {
-                let componentsName = value.description.components(separatedBy: " ")
-                usersInvited.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
-            }
-            var host: [User] = []
-            for (key, value) in userHost {
-                let componentsName = value.description.components(separatedBy: " ")
-                host.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
-            }
-            var going: [User] = []
-//            for (key, value) in usersGoing {
-//                let componentsName = value.description.components(separatedBy: " ")
-//                going.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
-//            }
-//            var interested: [User] = []
-//            for (key, value) in usersInterested {
-//                let componentsName = value.description.components(separatedBy: " ")
-//                interested.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
-//            }
-            let imagePath = "Event/" + key
-            print("got to image path")
-            print(imagePath)
-            
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        firestore.collection("EventProfiles").document(key).getDocument(as: EventCoder.self)  { result in
+            switch result {
+            case .success(let eventCoder):
+                let event = eventCoder.createEvent()
+                event.eventId = key
+                
+                let imagePath = "Event/" + key
+                StorageManager.shared.getProfilePicture(path: imagePath) { result in
+                    switch result{
+                    case .success(let url):
+                        print("making event")
+                        event.imageUrl = url
+                        completion(.success(event))
 
-            let startTime = formatter.date(from: startTimeString)!
-            let endTime = formatter.date(from: endTimeString)!
-
-            print("IN LOAD String: \(startTimeString)")
-            print("IN LOAD time: \(startTime)")
-
-            
-            StorageManager.shared.getProfilePicture(path: imagePath) { result in
-                switch result{
-                case .success(let url):
-                    print("making event")
-                    completion(.success(DatabaseManager.shared.createEventLocal(eventId: key,
-                                                                                title: title,
-                                                                                coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
-                                                                                hosts: host,
-                                                                                description: desc,
-                                                                                address: addy,
-                                                                                maxGuests: max,
-                                                                                usersGoing: going,
-                                                                                usersInvite: usersInvited,
-                                                                                startTime: endTime,
-                                                                                endTime: startTime,
-                                                                                imageURL: url[0],
-                                                                                type: EventType(rawValue: type)!)))
-                case .failure(let error):
-                    print("failed to make event")
-                    completion(.failure(error))
+                    case .failure(let error):
+                        completion(.failure(error))
+                        print("Failed to make event because image failed to load Error: \(error)")
+                    }
                 }
+                
+            case .failure(let error):
+                print("failed to load event Error: \(error)")
             }
-        })
-            
+        }
+    }
+    
+    
+    
+    public func testWrite() {
+        let testdata: [String:Any] = [
+            "test1" : 4,
+            "test3" : true
+        ]
+        firestore.collection("Events").document("test1234").setData(testdata)
     }
     
     public func createEvent(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
-        let path = "eventProfiles/\(event.eventId)"
-//        let dispatch = DispatchGroup()
-        let ref = Database.database().reference()
-        var datadic: [String:Any] = [
-            "eventProfiles/\(event.eventId)/title" : event.title,
-            "eventProfiles/\(event.eventId)/coordinates/lat" : event.coordinates.coordinate.latitude,
-            "eventProfiles/\(event.eventId)/coordinates/long" : event.coordinates.coordinate.longitude,
-            "eventProfiles/\(event.eventId)/description" : event.description,
-            "eventProfiles/\(event.eventId)/address" : event.address,
-            "eventProfiles/\(event.eventId)/type" : event.getType().rawValue,
-            "eventProfiles/\(event.eventId)/startTime" : event.startTimeString,
-//            "eventProfiles/\(event.eventId)/duration" : event.duration,
-            "eventProfiles/\(event.eventId)/endTime" : event.endTimeString,
-            "eventProfiles/\(event.eventId)/max" : event.maxGuests
+        let eventDataDict: [String:Any] = [
+            "title" : event.title,
+            "coordinates" : ["lat" : event.coordinates.coordinate.latitude, "long" : event.coordinates.coordinate.longitude],
+            "description" : event.description,
+            "address" : event.address,
+            "type" : event.getType().rawValue,
+            "startTime" : Timestamp(date: event.startTime),
+            "endTime" : Timestamp(date: event.endTime),
+            "max" : event.maxGuests,
+            "hosts" : Dictionary(uniqueKeysWithValues: event.hosts.map { ($0.userId, $0.fullName )}),
+            "usersInvite": Dictionary(uniqueKeysWithValues: event.usersInvite.map { ($0.userId, $0.fullName )}),
+            "usersGoing": [event.hosts[0].userId : event.hosts[0].fullName]
         ]
-        for i in event.hosts{
-            datadic["eventProfiles/\(event.eventId)/hosts/\(i.userId)"] = i.fullName
-        }
-        for j in event.usersInvite{
-            datadic["eventProfiles/\(event.eventId)/usersInvite/\(j.userId)"] = j.fullName
-        }
-        GeoManager.shared.UpdateEventLocation(event: event)
-        ref.updateChildValues(datadic) { (error, _) in
-            if let error = error {
-                completion(.failure(error))
+        
+        firestore.collection("EventProfiles").document("\(event.eventId)").setData(eventDataDict)  { [weak self] error in
+            guard error == nil else {
+                print("failure to write event with id: \(event.eventId) to FireStore")
+                completion(.failure(error!))
+                return
             }
-            StorageManager.shared.updateIndividualImage(with: event.image!, path: "Event/" + event.eventId + "/", index: 0, completion: { result in
+            GeoManager.shared.UpdateEventLocation(event: event)
+            self?.updateEventImage(event: event, completion: { result in
                 switch result {
                 case .success(let url):
                     completion(.success(url))
@@ -185,9 +190,21 @@ extension DatabaseManager {
                     completion(.failure(error))
                 }
             })
+            
         }
-        
     }
+    
+    public func updateEventImage(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
+        StorageManager.shared.updateIndividualImage(with: event.image!, path: "Event/" + event.eventId + "/", index: 0, completion: { result in
+            switch result {
+            case .success(let url):
+                completion(.success(url))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        })
+    }
+    
     
     public func inviteUsers(event: Event, users: [User], completion: @escaping (Error?) -> Void){
         var datadic: [String:Any] = [:]
@@ -197,7 +214,7 @@ extension DatabaseManager {
                 return (j.userId == id.userId)
             })){
                 datadic["eventProfiles/\(event.eventId)/usersInvite/\(j.userId)"] = j.fullName
-//                datadic["eventQuick/\(event.eventId)/usersInvite/\(j.userId)"] = j.fullName
+                //                datadic["eventQuick/\(event.eventId)/usersInvite/\(j.userId)"] = j.fullName
             }
         }
         ref.updateChildValues(datadic) { (error, _) in
@@ -223,19 +240,19 @@ extension DatabaseManager {
         }
     }
     
-//    public func markInterested(event: Event, completion: @escaping (Error?) -> Void){
-//        var datadic: [String:Any] = [:]
-//        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-//        let selfName = AppDelegate.userDefaults.value(forKey: "name") as! String
-//        let ref = Database.database().reference()
-//        datadic["eventProfiles/\(event.eventId)/usersInterested/\(selfId)"] = selfName
-//        ref.updateChildValues(datadic) { (error, _) in
-//            if let error = error {
-//                completion(error)
-//            }
-//            completion(nil)
-//        }
-//    }
+    //    public func markInterested(event: Event, completion: @escaping (Error?) -> Void){
+    //        var datadic: [String:Any] = [:]
+    //        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+    //        let selfName = AppDelegate.userDefaults.value(forKey: "name") as! String
+    //        let ref = Database.database().reference()
+    //        datadic["eventProfiles/\(event.eventId)/usersInterested/\(selfId)"] = selfName
+    //        ref.updateChildValues(datadic) { (error, _) in
+    //            if let error = error {
+    //                completion(error)
+    //            }
+    //            completion(nil)
+    //        }
+    //    }
     public func checkSampleEvent(){
         print("check Sample")
         let key = "sample"
@@ -299,38 +316,38 @@ extension DatabaseManager {
             }
         }
         
-//        markInterested(event: a) { error in
-//            guard error != nil else {
-//                return
-//            }
-//        }
+        //        markInterested(event: a) { error in
+        //            guard error != nil else {
+        //                return
+        //            }
+        //        }
         
     }
-                                                               
-//    public func FindEvents(path: String, type: Int, completion: @escaping (Result<Any, Error>) -> Void){
-//            database.child("EventFull/\(path)")
-//
-//    }
+    
+    //    public func FindEvents(path: String, type: Int, completion: @escaping (Result<Any, Error>) -> Void){
+    //            database.child("EventFull/\(path)")
+    //
+    //    }
     
     public func createEventLocal(eventId Id: String = "",
-                            title tit: String = "",
-                            coordinates loc: CLLocation = CLLocation(),
-                            hosts host: [User] = [],
-                            description desc: String = "",
-                            address addy: String = "",
-                            locationName locName: String = "",
-                            maxGuests maxG: Int = 0,
-                            usersGoing ugoing: [User] = [],
-                            usersInterested uinterested: [User] = [],
-                            usersInvite uinvite: [User] = [],
-                            startTime stime: Date = Date(),
-                            endTime etime: Date = Date(),
-                            duration dur: TimeInterval = TimeInterval(1),
-                            image im: UIImage? = UIImage(named: "launchevent"),
-                            imageURL url: URL = URL(string: "a")!,
-                            endTimeString ets: String = "",
-                            startTimeString sts: String = "",
-                            type t: EventType = .Event) -> Event{
+                                 title tit: String = "",
+                                 coordinates loc: CLLocation = CLLocation(),
+                                 hosts host: [User] = [],
+                                 description desc: String = "",
+                                 address addy: String = "",
+                                 locationName locName: String = "",
+                                 maxGuests maxG: Int = 0,
+                                 usersGoing ugoing: [User] = [],
+                                 usersInterested uinterested: [User] = [],
+                                 usersInvite uinvite: [User] = [],
+                                 startTime stime: Date = Date(),
+                                 endTime etime: Date = Date(),
+                                 duration dur: TimeInterval = TimeInterval(1),
+                                 image im: UIImage? = UIImage(named: "launchevent"),
+                                 imageURL url: URL = URL(string: "a")!,
+                                 endTimeString ets: String = "",
+                                 startTimeString sts: String = "",
+                                 type t: EventType = .Event) -> Event{
         switch t{
         case .Event:
             return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
@@ -347,5 +364,136 @@ extension DatabaseManager {
         }
         
     }
-
+    
 }
+
+
+
+
+
+//    public func loadEvent(key: String, completion: @escaping (Result<Event, Error>) -> Void){
+//        let path = "eventProfiles/" + key
+//        database.child(path).observeSingleEvent(of: .value, with: { snapshot in
+//            guard let value = snapshot.value as? [String: Any] else {
+//                print("failed to fetch user profile")
+//                completion(.failure(DatabaseError.failedToFetch))
+//                return
+//            }
+//            print("big succccc sample")
+//            guard let startTimeString = value["startTime"] as? String,
+//                  let coordinates = value["coordinates"] as? [String : Double],
+//                  let addy = value["address"] as? String,
+//                  let desc = value["description"] as? String,
+////                  let dur = value["duration"] as? Int,
+//                  let endTimeString = value["endTime"] as? String,
+//                  let userHost = value["hosts"] as? [String : String],
+//                  let title = value["title"] as? String,
+//                  let type = value["type"] as? Int,
+////                  let usersGoing = value["usersGoing"] as? [String : String],
+////                  let usersInterested = value["usersInterested"] as? [String : String],
+//                  let max = value["max"] as? Int,
+//                  let userInvite = value["usersInvite"] as? [String : String] else {
+//                      print("Data Failed")
+//                      return
+//                  }
+//            print("data good")
+//            var usersInvited: [User] = []
+//            for (key, value) in userInvite {
+//                let componentsName = value.description.components(separatedBy: " ")
+//                usersInvited.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
+//            }
+//            var host: [User] = []
+//            for (key, value) in userHost {
+//                let componentsName = value.description.components(separatedBy: " ")
+//                host.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
+//            }
+//            var going: [User] = []
+////            for (key, value) in usersGoing {
+////                let componentsName = value.description.components(separatedBy: " ")
+////                going.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
+////            }
+////            var interested: [User] = []
+////            for (key, value) in usersInterested {
+////                let componentsName = value.description.components(separatedBy: " ")
+////                interested.append(User(userId: key, firstName: componentsName[0], lastName: componentsName[1]))
+////            }
+//            let imagePath = "Event/" + key
+//            print("got to image path")
+//            print(imagePath)
+//
+//            let formatter = DateFormatter()
+//            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+//
+//            let startTime = formatter.date(from: startTimeString)!
+//            let endTime = formatter.date(from: endTimeString)!
+//
+//            print("IN LOAD String: \(startTimeString)")
+//            print("IN LOAD time: \(startTime)")
+//
+//
+//            StorageManager.shared.getProfilePicture(path: imagePath) { result in
+//                switch result{
+//                case .success(let url):
+//                    print("making event")
+//                    completion(.success(DatabaseManager.shared.createEventLocal(eventId: key,
+//                                                                                title: title,
+//                                                                                coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
+//                                                                                hosts: host,
+//                                                                                description: desc,
+//                                                                                address: addy,
+//                                                                                maxGuests: max,
+//                                                                                usersGoing: going,
+//                                                                                usersInvite: usersInvited,
+//                                                                                startTime: endTime,
+//                                                                                endTime: startTime,
+//                                                                                imageURL: url[0],
+//                                                                                type: EventType(rawValue: type)!)))
+//                case .failure(let error):
+//                    print("failed to make event")
+//                    completion(.failure(error))
+//                }
+//            }
+//        })
+//
+//    }
+
+
+//    public func createEvent(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
+//        let path = "eventProfiles/\(event.eventId)"
+////        let dispatch = DispatchGroup()
+//        let ref = Database.database().reference()
+//        var datadic: [String:Any] = [
+//            "eventProfiles/\(event.eventId)/title" : event.title,
+//            "eventProfiles/\(event.eventId)/coordinates/lat" : event.coordinates.coordinate.latitude,
+//            "eventProfiles/\(event.eventId)/coordinates/long" : event.coordinates.coordinate.longitude,
+//            "eventProfiles/\(event.eventId)/description" : event.description,
+//            "eventProfiles/\(event.eventId)/address" : event.address,
+//            "eventProfiles/\(event.eventId)/type" : event.getType().rawValue,
+//            "eventProfiles/\(event.eventId)/startTime" : event.startTimeString,
+////            "eventProfiles/\(event.eventId)/duration" : event.duration,
+//            "eventProfiles/\(event.eventId)/endTime" : event.endTimeString,
+//            "eventProfiles/\(event.eventId)/max" : event.maxGuests
+//        ]
+//        for i in event.hosts{
+//            datadic["eventProfiles/\(event.eventId)/hosts/\(i.userId)"] = i.fullName
+//        }
+//        for j in event.usersInvite{
+//            datadic["eventProfiles/\(event.eventId)/usersInvite/\(j.userId)"] = j.fullName
+//        }
+//        GeoManager.shared.UpdateEventLocation(event: event)
+//        ref.updateChildValues(datadic) { (error, _) in
+//            if let error = error {
+//                completion(.failure(error))
+//            }
+//            StorageManager.shared.updateIndividualImage(with: event.image!, path: "Event/" + event.eventId + "/", index: 0, completion: { result in
+//                switch result {
+//                case .success(let url):
+//                    completion(.success(url))
+//                case .failure(let error):
+//                    completion(.failure(error))
+//                }
+//            })
+//        }
+//
+//    }
+
