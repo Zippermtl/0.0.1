@@ -20,7 +20,7 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
     let textView: UITextView
     weak var cellDelegate: GrowingCellProtocol?
 
-    
+    var saveFunc: ((String) -> Void)?
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         self.textView = UITextView()
         
@@ -46,8 +46,9 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func configure(label: String, content: String) {
+    public func configure(label: String, content: String, saveFunc: @escaping (String) -> Void) {
         textView.text = content
+        self.saveFunc = saveFunc
         super.configure(label: label)
     }
     
@@ -61,6 +62,14 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
         textView.leftAnchor.constraint(equalTo: rightView.leftAnchor).isActive = true
         textView.rightAnchor.constraint(equalTo: rightView.rightAnchor).isActive = true
         textView.bottomAnchor.constraint(equalTo: rightView.bottomAnchor).isActive = true
+    }
+    
+    public func saveValue() {
+        guard let saveFunc = saveFunc else {
+            return
+        }
+ 
+        saveFunc(textView.text)
     }
 }
 
