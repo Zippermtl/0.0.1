@@ -162,7 +162,7 @@ class SMSCodeViewController: UIViewController {
                 if exists {
                     //user already exists
                     let user = User(userId: strongSelf.userId)
-                    DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
+                    DatabaseManager.shared.loadUserProfile(given: user, completion: { [weak self] result in
                         
                         AppDelegate.userDefaults.set(user.userId, forKey: "userId")
                         AppDelegate.userDefaults.set(user.username, forKey: "username")
