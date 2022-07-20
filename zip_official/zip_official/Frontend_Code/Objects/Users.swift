@@ -6,17 +6,18 @@
 //
 import Foundation
 import MapKit
+import FirebaseFirestore
+
 
 
 public typealias NotificationPreference = [NotificationSubtype: Bool]
-
 
 class UserCoder: Codable {
     var userId: String
     var username: String
     var firstName: String
     var lastName: String
-    var birthday: Date
+    var birthday: Timestamp
     var picNum: Int
     var bio: String
     var interests: [Interests]
@@ -24,15 +25,15 @@ class UserCoder: Codable {
     var school: String?
     
     enum CodingKeys: String, CodingKey {
-        case userId
-        case username
-        case firstName
-        case lastName
-        case birthday
-        case picNum
-        case bio
-        case school
-        case interests
+        case userId = "id"
+        case username = "username"
+        case firstName = "firstName"
+        case lastName = "lastName"
+        case birthday = "birthday"
+        case picNum = "picNum"
+        case bio = "bio"
+        case school = "school"
+        case interests = "interests"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -45,7 +46,7 @@ class UserCoder: Codable {
         self.bio = try container.decode(String.self, forKey: .bio)
         self.school = try container.decode(String.self, forKey: .school)
         self.interests = try container.decode([Interests].self, forKey: .interests)
-        self.birthday = try container.decode(Date.self, forKey: .birthday)
+        self.birthday = try container.decode(Timestamp.self, forKey: .birthday)
         self.school = try container.decode(String.self, forKey: .school)
     }
 
@@ -69,17 +70,29 @@ class UserCoder: Codable {
             username: username,
             firstName: firstName,
             lastName: lastName,
-            birthday: birthday,
+            birthday: birthday.dateValue(),
             picNum: picNum,
             bio: bio,
             school: school,
             interests: interests
         )
     }
+    
+    public func updateUser(_ user: User) {
+        user.userId = userId
+        user.username = username
+        user.firstName = firstName
+        user.lastName = lastName
+        user.birthday = birthday.dateValue()
+        user.picNum = picNum
+        user.bio = bio
+        user.school = school
+        user.interests = interests
+    }
 
 }
 
-public class User {
+public class User : CustomStringConvertible {
     var userId: String = ""
     var username: String = ""
     var firstName: String = ""
@@ -101,7 +114,20 @@ public class User {
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
 
+    public var description : String {
+        var out = ""
+        out += "userId = \(userId) \n"
+        out += "username = \(username) \n"
+        out += "firstname = \(firstName) \n"
+        out += "lastname = \(lastName) \n"
+        out += "birthday = \(birthdayString) \n"
+        out += "picnum = \(picNum) \n"
+        out += "bio = \(bio) \n"
+        out += "school = \(school ?? "") \n"
+        out += "interests = \(interests) \n"
+        return out
 
+    }
     
     var joinDate = Date()
     
@@ -447,155 +473,76 @@ public class User {
         User.getCurrentUser().getOutgoingRequests(completion: {result in completion(result)})
     }
 
-    // Private helper function
-    private func makeFriend(with user: User, status: FriendshipStatus = .ACCEPTED, completion: @escaping (Bool) -> Void) {
-        var idx = 0
-        for friendship in friendships {
-            if friendship.receiver.userId == user.userId {
-                friendships.remove(at: idx)
-            }
-            idx += 1
-        }
-        friendships.append(Friendship(receiver: user, status: status))
-        updateFriendships(completion: {result in completion(result)})
-    }
-
-    // Requests a friend
-    func requestFriend(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
+    func unsendRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.unsendRequest(user: self) {  [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
+            strongSelf.friendshipStatus = nil
+            selfFriendships.removeValue(forKey: strongSelf.userId)
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+        }
+    }
+    
+    // Requests a friend
+    func sendRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.sendRequest(user: self) {  [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
+                return
+            }
+            strongSelf.friendshipStatus = .REQUESTED_OUTGOING
+            selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
 
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-
-                var idx = 0
-                for friendship in current.friendships {
-                    
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // Recipient has already made a friend request
-                            case.REQUESTED_INCOMING:
-                                current.friendships.remove(at: idx)
-                                current.friendships.append(Friendship(receiver: friendship.receiver, status: .ACCEPTED))
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.makeFriend(with: current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                    idx += 1
-                }
-
-                // If friendship not found in list, add it
-                guard let strongSelf = self else {
-                    return
-                }
-                
-                current.friendships.append(Friendship(receiver: strongSelf, status: .REQUESTED_OUTGOING))
-                current.updateFriendships(completion: {result in completion(result)})
-                self?.makeFriend(with: current, status: .REQUESTED_INCOMING, completion: {result in completion(result)})
-            })
-        })
+        }
     }
 
     // Accepts a friend (who made a friend request)
-    func acceptFriend(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
+    func acceptRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.acceptRequest(user: self) { [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
-
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-
-                var idx = 0
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // Recipient has already made a friend request
-                            case.REQUESTED_INCOMING:
-                                current.friendships.remove(at: idx)
-                                current.friendships.append(Friendship(receiver: friendship.receiver, status: .ACCEPTED))
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.makeFriend(with: current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                    idx += 1
-                }
-            })
-        })
+            strongSelf.friendshipStatus = .ACCEPTED
+            selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+        }
     
     }
 
-    // Private helper function
-    private func popFriend(_ user: User, completion: @escaping (Bool) -> Void) {
-        var index = 0
-        for friendship in friendships {
-            if friendship.receiver.userId == user.userId {
-                friendships.remove(at: index)
-                updateFriendships(completion: {result in completion(result)})
+    // Rejects a friend (who made a friend request)
+    func rejectRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.rejectRequest(user: self) { [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
-            index += 1
+            strongSelf.friendshipStatus = nil
+            selfFriendships.removeValue(forKey: strongSelf.userId)
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
         }
     }
-
-    // Rejects a friend (who made a friend request)
-    func rejectFriend(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
+    
+    func unfriend(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.unfriend(user: self) {  [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
-            
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-        
-                var index = 0
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // Recipient has already made a friend request
-                            case.REQUESTED_INCOMING:
-                                current.friendships.remove(at: index)
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.popFriend(current, completion: {result in completion(result)})
-                            // People are already friends
-                            case.ACCEPTED:
-                                current.friendships.remove(at: index)
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.popFriend(current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                    index += 1
-                }
-                
-            })
-        })
+            strongSelf.friendshipStatus = nil
+            selfFriendships.removeValue(forKey: strongSelf.userId)
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+        }
     }
+    
 
    
     
@@ -667,9 +614,8 @@ public class User {
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
     func load(status: Int, completion: @escaping (Bool) -> Void) {
         switch status{
-        
         case 1:
-            DatabaseManager.shared.loadUserProfileZipFinder(given: self, completion: { results in
+            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
                 switch results {
                 case .success(let user):
                     print("completed user profile copy for: ")
@@ -693,7 +639,7 @@ public class User {
                 }
             })
         case 3:
-            DatabaseManager.shared.loadUserProfileSubViewNoLoc(given: userId, completion: { results in
+            DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
                 switch results {
                 case .success(let user):
                     print("completed user profile copy for: ")
@@ -707,7 +653,7 @@ public class User {
         case 4:
             print("add this later for expansion")
         default:
-            DatabaseManager.shared.loadUserProfile(given: userId, completion: { results in
+            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
                 switch results {
                 case .success(let user):
                     print("completed user profile copy for: ")
@@ -727,38 +673,4 @@ public class User {
         User.getCurrentUser().load(status: status, completion: {result in completion(result)})
     }
     
-    // Cancels a friend request
-    func cancelFriendRequest(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
-                return
-            }
-            
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-        
-                var index = 0
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // User has made a friend request
-                            case.REQUESTED_OUTGOING:
-                                current.friendships.remove(at: index)
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.popFriend(current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                    index += 1
-                }
-            })
-        })
-    }
 }
