@@ -12,6 +12,10 @@ protocol PresentEditInterestsProtocol: AnyObject {
     func presentInterestSelect()
 }
 
+protocol UpdateUserFromEditProtocol: AnyObject {
+    func updateUser()
+}
+
 class EditProfileViewController: UIViewController {
     static let photosIdentifier = "photosIdentifier"
     static let textIdentifier = "textIdentifier"
@@ -19,7 +23,8 @@ class EditProfileViewController: UIViewController {
     static let schoolIdentifier = "schoolIdentifier"
     static let interestsIdentifier = "interestsIdentifier"
 
-
+    weak var delegate: UpdateUserFromEditProtocol?
+    
     private var user: User
     private var tableView: UITableView
     private var firstNameText: UITextField
@@ -29,8 +34,49 @@ class EditProfileViewController: UIViewController {
     private var tableHeader: UIView
     private var imagePicker: UIImagePickerController
     
+    private var changedPFP = false
+    
     @objc private func didTapDoneButton(){
-        navigationController?.popViewController(animated: true)
+        for cell in tableView.visibleCells {
+            guard let textFieldCell = cell as? EditTextFieldTableViewCell  else {
+                continue
+            }
+            textFieldCell.saveValue()
+        }
+        
+        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
+            guard let strongSelf = self,
+                  err == nil else {
+                return
+            }
+            
+            if strongSelf.changedPFP {
+                StorageManager.shared.updateIndividualImage(with: strongSelf.profilePic.image!, path: "images/\(strongSelf.user.userId)/", index: 0, completion: { [weak self] result in
+                    switch result {
+                    case .success(let url):
+                        AppDelegate.userDefaults.setValue(url, forKey: "profilePictureUrl")
+                        self?.navigationController?.popViewController(animated: true)
+                        self?.delegate?.updateUser()
+                    case .failure(let error):
+                        print("error uploading profile pic: \(error)")
+                        let actionSheet = UIAlertController(title: "Failed to upload profile picture",
+                                                            message: "Try again later",
+                                                            preferredStyle: .actionSheet)
+                        
+                        actionSheet.addAction(UIAlertAction(title: "Ok",
+                                                            style: .cancel,
+                                                            handler: { [weak self] _ in
+                            
+                            self?.dismiss(animated: true, completion: nil)
+                        }))
+                        self?.present(actionSheet, animated: true)
+                    }
+                })
+            } else {
+                self?.delegate?.updateUser()
+                strongSelf.navigationController?.popViewController(animated: true)
+            }
+        })
     }
     
     @objc private func didTapChangeProfilePic() {
@@ -158,6 +204,28 @@ class EditProfileViewController: UIViewController {
     }
     
     
+    
+    func saveFirstNameFunc(_ s: String) {
+        user.firstName = s
+    }
+    
+    func saveLastNameFunc(_ s: String) {
+        user.lastName = s
+    }
+    
+    func saveUsernameFunc(_ s: String) {
+        user.username = s
+    }
+    
+    func saveBioFunc(_ s: String) {
+        user.bio = s
+    }
+    
+    func saveSchoolFunc(_ s: String) {
+        user.school = s
+    }
+    
+    
 }
 
 //MARK: - TableViewDelegte
@@ -182,47 +250,38 @@ extension EditProfileViewController :  UITableViewDataSource {
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "First name", content: user.firstName)
+            cell.configure(label: "First name", content: user.firstName, saveFunc: saveFirstNameFunc(_:))
             cell.selectionStyle = .none
             cell.cellDelegate = self
 
             return cell
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Last name", content: user.lastName)
+            cell.configure(label: "Last name", content: user.lastName, saveFunc: saveLastNameFunc(_:))
             cell.selectionStyle = .none
             cell.cellDelegate = self
 
             return cell
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Username", content: user.username)
+            cell.configure(label: "Username", content: user.username, saveFunc: saveUsernameFunc(_:))
             cell.cellDelegate = self
             cell.selectionStyle = .none
 
             return cell
         case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Bio", content: user.bio)
+            cell.configure(label: "Bio", content: user.bio, saveFunc: saveBioFunc(_:))
             cell.cellDelegate = self
             cell.selectionStyle = .none
 
             return cell
         case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "School", content: user.school ?? "")
+            cell.configure(label: "School", content: user.school ?? "", saveFunc: saveSchoolFunc(_:))
             cell.cellDelegate = self
             cell.selectionStyle = .none
             return cell
-            
-//            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-//            cell.configure(label: "School", content: user.school ?? "")
-//            cell.cellDelegate = self
-//            cell.accessoryType = .disclosureIndicator
-//            cell.selectionStyle = .none
-//            cell.backgroundColor = .zipGray
-//            cell.textView.isUserInteractionEnabled = false
-//            return cell
             
         case 5:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditInterestsTableViewCell.identifier, for: indexPath) as! EditInterestsTableViewCell
@@ -237,51 +296,26 @@ extension EditProfileViewController :  UITableViewDataSource {
     }
     
     
-    //MARK: didSelectRowAt
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        if indexPath.row == 4 {
-//            let schoolSearch = SchoolSearchViewController()
-//            schoolSearch.schoolLabel.text = user.school
-//            schoolSearch.delegate = self
-//            schoolSearch.modalPresentationStyle = .overCurrentContext
-//            navigationController?.pushViewController(schoolSearch, animated: true)
-//        }
-    }
+
 }
 
 //MARK: - PicturePicker Delegate
 extension EditProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.editedImage] as? UIImage {
-            
-            StorageManager.shared.updateIndividualImage(with: image, path: "images/\(user.userId)/", index: 0, completion: { [weak self] result in
-                switch result {
-                case .success(let url):
-                    self?.user.pictureURLs[0] = URL(string: url)!
-                    self?.dismiss(animated: true, completion: nil)
-                    self?.profilePic.image = image
-                case .failure(let error):
-                    print("error uploading profile pic: \(error)")
-                    let actionSheet = UIAlertController(title: "Failed to upload profile picture",
-                                                        message: "Try again later",
-                                                        preferredStyle: .actionSheet)
-                    
-                    actionSheet.addAction(UIAlertAction(title: "Ok",
-                                                        style: .cancel,
-                                                        handler: { [weak self] _ in
-                        
-                        self?.dismiss(animated: true, completion: nil)
-                    }))
-                    self?.present(actionSheet, animated: true)
-                }
-            })
+            dismiss(animated: true, completion: nil)
+            profilePic.image = image
+            changedPFP = true
         }
-        
     }
 }
 
 //MARK: - GrowingCellProtocol
 extension EditProfileViewController: GrowingCellProtocol {
+    func updateValue(value: String) {
+        
+    }
+    
     func updateHeightOfRow(_ cell: UITableViewCell, _ view: UIView) {
         let size = view.bounds.size
         let newSize = tableView.sizeThatFits(CGSize(width: size.width,
@@ -294,9 +328,6 @@ extension EditProfileViewController: GrowingCellProtocol {
         }
     }
     
-    func updateValue(value: String){
-        
-    }
 }
 
 //MARK: - UpdateSchoolProtocol
