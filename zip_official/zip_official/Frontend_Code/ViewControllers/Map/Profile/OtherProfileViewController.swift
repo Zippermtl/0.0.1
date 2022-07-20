@@ -101,7 +101,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
             
             setZippedState()
             setNoRelationState()
-        case .NO_RELATION:
+        case .none:
             request()
             setRequestedState()
         }
