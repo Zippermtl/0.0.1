@@ -113,14 +113,13 @@ class EventViewController: UIViewController {
         userCountLabel.addGestureRecognizer(userTap)
         
         eventBorder.layer.borderWidth = 6
-        eventBorder.layer.borderColor = event.getType().color.cgColor
         eventBorder.backgroundColor = .clear
         
         liveView.backgroundColor = .red
         liveView.isHidden = true
         liveView.layer.masksToBounds = true
         
-        eventTypeLabel.textColor = event.getType().color
+
 
         configureNavBar()
         configureTable()
@@ -268,6 +267,8 @@ class EventViewController: UIViewController {
                 strongSelf.event.usersGoing = MapViewController.getTestUsers()
                 strongSelf.event.hosts = [MapViewController.getTestUsers()[1]]
                 
+                strongSelf.eventTypeLabel.textColor = event.getType().color
+                strongSelf.eventBorder.layer.borderColor = event.getType().color.cgColor
                 
                 if let complete = completion {
                     complete()
