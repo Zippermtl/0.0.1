@@ -104,8 +104,6 @@ class CompleteEventViewController: UIViewController {
         event.usersInvite.append(host)
         event.usersGoing.append(host)
 
-        event.eventId = event.createEventId
-
                 
         //MARK: Fuckmyass is the variable which contains the string of the url of the picture
         // the code below was written by Yianni and was originally if success a else b has been
