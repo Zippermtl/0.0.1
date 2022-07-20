@@ -50,7 +50,7 @@ class ZipMessagesViewController: UIViewController {
             let currentConversations = strongSelf.conversations
             
             if let targetConversation = currentConversations.first(where: {
-                $0.otherUserId == DatabaseManager.safeId(id: result.id)
+                $0.otherUserId == result.id
             }) {
                 let vc = ChatViewController(with: targetConversation.otherUserId, id: targetConversation.id)
                 vc.isNewConversation = true
