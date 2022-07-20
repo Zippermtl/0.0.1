@@ -181,27 +181,27 @@ class RegisterViewController: UIViewController {
                 AppDelegate.userDefaults.set(user.fullName, forKey: "name")
 
                 
-                DatabaseManager.shared.insertUser(with: user, completion: { success in
-                    if success {
-                        //upload image
-                        guard let image = strongSelf.imageView.image,
-                              let data = image.pngData() else {
-                            return
-                        }
-                        
-                        let fileName = user.profilePictureFileName
-                        StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { results in
-                            switch results {
-                            case .success(let downloadUrl):
-                                AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
-                                print(downloadUrl)
-                            case .failure(let error):
-                                print("Storage Manager Error: \(error)")
-                            }
-                            
-                        })
+                DatabaseManager.shared.insertUser(with: user, completion: { err in
+                    guard err == nil else {
+                        return
+                    }
+                    //upload image
+                    guard let image = strongSelf.imageView.image,
+                          let data = image.pngData() else {
+                        return
                     }
                     
+                    let fileName = user.profilePictureFileName
+                    StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { results in
+                        switch results {
+                        case .success(let downloadUrl):
+                            AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+                            print(downloadUrl)
+                        case .failure(let error):
+                            print("Storage Manager Error: \(error)")
+                        }
+                        
+                    })
                 })
                 
                 
