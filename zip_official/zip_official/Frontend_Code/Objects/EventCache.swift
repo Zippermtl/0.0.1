@@ -10,7 +10,7 @@ import Foundation
 public class EventCache {
     private let EVENT_SIZE = MemoryLayout.size(ofValue: Event.self)
     private static let instance = EventCache()
-
+    
     private var cache = Dictionary<String, Event>()
     private var byteSize = 0
     private var maxByteSize = 1_000_000 // 1 MB cache data max
@@ -28,20 +28,18 @@ public class EventCache {
     func runOnStart() {
         let date = Date()
         for id in cache.keys {
-<<<<<<< Updated upstream
             if let endtime = cache[id]?.endTime {
                 switch endtime.compare(date) {
                 case .orderedAscending: cache.removeValue(forKey: id)
                 default: break
                 }
-=======
-            guard let endtime = cache[id]?.endTime else {
-                continue
-            }
-            switch endtime.compare(date) {
-            case .orderedAscending: cache.removeValue(forKey: id)
-            default: break
->>>>>>> Stashed changes
+                guard let endtime = cache[id]?.endTime else {
+                    continue
+                }
+                switch endtime.compare(date) {
+                case .orderedAscending: cache.removeValue(forKey: id)
+                default: break
+                }
             }
         }
     }
@@ -52,7 +50,7 @@ public class EventCache {
             completion(.success(cachedEvent))
             return
         }
-
+        
         // Create object and store it in the cache
         DatabaseManager.shared.loadEvent(key: id, completion: {result in completion(result)})
     }
@@ -78,7 +76,7 @@ public class EventCache {
         }
         return false
     }
-
+    
     func clear() {
         cache.removeAll()
         byteSize = 0
@@ -87,7 +85,7 @@ public class EventCache {
     func getByteSize() -> Int {
         return byteSize
     }
-
+    
     func getMaxByteSize() -> Int {
         return maxByteSize
     }
