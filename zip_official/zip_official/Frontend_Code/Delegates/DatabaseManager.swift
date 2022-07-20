@@ -10,6 +10,7 @@ import FirebaseDatabase
 import MessageKit
 import FirebaseAuth
 import CoreLocation
+import FirebaseFirestore
 
 
 
@@ -20,14 +21,10 @@ class DatabaseManager {
     static let shared = DatabaseManager()
     
     internal let database = Database.database().reference()
-    
+    internal let firestore = Firestore.firestore()
+
     private var verificationId: String?
     
-    static func safeId(id: String) -> String {
-        var safeID = id.replacingOccurrences(of: ".", with: "-")
-        safeID = safeID.replacingOccurrences(of: "@", with: "-")
-        return safeID
-    }
     
     init(){}
 
@@ -47,6 +44,8 @@ extension DatabaseManager {
         })
     }
     
+    
+    
 }
 
 //MARK: - Account Management
@@ -55,128 +54,131 @@ extension DatabaseManager {
     /// parameters
     /// - `email`: Target email to be checked
     ///  - `completion`: async clusire to return with result
-    public func userExists(with userId: String, completion: @escaping ((Bool) -> Void)) {
-        database.child("userProfiles/\(userId)").observeSingleEvent(of: .value, with: { snapshot in
-            guard snapshot.value as? [String: Any] != nil else {
+    public func userExists(with userId: String, completion: @escaping (Bool) -> Void) {
+        firestore.collection("AllUserIds").document(userId).getDocument { (document, error) in
+            guard let document = document else {
                 completion(false)
                 return
             }
-            completion(true)
-        })
+            if document.exists {
+                completion(true)
+            } else {
+                completion(false)
+            }
+        }
     }
     
-    
     /// Inserts new user to database
-    public func insertUser(with user: User, completion: @escaping (Bool) -> Void){
+    public func insertUser(with user: User, completion: @escaping (Error?) -> Void) {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         let joinDate =  formatter.string(from: Date())
-        database.child("userProfiles/\(user.userId)").setValue([
+        let deviceId = UIDevice.current.identifierForVendor!.uuidString
+        
+        let userData : [String:Any] = [
             "id": user.userId,
             "username": user.username,
             "firstName": user.firstName,
             "lastName": user.lastName,
-            "birthday": user.birthdayString,
+            "birthday": Timestamp(date: user.birthday),
             "notifications": EncodePreferences(user.notificationPreferences),
             "picNum": user.picNum,
             "school": "",
-            "joinDate": joinDate
-        ], withCompletionBlock: { [weak self] error, _ in
-            guard error == nil else{
-                print("failed to write to database")
-                completion(false)
+            "joinDate": joinDate,
+            "deviceId": [deviceId],
+            "bio" : "",
+            "interests" : []
+        ]
+        
+        
+        firestore.collection("UserProfiles").document("\(user.userId)").setData(userData)  { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                print("failure to create user with id: \(user.userId) to FireStore")
+                completion(error)
                 return
             }
             
-            self?.database.child("users").observeSingleEvent(of: .value, with: { [weak self] snapshot in
-                if var usersCollection = snapshot.value as? [[String: String]] {
-                    //append to user dictionary
-                    let newElement = [
-                        "id": user.safeId,
-                        "username": user.username,
-                        "name": user.fullName,
-                    ]
-                    
-                    usersCollection.append(newElement)
+            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData([user.userId:user.fullName])
+            
+            AppDelegate.userDefaults.set(user.userId, forKey: "userId")
+            AppDelegate.userDefaults.set(user.username, forKey: "username")
+            AppDelegate.userDefaults.set(user.fullName, forKey: "name")
+            AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
+            AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
+            AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
+            AppDelegate.userDefaults.set(1, forKey: "picNum")
+            
+            let emptyFriendships: [String: Int]  = [:]
+            AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
+            AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
 
-                    self?.database.child("users").setValue(usersCollection, withCompletionBlock: { error, _ in
-                        guard error == nil else {
-                            completion(false)
-                            return
-                        }
+            AppDelegate.userDefaults.setValue(2, forKey: "maxRangeFilter")
 
-                        completion(true)
-                    })
-                    
-                } else {
-                    //create that array
-                    let newCollection: [[String: String]] = [
-                        [
-                            "id": user.safeId,
-                            "username": user.username,
-                            "name": user.fullName,
-                        ]
-                    ]
-                    
-                    self?.database.child("users").setValue(newCollection, withCompletionBlock: {  error, _ in
-                        guard error == nil else {
-                            completion(false)
-                            return
-                        }
-                        
-                        AppDelegate.userDefaults.set(user.userId, forKey: "userId")
-                        completion(true)
-                    })
+            if user.pictures.count == 0 {
+                //TODO: add default image
+                AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
+                completion(nil)
+            } else {
+                let image = user.pictures[0]
+                guard let data = image.pngData() else {
+                    return
                 }
                 
-            })
-        })
+                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
+                    switch results {
+                    case .success(let downloadUrl):
+                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+                        completion(nil)
+                    case .failure(let error):
+                        print("Storage Manager Error: \(error)")
+                        completion(error)
+                    }
+                })
+            }
+        }
     }
     
-    public func createUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
+    public func createUserLookUp(location: CLLocation, completion: @escaping (Error?) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
-              var name = AppDelegate.userDefaults.value(forKey: "firstName") as? String,
+              let name = AppDelegate.userDefaults.value(forKey: "firstName") as? String,
               let last = AppDelegate.userDefaults.value(forKey: "lastName") as? String else {
                   return
               }
         
-        print("USERID = \(userId)")
-        
-        name = name + " " + last
-        database.child("UserFastInfo/\(userId)").setValue([
+        firestore.collection("UserFastInfo").document("\(userId)").setData([
             "lat": location.coordinate.latitude,
             "long": location.coordinate.longitude,
-            "name": name
-        ], withCompletionBlock: { error, _ in
-            guard error == nil else {
-                print("failed to write to database")
-                completion(false)
+            "name": name + " " + last
+        ]) { error in
+            guard error == nil  else {
+                completion(error)
                 return
             }
-            completion(true)
-        })
+            completion(nil)
+        }
     }
     
-    public func updateLocationUserLookUp(location: CLLocation, completion: @escaping (Bool) -> Void){
-        guard let userID = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+    public func updateLocationUserLookUp(location: CLLocation, completion: @escaping (Error?) -> Void){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
-        
-        database.child("UserFastInfo/\(userID)").updateChildValues([
+        firestore.collection("UserFastInfo").document("\(userId)").updateData([
             "lat": location.coordinate.latitude,
             "long": location.coordinate.longitude
-        ], withCompletionBlock: { error, _ in
+        ]) { error in
             guard error == nil else{
                 print("failed to write to database")
-                completion(false)
+                completion(error)
                 return
             }
-            completion(true)
-        })
+            completion(nil)
+        }
     }
     /// Updates the full user profile
-    public func updateUser(with user: User, completion: @escaping (Bool) -> Void) {
-        database.child("userProfiles/\(user.safeId)").updateChildValues([
+    public func updateUser(with user: User, completion: @escaping (Error?) -> Void) {
+        
+        let userData: [String:Any] = [
             "id": user.userId,
             "username": user.username,
             "firstName": user.firstName,
@@ -185,43 +187,36 @@ extension DatabaseManager {
             "school": user.school ?? "",
             "interests": user.interests.map{ $0.rawValue },
             "notifications": EncodePreferences(user.notificationPreferences),
-        ], withCompletionBlock: { error, _ in
+        ]
+        
+        firestore.collection("UserProfile").document(user.userId).updateData(userData) { error in
             guard error == nil else{
                 print("failed to write to database")
-                completion(false)
+                completion(error)
                 return
             }
-            completion(true)
-        })
+            completion(nil)
+        }
     }
     
-    public func updateUserFriendships(of user: User, completion: @escaping (Bool) -> Void) {
-        database.child("userFriendships/\(user.userId)").updateChildValues([
-            "friends": EncodeFriendships(user.friendships)
-        ], withCompletionBlock: { [weak self] error, wtf in guard error == nil else {
-            completion(false)
-            return
-        }
-            self?.database.child("userFriendships/\(user.userId)/friends").updateChildValues(EncodeFriendships(user.friendships), withCompletionBlock: { error, wtf in guard error == nil else {
-                completion(false)
-                return
-            }
-                completion(true)
-            })
-        })
-    }
                                                                            
     /// Gets all users from Firebase
     ///  Parameters
     ///   `completion`: async closure to deal with return result
-    public func getAllusers(completion: @escaping (Result<[[String: String]], Error>) -> Void) {
-        database.child("users").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [[String: String]] else {
-                completion(.failure(DatabaseError.failedToFetch))
+    public func getAllUserIds(completion: @escaping (Result<[String: Any], Error>) -> Void) {
+        firestore.collection("AllUserIds").getDocuments() { (querySnapshot,error) in
+            guard error == nil else {
+                completion(.failure(error!))
                 return
             }
-            completion(.success(value))
-        })
+
+            var out : [String:Any] = [:]
+            for document in querySnapshot!.documents {
+                document.data().forEach { (key, value) in out[key] = value }
+            }
+            
+            completion(.success(out))
+        }
     }
     
     public enum DatabaseError: Error {
@@ -232,273 +227,16 @@ extension DatabaseManager {
 
 //MARK: - User Data Retreival
 extension DatabaseManager {
-    public func loadUserProfileZipFinder(given user: User, completion: @escaping (Result<User, Error>) -> Void) {
-        database.child("userProfiles/\(user.userId)").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [String: Any] else {
-                print("failed to fetch user profile")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
+    public func loadUserProfile(given user: User, completion: @escaping (Result<User, Error>) -> Void) {
+        firestore.collection("UserProfiles").document(user.userId).getDocument(as: UserCoder.self)  { result in
+            switch result {
+            case .success(let userCoder):
+                print("USER12345", userCoder.bio)
+                userCoder.updateUser(user)
+                print("USER12345", user.bio)
 
-           guard let firstName = value["firstName"] as? String,
-                  let lastName = value["lastName"] as? String,
-                  let username = value["username"] as? String,
-                  let bio = value["bio"] as? String,
-                  let picNum = value["picNum"] as? Int,
-//                  let notifPrefs = value["notifications"] as? Int,
-                  let birthdayString = value["birthday"] as? String else {
-                      print("retuning here")
-                      return
-                  }
-            
-            let interestsInt = value["interests"] as? [Int] ?? []
-            let notifPrefs = value["notifications"] as? Int ?? 0
-            let school = value["school"] as? String ?? ""
-            
-            let joinDateString = value["joinDate"] as? String ?? ""
-            
-            
-            let interests = interestsInt.map({Interests(rawValue: $0)!})
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MM-dd-yy"
-            let birthday = dateFormatter.date(from: birthdayString)!
-            
-            if joinDateString == "" {
-                user.joinDate = Date()
-            } else {
-                user.joinDate = dateFormatter.date(from: joinDateString)!
-            }
-            
-            user.updateUser(username: username,
-                            firstName: firstName,
-                            lastName: lastName,
-                            birthday: birthday,
-                            picNum: picNum,
-                            bio: bio,
-                            school: school,
-                            interests: interests,
-                            notificationPreferences: DecodePreferences(notifPrefs)
-            )
-            
-            
-            
-            let imagesPath = "images/" + user.userId
-            StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: picNum, completion: {  [weak self] result in
-                switch result {
-                case .success(let url):
-                    user.pictureURLs = url
-                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                    print(user.pictureURLs)
-                    completion(.success(user))
-
-                case .failure(let error):
-                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
-                }
-                    
-            })
-            
-        })
-    }
-
-    public func loadUserProfileSubViewNoLoc(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
-        database.child("UserFastInfo/\(id)").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [String: Any] else {
-                print("failed to fetch user profile")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-            
-            guard let fullname = value["name"] as? String else {
-                      print("retuning SubView")
-                      return
-                  }
-            let name = fullname.components(separatedBy: " ")
-            let user = User(userId: id,
-                            firstName: name[0],
-                            lastName: name[1]
-//                            notificationPreferences: DecodePreferences(notifPrefs)
-            )
-            let imagesPath = "images/" + id
-            StorageManager.shared.getProfilePicture(path: imagesPath, completion: { result in
-                switch result {
-                case .success(let url):
-                    user.pictureURLs = url
-                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                    print(user.pictureURLs)
-                    print("Successfully loaded tableview")
-                    completion(.success(user))
-                    
-                case .failure(let error):
-                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
-                }
-            })
-        })
-    }
-    
-    public func updatePicNum(id: String, picNum: Int, completion: @escaping (Bool) -> Void) {
-        let path = "userProfiles/\(id)/"
-        database.child(path).updateChildValues([
-            "picNum" : picNum
-        ], withCompletionBlock: { error, _ in
-            guard error == nil else{
-                print("failed to write to database")
-                completion(false)
-                return
-            }
-            completion(true)
-        })
-    }
-    
-    public func loadUserFriendships(given id: String, completion: @escaping (Result<[Friendship], Error>) -> Void) {
-        // Get user id inside userFriendships
-        database.child("userFriendships").child(id).observe(.value, with: { fuck in
-            guard let value = fuck.value as? [String: Any] else {
-                completion(.success([]))
-                return
-            }
-            
-            // Get friends list or return empty list if failed
-            guard let friends = value["friends"] as? [String: Int] else {
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-            
-            let friendships = DecodeFriendships(friends)
-            
-            completion(.success(friendships))
-        })
-    }
-    
-    public func loadUserProfileSubView(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
-        database.child("UserFastInfo/\(id)").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [String: Any] else {
-                print("failed to fetch user profile")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-            
-            guard let fullname = value["name"] as? String,
-                  let lat = value["lat"] as? Double,
-                  let long = value["long"] as? Double else {
-                      print("retuning SubView")
-                      return
-                  }
-
-            let name = fullname.components(separatedBy: " ")
-            var user = User(userId: id,
-                            firstName: name[0],
-                            lastName: name[1],
-                            location: CLLocation(latitude: lat, longitude: long)
-//                            notificationPreferences: DecodePreferences(notifPrefs)
-            )
-            let imagesPath = "images/" + id
-            StorageManager.shared.getProfilePicture(path: imagesPath, completion: {  [weak self] result in
-                switch result {
-                case .success(let url):
-                    user.pictureURLs = url
-                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                    print(user.pictureURLs)
-                    completion(.success(user))
-
-                case .failure(let error):
-                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
-                }
-                    
-            })
-            
-        })
-    }
-    //MARK: Status: 0 = default no additional data, 1 = load URLS, more to be added as we go
-    public func loadUserProfile(given id: String, status: Int = 0, completion: @escaping (Result<User, Error>) -> Void) {
-        database.child("userProfiles/\(id)").observeSingleEvent(of: .value, with: { snapshot in
-            guard let value = snapshot.value as? [String: Any] else {
-                print("failed to fetch user profile")
-                completion(.failure(DatabaseError.failedToFetch))
-                return
-            }
-
-//            guard let _f = value["firstName"] as? String else {
-//                      print("firstName issues")
-//                      return
-//                  }
-//
-//            guard let _l = value["lastName"] as? String else {
-//                      print("lastName issues")
-//                      return
-//                  }
-//
-//            guard let _u = value["username"] as? String else {
-//                      print("usernameIssues issues")
-//                      return
-//                  }
-//
-//            guard let _s = value["school"] as? String else {
-//                      print("school issues")
-//                      return
-//                  }
-//
-//            guard let _b = value["bio"] as? String else {
-//                      print("bio issues")
-//                      return
-//                  }
-//
-//            guard let _i = value["interests"] as? [Int] else {
-//                      print("interests issues")
-//                      return
-//                  }
-//
-//            guard let _n = value["notifications"] as? Int else {
-//                      print("notifications issues")
-//                      return
-//                  }
-//
-//            guard let _birth = value["birthday"] as? String else {
-//                      print("interests issues")
-//                      return
-//                  }
-//
-            guard let firstName = value["firstName"] as? String,
-                  let lastName = value["lastName"] as? String,
-                  let username = value["username"] as? String,
-                  let school = value["school"] as? String,
-                  let bio = value["bio"] as? String,
-                  let interestsInt = value["interests"] as? [Int],
-                  let picNum = value["picNum"] as? Int,
-                  let notifPrefs = value["notifications"] as? Int,
-//                  let friendships = value["friendships"] as? String,
-                  let birthdayString = value["birthday"] as? String else {
-                      print("retuning here")
-                      return
-                  }
-            
-            
-            
-            let interests = interestsInt.map({Interests(rawValue: $0)!})
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "MM-dd-yy"
-            let birthday = dateFormatter.date(from: birthdayString)!
-            
-            let user = User(
-                userId: id,
-                username: username,
-                firstName: firstName,
-                lastName: lastName,
-                birthday: birthday,
-                picNum: picNum,
-                bio: bio,
-                school: school,
-                interests: interests,
-                notificationPreferences: DecodePreferences(notifPrefs)
-//                friendships: friendships
-            )
-            switch status {
-            case 0:
-                completion(.success(user))
-            case 1:
-                let imagesPath = "images/" + id
-                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: picNum, completion: {  [weak self] result in
+                let imagesPath = "images/" + user.userId
+                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
                     switch result {
                     case .success(let url):
                         user.pictureURLs = url
@@ -511,13 +249,181 @@ extension DatabaseManager {
                     }
                         
                 })
-            default:
-                completion(.success(user))
+                
+            case .failure(let error):
+                print("failed to load user \(user.userId): \(error)")
             }
+        }
+    }
+    
+    public func loadUserProfileSubView(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
+        firestore.collection("UserFastInfo").document(id).getDocument() { (document,error) in
+//            print("document = ", document)
+//            print("document.data() = ", document?.data())
+
+            guard let document = document,
+                  let docData = document.data() as? [String:[String:Any]],
+                  let data = docData["id"] else {
+//                completion(.failure(error!))
+                return
+            }
+            
+            let user = User(userId: id)
+            let names = (data["name"] as! String).components(separatedBy: " ")
+            user.firstName = names[0]
+            user.lastName = names[1]
+            user.location = CLLocation(latitude: data["lat"] as! Double, longitude: data["long"] as! Double)
+            
+            let imagesPath = "images/" + id
+            StorageManager.shared.getProfilePicture(path: imagesPath, completion: { result in
+                switch result {
+                case .success(let url):
+                    if user.pictureURLs.count > 0 {
+                        user.pictureURLs[0] = url
+                    } else {
+                        user.pictureURLs.append(url)
+                    }
+                    
+                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                    print(user.pictureURLs)
+                    completion(.success(user))
+
+                case .failure(let error):
+                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                }
+                    
+            })
+        }
+    }
+    
+    public func updatePicNum(id: String, picNum: Int, completion: @escaping (Error?) -> Void) {
+        firestore.collection("UserProfiles").document(id).updateData(["picNum" : picNum]) { error in
+            guard error == nil else {
+                completion(error)
+                return
+            }
+            completion(nil)
+        }
+    }
+    
+}
+
+
+//MARK: - Friendships
+extension DatabaseManager {
+    public func loadUserFriendships(given id: String, completion: @escaping (Result<[Friendship], Error>) -> Void) {
+        // Get user id inside userFriendships
+        database.child("userFriendships").child(id).observe(.value, with: { result in
+            guard let value = result.value as? [String: Int] else {
+                completion(.success([]))
+                return
+            }
+            
+            let friendships = DecodeFriendships(value)
+            
+            completion(.success(friendships))
         })
     }
-     
     
+    public func unsendRequest(user: User, completion: @escaping (Error?) -> Void) {
+        let otherId = user.userId
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userFriendships/\(otherId)/\(selfId)").removeValue() { [weak self] error, _ in
+            guard let strongSelf = self,
+                    error == nil else {
+                        completion(error!)
+                return
+            }
+            strongSelf.database.child("userFriendships/\(selfId)/\(otherId)").removeValue() { error, _ in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    // Requests a friend
+    public func sendRequest(user: User, completion: @escaping (Error?) -> Void) {
+        let otherId = user.userId
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userFriendships/\(otherId)").updateChildValues([selfId: FriendshipStatus.REQUESTED_INCOMING.rawValue]) { [weak self] error, _ in
+            guard let strongSelf = self,
+                  error == nil else {
+                      completion(error!)
+                      return
+                  }
+            strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([otherId: FriendshipStatus.REQUESTED_OUTGOING.rawValue]) { error, _ in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+
+    // Accepts a friend (who made a friend request)
+    public func acceptRequest(user: User, completion: @escaping (Error?) -> Void) {
+        let otherId = user.userId
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userFriendships/\(otherId)").updateChildValues([selfId: FriendshipStatus.ACCEPTED.rawValue]) { [weak self] error, _  in
+            guard let strongSelf = self,
+                  error == nil else {
+                      completion(error!)
+                      return
+                  }
+            strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([otherId: FriendshipStatus.ACCEPTED.rawValue]) { error, _ in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+
+    // Rejects a friend (who made a friend request)
+    public func rejectRequest(user: User, completion: @escaping (Error?) -> Void) {
+        let otherId = user.userId
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userFriendships/\(otherId)/\(selfId)").removeValue() { [weak self] error, _ in
+            guard let strongSelf = self,
+                    error == nil else {
+                        completion(error!)
+                return
+            }
+            strongSelf.database.child("userFriendships/\(selfId)/\(otherId)").removeValue() { error, _ in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    // Unfriends user
+    public func unfriend(user: User, completion: @escaping (Error?) -> Void) {
+        let otherId = user.userId
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userFriendships/\(otherId)/\(selfId)").removeValue() { [weak self] error, _ in
+            guard let strongSelf = self,
+                    error == nil else {
+                        completion(error!)
+                return
+            }
+            strongSelf.database.child("userFriendships/\(selfId)/\(otherId)").removeValue() { error, _ in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+
 }
 
 
