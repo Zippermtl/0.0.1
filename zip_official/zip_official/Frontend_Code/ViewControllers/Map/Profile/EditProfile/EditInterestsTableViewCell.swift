@@ -12,8 +12,7 @@ internal protocol DeleteInterestsProtocol: AnyObject {
     func openInterestSelect()
 }
 
-class EditInterestsTableViewCell: EditProfileTableViewCell {
- 
+class EditInterestsTableViewCell: EditProfileTableViewCell { 
     weak var cellDelegate: GrowingCellProtocol?
     weak var presentInterestDelegate: PresentEditInterestsProtocol?
     weak var updateInterestsDelegate: UpdateInterestsProtocol?
