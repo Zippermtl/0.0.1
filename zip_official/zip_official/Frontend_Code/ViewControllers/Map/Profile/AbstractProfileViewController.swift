@@ -129,7 +129,7 @@ class AbstractProfileViewController: UIViewController {
     private func fetchUser(completion: (() -> Void)? = nil) {
         profilePictureView.image = nil
         spinner.show(in: profilePictureView)
-        DatabaseManager.shared.loadUserProfileZipFinder(given: user, completion: { [weak self] result in
+        DatabaseManager.shared.loadUserProfile(given: user, completion: { [weak self] result in
             guard let strongSelf = self
             else {
                 if let complete = completion {
@@ -145,6 +145,8 @@ class AbstractProfileViewController: UIViewController {
             strongSelf.photoCountLabel.text = "\(strongSelf.user.otherPictureUrls.count)"
             strongSelf.tableView.reloadData()
             
+            
+
             let profileURL: URL
             
             if strongSelf.user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
@@ -158,6 +160,9 @@ class AbstractProfileViewController: UIViewController {
             
             strongSelf.profilePictureView.sd_setImage(with: profileURL, completed: nil)
 
+            if strongSelf.user.picNum == 1 {
+                strongSelf.photoCountLabel.isHidden = true
+            }
             
             strongSelf.spinner.dismiss()
             strongSelf.tableView.reloadData()
