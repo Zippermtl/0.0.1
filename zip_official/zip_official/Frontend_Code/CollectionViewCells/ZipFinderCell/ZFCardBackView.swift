@@ -181,7 +181,7 @@ class ZFCardBackView: UIView {
         lastNameLabel.text = user.lastName
         ageLabel.text = "\(user.age) years old"
         bioLabel.text = user.bio
-        distanceLabel.update(distance: user.distance)
+        distanceLabel.update(distance: user.getDistance())
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
