@@ -9,6 +9,16 @@ import UIKit
 import CoreLocation
 
 class DistanceLabel: IconLabel {
+    var min: Double = 1.0 { didSet {
+        update(distance: distance)
+    }}
+    
+    var max: Double = 500.0 { didSet {
+        update(distance: distance)
+    }}
+    
+    var distance: Double = 0.0
+    
     init(){
         super.init(iconImage: UIImage(systemName: "mappin"))
     }
@@ -33,33 +43,24 @@ class DistanceLabel: IconLabel {
     public func update(distance d: Double){
         var distanceText = ""
         var unit = "km"
-        var distance = Double(round(10*(d)/1000))/10
+        distance = Double(round(10*(d)/1000))/10
 
         if NSLocale.current.regionCode == "US" {
             distance = round(10*distance/1.6)/10
             unit = "miles"
-        }
-        
-        if distance > 10 {
-            let intDistance = Int(distance)
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceText = "<1 \(unit)"
-            } else if distance >= 500 {
-                distanceText = ">500 \(unit)"
-            } else {
-                distanceText = String(intDistance) + " \(unit)"
+            
+            if distance == 1 {
+                unit = "mile"
             }
+        }
+            
+        if distance < min {
+            distanceText = "<\(Int(min)) \(unit)"
+        } else if distance > max{
+            distanceText = ">\(Int(max)) \(unit)"
         } else {
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceText = "<1 \(unit)"
-            } else if distance >= 500 {
-                distanceText = ">500 \(unit)"
+            if distance > 10 {
+                distanceText = String(Int(distance)) + " \(unit)"
             } else {
                 distanceText = String(distance) + " \(unit)"
             }
