@@ -14,7 +14,7 @@ import JGProgressHUD
 
 class AbstractProfileViewController: UIViewController {
     var user: User
-    private var tableView: UITableView
+    var tableView: UITableView
     var tableHeader: UIView
     private var profilePictureView: UIImageView
     private var spinner: JGProgressHUD
