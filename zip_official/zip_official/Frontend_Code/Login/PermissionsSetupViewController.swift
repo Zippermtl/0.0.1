@@ -148,7 +148,7 @@ class PermissionsSetupViewController: UIViewController {
 
         spinner.show(in: view)
         DatabaseManager.shared.insertUser(with: user, completion: { [weak self] error in
-            if error == nil {
+            guard error == nil  else {
                 let actionSheet = UIAlertController(title: "Failed to create User Profile",
                                                     message: "Try again later",
                                                     preferredStyle: .actionSheet)
@@ -158,22 +158,22 @@ class PermissionsSetupViewController: UIViewController {
                                                     handler: nil))
                 
                 self?.present(actionSheet, animated: true)
-                self?.dismiss(animated: true, completion: nil)
-            } else {
-                DispatchQueue.main.async {
-                    if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
-                        print("location services not enabled")
-                        let vc = LocationDeniedViewController()
-                        vc.modalPresentationStyle = .overFullScreen
-                        vc.modalTransitionStyle = .crossDissolve
-                        self?.present(vc, animated: true, completion: nil)
-                    } else {
-                        let vc = MapViewController(isNewAccount: true)
-                        vc.modalPresentationStyle = .fullScreen
-                        self?.present(vc, animated: true, completion: nil)
-                    }
+                return
+            }
+            DispatchQueue.main.async {
+                if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
+                    print("location services not enabled")
+                    let vc = LocationDeniedViewController()
+                    vc.modalPresentationStyle = .overFullScreen
+                    vc.modalTransitionStyle = .crossDissolve
+                    self?.present(vc, animated: true, completion: nil)
+                } else {
+                    let vc = MapViewController(isNewAccount: true)
+                    vc.modalPresentationStyle = .fullScreen
+                    self?.present(vc, animated: true, completion: nil)
                 }
             }
+            
         })
 
     }
