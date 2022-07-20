@@ -98,7 +98,7 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
-        DatabaseManager.shared.testWrite()
+//        DatabaseManager.shared.testWrite()
         
         
 //        createNewUsersInDB()
@@ -106,14 +106,16 @@ class MapViewController: UIViewController {
 //
         
 //        let vc = OtherProfileViewController(id: "u2158018458")
-
         
-//        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
-//        else { return }
-//        let vc = ProfileViewController(id: userId)
-//        let nav = UINavigationController(rootViewController: vc)
-//        nav.modalPresentationStyle = .overCurrentContext
-//        present(nav, animated: true, completion: nil)
+       
+        
+
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
+        else { return }
+        let vc = ProfileViewController(id: userId)
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .overCurrentContext
+        present(nav, animated: true, completion: nil)
     }
     
     @objc private func didTapZoom(){
@@ -291,14 +293,14 @@ class MapViewController: UIViewController {
         let startTime = formatter.date(from: "2022/07/08 12:30 PM")!
         let endTime = formatter.date(from: "2022/07/08 1:30 PM")!
         
-        let e1 = PromoterEvent(eventId: "u6501111111_First-Firestore-Event_Jul 19, 2022 at 7:32:33 PM EDT",
+        let e1 = PromoterEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
                                coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
                                startTime: startTime,
                                endTime: endTime,
                                imageURL: e1Url)
 //        let e1 = PromoterEvent(coordinates: CLLocation(latitude: 42.456160, longitude: -71.251080), imageURL: e1Url)
 
-        let e2 = PrivateEvent(eventId: "u6501111111_First-Firestore-Event_Jul 19, 2022 at 7:32:33 PM EDT",
+        let e2 = PrivateEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
                               coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
                               imageURL: e1Url)
         let event1 = EventAnnotation(event: e1)
@@ -743,40 +745,44 @@ extension MapViewController {
             ]
         )
         
-        DatabaseManager.shared.insertUser(with: yianni, completion: { success in
-            if success {
-                print("successfully uploaded Yianni")
-            } else {
-                print("failed to upload Yianni")
-            }
-            
-            DatabaseManager.shared.insertUser(with: nicholas, completion: { success in
-                if success {
-                    print("successfully uploaded Nic")
-                } else {
-                    print("failed to upload Nic")
-                }
+        DatabaseManager.shared.insertUser(with: yianni, completion: {  err in
+            guard err == nil else {
                 
-                DatabaseManager.shared.insertUser(with: gabe, completion: { success in
-                    if success {
-                        print("successfully uploaded Gabe")
-                    } else {
-                        print("failed to upload Gabe")
-                    }
+                print("failed to updated Seung")
+                return
+            }
+            print("successfully updated Seung")
+            
+            DatabaseManager.shared.insertUser(with: nicholas, completion: {  err in
+                guard err == nil else {
                     
-                    DatabaseManager.shared.insertUser(with: seung, completion: { success in
-                        if success {
-                            print("successfully uploaded Seung")
-                        } else {
-                            print("failed to upload Seung")
-                        }
+                    print("failed to updated Seung")
+                    return
+                }
+                print("successfully updated Seung")
+                
+                DatabaseManager.shared.insertUser(with: gabe, completion: {  err in
+                    guard err == nil else {
                         
-                        DatabaseManager.shared.insertUser(with: ezra, completion: { success in
-                            if success {
-                                print("successfully uploaded Ezra")
-                            }  else {
-                                print("failed to upload Ezra")
+                        print("failed to updated Seung")
+                        return
+                    }
+                    print("successfully updated Seung")
+                    DatabaseManager.shared.insertUser(with: seung, completion: {  err in
+                        guard err == nil else {
+                            
+                            print("failed to updated Seung")
+                            return
+                        }
+                        print("successfully updated Seung")
+                        
+                        DatabaseManager.shared.insertUser(with: ezra, completion: {  err in
+                            guard err == nil else {
+                                
+                                print("failed to updated Seung")
+                                return
                             }
+                            print("successfully updated Seung")
                         })
                     })
                 })
@@ -908,39 +914,41 @@ extension MapViewController {
             ]
         )
         
-        DatabaseManager.shared.updateUser(with: yianni, completion: { success in
-            if success {
-                print("successfully updated Yianni")
-            } else {
+        DatabaseManager.shared.updateUser(with: yianni, completion: { err in
+            guard err == nil else {
                 print("failed to updated Yianni")
+                return
             }
+            print("successfully updated Yianni")
             
-            DatabaseManager.shared.updateUser(with: nicholas, completion: { success in
-                if success {
-                    print("successfully updated Nic")
-                } else {
+            DatabaseManager.shared.updateUser(with: nicholas, completion: { err in
+                guard err == nil else {
                     print("failed to updated Nic")
+                    return
                 }
-                DatabaseManager.shared.updateUser(with: gabe, completion: { success in
-                    if success {
-                        print("successfully updated Gabe")
-                    } else {
-                        print("failed to updated Gabe")
-                    }
-                    
-                    DatabaseManager.shared.updateUser(with: ezra, completion: { success in
-                        if success {
-                            print("successfully updated Ezra")
-                        } else {
-                            print("failed to updated Ezra")
-                        }
+                print("successfully updated Nic")
+                DatabaseManager.shared.updateUser(with: gabe, completion: { err in
+                    guard err == nil else {
                         
-                        DatabaseManager.shared.updateUser(with: seung, completion: { success in
-                            if success {
-                                print("successfully updated Seung")
-                            } else {
+                        print("failed to updated Gabe")
+                        return
+                    }
+                    print("successfully updated Gabe")
+                    DatabaseManager.shared.updateUser(with: ezra, completion: { err in
+                        guard err == nil else {
+                            
+                            print("failed to updated Ezra")
+                            return
+                        }
+                        print("successfully updated Ezra")
+                        
+                        DatabaseManager.shared.updateUser(with: seung, completion: { err in
+                            guard err == nil else {
+                                
                                 print("failed to updated Seung")
+                                return
                             }
+                            print("successfully updated Seung")
                         })
                     })
                 })
@@ -985,7 +993,7 @@ extension MapViewController {
         let gabeBirthday = formatter.date(from: "2002/06/06")!
         let eliasBirthday = formatter.date(from: "2002/03/14")!
 
-        var seung = User(email: "seung.choi@gmail.com",
+        let seung = User(email: "seung.choi@gmail.com",
                          username: "seungchoi_",
                          firstName: "Seung",
                          lastName: "Choi",
@@ -995,7 +1003,7 @@ extension MapViewController {
                          bio: "Hey, I'm Seung, rapper/producer and head of Zipper design and marketing",
                          school: "McGill University")
         
-        var ezra = User(userId: "u2158018458",
+        let ezra = User(userId: "u2158018458",
                         email: "ezrataylor55@gmail.com",
                         username: "ezrataylor55",
                         firstName: "Ezra",
@@ -1006,7 +1014,7 @@ extension MapViewController {
                         bio: "What's good, I'm Ezra, rapper/producer, sports enthusiast and head of Zipper legal and finance",
                         school: "McGill University")
         
-        var yianni = User(userId: "u9789070602",
+        let yianni = User(userId: "u9789070602",
                           email: "zavalyia@gmail.com",
                           username: "yianni_zav",
                           firstName: "Yianni",
@@ -1017,7 +1025,7 @@ extension MapViewController {
                           bio: "Yianni. I run this shit. Know the name",
                           school: "McGill Univeristy")
 
-        var elias = User(email: "elias.levy@vanderbilt.edu",
+        let elias = User(email: "elias.levy@vanderbilt.edu",
                          username: "elias.levy",
                          firstName: "Elias",
                          lastName: "Levy",
@@ -1027,7 +1035,7 @@ extension MapViewController {
                          bio: "Hey guys, I'm elias, robotics enthusiast and musician. One of the newest Zipper members. I developed the back end of the app basically making things work behind the scenes",
                          school: "Vanderbilt University")
         
-        var gabe = User(email: "mason.g.denton@vanderbilt.edu",
+        let gabe = User(email: "mason.g.denton@vanderbilt.edu",
                         username: "gabe_denton",
                         firstName: "Gabe",
                         lastName: "Denton",
@@ -1107,7 +1115,6 @@ extension MapViewController {
         let ezraBirthday = formatter.date(from: "2001/10/23")!
         let yianniBirthday = formatter.date(from: "2001/12/06")!
         let gabeBirthday = formatter.date(from: "2002/06/06")!
-        let eliasBirthday = formatter.date(from: "2002/03/14")!
 
         var seunginterests = [Interests]()
         var ezrainterests = [Interests]()
@@ -1152,7 +1159,7 @@ extension MapViewController {
         gabeinterests.sort(by: {$0.rawValue < $1.rawValue})
         eliasinterests.sort(by: {$0.rawValue < $1.rawValue})
 
-        var seung = User(userId: "u65044444444",
+        let seung = User(userId: "u65044444444",
                          email: "seung.choi@gmail.com",
                          username: "seungchoi_",
                          firstName: "Seung",
@@ -1165,7 +1172,7 @@ extension MapViewController {
                          school: "McGill University",
                          interests: seunginterests)
         
-        var ezra = User(userId: "u2158018458",
+        let ezra = User(userId: "u2158018458",
                         email: "ezrataylor55@gmail.com",
                          username: "ezrataylor55",
                          firstName: "Ezra",
@@ -1180,7 +1187,7 @@ extension MapViewController {
         
         ezra.friendshipStatus = nil
         
-        var yianni = User(userId: "u9789070602",
+        let yianni = User(userId: "u9789070602",
                           email: "zavalyia@gmail.com",
                          username: "yianni_zav",
                          firstName: "Yianni",
@@ -1195,7 +1202,7 @@ extension MapViewController {
 
         yianni.friendshipStatus = .REQUESTED_OUTGOING
         
-        var gabe = User(userId: "u6503333333",
+        let gabe = User(userId: "u6503333333",
                         email: "mason.g.denton@vanderbilt.edu",
                         username: "gabe_denton",
                         firstName: "Gabe",
