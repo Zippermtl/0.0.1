@@ -41,29 +41,29 @@ class CompleteProfileViewController: UIViewController {
          resetUserImages
          
          */
-        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] success in
-            guard let strongSelf = self else {
+        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
+            guard let strongSelf = self,
+                  err == nil else {
                 return
             }
             
-            if success {
-                StorageManager.shared.ResetUserImages(with: strongSelf.user.pictures,
-                                                       path: strongSelf.user.picturesPath,
-                                                       completion: { results in
-                    switch results {
-                    case .success(let downloadUrl):
-                        print(downloadUrl)
-                        DispatchQueue.main.async {
-                            strongSelf.dismiss(animated: true)
-                        }
-                    case .failure(let error):
-                        print("Storage Manager Error: \(error)")
-                        DispatchQueue.main.async {
-                            strongSelf.dismiss(animated: true)
-                        }
+            StorageManager.shared.ResetUserImages(with: strongSelf.user.pictures,
+                                                   path: strongSelf.user.picturesPath,
+                                                   completion: { results in
+                switch results {
+                case .success(let downloadUrl):
+                    print(downloadUrl)
+                    DispatchQueue.main.async {
+                        strongSelf.dismiss(animated: true)
                     }
-                })
-            }
+                case .failure(let error):
+                    print("Storage Manager Error: \(error)")
+                    DispatchQueue.main.async {
+                        strongSelf.dismiss(animated: true)
+                    }
+                }
+            })
+
         })
     }
     
