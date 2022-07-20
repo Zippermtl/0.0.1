@@ -514,6 +514,12 @@ extension CreateEventInfoViewController: UITextFieldDelegate {
         textField.text = ""
     }
     
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let cs = NSCharacterSet(charactersIn: "0123456789").inverted
+        let filtered = string.components(separatedBy: cs).joined(separator: "")
+        return (string == filtered)
+    }
+    
     func textFieldDidEndEditing(_ textField: UITextField) {
         guard let numString = textField.text,
               let num = Float(numString) else {
