@@ -30,6 +30,22 @@ extension EventType: CustomStringConvertible {
         case .Promoter: return .zipYellow
         }
     }
+    
+    //TODO: Update with new default images
+    public var defaultProfilePictureUrl: URL {
+        guard let picString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+              let picUrl = URL(string: picString) else {
+                  return URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6502222222%2Fprofile_picture.png?alt=media&token=a6e7800d-a34d-43b1-a179-a954d3486787)")!
+        }
+        
+        switch self {
+        case .Event: return picUrl
+        case .Public: return picUrl
+        case .Private: return picUrl
+        case .Friends: return picUrl
+        case .Promoter: return picUrl
+        }
+    }
 }
 
 
@@ -174,7 +190,7 @@ public class Event : Encodable {
 //    var isPublic: Bool = false
 //    var type: Int
     var startTime: Date = Date()
-    var endTime: Date = Date()
+    var endTime: Date = Date(timeInterval: TimeInterval(3600), since: Date())
     var duration: TimeInterval = TimeInterval(1)
     var imageUrl: URL = URL(string: "a")!
     var image: UIImage? = UIImage(named: "launchevent")
