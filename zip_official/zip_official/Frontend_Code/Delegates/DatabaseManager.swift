@@ -185,11 +185,12 @@ extension DatabaseManager {
             "lastName": user.lastName,
             "bio": user.bio,
             "school": user.school ?? "",
+            "picNum": user.picNum,
             "interests": user.interests.map{ $0.rawValue },
             "notifications": EncodePreferences(user.notificationPreferences),
         ]
         
-        firestore.collection("UserProfile").document(user.userId).updateData(userData) { error in
+        firestore.collection("UserProfiles").document(user.userId).updateData(userData) { error in
             guard error == nil else{
                 print("failed to write to database")
                 completion(error)
