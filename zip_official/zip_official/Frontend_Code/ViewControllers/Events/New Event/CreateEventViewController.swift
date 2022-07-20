@@ -10,11 +10,13 @@ import CoreLocation
 import RSKImageCropper
 import DropDown
 import GooglePlaces
+import MapKit
 
 
 class CreateEventViewController: UIViewController {
     var event: Event
     
+    private let mapView: MKMapView
     private let eventNameLabel: UILabel
     private let startTimeLabel: UILabel
     private let locationLabel: UILabel
@@ -22,6 +24,9 @@ class CreateEventViewController: UIViewController {
     
     private let endDatePicker: UIDatePicker
     private let endTimePicker: UIDatePicker
+    private let startDatePicker: UIDatePicker
+    private let startTimePicker: UIDatePicker
+
     
     
     private let eventNameField: UITextField
@@ -40,6 +45,10 @@ class CreateEventViewController: UIViewController {
     
     init(event: Event) {
         self.event = event
+        event.eventId = event.createEventId
+        event.imageUrl = event.getType().defaultProfilePictureUrl
+
+        self.mapView = MKMapView()
         self.eventNameLabel = UILabel.zipTextFill()
         self.startTimeLabel = UILabel.zipTextFill()
         self.locationLabel = UILabel.zipTextFill()
@@ -56,12 +65,17 @@ class CreateEventViewController: UIViewController {
         self.pageStatus2 = StatusCheckView()
         self.pageStatus3 = StatusCheckView()
         
+        self.startTimePicker = UIDatePicker()
+        self.startDatePicker = UIDatePicker()
         self.endDatePicker = UIDatePicker()
         self.endTimePicker = UIDatePicker()
         
         self.continueButton = UIButton()
 
         super.init(nibName: nil, bundle: nil)
+        mapView.delegate = self
+        mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
+        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
         
         eventNameLabel.text = "Event Name:"
         startTimeLabel.text = "Start Time: "
@@ -85,6 +99,11 @@ class CreateEventViewController: UIViewController {
     }
     
     private func configureTextFields() {
+        startDateField.delegate = self
+        startTimeField.delegate = self
+        endDateField.delegate = self
+        endTimeField.delegate = self
+        
         endDatePicker.datePickerMode = .date
         endDatePicker.minuteInterval = 15
         endDatePicker.preferredDatePickerStyle = .inline
@@ -128,7 +147,6 @@ class CreateEventViewController: UIViewController {
         startDateField.textAlignment = .center
 
             
-        let startDatePicker = UIDatePicker()
         startDatePicker.datePickerMode = .date
         startDatePicker.minuteInterval = 15
         startDatePicker.preferredDatePickerStyle = .inline
@@ -150,7 +168,6 @@ class CreateEventViewController: UIViewController {
         startTimeField.minimumFontSize = 10.0
         startTimeField.textAlignment = .center
             
-        let startTimePicker = UIDatePicker()
         startTimePicker.datePickerMode = .time
         startTimePicker.minuteInterval = 15
         startTimePicker.preferredDatePickerStyle = .wheels
@@ -247,7 +264,7 @@ class CreateEventViewController: UIViewController {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         endDateField.text = formatter.string(from: sender.date)
-        
+
         event.endTime = combineDateWithTime(date: sender.date, time: event.endTime) ?? event.endTime
         
         let diff = Calendar.current.dateComponents([.day], from: event.startTime, to: event.endTime)
@@ -401,6 +418,7 @@ class CreateEventViewController: UIViewController {
         view.addSubview(locationLabel)
         view.addSubview(locationField)
      
+        view.addSubview(mapView)
         
         view.addSubview(continueButton)
         view.addSubview(pageStatus1)
@@ -453,8 +471,12 @@ class CreateEventViewController: UIViewController {
         locationField.leftAnchor.constraint(equalTo: locationLabel.leftAnchor).isActive = true
         locationField.rightAnchor.constraint(equalTo: eventNameLabel.rightAnchor).isActive = true
         
-        
-        
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        mapView.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 30).isActive = true
+        mapView.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 20).isActive = true
+        mapView.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -20).isActive = true
+        mapView.bottomAnchor.constraint(equalTo: continueButton.topAnchor,constant: -20).isActive = true
+
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40).isActive = true
         continueButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -492,6 +514,81 @@ extension CreateEventViewController: UITextFieldDelegate {
             textField.resignFirstResponder()
             openSearch()
         }
+        else if textField.text == "" {
+            if textField == startDateField {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .none
+                textField.text = formatter.string(from: Date())
+                event.startTime = combineDateWithTime(date: Date(), time: event.startTime)!
+                startDatePicker.date = event.startTime
+
+            }
+            
+            else if textField == startTimeField {
+                
+                let formatter = DateFormatter()
+                formatter.dateStyle = .none
+                formatter.timeStyle = .short
+                
+                let now = Date()
+                let minuteGranuity = CGFloat(15)
+                let calendar = Calendar.current
+                var hour = calendar.component(.hour, from: now)
+                let minute = CGFloat(calendar.component(.minute, from: now))
+                
+                // Round down to nearest date:
+                let ceilingMinute = Int(ceil(minute / minuteGranuity) * minuteGranuity)%60
+                if ceilingMinute == 0 { hour += 1 }
+                let ceilingDate = calendar.date(bySettingHour: hour,
+                                                minute: ceilingMinute,
+                                                second: 0,
+                                                of: now)!
+                
+                textField.text = formatter.string(from: ceilingDate)
+                event.startTime = combineDateWithTime(date: event.startTime, time: ceilingDate)!
+                startTimePicker.date = event.startTime
+
+            }
+            
+            else if textField == endDateField {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .none
+                textField.text = formatter.string(from: Date(timeInterval: TimeInterval(3600), since: event.startTime))
+                event.endTime = combineDateWithTime(date: Date(timeInterval: TimeInterval(3600), since: event.startTime), time: event.endTime)!
+                endDatePicker.date = event.endTime
+
+            }
+            
+            else if textField == endTimeField {
+                let minEndTime = Date(timeInterval: 60*60, since: event.startTime)
+                
+                let minuteGranuity = CGFloat(15)
+                let calendar = Calendar.current
+                var hour = calendar.component(.hour, from: minEndTime)
+                let minute = CGFloat(calendar.component(.minute, from: minEndTime))
+                
+                // Round down to nearest date:
+                let ceilingMinute = Int(ceil(minute / minuteGranuity) * minuteGranuity)%60
+                if minute == 0 && ceilingMinute == 0 { hour += 1 }
+                let ceilingDate = calendar.date(bySettingHour: hour,
+                                                minute: ceilingMinute,
+                                                second: 0,
+                                                of: minEndTime)!
+                
+                
+                let formatter = DateFormatter()
+                formatter.dateStyle = .none
+                formatter.timeStyle = .short
+                textField.text = formatter.string(from: ceilingDate)
+                event.endTime = combineDateWithTime(date: event.endTime, time: ceilingDate)!
+                endTimePicker.date = event.endTime
+
+            }
+        }
+        
+        
     }
 }
 
@@ -511,6 +608,7 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
         event.coordinates = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
         event.address = address
         event.locationName = name
+        zoomToEventLocation()
         navigationController?.popViewController(animated: true)
     }
     
@@ -523,3 +621,40 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
     }
 }
 
+
+extension CreateEventViewController: MKMapViewDelegate {
+    private func zoomToEventLocation(){
+        mapView.removeAnnotations(mapView.annotations)
+        mapView.addAnnotation(EventAnnotation(event: event))
+        let zoomRegion = MKCoordinateRegion(center: event.coordinates.coordinate, latitudinalMeters: 2000,longitudinalMeters: 2000)
+        mapView.setRegion(zoomRegion, animated: true)
+    }
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            guard let eventAnnotation = annotation as? EventAnnotation else {
+                return nil
+            }
+            
+            switch eventAnnotation.event.getType() {
+            case .Private, .Public, .Friends:
+                guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PrivateEventAnnotationView.identifier) as? PrivateEventAnnotationView else {
+                    return MKAnnotationView()
+                }
+                annotationView.configure(event: eventAnnotation.event)
+                
+                annotationView.canShowCallout = false
+                return annotationView
+                
+            case .Promoter:
+                guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PromoterEventAnnotationView.identifier) as? PromoterEventAnnotationView else {
+                    return MKAnnotationView()
+                }
+                annotationView.configure(event: eventAnnotation.event)
+                
+                annotationView.canShowCallout = false
+                return annotationView
+                
+            case .Event:
+                return MKAnnotationView()
+            }    }
+}
