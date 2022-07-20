@@ -25,80 +25,6 @@ public enum EventType: Int {
     case Friends = 4
 }
 
-//for future, enumerate event type
-public class EventCoder: Codable {
-    var title: String
-    var coordinates: [String: Double]
-    var hosts: [String: String]
-    var description: String
-    var address: String
-    var maxGuests: Int
-    var usersGoing: [String: String]
-    var usersInvite: [String: String]
-    var startTime: Timestamp
-    var endTime: Timestamp
-    var type: Int
-    
-    enum CodingKeys: String, CodingKey {
-        case title
-        case coordinates
-        case hosts
-        case description
-        case address
-        case maxGuests = "max"
-        case usersGoing
-        case usersInvite
-        case startTime
-        case endTime
-        case type
-    }
-    
-    public required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.title = try container.decode(String.self, forKey: .title)
-        self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
-        self.hosts = try container.decode([String:String].self, forKey: .hosts)
-        self.description = try container.decode(String.self, forKey: .description)
-        self.address = try container.decode(String.self, forKey: .address)
-        self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
-        self.usersGoing = try container.decode([String:String].self, forKey: .usersGoing)
-        self.usersInvite = try container.decode([String:String].self, forKey: .usersInvite)
-        self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
-        self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
-        self.type = try container.decode(Int.self, forKey: .type)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(title, forKey: .title)
-        try container.encode(coordinates, forKey: .coordinates)
-        try container.encode(hosts, forKey: .hosts)
-        try container.encode(description, forKey: .description)
-        try container.encode(address, forKey: .address)
-        try container.encode(maxGuests, forKey: .maxGuests)
-        try container.encode(usersGoing, forKey: .usersGoing)
-        try container.encode(usersInvite, forKey: .usersInvite)
-        try container.encode(startTime, forKey: .startTime)
-        try container.encode(endTime, forKey: .endTime)
-    }
-    
-    public func createEvent() -> Event {
-        return zip_official.createEvent(
-            title: title,
-            coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
-            hosts: hosts.keys.map( { User(userId: $0 )} ),
-            description: description,
-            address: address,
-            maxGuests: maxGuests,
-            usersGoing: usersGoing.keys.map( { User(userId: $0 )} ),
-            usersInvite: usersInvite.keys.map( { User(userId: $0 )} ),
-            startTime: startTime.dateValue(),
-            endTime: endTime.dateValue(),
-            type: EventType(rawValue: type) ?? .Event
-        )
-    }
-}
-
 extension DatabaseManager {
     
     //    public func updateEvent(path: String, updateDetails: Event, completion: @escaping (Result<Any, Error>) -> Void) {
@@ -106,22 +32,7 @@ extension DatabaseManager {
     //        //MARK: Yianni job for front end integration
     //        completion(.success(value))
     //    }
-    
-    //MARK: INCOMPLETE WILL COME BACK TOO
-    //    public func PullEvent(path: String, type: Int, completion: @escaping (Result<Any, Error>) -> Void) {
-    //        database.child("EventFull/\(path)").observeSingleEvent(of: .value, with: { snapshot in
-    //            guard let value = snapshot.value as? [String: Any] else {
-    //                print("failed to fetch user profile")
-    //                completion(.failure(DatabaseError.failedToFetch))
-    //                return
-    //            }
-    //            guard let fullname = value["name"] as? String else {
-    //                      print("retuning SubView")
-    //                      return
-    //            }
-    //            completion(.success(value))
-    //        }
-    //    }
+
     
     public func loadEvent(key: String, completion: @escaping (Result<Event, Error>) -> Void){
         firestore.collection("EventProfiles").document(key).getDocument(as: EventCoder.self)  { result in
@@ -151,14 +62,6 @@ extension DatabaseManager {
     }
     
     
-    
-    public func testWrite() {
-        let testdata: [String:Any] = [
-            "test1" : 4,
-            "test3" : true
-        ]
-        firestore.collection("Events").document("test1234").setData(testdata)
-    }
     
     public func createEvent(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
         let eventDataDict: [String:Any] = [
