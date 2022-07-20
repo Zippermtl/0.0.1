@@ -269,7 +269,7 @@ class LeftOrientedFlowLayout : UICollectionViewFlowLayout {
 }
 
 
-enum Interests: Int, CaseIterable, CustomStringConvertible {
+enum Interests: Int, CaseIterable, CustomStringConvertible, Codable {
     case acting
     case activism
     case art
@@ -474,5 +474,108 @@ enum Interests: Int, CaseIterable, CustomStringConvertible {
         case .writing: return "Writing"
         case .yoga: return "Yoga"
         }
+    }
+    
+    enum CodingKeys: CodingKey {
+        case acting
+        case activism
+        case art
+        case astrology
+        case athlete
+        case blm
+        case baking
+        case basketball
+        case bingeWatching
+        case blogging
+        case boardGames
+        case brunch
+        case cannabis
+        case cars
+        case catLover
+        case chess
+        case climateChange
+        case climbing
+        case coding
+        case coffee
+        case collecting
+        case comedy
+        case cooking
+        case craftBeer
+        case crossfit
+        case cycling
+        case diy
+        case djing
+        case dancing
+        case dogLover
+        case environmentalism
+        case fashion
+        case feminism
+        case festivals
+        case fishing
+        case foodie
+        case football
+        case gardening
+        case givingAdvice
+        case golf
+        case grabADrink
+        case graphicDesign
+        case greekLife
+        case gymnastics
+        case hiking
+        case history
+        case hockey
+        case iceSkating
+        case karaoke
+        case lgbtq
+        case lgbtqRights
+        case language
+        case learning
+        case makeup
+        case makingMusic
+        case mathematics
+        case mentalHealthAwareness
+        case military
+        case mixology
+        case movies
+        case museum
+        case music
+        case outdoors
+        case partying
+        case photography
+        case picnicking
+        case poetry
+        case politics
+        case puzzles
+        case rapping
+        case reading
+        case roadTrips
+        case running
+        case science
+        case shopping
+        case singing
+        case skiing
+        case sleeping
+        case snowboarding
+        case soccer
+        case spirituality
+        case sports
+        case surfing
+        case swimming
+        case tattoos
+        case tea
+        case thrifting
+        case travel
+        case trivia
+        case vegan
+        case vegetarian
+        case videoGames
+        case vlogging
+        case volunteering
+        case voterRights
+        case walking
+        case wine
+        case workingOut
+        case writing
+        case yoga
     }
 }
