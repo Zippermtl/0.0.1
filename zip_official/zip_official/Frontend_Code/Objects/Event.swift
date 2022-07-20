@@ -9,9 +9,122 @@ import Foundation
 import UIKit
 import CoreLocation
 
-//for future, enumerate event type
+extension EventType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .Event: return "Event"
+        case .Public: return "Public Event"
+        case .Private: return "Private Event"
+        case .Friends: return "Zips Event"
+        case .Promoter: return "Promoter Event"
+        }
+    }
+    
+    public var color: UIColor {
+        switch self {
+        case .Event: return .zipYellow
+        case .Public: return .zipGreen
+        case .Private: return .zipBlue
+        case .Friends: return .zipBlue
+        case .Promoter: return .zipYellow
+        }
+    }
+}
 
-public class Event {
+
+public class Event : Encodable {
+    enum CodingKeys: String, CodingKey {
+        case eventId
+        case title
+        case coordinates
+        case hosts
+        case description
+        case address
+        case maxGuests = "max"
+        case usersGoing
+        case usersInvite
+        case startTime
+        case endTime
+        case type
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(eventId, forKey: .eventId)
+        try container.encode(title, forKey: .title)
+        try container.encode(["lat" : latitude, "long": longitude], forKey: .coordinates)
+        try container.encode(Dictionary(uniqueKeysWithValues: hosts.map { ($0.userId, $0.fullName )}), forKey: .hosts)
+        try container.encode(description, forKey: .description)
+        try container.encode(address, forKey: .address)
+        try container.encode(maxGuests, forKey: .maxGuests)
+        try container.encode(Dictionary(uniqueKeysWithValues: usersGoing.map { ($0.userId, $0.fullName )}), forKey: .usersGoing)
+        try container.encode(Dictionary(uniqueKeysWithValues: usersInvite.map { ($0.userId, $0.fullName )}), forKey: .usersInvite)
+        try container.encode(startTime, forKey: .startTime)
+        try container.encode(endTime, forKey: .endTime)
+    }
+    
+//    enum CodingKeys: String, CodingKey {
+//        case eventId
+//        case title
+//        case latitude
+//        case longitude
+//        case description
+//        case address
+//        case startTime
+//        case endTime
+//        case maxGuests
+//        case hosts
+//        case usersInvite
+//
+//        case locationName
+//        case usersInterested
+//        case duration
+//        case imageUrl
+//        case image
+//    }
+//
+//    public required init(from decoder: Decoder) throws {
+//        let container = try decoder.container(keyedBy: CodingKeys.self)
+//        self.eventId = try container.decode(String.self, forKey: .eventId)
+//        self.title = try container.decode(String.self, forKey: .title)
+//        let lat = try container.decode(Double.self, forKey: .latitude)
+//        let long = try container.decode(Double.self, forKey: .longitude)
+//        self.coordinates = CLLocation(latitude: lat, longitude: long)
+//        self.description = try container.decode(String.self, forKey: .description)
+//
+//        let startTimeDouble = try  container.decode(Double.self, forKey: .startTime)
+//        self.startTime = Date(timeIntervalSince1970: startTimeDouble)
+//
+//        let endTimeDouble = try  container.decode(Double.self, forKey: .endTime)
+//        self.endTime = Date(timeIntervalSince1970: endTimeDouble)
+//
+//        self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
+//
+//        let hostsDict = try container.decode([String:String].self, forKey: .hosts)
+//        self.hosts = hostsDict.keys.map { User(userId: $0) }
+//
+//        let inviteDict = try container.decode([String:String].self, forKey: .usersInvite)
+//        self.usersInvite = inviteDict.keys.map { User(userId: $0) }
+//    }
+//
+//    public func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self)
+//        try container.encode(eventId, forKey: .eventId)
+//        try container.encode(title, forKey: .title)
+//
+//        try container.encode(coordinates.coordinate.latitude, forKey: .latitude)
+//        try container.encode(coordinates.coordinate.longitude, forKey: .longitude)
+//        try container.encode(description, forKey: .description)
+//        try container.encode(address, forKey: .address)
+//        try container.encode(startTime.timeIntervalSince1970, forKey: .startTime)
+//        try container.encode(endTime.timeIntervalSince1970, forKey: .endTime)
+//        try container.encode(maxGuests, forKey: .maxGuests)
+//        try container.encode(Dictionary(uniqueKeysWithValues: hosts.map { ($0.userId, $0.fullName )}), forKey: .usersInvite)
+//        try container.encode(Dictionary(uniqueKeysWithValues: usersInvite.map { ($0.userId, $0.fullName )}), forKey: .hosts)
+//    }
+    
+    
+    
     var eventId: String = ""
     var title: String = ""
     
@@ -33,6 +146,15 @@ public class Event {
     var duration: TimeInterval = TimeInterval(1)
     var imageUrl: URL = URL(string: "a")!
     var image: UIImage? = UIImage(named: "launchevent")
+    
+    var latitude : Double {
+        return coordinates.coordinate.latitude
+    }
+    
+    var longitude : Double {
+        return coordinates.coordinate.longitude
+    }
+    
     
     var startTimeString: String {
         let formatter = DateFormatter()
