@@ -184,31 +184,33 @@ extension NotificationsViewController: UITableViewDataSource {
         default: tableData = notificationsEarlier
         }
         
-        switch tableData[indexPath.row].type {
-        case .news:
-            let cell = tableView.dequeueReusableCell(withIdentifier: NewsNotificationTableViewCell.identifier) as! NewsNotificationTableViewCell
-            cell.configure(with: tableData[indexPath.row])
-            return cell
-        case .eventPublic:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EventPublicTableViewCell.identifier) as! EventPublicTableViewCell
-            cell.configure(with: tableData[indexPath.row])
-            return cell
-        case .eventInvite:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EventInviteTableViewCell.identifier) as! EventInviteTableViewCell
-            cell.configure(with: tableData[indexPath.row])
-            return cell
-        case .eventTimeChange, .eventAddressChange, .eventLimitedSpots:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EventUpdateTableViewCell.identifier) as! EventUpdateTableViewCell
-            cell.configure(with: tableData[indexPath.row])
-            return cell
-        case .zipAccepted:
-            let cell = tableView.dequeueReusableCell(withIdentifier: ZipAcceptedTableViewCell.identifier) as! ZipAcceptedTableViewCell
-            cell.configure(with: tableData[indexPath.row])
-            return cell
-        case .zipRequest:
-            // shouldn't happen because this goes somewhere else
-            return UITableViewCell()
-        }
+//        switch tableData[indexPath.row].type {
+//        case .news:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: NewsNotificationTableViewCell.identifier) as! NewsNotificationTableViewCell
+//            cell.configure(with: tableData[indexPath.row])
+//            return cell
+//        case .eventPublic:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: EventPublicTableViewCell.identifier) as! EventPublicTableViewCell
+//            cell.configure(with: tableData[indexPath.row])
+//            return cell
+//        case .eventInvite:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: EventInviteTableViewCell.identifier) as! EventInviteTableViewCell
+//            cell.configure(with: tableData[indexPath.row])
+//            return cell
+//        case .eventTimeChange, .eventAddressChange, .eventLimitedSpots:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: EventUpdateTableViewCell.identifier) as! EventUpdateTableViewCell
+//            cell.configure(with: tableData[indexPath.row])
+//            return cell
+//        case .zipAccepted:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: ZipAcceptedTableViewCell.identifier) as! ZipAcceptedTableViewCell
+//            cell.configure(with: tableData[indexPath.row])
+//            return cell
+//        case .zipRequest:
+//            // shouldn't happen because this goes somewhere else
+//            return UITableViewCell()
+//        }
+        
+        return UITableViewCell()
     }
 }
 
@@ -216,28 +218,28 @@ extension NotificationsViewController: UITableViewDataSource {
 
 extension NotificationsViewController {
     func generateData() {
-        let newsUpdate = ZipNotification(type: .news, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: false)
-        let publicEvent = ZipNotification(type: .eventPublic, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: true)
-        let privateEvent = ZipNotification(type: .eventInvite, image: UIImage(named: "yianni1")!, time: TimeInterval(96400), hasRead: true)
-        let eventTimeChange = ZipNotification(type: .eventTimeChange, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: false)
-        let eventAddressChange = ZipNotification(type: .eventAddressChange, image: UIImage(named: "launchevent")!, time: TimeInterval(200), hasRead: false)
-        let eventLimitedSpots = ZipNotification(type: .eventLimitedSpots, image: UIImage(named: "launchevent")!, time: TimeInterval(2000), hasRead: false)
-        let zipAccepted = ZipNotification(type: .zipAccepted, image: UIImage(named: "yianni1")!, time: TimeInterval(2000), hasRead: true)
-        
-        notificationsNew.append(newsUpdate)
-        notificationsNew.append(eventTimeChange)
-        notificationsNew.append(eventLimitedSpots)
-        notificationsNew.append(eventAddressChange)
-        
-        notificationsToday.append(publicEvent)
-        notificationsToday.append(zipAccepted)
-
-        notificationsEarlier.append(privateEvent)
-        
-        
-        notificationsNew.sort(by: { $0.time < $1.time})
-        notificationsToday.sort(by: { $0.time < $1.time})
-        notificationsEarlier.sort(by: { $0.time < $1.time})
+//        let newsUpdate = ZipNotification(type: .news, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: false)
+//        let publicEvent = ZipNotification(type: .eventPublic, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: true)
+//        let privateEvent = ZipNotification(type: .eventInvite, image: UIImage(named: "yianni1")!, time: TimeInterval(96400), hasRead: true)
+//        let eventTimeChange = ZipNotification(type: .eventTimeChange, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: false)
+//        let eventAddressChange = ZipNotification(type: .eventAddressChange, image: UIImage(named: "launchevent")!, time: TimeInterval(200), hasRead: false)
+//        let eventLimitedSpots = ZipNotification(type: .eventLimitedSpots, image: UIImage(named: "launchevent")!, time: TimeInterval(2000), hasRead: false)
+//        let zipAccepted = ZipNotification(type: .zipAccepted, image: UIImage(named: "yianni1")!, time: TimeInterval(2000), hasRead: true)
+//
+//        notificationsNew.append(newsUpdate)
+//        notificationsNew.append(eventTimeChange)
+//        notificationsNew.append(eventLimitedSpots)
+//        notificationsNew.append(eventAddressChange)
+//
+//        notificationsToday.append(publicEvent)
+//        notificationsToday.append(zipAccepted)
+//
+//        notificationsEarlier.append(privateEvent)
+//
+//
+//        notificationsNew.sort(by: { $0.time < $1.time})
+//        notificationsToday.sort(by: { $0.time < $1.time})
+//        notificationsEarlier.sort(by: { $0.time < $1.time})
 
 
     }
