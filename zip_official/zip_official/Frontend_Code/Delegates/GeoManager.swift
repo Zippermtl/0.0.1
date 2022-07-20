@@ -74,12 +74,13 @@ class GeoManager {
         }
         //adds test set to test1 -> test4 inclusive
 //        createTestCodeZip()
-        DatabaseManager.shared.updateLocationUserLookUp(location: CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), completion: { success in
-            if success {
-                print("successfully updated self userlookup")
-            } else {
+        DatabaseManager.shared.updateLocationUserLookUp(location: CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), completion: { err in
+            guard err == nil else {
                 print("failed to updated self userlookup")
+                return
             }
+            print("successfully updated self userlookup")
+           
         })
     }
     
@@ -223,7 +224,7 @@ class GeoManager {
     public func LoadUsers(size: Int){
         print("LoadUsers \(size) with array size \(userIdList.count)")
         for _ in 0..<size{
-            DatabaseManager.shared.loadUserProfileZipFinder(given: userIdList[0], completion: { [weak self] result in
+            DatabaseManager.shared.loadUserProfile(given: userIdList[0], completion: { [weak self] result in
                 switch result {
                 case .success(let user):
                     self?.loadedUsers.append(user)
