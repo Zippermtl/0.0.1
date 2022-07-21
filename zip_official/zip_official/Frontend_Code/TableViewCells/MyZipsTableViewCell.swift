@@ -43,7 +43,7 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
         extraInfoLabel.text = "@" + user.username
         
         switch user.friendshipStatus {
-        case .NO_RELATION:
+        case .none:
             requestButton.isHidden = false
             requestButton.isSelected = false
         case .REQUESTED_INCOMING:

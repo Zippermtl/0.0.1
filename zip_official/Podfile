@@ -22,11 +22,14 @@ pod 'UIImageCropper'
 
 #FireBase
 pod 'Firebase/Core'
+pod 'Firebase/Firestore'
 pod 'Firebase/Auth'
 pod 'Firebase/Database'
 pod 'Firebase/Analytics'
 pod 'Firebase/Storage'
 pod 'Firebase/Crashlytics'
+pod 'FirebaseFirestoreSwift', '> 7.0-beta'
+pod 'CodableFirebase' 
 
 
 pod 'GeoFire', '~> 4.0'

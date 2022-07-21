@@ -6,34 +6,134 @@
 //
 import Foundation
 import MapKit
+import FirebaseFirestore
 
 
-public class User {
+
+public typealias NotificationPreference = [NotificationSubtype: Bool]
+
+class UserCoder: Codable {
+    var userId: String
+    var username: String
+    var firstName: String
+    var lastName: String
+    var birthday: Timestamp
+    var picNum: Int
+    var bio: String
+    var interests: [Interests]
+    
+    var school: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case userId = "id"
+        case username = "username"
+        case firstName = "firstName"
+        case lastName = "lastName"
+        case birthday = "birthday"
+        case picNum = "picNum"
+        case bio = "bio"
+        case school = "school"
+        case interests = "interests"
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.userId = try container.decode(String.self, forKey: .userId)
+        self.username = try container.decode(String.self, forKey: .username)
+        self.firstName = try container.decode(String.self, forKey: .firstName)
+        self.lastName = try container.decode(String.self, forKey: .lastName)
+        self.picNum = try container.decode(Int.self, forKey: .picNum)
+        self.bio = try container.decode(String.self, forKey: .bio)
+        self.school = try container.decode(String.self, forKey: .school)
+        self.interests = try container.decode([Interests].self, forKey: .interests)
+        self.birthday = try container.decode(Timestamp.self, forKey: .birthday)
+        self.school = try container.decode(String.self, forKey: .school)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(userId, forKey: .userId)
+        try container.encode(username, forKey: .username)
+        try container.encode(firstName, forKey: .firstName)
+        try container.encode(lastName, forKey: .lastName)
+        try container.encode(birthday, forKey: .picNum)
+        try container.encode(bio, forKey: .bio)
+        try container.encode(picNum, forKey: .picNum)
+        try container.encode(school, forKey: .school)
+        try container.encode(interests, forKey: .interests)
+    }
+    
+    
+    public func createUser() -> User{
+        return User(
+            userId: userId,
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            birthday: birthday.dateValue(),
+            picNum: picNum,
+            bio: bio,
+            school: school,
+            interests: interests
+        )
+    }
+    
+    public func updateUser(_ user: User) {
+        user.userId = userId
+        user.username = username
+        user.firstName = firstName
+        user.lastName = lastName
+        user.birthday = birthday.dateValue()
+        user.picNum = picNum
+        user.bio = bio
+        user.school = school
+        user.interests = interests
+    }
+
+}
+
+public class User : CustomStringConvertible {
     var userId: String = ""
-    var email: String = ""
     var username: String = ""
     var firstName: String = ""
     var lastName: String = ""
-    var zipped: Bool = false
-    var distance: Double = 0
     var birthday: Date = Date()
-    var age: Int = 18
-    var location: CLLocation = CLLocation(latitude: 0, longitude: 0)
     var picNum: Int = 0
-    var pictures: [UIImage] = []
-    var pictureURLs: [URL] = []
     var bio: String = ""
     var school: String?
     var interests: [Interests] = []
+    var friendships: [Friendship] = []
+    var notificationPreferences: NotificationPreference = [:]
+    
+    var email: String?
+    var friendshipStatus: FriendshipStatus?
+    
+    var location: CLLocation = CLLocation()
+    var pictures: [UIImage] = []
+    var pictureURLs: [URL] = []
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
-    var interestedEvents: [Event] = []
-    var notificationPreferences: [String: Bool] = [:] // Notification Preferences
-    var friendships: [Friendship] = [] // Friendship Preferences
-    var friendshipStatus: FriendshipStatus = .ACCEPTED
-    
+
+    public var description : String {
+        var out = ""
+        out += "userId = \(userId) \n"
+        out += "username = \(username) \n"
+        out += "firstname = \(firstName) \n"
+        out += "lastname = \(lastName) \n"
+        out += "birthday = \(birthdayString) \n"
+        out += "picnum = \(picNum) \n"
+        out += "bio = \(bio) \n"
+        out += "school = \(school ?? "") \n"
+        out += "interests = \(interests) \n"
+        return out
+
+    }
     
     var joinDate = Date()
+    
+    var age: Int {
+        return Calendar.current.dateComponents([.year], from: birthday, to: Date()).year!
+    }
 
     var profilePicUrl : URL {
         return pictureURLs[0]
@@ -52,10 +152,10 @@ public class User {
 
     func getDistance() -> Double {
         guard let coordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
-            return 0
+            return -1.0
         }
         let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
-
+        
         return userLoc.distance(from: location)
     }
     
@@ -193,16 +293,13 @@ public class User {
         notificationPreferences = DecodePreferences(np)
     }
 
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", zipped zip: Bool = false, distance dis: Double = 0, birthday bd: Date = Date(), age a: Int = 18, location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], interestedEvents intere: [Event] = [], notificationPreferences np: [String: Bool] = [:], encodedNotifPref enp: Int? = 0) {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0) {
         userId = id
         email = em
         username = us
         firstName = fn
         lastName = ln
-        zipped = zip
-        distance = dis
         birthday = bd
-        age = a
         location = loc
         picNum = pn
         pictures = pics
@@ -212,7 +309,6 @@ public class User {
         interests = inters
         previousEvents = preve
         goingEvents = goinge
-        interestedEvents = intere
         if (enp == 0){
             notificationPreferences = np
         } else {
@@ -239,36 +335,36 @@ public class User {
     }
     
     func report(reason: String) {
-        let smtpSession = MCOSMTPSession()
-        smtpSession.hostname = "smtp.gmail.com"
-        smtpSession.username = "contact.zippermtl@gmail.com"
-        smtpSession.password = "PASSWORD_INSERT_HERE"
-        smtpSession.port = 465
-        smtpSession.authType = MCOAuthType.saslPlain
-        smtpSession.connectionType = MCOConnectionType.TLS
-        smtpSession.connectionLogger = {(connectionID, type, data) in
-            if data != nil {
-                if let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue){
-                    NSLog("Connectionlogger: \(string)")
-                }
-            }
-        }
-
-        let builder = MCOMessageBuilder()
-        builder.header.to = [MCOAddress(displayName: "Zipper MTL", mailbox: "contact.zippermtl@gmail.com")!]
-        builder.header.from = MCOAddress(displayName: "Zipper App", mailbox: "contact.zippermtl@gmail.com")
-        builder.header.subject = "User Report"
-        builder.htmlBody = "<p><b>\(userId)</b> was reported!</p><p>Reason: \(reason).</p>"
-
-        let rfc822Data = builder.data()
-        let sendOperation = smtpSession.sendOperation(with: rfc822Data)
-        sendOperation!.start {(error) -> Void in
-            if (error != nil) {
-                NSLog("Error sending email: \(String(describing: error))")
-            } else {
-                NSLog("Successfully sent email!")
-            }
-        }
+//        let smtpSession = MCOSMTPSession()
+//        smtpSession.hostname = "smtp.gmail.com"
+//        smtpSession.username = "contact.zippermtl@gmail.com"
+//        smtpSession.password = "PASSWORD_INSERT_HERE"
+//        smtpSession.port = 465
+//        smtpSession.authType = MCOAuthType.saslPlain
+//        smtpSession.connectionType = MCOConnectionType.TLS
+//        smtpSession.connectionLogger = {(connectionID, type, data) in
+//            if data != nil {
+//                if let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue){
+//                    NSLog("Connectionlogger: \(string)")
+//                }
+//            }
+//        }
+//
+//        let builder = MCOMessageBuilder()
+//        builder.header.to = [MCOAddress(displayName: "Zipper MTL", mailbox: "contact.zippermtl@gmail.com")!]
+//        builder.header.from = MCOAddress(displayName: "Zipper App", mailbox: "contact.zippermtl@gmail.com")
+//        builder.header.subject = "User Report"
+//        builder.htmlBody = "<p><b>\(userId)</b> was reported!</p><p>Reason: \(reason).</p>"
+//
+//        let rfc822Data = builder.data()
+//        let sendOperation = smtpSession.sendOperation(with: rfc822Data)
+//        sendOperation!.start {(error) -> Void in
+//            if (error != nil) {
+//                NSLog("Error sending email: \(String(describing: error))")
+//            } else {
+//                NSLog("Successfully sent email!")
+//            }
+//        }
     }
 
     // Load your own friendships
@@ -276,6 +372,7 @@ public class User {
         User.getCurrentUser().loadFriendships(completion: {result in completion(result)})
     }
     
+    /* UN NEEDED FUNCTIONS - SHOULD BE UDPATING FOR EVERY FRIENDSHIP CHANGE ANYWAY
     // Update someone's friendships
     func updateFriendships(completion: @escaping (Bool) -> Void) {
         DatabaseManager.shared.updateUserFriendships(of: self, completion: {result in completion(result)})
@@ -285,6 +382,7 @@ public class User {
     static func updateFriendships(completion: @escaping (Bool) -> Void) {
         User.getCurrentUser().updateFriendships(completion: {result in completion(result)})
     }
+     */
     
     // Get someone's friend's list
     func getFriendsList(completion: @escaping (Result<[User],Error>) -> Void) {
@@ -375,146 +473,76 @@ public class User {
         User.getCurrentUser().getOutgoingRequests(completion: {result in completion(result)})
     }
 
-    // Private helper function
-    private func makeFriend(with user: User, status: FriendshipStatus = .ACCEPTED, completion: @escaping (Bool) -> Void) {
-        for friendship in friendships {
-            if friendship.receiver.userId == user.userId {
-                if (friendship.status != status) {
-                    friendship.status = status
-                    updateFriendships(completion: {result in completion(result)})
-                }
+    func unsendRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.unsendRequest(user: self) {  [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
+            strongSelf.friendshipStatus = nil
+            selfFriendships.removeValue(forKey: strongSelf.userId)
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
         }
-        friendships.append(Friendship(to: user, status: status))
-        updateFriendships(completion: {result in completion(result)})
     }
-
+    
     // Requests a friend
-    func requestFriend(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
+    func sendRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.sendRequest(user: self) {  [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
+            strongSelf.friendshipStatus = .REQUESTED_OUTGOING
+            selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
 
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // Recipient has already made a friend request
-                            case.REQUESTED_INCOMING:
-                                friendship.status = .ACCEPTED
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.makeFriend(with: current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                }
-
-                // If friendship not found in list, add it
-                current.friendships.append(Friendship(to: self!, status: .REQUESTED_OUTGOING))
-                current.updateFriendships(completion: {result in completion(result)})
-                self?.makeFriend(with: current, status: .REQUESTED_INCOMING, completion: {result in completion(result)})
-            })
-        })
+        }
     }
 
     // Accepts a friend (who made a friend request)
-    func acceptFriend(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
+    func acceptRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.acceptRequest(user: self) { [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
-
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // Recipient has already made a friend request
-                            case.REQUESTED_INCOMING:
-                                friendship.status = .ACCEPTED
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.makeFriend(with: current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                }
-            })
-        })
+            strongSelf.friendshipStatus = .ACCEPTED
+            selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+        }
     
     }
 
-    // Private helper function
-    private func popFriend(_ user: User, completion: @escaping (Bool) -> Void) {
-        var index = 0
-        for friendship in friendships {
-            if friendship.receiver.userId == user.userId {
-                friendships.remove(at: index)
-                updateFriendships(completion: {result in completion(result)})
+    // Rejects a friend (who made a friend request)
+    func rejectRequest(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.rejectRequest(user: self) { [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
-            index += 1
+            strongSelf.friendshipStatus = nil
+            selfFriendships.removeValue(forKey: strongSelf.userId)
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
         }
     }
-
-    // Rejects a friend (who made a friend request)
-    func rejectFriend(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
+    
+    func unfriend(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.unfriend(user: self) {  [weak self] error in
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+                  let strongSelf = self,
+                    error == nil else {
                 return
             }
-            
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-        
-                var index = 0
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // Recipient has already made a friend request
-                            case.REQUESTED_INCOMING:
-                                current.friendships.remove(at: index)
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.popFriend(current, completion: {result in completion(result)})
-                            // People are already friends
-                            case.ACCEPTED:
-                                current.friendships.remove(at: index)
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.popFriend(current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                    index += 1
-                }
-                
-            })
-        })
+            strongSelf.friendshipStatus = nil
+            selfFriendships.removeValue(forKey: strongSelf.userId)
+            AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+        }
     }
+    
 
    
     
@@ -524,8 +552,6 @@ public class User {
                     lastName ln: String = "",
                     distance dis: Double = 0,
                     birthday bd: Date = Date(),
-                    age a: Int = 0,
-                    location loc: CLLocation = CLLocation(latitude: 0, longitude: 0),
                     picNum pn: Int = 0, pictures pics: [UIImage] = [],
                     pictureURLs picurls: [URL] = [],
                     bio b: String = "",
@@ -533,8 +559,7 @@ public class User {
                     interests inters: [Interests] = [],
                     previousEvents preve: [Event] = [],
                     goingEvents goinge: [Event] = [],
-                    interestedEvents intere: [Event] = [],
-                    notificationPreferences np: [String: Bool] = [:],
+                    notificationPreferences np: NotificationPreference = [:],
                     encodedNotifPref enp: Int? = 0){
         
         if (em != "") {
@@ -549,17 +574,8 @@ public class User {
         if (ln != "") {
             lastName = ln
         }
-        if (dis != 0) {
-            distance = dis
-        }
         if (bd != Date()) {
             birthday = bd
-        }
-        if (a != 0) {
-            age = a
-        }
-        if (loc != CLLocation(latitude: 0, longitude: 0)) {
-            location = loc
         }
         if (pn != 0) {
             picNum = pn
@@ -585,9 +601,6 @@ public class User {
         if (goinge.count != 0) {
             goingEvents = goinge
         }
-        if (intere.count != 0) {
-            interestedEvents = intere
-        }
         if (enp != 0 && np != [:]) {
             notificationPreferences = np
         } else if (enp == 0) {
@@ -601,9 +614,8 @@ public class User {
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
     func load(status: Int, completion: @escaping (Bool) -> Void) {
         switch status{
-        
         case 1:
-            DatabaseManager.shared.loadUserProfileZipFinder(given: self, completion: { results in
+            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
                 switch results {
                 case .success(let user):
                     print("completed user profile copy for: ")
@@ -627,7 +639,7 @@ public class User {
                 }
             })
         case 3:
-            DatabaseManager.shared.loadUserProfileSubViewNoLoc(given: userId, completion: { results in
+            DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
                 switch results {
                 case .success(let user):
                     print("completed user profile copy for: ")
@@ -641,7 +653,7 @@ public class User {
         case 4:
             print("add this later for expansion")
         default:
-            DatabaseManager.shared.loadUserProfile(given: userId, completion: { results in
+            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
                 switch results {
                 case .success(let user):
                     print("completed user profile copy for: ")
@@ -661,38 +673,4 @@ public class User {
         User.getCurrentUser().load(status: status, completion: {result in completion(result)})
     }
     
-    // Cancels a friend request
-    func cancelFriendRequest(completion: @escaping (Bool) -> Void) {
-        let current = User.getCurrentUser()
-        current.loadFriendships(completion: { [weak self] error in
-            guard error == nil else {
-                completion(false)
-                return
-            }
-            
-            self?.loadFriendships(completion: { [weak self] error in
-                guard error == nil else {
-                    completion(false)
-                    return
-                }
-        
-                var index = 0
-                for friendship in current.friendships {
-                    if friendship.receiver.userId == self?.userId {
-                        switch (friendship.status) {
-                            // User has made a friend request
-                            case.REQUESTED_OUTGOING:
-                                current.friendships.remove(at: index)
-                                current.updateFriendships(completion: {result in completion(result)})
-                                self?.popFriend(current, completion: {result in completion(result)})
-                            // Don't do anything
-                            default: return
-                        }
-                        return
-                    }
-                    index += 1
-                }
-            })
-        })
-    }
 }

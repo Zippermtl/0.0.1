@@ -66,6 +66,7 @@ class ProfileViewController: AbstractProfileViewController {
     
     override func didTapCenterActionButton() {
         let editView = EditProfileViewController(user: user)
+        editView.delegate = self
         editView.modalPresentationStyle = .overCurrentContext
         
         let transition: CATransition = CATransition()
@@ -107,3 +108,10 @@ class ProfileViewController: AbstractProfileViewController {
 
 }
 
+extension ProfileViewController: UpdateUserFromEditProtocol {
+    func updateUser() {
+        print("updating")
+        tableView.reloadData()
+        title = user.username
+    }
+}

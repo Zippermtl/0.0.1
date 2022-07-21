@@ -98,17 +98,17 @@ extension NewChatViewController: UISearchBarDelegate {
             filterUsers(with: query)
         } else {
             // if not, fetch then filter
-            DatabaseManager.shared.getAllusers(completion: { [weak self] result in
-                switch result {
-                case .success(let userCollection):
-                    self?.hasFetched = true
-                    self?.users = userCollection
-                    self?.filterUsers(with: query)
-                case .failure(let error):
-                    print("Failed to get users: \(error)")
-                }
-                
-            })
+//            DatabaseManager.shared.getAllusers(completion: { [weak self] result in
+//                switch result {
+//                case .success(let userCollection):
+//                    self?.hasFetched = true
+//                    self?.users = userCollection
+//                    self?.filterUsers(with: query)
+//                case .failure(let error):
+//                    print("Failed to get users: \(error)")
+//                }
+//                
+//            })
         }
         
         

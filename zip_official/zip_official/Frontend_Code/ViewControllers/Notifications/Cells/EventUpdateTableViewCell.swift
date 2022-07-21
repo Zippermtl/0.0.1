@@ -69,12 +69,12 @@ class EventUpdateTableViewCell: UITableViewCell {
     
         cellImage.image = notification.image
         
-        switch notification.type {
-        case .eventAddressChange: cellText.text = "Zipper Luanch Party has changed locations!"
-        case .eventTimeChange: cellText.text = "Zipper Luanch Party has changed its time!"
-        case .eventLimitedSpots: cellText.text = "Zipper Luanch Party has limited spots!"
-        default: cellText.text = "Zipper Luanch Party just updated its information!"
-        }
+//        switch notification.type {
+//        case .eventAddressChange: cellText.text = "Zipper Luanch Party has changed locations!"
+//        case .eventTimeChange: cellText.text = "Zipper Luanch Party has changed its time!"
+//        case .eventLimitedSpots: cellText.text = "Zipper Luanch Party has limited spots!"
+//        default: cellText.text = "Zipper Luanch Party just updated its information!"
+//        }
         
         
         if notification.time < 60 {

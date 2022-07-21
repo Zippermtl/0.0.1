@@ -55,8 +55,8 @@ extension EditEventProfileViewController: OpenGMSCellDelegate {
             fatalError("init(coder:) has not been implemented")
         }
     
-        public func configure(event: Event) {
-            super.configure(label: "Location", content: event.address)
+        public func configure(event: Event, saveFunc: @escaping (String) -> Void) {
+            super.configure(label: "Location", content: event.address, saveFunc: saveFunc)
         }
         
         func textViewDidBeginEditing(_ textView: UITextView) {

@@ -122,7 +122,7 @@ class PermissionsSetupViewController: UIViewController {
         let label = UILabel()
         label.textColor = .zipVeryLightGray
         label.font = .zipBodyBold.withSize(12)
-        label.text = "RECOMMENDED"
+        label.text = "Recommended"
         return label
     }()
     
@@ -133,80 +133,49 @@ class PermissionsSetupViewController: UIViewController {
         
         user.notificationPreferences =
         [
-            "pause_all" : false,
-            "news_update" : true,
-            "zip_requests" : true,
-            "accepted_zip_requests" : true,
-            "messages" : true,
-            "message_requests" : true,
-            "event_invites" : true,
-            "public_events" : true,
-            "one_day_reminders" : true,
-            "changes_to_event_info" : true
+            .pause_all : false,
+            .news_update : true,
+            .zip_request : true,
+            .accepted_zip_request: true,
+            .message : true,
+            .message_request : true,
+            .event_invite : true,
+            .public_event : true,
+            .one_day_reminder : true,
+            .change_to_event_info : true
         ]
                 
-        AppDelegate.userDefaults.set(user.notificationPreferences, forKey: "encodedNotificationSettings")
 
         spinner.show(in: view)
-        DatabaseManager.shared.insertUser(with: user, completion: { [weak self] success in
-            guard let strongSelf = self else {
+        DatabaseManager.shared.insertUser(with: user, completion: { [weak self] error in
+            guard error == nil  else {
+                let actionSheet = UIAlertController(title: "Failed to create User Profile",
+                                                    message: "Try again later",
+                                                    preferredStyle: .actionSheet)
+                
+                actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                self?.present(actionSheet, animated: true)
                 return
             }
-            
-            if success {
-                //upload image
-                guard !strongSelf.user.pictures.isEmpty else {
-                    return
+            DispatchQueue.main.async {
+                if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
+                    print("location services not enabled")
+                    let vc = LocationDeniedViewController()
+                    vc.modalPresentationStyle = .overFullScreen
+                    vc.modalTransitionStyle = .crossDissolve
+                    self?.present(vc, animated: true, completion: nil)
+                } else {
+                    let vc = MapViewController(isNewAccount: true)
+                    vc.modalPresentationStyle = .fullScreen
+                    self?.present(vc, animated: true, completion: nil)
                 }
-                
-                let image = strongSelf.user.pictures[0]
-                guard let data = image.pngData() else {
-                    return
-                }
-                
-                
-                AppDelegate.userDefaults.set(strongSelf.user.userId, forKey: "userId")
-                AppDelegate.userDefaults.set(strongSelf.user.username, forKey: "username")
-                AppDelegate.userDefaults.set((strongSelf.user.fullName), forKey: "name")
-                AppDelegate.userDefaults.set((strongSelf.user.firstName), forKey: "firstName")
-                AppDelegate.userDefaults.set((strongSelf.user.lastName), forKey: "lastName")
-                AppDelegate.userDefaults.set((strongSelf.user.birthday), forKey: "birthday")
-                AppDelegate.userDefaults.set(1, forKey: "picNum")
-                
-                
-                
-                
-                let fileName = strongSelf.user.profilePictureFileName
-                
-                
-                StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { [weak self] results in
-                    switch results {
-                    case .success(let downloadUrl):
-                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
-                    case .failure(let error):
-                        print("Storage Manager Error: \(error)")
-                    }
-                    
-                    DataStorageManager.shared.updateUser()
-                    
-                    DispatchQueue.main.async {
-                        if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
-                            print("location services not enabled")
-                            let vc = LocationDeniedViewController()
-                            vc.modalPresentationStyle = .overFullScreen
-                            vc.modalTransitionStyle = .crossDissolve
-                            self?.present(vc, animated: true, completion: nil)
-                        } else {
-                            let vc = MapViewController(isNewAccount: true)
-                            vc.modalPresentationStyle = .fullScreen
-                            self?.present(vc, animated: true, completion: nil)
-                        }
-                    }
-                })
             }
             
         })
-        
+
     }
     
     @objc private func didTapLocation(){

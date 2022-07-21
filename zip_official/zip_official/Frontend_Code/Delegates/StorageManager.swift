@@ -250,17 +250,13 @@ final class StorageManager {
             
         })
     }
-    public func getProfilePicture(path: String, completion: @escaping (Result<[URL], Error>) -> Void) {
-        var picURLs: [URL] = []
+    public func getProfilePicture(path: String, completion: @escaping (Result<URL, Error>) -> Void) {
         let tempPath = path + "/profile_picture.png"
         self.downloadURL(for: tempPath, completion: { [weak self] result in
             print("got here in getProfilePicture")
             switch result {
             case .success(let url):
-                print(tempPath)
-                print("URL = \(url)")
-                picURLs.append(url)
-                completion(.success(picURLs))
+                completion(.success(url))
             case .failure(let error):
                 print("failed to get image URL: \(error)")
             }

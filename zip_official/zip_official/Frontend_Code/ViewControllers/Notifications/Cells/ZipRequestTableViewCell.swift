@@ -89,7 +89,7 @@ class ZipRequestTableViewCell: UITableViewCell {
     }
     
     public func configure(with request: ZipRequest){
-        DatabaseManager.shared.loadUserProfileSubViewNoLoc(given: request.fromUser.userId, completion: { [weak self] results in
+        DatabaseManager.shared.loadUserProfileSubView(given: request.fromUser.userId, completion: { [weak self] results in
             guard let strongSelf = self else {
                 return
             }

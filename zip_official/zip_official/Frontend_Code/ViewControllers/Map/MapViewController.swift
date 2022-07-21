@@ -98,22 +98,24 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
+//        DatabaseManager.shared.testWrite()
+        
+        
 //        createNewUsersInDB()
 //        updateUsersInDB()
 //
         
 //        let vc = OtherProfileViewController(id: "u2158018458")
-
         
+       
+        
+
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
         let vc = ProfileViewController(id: userId)
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .overCurrentContext
         present(nav, animated: true, completion: nil)
-        
-        let str = "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fimg0.png?alt=media&token=e939c550-6c2b-4049-b863-07ba87db1ffe"
-        print(str.imgNumber)
     }
     
     @objc private func didTapZoom(){
@@ -291,14 +293,14 @@ class MapViewController: UIViewController {
         let startTime = formatter.date(from: "2022/07/08 12:30 PM")!
         let endTime = formatter.date(from: "2022/07/08 1:30 PM")!
         
-        let e1 = PromoterEvent(eventId: "u6501111111_Live-Check_Jul 8, 2022 at 11:08:47 AM EDT",
+        let e1 = PromoterEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
                                coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
                                startTime: startTime,
                                endTime: endTime,
                                imageURL: e1Url)
 //        let e1 = PromoterEvent(coordinates: CLLocation(latitude: 42.456160, longitude: -71.251080), imageURL: e1Url)
 
-        let e2 = PrivateEvent(eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
+        let e2 = PrivateEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
                               coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
                               imageURL: e1Url)
         let event1 = EventAnnotation(event: e1)
@@ -574,26 +576,25 @@ extension MapViewController: NewAccountDelegate {
         vc.user.birthday = AppDelegate.userDefaults.value(forKey: "birthday") as! Date
 
 
-        guard let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
-              let url = URL(string: urlString) else {
-            return
-        }
+//        guard let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+//              let url = URL(string: urlString) else {
+//            return
+//        }
+//
+//        let getDataTask = URLSession.shared.dataTask(with: url, completionHandler: { data, _, error in
+//            guard let data = data, error == nil else {
+//                return
+//            }
+//
+//            DispatchQueue.main.async {
+//                vc.user.pictures.append(UIImage(data: data) ?? UIImage())
+//                vc.collectionView?.reloadData()
+//            }
+//
+//        })
+//
         
-        let getDataTask = URLSession.shared.dataTask(with: url, completionHandler: { data, _, error in
-            guard let data = data, error == nil else {
-                return
-            }
-            
-            DispatchQueue.main.async {
-                vc.user.pictures.append(UIImage(data: data) ?? UIImage())
-                vc.collectionView?.reloadData()
-            }
-            
-        })
         
-        
-        
-        getDataTask.resume()
         
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
@@ -639,16 +640,16 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
@@ -662,16 +663,16 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : false,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : false,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
@@ -685,16 +686,16 @@ extension MapViewController {
             school: "Vanderbilt University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : true,
+                .news_update : false,
+                .zip_request : false,
+                .accepted_zip_request: false,
+                .message : false,
+                .message_request : false,
+                .event_invite : false,
+                .public_event : false,
+                .one_day_reminder : false,
+                .change_to_event_info : false
             ]
         )
         
@@ -708,16 +709,16 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : false,
+                .one_day_reminder : false,
+                .change_to_event_info : false
             ]
         )
         
@@ -731,53 +732,57 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
-        DatabaseManager.shared.insertUser(with: yianni, completion: { success in
-            if success {
-                print("successfully uploaded Yianni")
-            } else {
-                print("failed to upload Yianni")
-            }
-            
-            DatabaseManager.shared.insertUser(with: nicholas, completion: { success in
-                if success {
-                    print("successfully uploaded Nic")
-                } else {
-                    print("failed to upload Nic")
-                }
+        DatabaseManager.shared.insertUser(with: yianni, completion: {  err in
+            guard err == nil else {
                 
-                DatabaseManager.shared.insertUser(with: gabe, completion: { success in
-                    if success {
-                        print("successfully uploaded Gabe")
-                    } else {
-                        print("failed to upload Gabe")
-                    }
+                print("failed to updated Seung")
+                return
+            }
+            print("successfully updated Seung")
+            
+            DatabaseManager.shared.insertUser(with: nicholas, completion: {  err in
+                guard err == nil else {
                     
-                    DatabaseManager.shared.insertUser(with: seung, completion: { success in
-                        if success {
-                            print("successfully uploaded Seung")
-                        } else {
-                            print("failed to upload Seung")
-                        }
+                    print("failed to updated Seung")
+                    return
+                }
+                print("successfully updated Seung")
+                
+                DatabaseManager.shared.insertUser(with: gabe, completion: {  err in
+                    guard err == nil else {
                         
-                        DatabaseManager.shared.insertUser(with: ezra, completion: { success in
-                            if success {
-                                print("successfully uploaded Ezra")
-                            }  else {
-                                print("failed to upload Ezra")
+                        print("failed to updated Seung")
+                        return
+                    }
+                    print("successfully updated Seung")
+                    DatabaseManager.shared.insertUser(with: seung, completion: {  err in
+                        guard err == nil else {
+                            
+                            print("failed to updated Seung")
+                            return
+                        }
+                        print("successfully updated Seung")
+                        
+                        DatabaseManager.shared.insertUser(with: ezra, completion: {  err in
+                            guard err == nil else {
+                                
+                                print("failed to updated Seung")
+                                return
                             }
+                            print("successfully updated Seung")
                         })
                     })
                 })
@@ -804,16 +809,16 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
@@ -827,16 +832,16 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
@@ -850,16 +855,16 @@ extension MapViewController {
             school: "Vanderbilt University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
@@ -873,16 +878,16 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
@@ -896,52 +901,54 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                "pause_all" : false,
-                "news_update" : true,
-                "zip_requests" : true,
-                "accepted_zip_requests" : true,
-                "messages" : true,
-                "message_requests" : true,
-                "event_invites" : true,
-                "public_events" : true,
-                "one_day_reminders" : true,
-                "changes_to_event_info" : true
+                .pause_all : false,
+                .news_update : true,
+                .zip_request : true,
+                .accepted_zip_request: true,
+                .message : true,
+                .message_request : true,
+                .event_invite : true,
+                .public_event : true,
+                .one_day_reminder : true,
+                .change_to_event_info : true
             ]
         )
         
-        DatabaseManager.shared.updateUser(with: yianni, completion: { success in
-            if success {
-                print("successfully updated Yianni")
-            } else {
+        DatabaseManager.shared.updateUser(with: yianni, completion: { err in
+            guard err == nil else {
                 print("failed to updated Yianni")
+                return
             }
+            print("successfully updated Yianni")
             
-            DatabaseManager.shared.updateUser(with: nicholas, completion: { success in
-                if success {
-                    print("successfully updated Nic")
-                } else {
+            DatabaseManager.shared.updateUser(with: nicholas, completion: { err in
+                guard err == nil else {
                     print("failed to updated Nic")
+                    return
                 }
-                DatabaseManager.shared.updateUser(with: gabe, completion: { success in
-                    if success {
-                        print("successfully updated Gabe")
-                    } else {
-                        print("failed to updated Gabe")
-                    }
-                    
-                    DatabaseManager.shared.updateUser(with: ezra, completion: { success in
-                        if success {
-                            print("successfully updated Ezra")
-                        } else {
-                            print("failed to updated Ezra")
-                        }
+                print("successfully updated Nic")
+                DatabaseManager.shared.updateUser(with: gabe, completion: { err in
+                    guard err == nil else {
                         
-                        DatabaseManager.shared.updateUser(with: seung, completion: { success in
-                            if success {
-                                print("successfully updated Seung")
-                            } else {
+                        print("failed to updated Gabe")
+                        return
+                    }
+                    print("successfully updated Gabe")
+                    DatabaseManager.shared.updateUser(with: ezra, completion: { err in
+                        guard err == nil else {
+                            
+                            print("failed to updated Ezra")
+                            return
+                        }
+                        print("successfully updated Ezra")
+                        
+                        DatabaseManager.shared.updateUser(with: seung, completion: { err in
+                            guard err == nil else {
+                                
                                 print("failed to updated Seung")
+                                return
                             }
+                            print("successfully updated Seung")
                         })
                     })
                 })
@@ -986,62 +993,52 @@ extension MapViewController {
         let gabeBirthday = formatter.date(from: "2002/06/06")!
         let eliasBirthday = formatter.date(from: "2002/03/14")!
 
-        var seung = User(email: "seung.choi@gmail.com",
+        let seung = User(email: "seung.choi@gmail.com",
                          username: "seungchoi_",
                          firstName: "Seung",
                          lastName: "Choi",
-//                         name: "Seung Choi",
-                         zipped: true,
                          birthday: seungBirthday,
                          location:  CLLocation(latitude: 51.5014, longitude: -0.1419),
                          pictures: seungpics,
                          bio: "Hey, I'm Seung, rapper/producer and head of Zipper design and marketing",
                          school: "McGill University")
         
-        var ezra = User(userId: "u2158018458",
+        let ezra = User(userId: "u2158018458",
                         email: "ezrataylor55@gmail.com",
                         username: "ezrataylor55",
                         firstName: "Ezra",
                         lastName: "Taylor",
-                        //                         name: "Ezra Taylor",
-                        zipped: false,
                         birthday: ezraBirthday,
                         location: CLLocation(latitude: 51.5313, longitude: -0.1570),
                         pictures: ezrapics,
                         bio: "What's good, I'm Ezra, rapper/producer, sports enthusiast and head of Zipper legal and finance",
                         school: "McGill University")
         
-        var yianni = User(userId: "u9789070602",
+        let yianni = User(userId: "u9789070602",
                           email: "zavalyia@gmail.com",
                           username: "yianni_zav",
                           firstName: "Yianni",
                           lastName: "Zavaliagkos",
-                          //                          name: "Yianni Zavaliagkos",
-                          zipped: true,
                           birthday: yianniBirthday,
                           location: CLLocation(latitude: 51.5013, longitude: -0.2070),
                           pictures: yiannipics,
                           bio: "Yianni. I run this shit. Know the name",
                           school: "McGill Univeristy")
 
-        var elias = User(email: "elias.levy@vanderbilt.edu",
+        let elias = User(email: "elias.levy@vanderbilt.edu",
                          username: "elias.levy",
                          firstName: "Elias",
                          lastName: "Levy",
-//                         name: "Elias Levy",
-                         zipped: true,
                          birthday: eliasBirthday,
                          location: CLLocation(latitude: 51.5013, longitude: -0.5070),
                          pictures: eliaspics,
                          bio: "Hey guys, I'm elias, robotics enthusiast and musician. One of the newest Zipper members. I developed the back end of the app basically making things work behind the scenes",
                          school: "Vanderbilt University")
         
-        var gabe = User(email: "mason.g.denton@vanderbilt.edu",
+        let gabe = User(email: "mason.g.denton@vanderbilt.edu",
                         username: "gabe_denton",
                         firstName: "Gabe",
                         lastName: "Denton",
-//                        name: "Gabe Denton",
-                        zipped: false,
                         birthday: gabeBirthday,
                         location: CLLocation(latitude: 51.5913, longitude: -0.1870),
                         pictures: gabepics,
@@ -1118,7 +1115,6 @@ extension MapViewController {
         let ezraBirthday = formatter.date(from: "2001/10/23")!
         let yianniBirthday = formatter.date(from: "2001/12/06")!
         let gabeBirthday = formatter.date(from: "2002/06/06")!
-        let eliasBirthday = formatter.date(from: "2002/03/14")!
 
         var seunginterests = [Interests]()
         var ezrainterests = [Interests]()
@@ -1163,13 +1159,12 @@ extension MapViewController {
         gabeinterests.sort(by: {$0.rawValue < $1.rawValue})
         eliasinterests.sort(by: {$0.rawValue < $1.rawValue})
 
-        var seung = User(userId: "u65044444444",
+        let seung = User(userId: "u65044444444",
                          email: "seung.choi@gmail.com",
                          username: "seungchoi_",
                          firstName: "Seung",
                          lastName: "Choi",
 //                         name: "Seung Choi",
-                         zipped: true,
                          birthday: seungBirthday,
                          location: CLLocation(latitude: 51.5014, longitude: -0.1419), //CLLocation(latitude: 45.5017, longitude: -73.5673),
                          pictures: seungpics,
@@ -1177,13 +1172,12 @@ extension MapViewController {
                          school: "McGill University",
                          interests: seunginterests)
         
-        var ezra = User(userId: "u2158018458",
+        let ezra = User(userId: "u2158018458",
                         email: "ezrataylor55@gmail.com",
                          username: "ezrataylor55",
                          firstName: "Ezra",
                          lastName: "Taylor",
 //                         name: "Ezra Taylor",
-                         zipped: false,
                          birthday: ezraBirthday,
                          location: CLLocation(latitude: 51.5313, longitude: -0.1570), //CLLocation(latitude: 45.4917, longitude: -73.4973),
                          pictures: ezrapics,
@@ -1191,15 +1185,14 @@ extension MapViewController {
                          school: "McGill University",
                          interests: ezrainterests)
         
-        ezra.friendshipStatus = .NO_RELATION
+        ezra.friendshipStatus = nil
         
-        var yianni = User(userId: "u9789070602",
+        let yianni = User(userId: "u9789070602",
                           email: "zavalyia@gmail.com",
                          username: "yianni_zav",
                          firstName: "Yianni",
                          lastName: "Zavaliagkos",
 //                          name: "Yianni Zavaliagkos",
-                         zipped: true,
                          birthday: yianniBirthday,
                          location: CLLocation(latitude: 51.5013, longitude: -0.2070), //CLLocation(latitude: 45.5517, longitude: -73.5873),
                          pictures: yiannipics,
@@ -1209,13 +1202,12 @@ extension MapViewController {
 
         yianni.friendshipStatus = .REQUESTED_OUTGOING
         
-        var gabe = User(userId: "u6503333333",
+        let gabe = User(userId: "u6503333333",
                         email: "mason.g.denton@vanderbilt.edu",
                         username: "gabe_denton",
                         firstName: "Gabe",
                         lastName: "Denton",
 //                        name: "Gabe Denton",
-                        zipped: false,
                         birthday: gabeBirthday,
                         location: CLLocation(latitude: 51.5913, longitude: -0.1870), //CLLocation(latitude: 45.5017, longitude: -73.6073),
                         pictures: gabepics,

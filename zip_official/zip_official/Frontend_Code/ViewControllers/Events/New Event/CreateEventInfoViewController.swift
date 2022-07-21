@@ -99,7 +99,6 @@ class CreateEventInfoViewController: UIViewController {
         tf.layer.cornerRadius = 15
         return tf
     }()
-    private var collectionView: UICollectionView?
     
 //    private var eventPictureBackground = UIView()
     private var eventPicture: UIImageView = {
@@ -133,6 +132,7 @@ class CreateEventInfoViewController: UIViewController {
 
     
     @objc func sliderChanged(_ sender: UISlider){
+        dismissKeyboard()
         if sender.value == 501 {
             capacityNumField.text = "∞"
             event.maxGuests = 0
@@ -143,7 +143,7 @@ class CreateEventInfoViewController: UIViewController {
         
     }
     
-    @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
+    @objc private func dismissKeyboard () {
         descriptionField.resignFirstResponder()
         capacityNumField.resignFirstResponder()
     }
@@ -156,7 +156,6 @@ class CreateEventInfoViewController: UIViewController {
                             lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
             
             event.hosts = [host]
-            event.eventId = event.createEventId
                     
             //MARK: Fuckmyass is the variable which contains the string of the url of the picture
             // the code below was written by Yianni and was originally if success a else b has been
@@ -236,45 +235,20 @@ class CreateEventInfoViewController: UIViewController {
             
         }
         
-        let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-        layout.minimumInteritemSpacing = 10
-        layout.scrollDirection = .horizontal
-        let size = (view.frame.size.width-20-10*4)/5
-        layout.itemSize = CGSize(width: size, height: size)
-        
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
         let photoTap = UITapGestureRecognizer(target: self, action: #selector(presentPhotoActionSheet))
         eventPicture.addGestureRecognizer(photoTap)
         
-//        let viewTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
-//        view.addGestureRecognizer(viewTap)
+        let viewTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(viewTap)
         
         continueButton.addTarget(self, action: #selector(didTapContinueButton), for: .touchUpInside)
         
         descriptionField.delegate = self
         
-        configureCollectionView()
         addSubviews()
         layoutSubviews()
         configureSlider()
-    }
-
-    
-    
-    private func configureCollectionView() {
-        guard let collectionView = collectionView else {
-            return
-        }
-        
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.backgroundColor = .clear
-        collectionView.bounces = true
-        collectionView.isScrollEnabled = true
     }
     
     private func configureSlider(){
@@ -287,13 +261,8 @@ class CreateEventInfoViewController: UIViewController {
     }
 
     private func addSubviews() {
-        guard let collectionView = collectionView else {
-            return
-        }
-        
         view.addSubview(eventPictureLabel)
         view.addSubview(eventPicture)
-        view.addSubview(collectionView)
         view.addSubview(descriptionLabel)
         view.addSubview(descriptionField)
         view.addSubview(capacityLabel)
@@ -305,15 +274,9 @@ class CreateEventInfoViewController: UIViewController {
         view.addSubview(pageStatus2)
         view.addSubview(pageStatus3)
 
-
-
     }
 
     private func layoutSubviews() {
-        guard let collectionView = collectionView else {
-            return
-        }
-
         eventPictureLabel.translatesAutoresizingMaskIntoConstraints = false
         eventPictureLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
         eventPictureLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
@@ -331,14 +294,8 @@ class CreateEventInfoViewController: UIViewController {
         eventPicture.layer.borderColor = UIColor.zipYellow.cgColor
         eventPicture.layer.borderWidth = 2
         
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.topAnchor.constraint(equalTo: eventPicture.bottomAnchor, constant: 20).isActive = true
-        collectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        collectionView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        collectionView.heightAnchor.constraint(equalToConstant: (view.frame.size.width-20-10*4)/5).isActive = true
-        
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 30).isActive = true
+        descriptionLabel.topAnchor.constraint(equalTo: eventPicture.bottomAnchor, constant: 20).isActive = true
         descriptionLabel.leftAnchor.constraint(equalTo: eventPictureLabel.leftAnchor).isActive = true
         
         descriptionField.translatesAutoresizingMaskIntoConstraints = false
@@ -512,6 +469,12 @@ extension CreateEventInfoViewController: UIImagePickerControllerDelegate, UINavi
 extension CreateEventInfoViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.text = ""
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let cs = NSCharacterSet(charactersIn: "0123456789").inverted
+        let filtered = string.components(separatedBy: cs).joined(separator: "")
+        return (string == filtered)
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {

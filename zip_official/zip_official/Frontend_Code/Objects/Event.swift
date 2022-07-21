@@ -7,11 +7,172 @@
 
 import Foundation
 import UIKit
+import FirebaseFirestore
 import CoreLocation
 
-//for future, enumerate event type
+extension EventType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .Event: return "Event"
+        case .Public: return "Public Event"
+        case .Private: return "Private Event"
+        case .Friends: return "Zips Event"
+        case .Promoter: return "Promoter Event"
+        }
+    }
+    
+    public var color: UIColor {
+        switch self {
+        case .Event: return .zipYellow
+        case .Public: return .zipGreen
+        case .Private: return .zipBlue
+        case .Friends: return .zipBlue
+        case .Promoter: return .zipYellow
+        }
+    }
+    
+    //TODO: Update with new default images
+    public var defaultProfilePictureUrl: URL {
+        guard let picString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+              let picUrl = URL(string: picString) else {
+                  return URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6502222222%2Fprofile_picture.png?alt=media&token=a6e7800d-a34d-43b1-a179-a954d3486787)")!
+        }
+        
+        switch self {
+        case .Event: return picUrl
+        case .Public: return picUrl
+        case .Private: return picUrl
+        case .Friends: return picUrl
+        case .Promoter: return picUrl
+        }
+    }
+}
 
-public class Event {
+
+
+//for future, enumerate event type
+public class EventCoder: Codable {
+    var title: String
+    var coordinates: [String: Double]
+    var hosts: [String: String]
+    var description: String
+    var address: String
+    var maxGuests: Int
+    var usersGoing: [String: String]
+    var usersInvite: [String: String]
+    var startTime: Timestamp
+    var endTime: Timestamp
+    var type: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case title = "title"
+        case coordinates = "coordinates"
+        
+        case hosts = "hosts"
+        
+        case description = "description"
+        
+        case address = "address"
+        
+        case maxGuests = "max"
+        case usersGoing = "usersGoing"
+        case usersInvite = "usersInvite"
+        case startTime = "startTime"
+        case endTime = "endTime"
+        case type = "type"
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.title = try container.decode(String.self, forKey: .title)
+        self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
+        self.hosts = try container.decode([String:String].self, forKey: .hosts)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.address = try container.decode(String.self, forKey: .address)
+        self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
+        self.usersGoing = try container.decode([String:String].self, forKey: .usersGoing)
+        self.usersInvite = try container.decode([String:String].self, forKey: .usersInvite)
+        self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
+        self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
+        self.type = try container.decode(Int.self, forKey: .type)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        try container.encode(coordinates, forKey: .coordinates)
+        try container.encode(hosts, forKey: .hosts)
+        try container.encode(description, forKey: .description)
+        try container.encode(address, forKey: .address)
+        try container.encode(maxGuests, forKey: .maxGuests)
+        try container.encode(usersGoing, forKey: .usersGoing)
+        try container.encode(usersInvite, forKey: .usersInvite)
+        try container.encode(startTime, forKey: .startTime)
+        try container.encode(endTime, forKey: .endTime)
+    }
+    
+    public func createEvent() -> Event {
+        return zip_official.createEvent(
+            title: title,
+            coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
+            hosts: hosts.keys.map( { User(userId: $0 )} ),
+            description: description,
+            address: address,
+            maxGuests: maxGuests,
+            usersGoing: usersGoing.keys.map( { User(userId: $0 )} ),
+            usersInvite: usersInvite.keys.map( { User(userId: $0 )} ),
+            startTime: startTime.dateValue(),
+            endTime: endTime.dateValue(),
+            type: EventType(rawValue: type) ?? .Event
+        )
+    }
+    
+    public func updateEvent(event: Event) {
+        event.title = title
+        event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
+        event.hosts = hosts.keys.map( { User(userId: $0 )} )
+        event.description = description
+        event.address = address
+        event.maxGuests = maxGuests
+        event.usersGoing = usersGoing.keys.map( { User(userId: $0 )} )
+        event.usersInvite = usersInvite.keys.map( { User(userId: $0 )} )
+        event.startTime = startTime.dateValue()
+        event.endTime = endTime.dateValue()
+    }
+}
+
+
+public class Event : Encodable {
+    enum CodingKeys: String, CodingKey {
+        case eventId
+        case title
+        case coordinates
+        case hosts
+        case description
+        case address
+        case maxGuests = "max"
+        case usersGoing
+        case usersInvite
+        case startTime
+        case endTime
+        case type
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(eventId, forKey: .eventId)
+        try container.encode(title, forKey: .title)
+        try container.encode(["lat" : latitude, "long": longitude], forKey: .coordinates)
+        try container.encode(Dictionary(uniqueKeysWithValues: hosts.map { ($0.userId, $0.fullName )}), forKey: .hosts)
+        try container.encode(description, forKey: .description)
+        try container.encode(address, forKey: .address)
+        try container.encode(maxGuests, forKey: .maxGuests)
+        try container.encode(Dictionary(uniqueKeysWithValues: usersGoing.map { ($0.userId, $0.fullName )}), forKey: .usersGoing)
+        try container.encode(Dictionary(uniqueKeysWithValues: usersInvite.map { ($0.userId, $0.fullName )}), forKey: .usersInvite)
+        try container.encode(startTime, forKey: .startTime)
+        try container.encode(endTime, forKey: .endTime)
+    }
+    
     var eventId: String = ""
     var title: String = ""
     
@@ -29,10 +190,19 @@ public class Event {
 //    var isPublic: Bool = false
 //    var type: Int
     var startTime: Date = Date()
-    var endTime: Date = Date()
+    var endTime: Date = Date(timeInterval: TimeInterval(3600), since: Date())
     var duration: TimeInterval = TimeInterval(1)
     var imageUrl: URL = URL(string: "a")!
     var image: UIImage? = UIImage(named: "launchevent")
+    
+    var latitude : Double {
+        return coordinates.coordinate.latitude
+    }
+    
+    var longitude : Double {
+        return coordinates.coordinate.longitude
+    }
+    
     
     var startTimeString: String {
         let formatter = DateFormatter()
@@ -51,6 +221,10 @@ public class Event {
             return 0
         }
         let userLoc = CLLocation(latitude: userCoordinates[0], longitude: userCoordinates[1])
+        print("user lat: ", userCoordinates[0])
+        print("user long: ", userCoordinates[1])
+        print("Event lat: ", coordinates.coordinate.latitude)
+        print("Event long: ", coordinates.coordinate.longitude)
 
         return userLoc.distance(from: coordinates)
     }
@@ -59,36 +233,28 @@ public class Event {
         var distanceText = ""
         var unit = "km"
         var distance = Double(round(10*(getDistance())/1000))/10
-
+        
         if NSLocale.current.regionCode == "US" {
             distance = round(10*distance/1.6)/10
             unit = "miles"
-        }
-        
-        if distance > 10 {
-            let intDistance = Int(distance)
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceText = "<1 \(unit)"
-            } else if distance >= 500 {
-                distanceText = ">500 \(unit)"
-            } else {
-                distanceText = String(intDistance) + " \(unit)"
+            
+            if distance == 1 {
+                unit = "mile"
             }
+        }
+            
+        if distance < 0 {
+            distanceText = "<\(Int(0)) \(unit)"
+        } else if distance > 500 {
+            distanceText = ">\(Int(500)) \(unit)"
         } else {
-            if distance <= 1 {
-                if unit == "miles" {
-                    unit = "mile"
-                }
-                distanceText = "<1 \(unit)"
-            } else if distance >= 500 {
-                distanceText = ">500 \(unit)"
+            if distance > 10 {
+                distanceText = String(Int(distance)) + " \(unit)"
             } else {
                 distanceText = String(distance) + " \(unit)"
             }
         }
+        
         return distanceText + " away"
     }
     

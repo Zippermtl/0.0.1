@@ -48,7 +48,7 @@ class ZFCardFrontView: UIView {
         var nm = ""
         var tintColor = UIColor.white
         switch user.friendshipStatus {
-        case .NO_RELATION:
+        case .none:
             nm = "arrow.forward.circle.fill"
             user.friendshipStatus = .REQUESTED_OUTGOING
             tintColor = .zipBlue
@@ -56,7 +56,7 @@ class ZFCardFrontView: UIView {
             requestButton.layer.borderWidth = 2
         case .ACCEPTED:
             nm =  "plus.circle.fill"
-            user.friendshipStatus = .NO_RELATION
+            user.friendshipStatus = nil
             tintColor = .white
             requestButton.backgroundColor = .zipBlue
             requestButton.layer.borderWidth = 0
@@ -69,7 +69,7 @@ class ZFCardFrontView: UIView {
             requestButton.layer.borderWidth = 2
         case .REQUESTED_OUTGOING:
             nm = "plus.circle.fill"
-            user.friendshipStatus = .NO_RELATION
+            user.friendshipStatus = nil
             tintColor = .white
             requestButton.backgroundColor = .zipBlue
             requestButton.layer.borderWidth = 0
@@ -182,8 +182,6 @@ class ZFCardFrontView: UIView {
        
         
         self.user = user
-
-        user.friendshipStatus = .NO_RELATION
         
         
         configureLabels()
