@@ -33,6 +33,51 @@ extension DatabaseManager {
     //        completion(.success(value))
     //    }
 
+    public func getAllPrivateEventsForMap(completion: @escaping (Result<Event, Error>) -> Void){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        firebase.collection("EventProfiles").whereField("usersInvite", arrayContains: userId).getDocuments() { (querySnapshot, err) in
+            if let err = err {
+                print("Error getting documents: \(err)")
+                completion(.failure(err))
+            } else {
+                var events: [Event] = []
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                for document in querySnapshot!.documents {
+                    let data = document.data
+                    if let data = data {
+                        print("data", data)
+                        let eventID = data["name"] as? String ?? ""
+                        let address = data["address"] as? String ?? ""
+                        let lat = data["coordinates"]["lat"] as? Int
+                        let long = data["coordinates"]["long"] as? Int
+                        let desc = data["description"] as? String ?? ""
+                        let endTime = formatter.date(from: data["endTime"] as? String?? "")
+                        var hosts: [User] = []
+                        for (keyvalue, valuevalue) in data["hosts"] {
+                            hosts.append(User(userId: keyvalue))
+                        }
+                        let max = data["max"] as? Int
+                        let startTime = formatter.date(from: data["startTime"] as? String?? "")
+                        let title = data["title"] as? String?? ""
+                        let type = data["type"] as? Int
+                        var usersGoing: [User] = []
+                        for (keyvalue, valuevalue) in data["usersGoing"] {
+                            usersGoing.append(User(userId: keyvalue))
+                        }
+                        var usersInvite: [User] = []
+                        for (keyvalue, valuevalue) in data["usersInvite"] {
+                            usersGoing.append(User(userId: keyvalue))
+                        }
+                        events.append(createEventLocal(eventId: eventID, title: title, coordinates: CLLocation(latitude: lat, longitude: long), hosts: hosts, description: desc, address: address, maxGuests: max, usersGoing: usersGoing, usersInvite: usersInvite, startTime: startTime, endTime: endTime, type: EventType(rawValue: type as! Int)!))
+                    }
+                    
+                }
+            }
+        }
+    }
     
     public func loadEvent(key: String, completion: @escaping (Result<Event, Error>) -> Void){
         firestore.collection("EventProfiles").document(key).getDocument(as: EventCoder.self)  { result in
