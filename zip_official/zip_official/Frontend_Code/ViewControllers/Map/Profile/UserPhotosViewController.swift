@@ -60,9 +60,9 @@ class UserPhotosViewController: UIViewController {
     
     @objc private func didTapFocusedImage(){
         focusedImage.layer.removeAllAnimations()
-        guard let collectionView = collectionView else {
-            return
-        }
+//        guard let collectionView = collectionView else {
+//            return
+//        }
         
 //        guard let cellAttributes = collectionView.layoutAttributesForItem(at: IndexPath(row: focusedImage.tag, section: 0)) else {
 //            return
@@ -116,7 +116,7 @@ class UserPhotosViewController: UIViewController {
                             img.url = URL(string: url)
                             self?.user.pictureURLs.append(URL(string: url)!)
                         case .failure(let error):
-                            break
+                            print("error: \(error)")
                         }
                     })
                 }
