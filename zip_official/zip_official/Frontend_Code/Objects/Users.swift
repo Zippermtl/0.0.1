@@ -21,6 +21,7 @@ class UserCoder: Codable {
     var picNum: Int
     var bio: String
     var interests: [Interests]
+    var deviceId: String
     
     var school: String?
     
@@ -104,6 +105,7 @@ public class User : CustomStringConvertible {
     var interests: [Interests] = []
     var friendships: [Friendship] = []
     var notificationPreferences: NotificationPreference = [:]
+    var deviceId: String = ""
     
     var email: String?
     var friendshipStatus: FriendshipStatus?
@@ -293,7 +295,7 @@ public class User : CustomStringConvertible {
         notificationPreferences = DecodePreferences(np)
     }
 
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0) {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "") {
         userId = id
         email = em
         username = us
@@ -314,6 +316,7 @@ public class User : CustomStringConvertible {
         } else {
             notificationPreferences = DecodePreferences(enp)
         }
+        deviceId = devId
     }
 
     // Load someone's friendships
