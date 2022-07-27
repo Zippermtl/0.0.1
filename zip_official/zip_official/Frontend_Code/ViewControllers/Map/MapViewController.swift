@@ -280,11 +280,28 @@ class MapViewController: UIViewController {
         mapView.delegate = self
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
         mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
+        
+        
+        
+        DatabaseManager.shared.getAllPrivateEventsForMap(completion: { [weak self] result in
+            switch result {
+            case .success(let events):
+                print("sucess loading event: \(events)")
 
-
+                for event in events {
+                    self?.mapView.addAnnotation(EventAnnotation(event: event))
+                }
+                
+            case .failure(let error):
+                print("Error loading events on map Error: \(error)")
+            }
+            
+            print("done loading events")
+        })
         //Events
         // MARK: London
         
+        /*
         let e1Url = URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6503333333%2Fprofile_picture.png?alt=media&token=1b83e75e-6147-4da6-bd52-1eee539bbc61")!
         
         
@@ -298,7 +315,6 @@ class MapViewController: UIViewController {
                                startTime: startTime,
                                endTime: endTime,
                                imageURL: e1Url)
-//        let e1 = PromoterEvent(coordinates: CLLocation(latitude: 42.456160, longitude: -71.251080), imageURL: e1Url)
 
         let e2 = PrivateEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
                               coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
@@ -306,12 +322,10 @@ class MapViewController: UIViewController {
         let event1 = EventAnnotation(event: e1)
         let event2 = EventAnnotation(event: e2)
         
-        //MARK: Montreal
-//        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 45.5317, longitude: -73.5873))
-//        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 45.4817, longitude: -73.4873))
         
         mapView.addAnnotation(event1)
         mapView.addAnnotation(event2)
+         */
     }
 
 }
@@ -440,6 +454,8 @@ extension MapViewController: MKMapViewDelegate {
             return nil
         }
         
+        
+        
         switch eventAnnotation.event.getType() {
         case .Private, .Public, .Friends:
             guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PrivateEventAnnotationView.identifier) as? PrivateEventAnnotationView else {
@@ -448,6 +464,8 @@ extension MapViewController: MKMapViewDelegate {
             annotationView.configure(event: eventAnnotation.event)
             
             annotationView.canShowCallout = false
+            
+            eventAnnotation.event.annotationView = annotationView
             return annotationView
             
         case .Promoter:
@@ -457,6 +475,7 @@ extension MapViewController: MKMapViewDelegate {
             annotationView.configure(event: eventAnnotation.event)
             
             annotationView.canShowCallout = false
+            eventAnnotation.event.annotationView = annotationView
             return annotationView
             
         case .Event:
@@ -956,132 +975,6 @@ extension MapViewController {
         })
     }
     
-    
-    
-    func generateTestData(){
-        var seungpics = [UIImage]()
-        var ezrapics = [UIImage]()
-        var yiannipics = [UIImage]()
-        var eliaspics = [UIImage]()
-        var gabepics = [UIImage]()
-        
-        seungpics.append(UIImage(named: "seung1")!)
-        seungpics.append(UIImage(named: "seung2")!)
-        seungpics.append(UIImage(named: "seung3")!)
-        
-        ezrapics.append(UIImage(named: "ezra1")!)
-        ezrapics.append(UIImage(named: "ezra2")!)
-        ezrapics.append(UIImage(named: "ezra3")!)
-
-        yiannipics.append(UIImage(named: "yianni1")!)
-        yiannipics.append(UIImage(named: "yianni2")!)
-        yiannipics.append(UIImage(named: "yianni3")!)
-        
-        eliaspics.append(UIImage(named: "elias1")!)
-        eliaspics.append(UIImage(named: "elias2")!)
-        eliaspics.append(UIImage(named: "elias3")!)
-        
-        gabepics.append(UIImage(named: "gabe1")!)
-        gabepics.append(UIImage(named: "gabe2")!)
-        gabepics.append(UIImage(named: "gabe3")!)
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd"
-        let seungBirthday = formatter.date(from: "2002/01/01")!
-        let ezraBirthday = formatter.date(from: "2001/10/23")!
-        let yianniBirthday = formatter.date(from: "2001/12/06")!
-        let gabeBirthday = formatter.date(from: "2002/06/06")!
-        let eliasBirthday = formatter.date(from: "2002/03/14")!
-
-        let seung = User(email: "seung.choi@gmail.com",
-                         username: "seungchoi_",
-                         firstName: "Seung",
-                         lastName: "Choi",
-                         birthday: seungBirthday,
-                         location:  CLLocation(latitude: 51.5014, longitude: -0.1419),
-                         pictures: seungpics,
-                         bio: "Hey, I'm Seung, rapper/producer and head of Zipper design and marketing",
-                         school: "McGill University")
-        
-        let ezra = User(userId: "u2158018458",
-                        email: "ezrataylor55@gmail.com",
-                        username: "ezrataylor55",
-                        firstName: "Ezra",
-                        lastName: "Taylor",
-                        birthday: ezraBirthday,
-                        location: CLLocation(latitude: 51.5313, longitude: -0.1570),
-                        pictures: ezrapics,
-                        bio: "What's good, I'm Ezra, rapper/producer, sports enthusiast and head of Zipper legal and finance",
-                        school: "McGill University")
-        
-        let yianni = User(userId: "u9789070602",
-                          email: "zavalyia@gmail.com",
-                          username: "yianni_zav",
-                          firstName: "Yianni",
-                          lastName: "Zavaliagkos",
-                          birthday: yianniBirthday,
-                          location: CLLocation(latitude: 51.5013, longitude: -0.2070),
-                          pictures: yiannipics,
-                          bio: "Yianni. I run this shit. Know the name",
-                          school: "McGill Univeristy")
-
-        let elias = User(email: "elias.levy@vanderbilt.edu",
-                         username: "elias.levy",
-                         firstName: "Elias",
-                         lastName: "Levy",
-                         birthday: eliasBirthday,
-                         location: CLLocation(latitude: 51.5013, longitude: -0.5070),
-                         pictures: eliaspics,
-                         bio: "Hey guys, I'm elias, robotics enthusiast and musician. One of the newest Zipper members. I developed the back end of the app basically making things work behind the scenes",
-                         school: "Vanderbilt University")
-        
-        let gabe = User(email: "mason.g.denton@vanderbilt.edu",
-                        username: "gabe_denton",
-                        firstName: "Gabe",
-                        lastName: "Denton",
-                        birthday: gabeBirthday,
-                        location: CLLocation(latitude: 51.5913, longitude: -0.1870),
-                        pictures: gabepics,
-                        bio: "Hello, I'm Mason Dental-Tools. Swim fast do Math eat Ass. In that order",
-                        school: "Vanderbilt University")
-        
-        
-//        //Montreal
-//        seung.location = CLLocation(latitude: 45.5017, longitude: -73.5673)
-//        ezra.location = CLLocation(latitude: 45.4917, longitude: -73.4973)
-//        yianni.location = CLLocation(latitude: 45.5517, longitude: -73.5873)
-//        elias.location = CLLocation(latitude: 45.6717, longitude: -73.6073)
-//        gabe.location = CLLocation(latitude: 45.5017, longitude: -73.6073)
-        
-//        let event1 = EventAnnotation(event: launchEvent, coordinate:  CLLocationCoordinate2D(latitude: 51.5014, longitude: -0.1419))
-//        let event2 = EventAnnotation(event: randomEvent, coordinate: CLLocationCoordinate2D(latitude: 51.5313, longitude: -0.1570))
-        
-
-//        launchEvent = PromoterEvent(title: "Zipper Launch Party",
-//                            coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
-//                            hosts: [user],
-//                            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
-//                            address: "3781 St. Lauremt Blvd.",
-//                            maxGuests: 250,
-//                            usersGoing: [seung,yianni,gabe],
-//                            usersInterested: [elias,ezra],
-//                            startTime: Date(timeIntervalSinceNow: 1000),
-//                            duration: TimeInterval(2000),
-//                            image: UIImage(named: "launchevent")!)
-//        randomEvent = PublicEvent(title: "Fake Ass Frosh",
-//                            coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
-//                            hosts: [user,gabe,seung,ezra],
-//                            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
-//                            address: "3781 St. Lauremt Blvd.",
-//                            maxGuests: 250,
-//                            usersGoing: [ezra,yianni,gabe],
-//                            usersInterested: [elias,seung],
-//                            startTime: Date(timeIntervalSinceNow: 100000),
-//                            duration: TimeInterval(200),
-//                            image: UIImage(named: "muzique")!)
-    }
-    
-    
     static func getTestUsers() -> [User] {
         var seungpics = [UIImage]()
         var ezrapics = [UIImage]()
@@ -1164,7 +1057,6 @@ extension MapViewController {
                          username: "seungchoi_",
                          firstName: "Seung",
                          lastName: "Choi",
-//                         name: "Seung Choi",
                          birthday: seungBirthday,
                          location: CLLocation(latitude: 51.5014, longitude: -0.1419), //CLLocation(latitude: 45.5017, longitude: -73.5673),
                          pictures: seungpics,
@@ -1177,7 +1069,6 @@ extension MapViewController {
                          username: "ezrataylor55",
                          firstName: "Ezra",
                          lastName: "Taylor",
-//                         name: "Ezra Taylor",
                          birthday: ezraBirthday,
                          location: CLLocation(latitude: 51.5313, longitude: -0.1570), //CLLocation(latitude: 45.4917, longitude: -73.4973),
                          pictures: ezrapics,
@@ -1192,7 +1083,6 @@ extension MapViewController {
                          username: "yianni_zav",
                          firstName: "Yianni",
                          lastName: "Zavaliagkos",
-//                          name: "Yianni Zavaliagkos",
                          birthday: yianniBirthday,
                          location: CLLocation(latitude: 51.5013, longitude: -0.2070), //CLLocation(latitude: 45.5517, longitude: -73.5873),
                          pictures: yiannipics,
@@ -1207,7 +1097,6 @@ extension MapViewController {
                         username: "gabe_denton",
                         firstName: "Gabe",
                         lastName: "Denton",
-//                        name: "Gabe Denton",
                         birthday: gabeBirthday,
                         location: CLLocation(latitude: 51.5913, longitude: -0.1870), //CLLocation(latitude: 45.5017, longitude: -73.6073),
                         pictures: gabepics,
@@ -1215,13 +1104,7 @@ extension MapViewController {
                         school: "Vanderbilt University",
                         interests: gabeinterests)
         
-        //Montreal
-//        seung.location = CLLocation(latitude: 45.5017, longitude: -73.5673)
-//        ezra.location = CLLocation(latitude: 45.4917, longitude: -73.4973)
-//        yianni.location = CLLocation(latitude: 45.5517, longitude: -73.5873)
-//        elias.location = CLLocation(latitude: 45.6717, longitude: -73.6073)
-//        gabe.location = CLLocation(latitude: 45.5017, longitude: -73.6073)
-        
+
         let list: [User] = [seung,ezra,yianni,gabe]
         return list
     }
@@ -1262,7 +1145,6 @@ extension MapViewController {
         
         print("Here321123")
         print(requests)
-        
         
         requests.append(request1)
         print()
