@@ -126,6 +126,10 @@ class EventAnnotationView: MKAnnotationView {
         }
     }
     
+    public func updateImage(_ url: URL) {
+        eventImage.sd_setImage(with: url, completed: nil)
+    }
+    
     public func updateSize(scale: CGFloat){
         
         transform = CGAffineTransform(scaleX: scale, y: scale)
