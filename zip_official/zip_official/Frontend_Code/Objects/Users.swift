@@ -21,7 +21,7 @@ class UserCoder: Codable {
     var picNum: Int
     var bio: String
     var interests: [Interests]
-    var deviceId: String
+    var deviceId: [String]
     
     var school: String?
     
@@ -35,6 +35,7 @@ class UserCoder: Codable {
         case bio = "bio"
         case school = "school"
         case interests = "interests"
+        case deviceId = "deviceId"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -49,6 +50,7 @@ class UserCoder: Codable {
         self.interests = try container.decode([Interests].self, forKey: .interests)
         self.birthday = try container.decode(Timestamp.self, forKey: .birthday)
         self.school = try container.decode(String.self, forKey: .school)
+        self.deviceId = try container.decode([String].self, forKey: .deviceId)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -62,6 +64,7 @@ class UserCoder: Codable {
         try container.encode(picNum, forKey: .picNum)
         try container.encode(school, forKey: .school)
         try container.encode(interests, forKey: .interests)
+        try container.encode(deviceId, forKey: .deviceId)
     }
     
     
