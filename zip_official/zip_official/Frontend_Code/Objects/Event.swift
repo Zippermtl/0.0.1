@@ -54,12 +54,12 @@ extension EventType: CustomStringConvertible {
 public class EventCoder: Codable {
     var title: String
     var coordinates: [String: Double]
-    var hosts: [String: String]
+    var hosts: [String]
     var description: String
     var address: String
     var maxGuests: Int
-    var usersGoing: [String: String]
-    var usersInvite: [String: String]
+    var usersGoing: [String]
+    var usersInvite: [String]
     var startTime: Timestamp
     var endTime: Timestamp
     var type: Int
@@ -86,12 +86,12 @@ public class EventCoder: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.title = try container.decode(String.self, forKey: .title)
         self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
-        self.hosts = try container.decode([String:String].self, forKey: .hosts)
+        self.hosts = try container.decode([String].self, forKey: .hosts)
         self.description = try container.decode(String.self, forKey: .description)
         self.address = try container.decode(String.self, forKey: .address)
         self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
-        self.usersGoing = try container.decode([String:String].self, forKey: .usersGoing)
-        self.usersInvite = try container.decode([String:String].self, forKey: .usersInvite)
+        self.usersGoing = try container.decode([String].self, forKey: .usersGoing)
+        self.usersInvite = try container.decode([String].self, forKey: .usersInvite)
         self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
         self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
         self.type = try container.decode(Int.self, forKey: .type)
@@ -115,12 +115,12 @@ public class EventCoder: Codable {
         return zip_official.createEvent(
             title: title,
             coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
-            hosts: hosts.keys.map( { User(userId: $0 )} ),
+            hosts: hosts.map( { User(userId: $0 )} ),
             description: description,
             address: address,
             maxGuests: maxGuests,
-            usersGoing: usersGoing.keys.map( { User(userId: $0 )} ),
-            usersInvite: usersInvite.keys.map( { User(userId: $0 )} ),
+            usersGoing: usersGoing.map( { User(userId: $0 )} ),
+            usersInvite: usersInvite.map( { User(userId: $0 )} ),
             startTime: startTime.dateValue(),
             endTime: endTime.dateValue(),
             type: EventType(rawValue: type) ?? .Event
@@ -130,12 +130,12 @@ public class EventCoder: Codable {
     public func updateEvent(event: Event) {
         event.title = title
         event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
-        event.hosts = hosts.keys.map( { User(userId: $0 )} )
+        event.hosts = hosts.map( { User(userId: $0 )} )
         event.description = description
         event.address = address
         event.maxGuests = maxGuests
-        event.usersGoing = usersGoing.keys.map( { User(userId: $0 )} )
-        event.usersInvite = usersInvite.keys.map( { User(userId: $0 )} )
+        event.usersGoing = usersGoing.map( { User(userId: $0 )} )
+        event.usersInvite = usersInvite.map( { User(userId: $0 )} )
         event.startTime = startTime.dateValue()
         event.endTime = endTime.dateValue()
     }
@@ -192,7 +192,15 @@ public class Event : Encodable {
     var startTime: Date = Date()
     var endTime: Date = Date(timeInterval: TimeInterval(3600), since: Date())
     var duration: TimeInterval = TimeInterval(1)
-    var imageUrl: URL = URL(string: "a")!
+    
+    var imageUrl: URL = URL(string: "a")! {
+        didSet {
+            guard let annotation = self.annotationView else { return }
+            annotation.updateImage(imageUrl)
+        }
+    }
+    
+    var annotationView : EventAnnotationView?
     var image: UIImage? = UIImage(named: "launchevent")
     
     var latitude : Double {
