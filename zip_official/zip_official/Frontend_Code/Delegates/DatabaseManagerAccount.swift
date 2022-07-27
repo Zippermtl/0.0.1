@@ -200,9 +200,7 @@ extension DatabaseManager {
         }
     }
     
-    public enum DatabaseError: Error {
-        case failedToFetch
-    }
+   
     
 }
 
