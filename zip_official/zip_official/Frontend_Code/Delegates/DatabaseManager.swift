@@ -23,11 +23,14 @@ class DatabaseManager {
     internal let database = Database.database().reference()
     internal let firestore = Firestore.firestore()
 
-    private var verificationId: String?
+    internal var verificationId: String?
     
     
     init(){}
 
+    public enum DatabaseError: Error {
+        case failedToFetch
+    }
     
 }
 
