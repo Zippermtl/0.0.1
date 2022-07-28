@@ -43,7 +43,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         applyTabBarAppearanceChanges()
         applyGooglePlacesSearchAppearanceChanges()
         setDeviceDefault()
-        registerForPushNotifications()
         
         return true
     }
@@ -191,28 +190,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    func registerForPushNotifications() {
-        //1
-        UNUserNotificationCenter.current()
-            .requestAuthorization(
-                options: [.alert, .sound, .badge]) { [weak self] granted, _ in
-                    print("Permission granted: \(granted)")
-                    guard granted else { return }
-                    self?.getNotificationSettings()
-                }
-    }
-    
-    func getNotificationSettings() {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            print("Notification settings: \(settings)")
-            
-            guard settings.authorizationStatus == .authorized else { return }
-            DispatchQueue.main.async {
-                UIApplication.shared.registerForRemoteNotifications()
-            }
-        }
-    }
-    
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -228,8 +205,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) {
         print("Failed to register: \(error)")
     }
-    
 
 }
-
 
