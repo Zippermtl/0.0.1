@@ -976,6 +976,10 @@ extension MapViewController {
     }
     
     static func getTestUsers() -> [User] {
+        var picUrls = [URL(string:
+                            "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e")!,
+                       
+                       URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e")!]
         var seungpics = [UIImage]()
         var ezrapics = [UIImage]()
         var yiannipics = [UIImage]()
@@ -1060,6 +1064,7 @@ extension MapViewController {
                          birthday: seungBirthday,
                          location: CLLocation(latitude: 51.5014, longitude: -0.1419), //CLLocation(latitude: 45.5017, longitude: -73.5673),
                          pictures: seungpics,
+                         pictureURLs: picUrls,
                          bio: "Hey, I'm Seung, rapper/producer and head of Zipper design and marketing",
                          school: "McGill University",
                          interests: seunginterests)
@@ -1072,6 +1077,7 @@ extension MapViewController {
                          birthday: ezraBirthday,
                          location: CLLocation(latitude: 51.5313, longitude: -0.1570), //CLLocation(latitude: 45.4917, longitude: -73.4973),
                          pictures: ezrapics,
+                         pictureURLs: picUrls,
                          bio: "What's good, I'm Ezra, rapper/producer, sports enthusiast and head of Zipper legal and finance",
                          school: "McGill University",
                          interests: ezrainterests)
@@ -1086,6 +1092,7 @@ extension MapViewController {
                          birthday: yianniBirthday,
                          location: CLLocation(latitude: 51.5013, longitude: -0.2070), //CLLocation(latitude: 45.5517, longitude: -73.5873),
                          pictures: yiannipics,
+                          pictureURLs: picUrls,
                          bio: "Yianni. I run this shit. Know the name",
                          school: "McGill Univeristy",
                          interests: yianniinterests)
@@ -1100,6 +1107,7 @@ extension MapViewController {
                         birthday: gabeBirthday,
                         location: CLLocation(latitude: 51.5913, longitude: -0.1870), //CLLocation(latitude: 45.5017, longitude: -73.6073),
                         pictures: gabepics,
+                        pictureURLs: picUrls,
                         bio: "Hello, I'm Mason Dental-Tools. Swim fast do Math eat Ass. In that order",
                         school: "Vanderbilt University",
                         interests: gabeinterests)

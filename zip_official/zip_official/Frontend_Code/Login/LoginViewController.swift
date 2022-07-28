@@ -26,6 +26,7 @@ class LoginViewController: UIViewController {
     let logo: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "zipperLogo")
+        imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     
@@ -62,10 +63,13 @@ class LoginViewController: UIViewController {
 
     
     @objc private func didTapLoginButton(){
+        print("receiving tap")
         phoneField.resignFirstResponder()
         
         if let text = phoneField.text, !text.isEmpty {
+            print("should be working")
             let number = "+1\(text)"
+            print("number = \(number)")
             DatabaseManager.shared.startAuth(phoneNumber: number, completion: { [weak self] success in
                 guard success else { return }
                 DispatchQueue.main.async {

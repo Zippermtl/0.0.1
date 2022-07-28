@@ -22,13 +22,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.overrideUserInterfaceStyle = .dark
         window?.makeKeyAndVisible()
 
+        
 //        window?.rootViewController = SMSCodeViewController()
+        
+//            window?.rootViewController = LoadingViewController()
+
         if Auth.auth().currentUser == nil {
             let vc = LoginViewController()
             let navVC = UINavigationController(rootViewController: vc)
             window?.rootViewController = navVC
         } else {
-            
+
             if checkUserDefaults() {
                 window?.rootViewController = LoadingViewController()
             } else {
@@ -37,7 +41,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     let domain = Bundle.main.bundleIdentifier!
                     UserDefaults.standard.removePersistentDomain(forName: domain)
                     UserDefaults.standard.synchronize()
-                    
+
                     let vc = LoginViewController()
                     let navVC = UINavigationController(rootViewController: vc)
                     window?.rootViewController = navVC

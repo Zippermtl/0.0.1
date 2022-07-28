@@ -49,7 +49,7 @@ extension DatabaseManager {
             "picNum": user.picNum,
             "school": "",
             "joinDate": joinDate,
-            "deviceId": [user.deviceId],
+            "deviceId": [deviceId],
             "bio" : "",
             "interests" : []
         ]
@@ -167,7 +167,7 @@ extension DatabaseManager {
     
     public func updateDeviceId(devId: String, completion: @escaping (Error?) -> Void) {
         let userData: [String:Any] = [
-            "deviceId": AppDelegate.userDefaults.value(forKey: "deviceId"),
+            "deviceId": AppDelegate.userDefaults.value(forKey: "deviceId") as! String,
         ]
         
         firestore.collection("UserProfiles").document(AppDelegate.userDefaults.value(forKey: "userId") as! String).updateData(userData) { error in

@@ -37,13 +37,6 @@ class EditProfileViewController: UIViewController {
     private var changedPFP = false
     
     @objc private func didTapDoneButton(){
-        for cell in tableView.visibleCells {
-            guard let textFieldCell = cell as? EditTextFieldTableViewCell  else {
-                continue
-            }
-            textFieldCell.saveValue()
-        }
-        
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
             guard let strongSelf = self,
                   err == nil else {
@@ -204,7 +197,6 @@ class EditProfileViewController: UIViewController {
     }
     
     
-    
     func saveFirstNameFunc(_ s: String) {
         user.firstName = s
     }
@@ -328,18 +320,6 @@ extension EditProfileViewController: GrowingCellProtocol {
         }
     }
     
-}
-
-//MARK: - UpdateSchoolProtocol
-extension EditProfileViewController: UpdateSchoolProtocol {
-    func updateSchoolLabel(_ school: String) {
-        if school != "None" {
-            user.school = school
-        } else {
-            user.school = nil
-        }
-        tableView.reloadData()
-    }
 }
 
 //MARK: - UpdateInterestsProtocol

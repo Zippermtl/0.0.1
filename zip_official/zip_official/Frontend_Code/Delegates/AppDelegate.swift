@@ -13,6 +13,7 @@ import DropDown
 import GooglePlaces
 import Firebase
 import FirebaseAuth
+import UserNotifications
 
 
 @main
@@ -42,7 +43,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         applyTabBarAppearanceChanges()
         applyGooglePlacesSearchAppearanceChanges()
         setDeviceDefault()
-        
+        registerForPushNotifications()
         
         return true
     }
@@ -154,81 +155,81 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
              "iPhone 6",
              "iPhone 6 Plus" ,
              "iPhone 6s",
-             "iPhone 6s Plus",
-             "iPhone SE",
-             "iPhone 7",
-             "iPhone 7 Plus",
-             "iPhone 8",
-             "iPhone 8 Plus",
-             "iPad 2",
-             "iPad (3rd generation)",
-             "iPad (4th generation)",
-             "iPad (5th generation)",
-             "iPad (6th generation)",
-             "iPad (7th generation)",
-             "iPad (8th generation)",
-             "iPad Air",
-             "iPad Air 2",
-             "iPad Air (3rd generation)",
-             "iPad Air (4th generation)",
-             "iPad mini",
-             "iPad mini 2",
-             "iPad mini 3",
-             "iPad mini 4",
-             "iPad mini (5th generation)",
-             "iPad Pro (9.7-inch)",
-             "iPad Pro (10.5-inch)",
-             "iPad Pro (11-inch) (1st generation)",
-             "iPad Pro (11-inch) (2nd generation)",
-             "iPad Pro (12.9-inch) (1st generation)",
-             "iPad Pro (12.9-inch) (2nd generation)",
-             "iPad Pro (12.9-inch) (3rd generation)",
-             "iPad Pro (12.9-inch) (4th generation)":
-                AppDelegate.userDefaults.setValue(true, forKey: "hasHomeButton")
+            "iPhone 6s Plus",
+            "iPhone SE",
+            "iPhone 7",
+            "iPhone 7 Plus",
+            "iPhone 8",
+            "iPhone 8 Plus",
+            "iPad 2",
+            "iPad (3rd generation)",
+            "iPad (4th generation)",
+            "iPad (5th generation)",
+            "iPad (6th generation)",
+            "iPad (7th generation)",
+            "iPad (8th generation)",
+            "iPad Air",
+            "iPad Air 2",
+            "iPad Air (3rd generation)",
+            "iPad Air (4th generation)",
+            "iPad mini",
+            "iPad mini 2",
+            "iPad mini 3",
+            "iPad mini 4",
+            "iPad mini (5th generation)",
+            "iPad Pro (9.7-inch)",
+            "iPad Pro (10.5-inch)",
+            "iPad Pro (11-inch) (1st generation)",
+            "iPad Pro (11-inch) (2nd generation)",
+            "iPad Pro (12.9-inch) (1st generation)",
+            "iPad Pro (12.9-inch) (2nd generation)",
+            "iPad Pro (12.9-inch) (3rd generation)",
+            "iPad Pro (12.9-inch) (4th generation)":
+            AppDelegate.userDefaults.setValue(true, forKey: "hasHomeButton")
         default:
             AppDelegate.userDefaults.setValue(false, forKey: "hasHomeButton")
         }
     }
     
     func registerForPushNotifications() {
-      //1
+        //1
         UNUserNotificationCenter.current()
-          .requestAuthorization(
-            options: [.alert, .sound, .badge]) { [weak self] granted, _ in
-            print("Permission granted: \(granted)")
-            guard granted else { return }
-            self?.getNotificationSettings()
-          }
+            .requestAuthorization(
+                options: [.alert, .sound, .badge]) { [weak self] granted, _ in
+                    print("Permission granted: \(granted)")
+                    guard granted else { return }
+                    self?.getNotificationSettings()
+                }
     }
+    
     func getNotificationSettings() {
-      UNUserNotificationCenter.current().getNotificationSettings { settings in
-        print("Notification settings: \(settings)")
-          
-        guard settings.authorizationStatus == .authorized else { return }
-        DispatchQueue.main.async {
-            UIApplication.shared.registerForRemoteNotifications()
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("Notification settings: \(settings)")
+            
+            guard settings.authorizationStatus == .authorized else { return }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
             }
         }
     }
     
     func application(
-         _ application: UIApplication,
-         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
-       ) {
-         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-         let token = tokenParts.joined()
-         print("Device Token: \(token)")
-           AppDelegate.userDefaults.set(token, forKey: "deviceId")
-        // GABE THIS IS THE TOKEN I NEED UPLOADED TO FIREBASE UNDER DEVICE_ID
-       }
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+        let token = tokenParts.joined()
+        print("Device Token: \(token)")
+    }
     
     func application(
-          _ application: UIApplication,
-          didFailToRegisterForRemoteNotificationsWithError error: Error
-        ) {
-          print("Failed to register: \(error)")
-        }
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        print("Failed to register: \(error)")
+    }
     
+
 }
 
 

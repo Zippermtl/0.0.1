@@ -80,4 +80,8 @@ extension EditTextFieldTableViewCell: UITextViewDelegate {
         cellDelegate?.updateValue(value: textView.text ?? "")
     }
     
+    func textViewDidEndEditing(_ textView: UITextView) {
+        saveValue()
+    }
+    
 }

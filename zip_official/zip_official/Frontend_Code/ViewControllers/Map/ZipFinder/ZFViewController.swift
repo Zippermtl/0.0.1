@@ -40,6 +40,9 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         
     private var rangeMultiplier = Double(1)
     
+    private var maxIndex = 0
+    
+    
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -48,13 +51,19 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    private var testUsers: [User] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
         view.isOpaque = false
         
-        
+        testUsers = MapViewController.getTestUsers()
+        testUsers += MapViewController.getTestUsers()
+        testUsers += MapViewController.getTestUsers()
+
         print("Entering View did load with userIdList size: \(GeoManager.shared.userIdList.count)")
         if NSLocale.current.regionCode == "US" {
             rangeMultiplier = 1.6
@@ -237,28 +246,27 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
 // MARK: UICollectionViewDataSource
 extension ZipFinderViewController: UICollectionViewDataSource {
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    private func checkNeedsNewUsers() {
+        print("got to the collection view with \(GeoManager.shared.userIdList.count) unloaded names and \(GeoManager.shared.loadedUsers.count) loaded on pass index: \(maxIndex)")
         
-        print("got to the collection view with \(GeoManager.shared.userIdList.count) unloaded names and \(GeoManager.shared.loadedUsers.count) loaded on pass index: \(indexPath.row)")
-        
-        if(indexPath.row > GeoManager.shared.loadedUsers.count - 6){
-            PullNextUser(index: indexPath.row, completion: { _ in
-//                guard let user = user else {
-//                    return
-//                }
+        if(maxIndex > GeoManager.shared.loadedUsers.count - 6){
+            PullNextUser(index: maxIndex, completion: { _ in
+       //                guard let user = user else {
+       //                    return
+       //                }
             })
             if(GeoManager.shared.userIdList.count == 0 && maxRangeFilter >= 55*rangeMultiplier && !GeoManager.shared.moreUsersInQuery){
                 print("range is \(maxRangeFilter)")
                 print("amoung of loaded users is \(GeoManager.shared.loadedUsers.count)")
                 print("there are \(GeoManager.shared.userIdList.count) uncounted users and the query running is \(GeoManager.shared.queryRunning)")
-//                if(!queryRunning){
-//                    //MARK: Yianni Read Below
-//                    //Insert blank card with loading which updates once complete
-//
-//                } else {
-//                    //Insert no people near you card
-//
-//                }
+       //                if(!queryRunning){
+       //                    //MARK: Yianni Read Below
+       //                    //Insert blank card with loading which updates once complete
+       //
+       //                } else {
+       //                    //Insert no people near you card
+       //
+       //                }
             } else if(GeoManager.shared.userIdList.count < 10 ){
                 var letNextQueryBegin = true
                 if(GeoManager.shared.moreUsersInQuery || GeoManager.shared.queryRunning){
@@ -282,6 +290,21 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                 }
             }
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.row > maxIndex {
+            maxIndex = indexPath.row
+            checkNeedsNewUsers()
+        }
+        print("INDEXPATH = \(indexPath.row)")
+
+        //MARK: delete this
+        
+//        model.pictures.append(UIImage(named: "gabe1")!)
+        
+//        let model = testUsers[indexPath.row]
+        
         var model: User
         if (GeoManager.shared.loadedUsers.count == 0){
             model = User()
@@ -292,10 +315,6 @@ extension ZipFinderViewController: UICollectionViewDataSource {
             model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
 
         }
-
-        //MARK: delete this
-        
-//        model.pictures.append(UIImage(named: "gabe1")!)
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
 
@@ -355,5 +374,3 @@ extension ZipFinderViewController : UIScrollViewDelegate {
         adjustScaleAndAlpha()
     }
 }
-
-

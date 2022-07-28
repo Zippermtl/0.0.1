@@ -48,3 +48,52 @@ extension DatabaseManager {
     }
     
 }
+
+
+//MARK: - phone auth
+extension DatabaseManager {
+    public func startAuth(phoneNumber: String, completion: @escaping (Bool) -> Void) {
+        PhoneAuthProvider.provider().verifyPhoneNumber(phoneNumber, uiDelegate: nil) { [weak self] verificationId, error in
+            guard error == nil else {
+                print("error verifying phone numer, Error: \(error!)")
+                completion(false)
+                return
+            }
+            self?.verificationId = verificationId
+            completion(true)
+        }
+    }
+    
+    public func verifyCode(smsCode : String, completion: @escaping (Bool) -> Void) {
+        guard let verificationId = verificationId else {
+            print("verif id dont even work")
+
+            completion(false)
+            return
+        }
+        
+        let credential = PhoneAuthProvider.provider().credential(
+            withVerificationID: verificationId,
+            verificationCode: smsCode
+        )
+        
+        print("Credential = \(credential)")
+        print("verif id = \(verificationId)")
+        print("sms code = \(smsCode)")
+
+        
+        Auth.auth().signIn(with: credential) { result, error in
+            guard result != nil, error == nil else {
+                print("completion = false")
+                completion(false)
+                return
+            }
+            print("completion = true")
+
+            completion(true)
+        }
+        
+    }
+    
+    
+}

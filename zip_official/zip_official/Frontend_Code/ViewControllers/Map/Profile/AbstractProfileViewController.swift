@@ -135,6 +135,8 @@ class AbstractProfileViewController: UIViewController {
                 if let complete = completion {
                     complete()
                 }
+                
+                print("rerererere")
                 return
             }
                                     

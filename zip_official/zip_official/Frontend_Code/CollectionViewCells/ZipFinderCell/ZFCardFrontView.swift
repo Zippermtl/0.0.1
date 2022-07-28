@@ -51,7 +51,7 @@ class ZFCardFrontView: UIView {
         case .none:
             nm = "arrow.forward.circle.fill"
             user.friendshipStatus = .REQUESTED_OUTGOING
-            tintColor = .zipBlue
+            tintColor = .zipYellow
             requestButton.backgroundColor = .white
             requestButton.layer.borderWidth = 2
         case .ACCEPTED:
@@ -125,8 +125,7 @@ class ZFCardFrontView: UIView {
         configureSubviewLayout()
     
         
-        
-        pictureCollectionView.backgroundColor = .zipBlue
+        pictureCollectionView.backgroundColor = .clear
         
         // create UIImage from SF Symbol at "160-pts" size
         let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
@@ -179,13 +178,9 @@ class ZFCardFrontView: UIView {
     
     //MARK: - Configure
     public func configure(user: User){
-       
-        
         self.user = user
-        
-        
+        print()
         configureLabels()
-        
     }
     
     private func configureLabels(){
@@ -330,8 +325,16 @@ extension ZFCardFrontView: UICollectionViewDataSource {
         guard let user = user else {
             return UICollectionViewCell()
         }
+        print("getting here at least")
         
-        let model = user.otherPictureUrls[indexPath.row]
+        var model: URL
+        if user.otherPictureUrls.count == 0 {
+            model = URL(string:
+                            "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e")!
+        } else {
+            model = user.otherPictureUrls[indexPath.row]
+        }
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
         cell.configure(with: model)
@@ -343,7 +346,9 @@ extension ZFCardFrontView: UICollectionViewDataSource {
         guard let user = user else {
             return 0
         }
-        
-        return user.otherPictureUrls.count
+        if user.otherPictureUrls.count != 0 {
+            return user.otherPictureUrls.count
+        }
+        return 1
     }
 }
