@@ -195,15 +195,7 @@ class PermissionsSetupViewController: UIViewController {
     }
     
     @objc private func didTapNotifications(){
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if let error = error {
-                print("Error enabling notifications: \(error)")
-                // Handle the error here.
-            }
-            
-            // Enable or disable features based on the authorization.
-        }
+        registerForPushNotifications()
     }
     
     override func viewDidLoad() {
@@ -309,5 +301,25 @@ class PermissionsSetupViewController: UIViewController {
         
     }
 
-   
+    func registerForPushNotifications() {
+        //1
+        UNUserNotificationCenter.current()
+            .requestAuthorization(
+                options: [.alert, .sound, .badge]) { [weak self] granted, _ in
+                    print("Permission granted: \(granted)")
+                    guard granted else { return }
+                    self?.getNotificationSettings()
+                }
+    }
+    
+    func getNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("Notification settings: \(settings)")
+            
+            guard settings.authorizationStatus == .authorized else { return }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+    }
 }
