@@ -11,6 +11,7 @@ import MessageKit
 import FirebaseAuth
 import CoreLocation
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 //MARK: - Account Management
 extension DatabaseManager {
@@ -305,6 +306,81 @@ extension DatabaseManager {
             completion(nil)
         }
     }
+    
+//    public func batchPull(idList: [User], completion: @escaping (Error?) -> Void){
+//        let sfRef = firestore.collection("UserProfiles")
+//
+//        firestore.runTransaction({ (transaction, errorPointer) -> Any? in
+//            let sfDocument: DocumentSnapshot
+//            for i in idList.indices {
+//                let sfReference = sfRef.document(idList[i].userId)
+//                do {
+//                    try sfDocument = transaction.getDocument(sfReference)
+//                } catch let fetchError as NSError {
+//                    errorPointer?.pointee = fetchError
+//                    return nil
+//                }
+//                guard let oldPopulation = sfDocument.data()?["firstName"] as? String else {
+//                    let error = NSError(
+//                        domain: "AppErrorDomain",
+//                        code: -1,
+//                        userInfo: [
+//                            NSLocalizedDescriptionKey: "Unable to retrieve firstName from snapshot \(sfDocument)"
+//                        ]
+//                    )
+//                    errorPointer?.pointee = error
+//                    return nil
+//                }
+//                guard let oldPopulation = sfDocument.data()?["lastName"] as? String else {
+//                    let error = NSError(
+//                        domain: "AppErrorDomain",
+//                        code: -1,
+//                        userInfo: [
+//                            NSLocalizedDescriptionKey: "Unable to retrieve lastName from snapshot \(sfDocument)"
+//                        ]
+//                    )
+//                    errorPointer?.pointee = error
+//                    return nil
+//                }
+//                guard let oldPopulation = sfDocument.data()?["userName"] as? String else {
+//                    let error = NSError(
+//                        domain: "AppErrorDomain",
+//                        code: -1,
+//                        userInfo: [
+//                            NSLocalizedDescriptionKey: "Unable to retrieve userName from snapshot \(sfDocument)"
+//                        ]
+//                    )
+//                    errorPointer?.pointee = error
+//                    return nil
+//                }
+//            }
+//
+//
+//
+//
+//            // Note: this could be done without a transaction
+//            //       by updating the population using FieldValue.increment()
+//            let newPopulation = oldPopulation + 1
+//            guard newPopulation <= 1000000 else {
+//                let error = NSError(
+//                    domain: "AppErrorDomain",
+//                    code: -2,
+//                    userInfo: [NSLocalizedDescriptionKey: "Population \(newPopulation) too big"]
+//                )
+//                errorPointer?.pointee = error
+//                return nil
+//            }
+//
+//            transaction.updateData(["population": newPopulation], forDocument: sfReference)
+//            return newPopulation
+//        }) { (object, error) in
+//            if let error = error {
+//                print("Error updating population: \(error)")
+//            } else {
+//                print("Population increased to \(object!)")
+//            }
+//        }
+//    }
     
 }
 
