@@ -8,7 +8,9 @@
 import Foundation
 import UIKit
 import FirebaseFirestore
+import CodableFirebase
 import CoreLocation
+import FirebaseFirestoreSwift
 
 extension EventType: CustomStringConvertible {
     public var description: String {
