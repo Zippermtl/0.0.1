@@ -22,7 +22,7 @@ class UserCoder: Codable {
     var bio: String
     var interests: [Interests]
     var deviceId: [String]
-    
+    var notificationToken: [String]
     var school: String?
     
     enum CodingKeys: String, CodingKey {
@@ -36,6 +36,7 @@ class UserCoder: Codable {
         case school = "school"
         case interests = "interests"
         case deviceId = "deviceId"
+        case notificationToken = "notificationToken"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -51,6 +52,7 @@ class UserCoder: Codable {
         self.birthday = try container.decode(Timestamp.self, forKey: .birthday)
         self.school = try container.decode(String.self, forKey: .school)
         self.deviceId = try container.decode([String].self, forKey: .deviceId)
+        self.notificationToken = try container.decode([String].self, forKey: .notificationToken)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -65,6 +67,7 @@ class UserCoder: Codable {
         try container.encode(school, forKey: .school)
         try container.encode(interests, forKey: .interests)
         try container.encode(deviceId, forKey: .deviceId)
+        try container.encode(notificationToken, forKey: .notificationToken)
     }
     
     
@@ -78,7 +81,8 @@ class UserCoder: Codable {
             picNum: picNum,
             bio: bio,
             school: school,
-            interests: interests
+            interests: interests,
+            notifToken: notificationToken[0]
         )
     }
     
@@ -109,6 +113,7 @@ public class User : CustomStringConvertible {
     var friendships: [Friendship] = []
     var notificationPreferences: NotificationPreference = [:]
     var deviceId: String = ""
+    var notificationToken: String = ""
     
     var email: String?
     var friendshipStatus: FriendshipStatus?
@@ -298,7 +303,7 @@ public class User : CustomStringConvertible {
         notificationPreferences = DecodePreferences(np)
     }
 
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "") {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notifToken: String = "") {
         userId = id
         email = em
         username = us
@@ -320,6 +325,7 @@ public class User : CustomStringConvertible {
             notificationPreferences = DecodePreferences(enp)
         }
         deviceId = devId
+        notificationToken = notifToken
     }
 
     // Load someone's friendships
@@ -484,11 +490,13 @@ public class User : CustomStringConvertible {
             guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
                   let strongSelf = self,
                     error == nil else {
+                completion(error)
                 return
             }
             strongSelf.friendshipStatus = nil
             selfFriendships.removeValue(forKey: strongSelf.userId)
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+            completion(nil)
         }
     }
     
@@ -498,11 +506,13 @@ public class User : CustomStringConvertible {
             guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
                   let strongSelf = self,
                     error == nil else {
+                completion(error)
                 return
             }
             strongSelf.friendshipStatus = .REQUESTED_OUTGOING
             selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+            completion(nil)
 
         }
     }
@@ -513,11 +523,13 @@ public class User : CustomStringConvertible {
             guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
                   let strongSelf = self,
                     error == nil else {
+                completion(error)
                 return
             }
             strongSelf.friendshipStatus = .ACCEPTED
             selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+            completion(nil)
         }
     
     }
@@ -528,11 +540,14 @@ public class User : CustomStringConvertible {
             guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
                   let strongSelf = self,
                     error == nil else {
+                completion(error)
                 return
             }
             strongSelf.friendshipStatus = nil
             selfFriendships.removeValue(forKey: strongSelf.userId)
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+            completion(nil)
+
         }
     }
     
@@ -541,11 +556,14 @@ public class User : CustomStringConvertible {
             guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
                   let strongSelf = self,
                     error == nil else {
+                completion(error)
                 return
             }
             strongSelf.friendshipStatus = nil
             selfFriendships.removeValue(forKey: strongSelf.userId)
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
+            completion(nil)
+
         }
     }
     

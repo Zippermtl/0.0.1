@@ -28,7 +28,7 @@ class PermissionsSetupViewController: UIViewController {
     private let locationButton: UIButton = {
         let btn = UIButton()
         btn.backgroundColor = .zipBlue
-        btn.setTitle("TURN ON LOCATION", for: .normal)
+        btn.setTitle("Enable Location", for: .normal)
         btn.setTitleColor(.white, for: .normal)
         btn.titleLabel?.font = .zipBodyBold.withSize(16)
         btn.layer.masksToBounds = true
@@ -49,10 +49,9 @@ class PermissionsSetupViewController: UIViewController {
         let btn = UIButton()
         btn.backgroundColor = .zipGreen
         btn.layer.masksToBounds = true
-        btn.setTitle("RECIEVE NOTIFICATIONS", for: .normal)
+        btn.setTitle("Turn on Notifications", for: .normal)
         btn.setTitleColor(.white, for: .normal)
         btn.titleLabel?.font = .zipBodyBold.withSize(16)
-
         
         let view = UIImageView(image: UIImage(named: "notifications"))
         btn.addSubview(view)
@@ -68,7 +67,7 @@ class PermissionsSetupViewController: UIViewController {
     
     private let completeButton: UIButton = {
         let btn = UIButton()
-        btn.setTitle("COMPLETE", for: .normal)
+        btn.setTitle("Complete", for: .normal)
         btn.backgroundColor = .zipBlue
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 15
@@ -79,7 +78,7 @@ class PermissionsSetupViewController: UIViewController {
     
     private let createAnAccountLabel: UILabel = {
         let label = UILabel()
-        label.text = "CREATE AN ACCOUNT"
+        label.text = "Create an Account"
         label.textColor = .white
         label.font = .zipBodyBold
         return label
@@ -95,7 +94,7 @@ class PermissionsSetupViewController: UIViewController {
     
     private let stepTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "PERMISSIONS"
+        label.text = "Permissions"
         label.textColor = .white
         label.font = .zipBodyBold.withSize(22)
         return label
@@ -114,7 +113,7 @@ class PermissionsSetupViewController: UIViewController {
         let label = UILabel()
         label.textColor = .zipVeryLightGray
         label.font = .zipBodyBold.withSize(12)
-        label.text = "REQUIRED"
+        label.text = "Required"
         return label
     }()
     

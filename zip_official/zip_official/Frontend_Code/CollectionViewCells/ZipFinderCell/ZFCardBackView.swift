@@ -22,6 +22,7 @@ class ZFCardBackView: UIView {
     weak var delegate: ZFCardBackDelegate?
     //User
     private var user: User?
+    var frontView: ZFCardFrontView?
     var userLoc: CLLocation
 
     private var dropDownTitles: [String]
@@ -161,28 +162,37 @@ class ZFCardBackView: UIView {
     }
     
     @objc private func unrequestUser(){
-        slideView.resetStateWithAnimation(true)
-        slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
-        slideView.thumnailImageView.backgroundColor = .zipBlue
-
+        guard let user = user else { return }
+        user.unsendRequest(completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+            user.friendshipStatus = nil
+            strongSelf.noStatusUI()
+            strongSelf.frontView?.updateRequestButton()
+        })
     }
     
     
     public func configure(user: User){
-        print("SUBVIEW COUNT = \(subviews.count)")
-        
-        
         backgroundColor = .clear
         self.user = user
-        
+        configureLabels()
         profilePicture.sd_setImage(with: user.profilePicUrl, completed: nil)
+    }
+    
+    
+    
+    private func configureLabels() {
+        guard let user = user else { return }
         usernameLabel.text = "@" + user.username
         firstNameLabel.text = user.firstName
         lastNameLabel.text = user.lastName
         ageLabel.text = "\(user.age) years old"
         bioLabel.text = user.bio
         distanceLabel.update(distance: user.getDistance())
-
+        print("USER LOCATION = ",user.location)
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
         joinedDateLabel.text = "Join Zipper on " + dateFormatter.string(from: user.joinDate)
@@ -194,10 +204,7 @@ class ZFCardBackView: UIView {
         if user.interests.count != 0 {
             interestsLabel.text = "Interests: " + user.interests.map{$0.description}.joined(separator: ", ")
         }
-        
-
     }
-    
     //MARK: - Configure Slider
     private func configureSlider(){
         slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
@@ -406,7 +413,26 @@ class ZFCardBackView: UIView {
 //MARK: - Slider Delegate
 extension ZFCardBackView: MTSlideToOpenDelegate {
     func mtSlideToOpenDelegateDidFinish(_ sender: MTSlideToOpenView) {
+        request()
+    }
+    
+    public func request() {
+        guard let user = user else {
+            return
+        }
         
+        user.sendRequest(completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+            user.friendshipStatus = .REQUESTED_OUTGOING
+            strongSelf.requestedUI()
+            strongSelf.frontView?.updateRequestButton()
+        })
+    }
+    
+    public func requestedUI() {
         let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
         guard let imgA = UIImage(systemName: "xmark.circle.fill", withConfiguration: cfg)?.withTintColor(.zipBlue, renderingMode: .alwaysOriginal) else {
             fatalError("Could not load SF Symbol: \("xmark.circle.fill")!")
@@ -421,10 +447,19 @@ extension ZFCardBackView: MTSlideToOpenDelegate {
         
         slideView.thumnailImageView.image = imgB
         slideView.thumnailImageView.backgroundColor = .white
+        slideView.updateThumbnailXPosition(slideView.xEndingPoint)
         
-        
-        
-        print("should zip here")
     }
+    
+    public func zippedUI() {
+        
+    }
+    
+    public func noStatusUI() {
+        slideView.resetStateWithAnimation(true)
+        slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
+        slideView.thumnailImageView.backgroundColor = .zipBlue
+    }
+    
     
 }

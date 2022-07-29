@@ -31,7 +31,6 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     private var cardView = UIView()
     
     
-    
     override init(frame: CGRect) {
         cardFrontView = ZFCardFrontView()
         cardBackView = ZFCardBackView()
@@ -58,6 +57,8 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     public func configure(user: User, loc: CLLocation, idPath: Int) {
         cardFrontView.configure(user: user)
         cardBackView.configure(user: user)
+        cardFrontView.backView = cardBackView
+        cardBackView.frontView = cardFrontView
     }
     
     

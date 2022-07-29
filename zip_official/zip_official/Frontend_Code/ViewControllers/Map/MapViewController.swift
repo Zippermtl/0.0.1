@@ -107,9 +107,8 @@ class MapViewController: UIViewController {
         
 //        let vc = OtherProfileViewController(id: "u2158018458")
         
-       
-        
-
+ 
+    
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
         let vc = ProfileViewController(id: userId)
@@ -279,9 +278,7 @@ class MapViewController: UIViewController {
     func configureAnnotations(){
         mapView.delegate = self
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
-        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
-        
-        
+        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)        
         
         DatabaseManager.shared.getAllPrivateEventsForMap(completion: { [weak self] result in
             switch result {

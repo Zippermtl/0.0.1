@@ -166,8 +166,23 @@ extension DatabaseManager {
     }
     
     public func updateDeviceId(devId: String, completion: @escaping (Error?) -> Void) {
-        let userData: [String:Any] = [
-            "deviceId": AppDelegate.userDefaults.value(forKey: "deviceId") as! String,
+        let userData: [String:[String]] = [
+            "deviceId": [devId],
+        ]
+        
+        firestore.collection("UserProfiles").document(AppDelegate.userDefaults.value(forKey: "userId") as! String).updateData(userData) { error in
+            guard error == nil else{
+                print("failed to write to database")
+                completion(error)
+                return
+            }
+            completion(nil)
+        }
+    }
+    
+    public func updateNotificationToken(token: String, completion: @escaping (Error?) -> Void) {
+        let userData: [String:[String]] = [
+            "notificationToken": [token],
         ]
         
         firestore.collection("UserProfiles").document(AppDelegate.userDefaults.value(forKey: "userId") as! String).updateData(userData) { error in
@@ -210,10 +225,16 @@ extension DatabaseManager {
         firestore.collection("UserProfiles").document(user.userId).getDocument(as: UserCoder.self)  { result in
             switch result {
             case .success(let userCoder):
-                print("USER12345", userCoder.bio)
+                let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] ?? [:]
+                let friendshipInt = friendships[user.userId] ?? -1
+                if friendshipInt == -1 {
+                    user.friendshipStatus = nil
+                } else {
+                    user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
+                }
                 userCoder.updateUser(user)
-                print("USER12345", user.bio)
 
+                
                 let imagesPath = "images/" + user.userId
                 StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
                     switch result {

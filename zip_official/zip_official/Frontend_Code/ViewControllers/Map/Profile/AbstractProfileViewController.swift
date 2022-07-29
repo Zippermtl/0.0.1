@@ -43,6 +43,13 @@ class AbstractProfileViewController: UIViewController {
     @objc open func didTapRightBarButton(){}
     @objc open func didTapPhotos(){}
 
+    var bioCell : UITableViewCell?
+    var schoolCell : UITableViewCell?
+    var interestCell : UITableViewCell?
+    var birthdayCell : UITableViewCell?
+    
+    var tableCells : [UITableViewCell]
+    
     init(
         id: String,
         B1: IconButton,
@@ -51,6 +58,8 @@ class AbstractProfileViewController: UIViewController {
         rightBarButtonIcon: UIImage,
         centerActionInfo: (String,UIColor)
     ) {
+        self.tableCells = []
+        
         self.user = User(userId: id)
         self.centerActionInfo = centerActionInfo
         
@@ -139,6 +148,8 @@ class AbstractProfileViewController: UIViewController {
                 print("rerererere")
                 return
             }
+            
+            strongSelf.configureCells()
                                     
             strongSelf.title = "@" + strongSelf.user.username
             strongSelf.firstnameLabel.text = strongSelf.user.firstName
@@ -356,84 +367,60 @@ extension AbstractProfileViewController: UITableViewDelegate {
 
 extension AbstractProfileViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return user.numTableviewCells
+        return tableCells.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
- 
-        switch indexPath.row {
-        case 0:
-            if user.hasBio { return getBioCell(tableView, cellForRowAt: indexPath)}
-            else if user.hasSchool { return getSchoolCell(tableView, cellForRowAt: indexPath)}
-            else if user.hasInterests { return getInterestsCell(tableView, cellForRowAt: indexPath)}
-            else { return getBirthdayCell(tableView, cellForRowAt: indexPath)}
-        case 1:
-            if !user.hasBio {
-                if user.hasInterests { return getInterestsCell(tableView, cellForRowAt: indexPath)}
-                else { return getBirthdayCell(tableView, cellForRowAt: indexPath)}
-            } else {
-                if user.hasSchool { return getSchoolCell(tableView, cellForRowAt: indexPath)}
-                else if user.hasInterests { return getInterestsCell(tableView, cellForRowAt: indexPath)}
-                else { return getBirthdayCell(tableView, cellForRowAt: indexPath)}
-            }
-        case 2:
-            if user.hasBio && user.hasSchool {
-                if user.hasInterests { return getInterestsCell(tableView, cellForRowAt: indexPath)}
-                else { return getBirthdayCell(tableView, cellForRowAt: indexPath)}
-            } else { return getBirthdayCell(tableView, cellForRowAt: indexPath)}
-
-        default: return getBirthdayCell(tableView, cellForRowAt: indexPath)
+        return tableCells[indexPath.row]
+    }
+    
+    private func configureCells() {
+        if user.hasBio {
+            bioCell = UITableViewCell()
+            bioCell!.backgroundColor = .clear
+            bioCell!.selectionStyle = .none
+            var content = bioCell!.defaultContentConfiguration()
+            content.textProperties.color = .white
+            content.textProperties.font = .zipTextFill
+            content.text = user.bio
+            bioCell!.contentConfiguration = content
             
+            tableCells.append(bioCell!)
         }
-    }
-    
-    private func getBioCell(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
-        let cell = tableView.dequeueReusableCell(withIdentifier: "bio", for: indexPath)
-        cell.backgroundColor = .clear
-        cell.selectionStyle = .none
-        var content = cell.defaultContentConfiguration()
-        content.textProperties.color = .white
-        content.textProperties.font = .zipTextFill
-        content.text = user.bio
-        cell.contentConfiguration = content
-        return cell
-    }
-    
-    private func getSchoolCell(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .clear
-        cell.selectionStyle = .none
-        var content = cell.defaultContentConfiguration()
-        content.textProperties.color = .white
-        content.textProperties.font = .zipTextFill
-        content.text = user.school
-        content.image = UIImage(systemName: "graduationcap.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        cell.contentConfiguration = content
         
-        return cell
-    }
-    
-    private func getInterestsCell(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .clear
-        cell.selectionStyle = .none
-        var content = cell.defaultContentConfiguration()
-        content.textProperties.color = .white
-        content.textProperties.font = .zipTextFill
-        content.text = user.interestsString
-        content.image = UIImage(systemName: "star.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        if user.hasSchool {
+            schoolCell = UITableViewCell()
+            schoolCell!.backgroundColor = .clear
+            schoolCell!.selectionStyle = .none
+            var content = schoolCell!.defaultContentConfiguration()
+            content.textProperties.color = .white
+            content.textProperties.font = .zipTextFill
+            content.text = user.school
+            content.image = UIImage(systemName: "graduationcap.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+            schoolCell!.contentConfiguration = content
+            
+            tableCells.append(schoolCell!)
+        }
         
+        if user.hasInterests {
+            interestCell = UITableViewCell()
+            interestCell!.backgroundColor = .clear
+            interestCell!.selectionStyle = .none
+            var content = interestCell!.defaultContentConfiguration()
+            content.textProperties.color = .white
+            content.textProperties.font = .zipTextFill
+            content.text = user.interestsString
+            content.image = UIImage(systemName: "star.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+            interestCell!.contentConfiguration = content
+            
+            tableCells.append(interestCell!)
+
+        }
         
-        cell.contentConfiguration = content
-        
-        return cell
-    }
-    
-    private func getBirthdayCell(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .clear
-        cell.selectionStyle = .none
-        var content = cell.defaultContentConfiguration()
+        birthdayCell = UITableViewCell()
+        birthdayCell!.backgroundColor = .clear
+        birthdayCell!.selectionStyle = .none
+        var content = birthdayCell!.defaultContentConfiguration()
         content.textProperties.color = .white
         content.textProperties.font = .zipTextFill
         
@@ -442,8 +429,9 @@ extension AbstractProfileViewController: UITableViewDataSource {
         content.text = dateFormatter.string(from: user.birthday)
         content.image = UIImage(systemName: "gift.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         
-        cell.contentConfiguration = content
-        
-        return cell
+        birthdayCell!.contentConfiguration = content
+        tableCells.append(birthdayCell!)
+
     }
+
 }

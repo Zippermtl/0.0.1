@@ -15,7 +15,7 @@ import UIImageCropper
 class ZFCardFrontView: UIView {
     //User
     private var user: User?
-    
+    var backView: ZFCardBackView?
     //MARK: - Subviews
     private var pictureCollectionLayout: SnappingFlowLayout
     var pictureCollectionView: UICollectionView
@@ -45,40 +45,57 @@ class ZFCardFrontView: UIView {
             return
         }
 
-        var nm = ""
-        var tintColor = UIColor.white
         switch user.friendshipStatus {
         case .none:
-            nm = "arrow.forward.circle.fill"
-            user.friendshipStatus = .REQUESTED_OUTGOING
-            tintColor = .zipYellow
-            requestButton.backgroundColor = .white
-            requestButton.layer.borderWidth = 2
-        case .ACCEPTED:
-            nm =  "plus.circle.fill"
-            user.friendshipStatus = nil
-            tintColor = .white
-            requestButton.backgroundColor = .zipBlue
-            requestButton.layer.borderWidth = 0
+            user.sendRequest(completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                user.friendshipStatus = .REQUESTED_OUTGOING
+                strongSelf.updateRequestButton()
+                strongSelf.backView?.requestedUI()
+            })
             
+        case .ACCEPTED:
+            user.unsendRequest(completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                user.friendshipStatus = nil
+                strongSelf.updateRequestButton()
+                strongSelf.backView?.noStatusUI()
+            })
         case .REQUESTED_INCOMING:
-            nm = "checkmark.circle.fill"
-            user.friendshipStatus = .ACCEPTED
-            tintColor = .zipBlue
-            requestButton.backgroundColor = .white
-            requestButton.layer.borderWidth = 2
+            user.acceptRequest(completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                user.friendshipStatus = .ACCEPTED
+                strongSelf.updateRequestButton()
+                strongSelf.backView?.zippedUI()
+
+            })
         case .REQUESTED_OUTGOING:
-            nm = "plus.circle.fill"
-            user.friendshipStatus = nil
-            tintColor = .white
-            requestButton.backgroundColor = .zipBlue
-            requestButton.layer.borderWidth = 0
+            user.unsendRequest(completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                user.friendshipStatus = nil
+                strongSelf.updateRequestButton()
+                strongSelf.backView?.noStatusUI()
+            })
         }
-                
+    }
+    
+    private func updateRequestButtonImage(name: String, tintColor: UIColor) {
         // create UIImage from SF Symbol at "160-pts" size
         let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
-        guard let imgA = UIImage(systemName: nm, withConfiguration: cfg)?.withTintColor(tintColor, renderingMode: .alwaysOriginal) else {
-            fatalError("Could not load SF Symbol: \(nm)!")
+        guard let imgA = UIImage(systemName: name, withConfiguration: cfg)?.withTintColor(tintColor, renderingMode: .alwaysOriginal) else {
+            fatalError("Could not load SF Symbol: \(name)!")
         }
         
         guard let cgRef = imgA.cgImage else {
@@ -127,20 +144,7 @@ class ZFCardFrontView: UIView {
         
         pictureCollectionView.backgroundColor = .clear
         
-        // create UIImage from SF Symbol at "160-pts" size
-        let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
-        guard let imgA = UIImage(systemName: "plus.circle.fill", withConfiguration: cfg)?.withTintColor(.white, renderingMode: .alwaysOriginal) else {
-            fatalError("Could not load SF Symbol: \("plus.circle.fill")!")
-        }
-        
-        guard let cgRef = imgA.cgImage else {
-            fatalError("Could not get cgImage!")
-        }
-        
-        let imgB = UIImage(cgImage: cgRef, scale: imgA.scale, orientation: imgA.imageOrientation)
-                    .withTintColor(.white, renderingMode: .alwaysOriginal)
-        
-        requestButton.setImage(imgB, for: .normal)
+
         
         requestButton.addTarget(self, action: #selector(didTapRequestButton), for: .touchUpInside)
         requestButton.layer.masksToBounds = true
@@ -179,8 +183,29 @@ class ZFCardFrontView: UIView {
     //MARK: - Configure
     public func configure(user: User){
         self.user = user
-        print()
         configureLabels()
+        updateRequestButton()
+    }
+    
+    public func updateRequestButton() {
+        switch user?.friendshipStatus {
+        case .none:
+            updateRequestButtonImage(name: "plus.circle.fill", tintColor: .white)
+            requestButton.backgroundColor = .zipBlue
+            requestButton.layer.borderWidth = 0
+        case .ACCEPTED:
+            updateRequestButtonImage(name: "checkmark.circle.fill", tintColor: .zipBlue)
+            requestButton.backgroundColor = .white
+            requestButton.layer.borderWidth = 0
+        case .REQUESTED_INCOMING:
+            updateRequestButtonImage(name: "plus.circle.fill", tintColor: .white)
+            requestButton.backgroundColor = .zipBlue
+            requestButton.layer.borderWidth = 0
+        case .REQUESTED_OUTGOING:
+            updateRequestButtonImage(name: "arrow.forward.circle.fill", tintColor: .zipYellow)
+            requestButton.backgroundColor = .white
+            requestButton.layer.borderWidth = 2
+        }
     }
     
     private func configureLabels(){

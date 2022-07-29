@@ -30,6 +30,7 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
         textView.showsHorizontalScrollIndicator = false
         textView.showsVerticalScrollIndicator = false
         textView.isScrollEnabled = false
+        textView.delegate = self
         textView.bounces = false
         textView.layer.cornerRadius = 5
         
@@ -75,13 +76,7 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
 
 
 extension EditTextFieldTableViewCell: UITextViewDelegate {
-    func textViewDidChange(_ textView: UITextView) {
-        cellDelegate?.updateHeightOfRow(self, textView)
-        cellDelegate?.updateValue(value: textView.text ?? "")
-    }
-    
     func textViewDidEndEditing(_ textView: UITextView) {
         saveValue()
     }
-    
 }

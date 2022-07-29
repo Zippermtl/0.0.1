@@ -49,8 +49,6 @@ class FPCViewController: UIViewController {
     
     private var dismissTap: UITapGestureRecognizer?
     private var dismissTapCV: UITapGestureRecognizer?
-
-    
     
     init(requests: [ZipRequest], events: [Event]) {
         self.userLoc = CLLocation()
