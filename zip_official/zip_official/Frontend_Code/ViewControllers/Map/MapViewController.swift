@@ -348,6 +348,9 @@ extension MapViewController: CLLocationManagerDelegate {
             zoomToLatestLocation()
             mapDidMove = false
         }
+//        DatabaseManager.shared.testUserTableView()
+//        DatabaseManager.shared.testEventTableView()
+//        DatabaseManager.shared.createSampleUsersMany()
 //        DatabaseManager.shared.createSampleEventsMany()
 //        DatabaseManager.shared.testthequery()
         //MARK: For test code to be added to database only necessary once but leaving for future use if needed
