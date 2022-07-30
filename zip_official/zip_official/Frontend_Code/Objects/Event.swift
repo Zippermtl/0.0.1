@@ -12,6 +12,12 @@ import CodableFirebase
 import CoreLocation
 import FirebaseFirestoreSwift
 
+enum EventSaveStatus: Int {
+    case SAVED = 0
+    case GOING = 1
+
+}
+
 extension EventType: CustomStringConvertible {
     public var description: String {
         switch self {
@@ -56,7 +62,7 @@ extension EventType: CustomStringConvertible {
 public class EventCoder: Codable {
     var title: String
     var coordinates: [String: Double]
-    var hosts: [String]
+    var hosts: [String: String]
     var description: String
     var address: String
     var maxGuests: Int
@@ -88,7 +94,7 @@ public class EventCoder: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.title = try container.decode(String.self, forKey: .title)
         self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
-        self.hosts = try container.decode([String].self, forKey: .hosts)
+        self.hosts = try container.decode([String:String].self, forKey: .hosts)
         self.description = try container.decode(String.self, forKey: .description)
         self.address = try container.decode(String.self, forKey: .address)
         self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
@@ -114,10 +120,18 @@ public class EventCoder: Codable {
     }
     
     public func createEvent() -> Event {
+        var hostUsers: [User] = []
+        for (id,fullName) in hosts {
+            let fullNameArr = fullName.components(separatedBy: " ")
+            let firstName: String = fullNameArr[0]
+            let lastName: String = fullNameArr[1]
+            hostUsers.append(User(userId: id, firstName: firstName, lastName: lastName))
+        }
+        
         return zip_official.createEvent(
             title: title,
             coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
-            hosts: hosts.map( { User(userId: $0 )} ),
+            hosts: hostUsers,
             description: description,
             address: address,
             maxGuests: maxGuests,
@@ -130,9 +144,17 @@ public class EventCoder: Codable {
     }
     
     public func updateEvent(event: Event) {
+        var hostUsers: [User] = []
+        for (id,fullName) in hosts {
+            let fullNameArr = fullName.components(separatedBy: " ")
+            let firstName: String = fullNameArr[0]
+            let lastName: String = fullNameArr[1]
+            hostUsers.append(User(userId: id, firstName: firstName, lastName: lastName))
+        }
+        
         event.title = title
         event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
-        event.hosts = hosts.map( { User(userId: $0 )} )
+        event.hosts = hostUsers
         event.description = description
         event.address = address
         event.maxGuests = maxGuests
@@ -195,14 +217,19 @@ public class Event : Encodable {
     var endTime: Date = Date(timeInterval: TimeInterval(3600), since: Date())
     var duration: TimeInterval = TimeInterval(1)
     
-    var imageUrl: URL = URL(string: "a")! {
+    var imageUrl: URL? {
         didSet {
-            guard let annotation = self.annotationView else { return }
-            annotation.updateImage(imageUrl)
+            if annotationView != nil {
+                annotationView!.updateImage(imageUrl!)
+            }
+            if tableViewCell != nil {
+                tableViewCell!.configureImage(self)
+            }
         }
     }
     
     var annotationView : EventAnnotationView?
+    var tableViewCell: AbstractEventTableViewCell?
     var image: UIImage? = UIImage(named: "launchevent")
     
     var latitude : Double {

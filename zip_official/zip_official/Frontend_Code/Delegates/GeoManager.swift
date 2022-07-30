@@ -124,8 +124,7 @@ class GeoManager {
 
     public func eventIsValid(key: String){
         if(!alreadyReadySeenEvent.contains(key)){
-            alreadyReadySeenEvent.append(key)
-            DatabaseManager.shared.loadEvent(key: key) { [weak self] result in
+            DatabaseManager.shared.loadEvent(event: Event(eventId: key)) { [weak self] result in
                 guard let strongSelf = self else {
                     return
                 }

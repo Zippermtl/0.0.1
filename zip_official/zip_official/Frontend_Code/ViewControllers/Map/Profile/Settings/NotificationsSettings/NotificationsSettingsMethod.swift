@@ -92,3 +92,70 @@ extension SettingsCategoryViewController {
         }
     }
 }
+
+
+/*
+ 
+ 
+ func notificationsCellConfig(_ indexPath: IndexPath) -> UITableViewCell {
+     let cell = tableView.dequeueReusableCell(withIdentifier: SettingsCellTableViewCell.identifier, for: indexPath) as! SettingsCellTableViewCell
+     guard let section = NotificationsSettingsSection(rawValue: indexPath.section),
+           let encoded = AppDelegate.userDefaults.value(forKey: "encodedNotificationSettings") as? Int else {
+         return UITableViewCell()
+         
+     }
+     
+     
+     let decoded = DecodePreferences(encoded)
+     
+     switch section {
+     case .General:
+         let general = NotificationsGeneralOptions(rawValue: indexPath.row)
+         cell.sectionType = general
+         switch general {
+         case .pauseAll:
+             
+ 
+         case .zipUpdate:
+             <#code#>
+         }
+         
+     case .Zips:
+         let zips = NotificationsZipOptions(rawValue: indexPath.row)
+         cell.sectionType = zips
+         
+         switch zips {
+         case .zipRequests:
+             <#code#>
+         case .acceptedRequests:
+             <#code#>
+         }
+     case .Messages:
+         let messages = NotificationsMessagesOptions(rawValue: indexPath.row)
+         cell.sectionType = messages
+         
+         switch messages {
+         case .messages:
+             <#code#>
+         case .messageRequests:
+             <#code#>
+         }
+     case .Events:
+         let events = NotificationsEventOptions(rawValue: indexPath.row)
+         cell.sectionType = events
+         
+         switch events {
+         case .eventInvites:
+             <#code#>
+         case .publicEvents:
+             <#code#>
+         case .dayReminders:
+             <#code#>
+         case .infoChange:
+             <#code#>
+         }
+     }
+     
+     return cell
+ }
+ */

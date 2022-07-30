@@ -9,16 +9,13 @@ import UIKit
 
 class ZipRequestsViewController: UIViewController {
     var tableView: ZipRequestTableView
-    var requests: [ZipRequest]
     
     @objc private func didTapDismiss(){
         dismiss(animated: true)
     }
     
-    init(requests: [ZipRequest]){
-        self.requests = requests
-        self.tableView = ZipRequestTableView(requests: requests)
-        
+    init(){
+        self.tableView = ZipRequestTableView()
         super.init(nibName: nil, bundle: nil)
         view.addSubview(tableView)
         tableView.frame = view.bounds
@@ -39,7 +36,7 @@ class ZipRequestsViewController: UIViewController {
         dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
         
-        title = "ZIP REQUESTS"
+        title = "Zip Requests"
     }
 
 }

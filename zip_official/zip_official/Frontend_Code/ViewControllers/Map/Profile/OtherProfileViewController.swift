@@ -148,7 +148,8 @@ class OtherProfileViewController: AbstractProfileViewController  {
     }
     
     override func didTapB3Button() {
-        let myZipsView = MyZipsViewController(user: user)
+        let myZipsView = UsersTableViewController(users: [])
+        myZipsView.title = "\(user.firstName)'s Zips"
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)
     }

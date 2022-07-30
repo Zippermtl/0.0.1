@@ -17,19 +17,29 @@ class InviteMoreViewController: UIViewController {
     
     init(event: Event) {
         self.event = event
-        users = MapViewController.getTestUsers()
         usersToInvite = []
         self.tableView = UITableView()
+        users = []
+
         super.init(nibName: nil, bundle: nil)
+        
         title = "Invite Guests"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite",
                                                             style: UIBarButtonItem.Style.done,
                                                             target: self,
                                                             action: #selector(didTapInvite))
         
+        guard let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] else {
+            return
+        }
+        let zipsDict = friendsips.filter({ $0.value == 2 })
+        let userIds = Array(zipsDict.keys)
+        let zips = userIds.map({ User(userId: $0) })
+        users = zips.filter({ !event.usersInvite.contains($0)})
+        
         view.backgroundColor = .zipGray
         configureTable()
-        
+        DatabaseManager.shared.userLoadTableView(users: users, completion: { result in })
     }
     
     private func configureTable(){
@@ -73,6 +83,7 @@ extension InviteMoreViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: InviteTableViewCell.identifier, for: indexPath) as! InviteTableViewCell
         cell.configure(users[indexPath.row])
+        users[indexPath.row].tableViewCell = cell
         cell.delegate = self
         cell.selectionStyle = .none
         cell.clipsToBounds = true

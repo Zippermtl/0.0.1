@@ -93,7 +93,8 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB3Button() {
-        let myZipsView = MyZipsViewController(user: user)
+        let myZipsView = UsersTableViewController(users: user.getMyZips())
+        myZipsView.title = "My Zips"
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)
     }

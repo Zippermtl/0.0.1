@@ -56,6 +56,7 @@ extension EventInvitesTableView: UITableViewDelegate, UITableViewDataSource {
             let cellEvent = events[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: FPCEventTableViewCell.identifier, for: indexPath) as! FPCEventTableViewCell
             cell.delegate = self
+            cellEvent.tableViewCell = cell
             cell.selectionStyle = .none
             cell.clipsToBounds = true
             cell.configure(cellEvent)

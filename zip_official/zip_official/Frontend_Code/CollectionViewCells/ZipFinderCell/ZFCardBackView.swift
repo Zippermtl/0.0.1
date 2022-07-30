@@ -447,7 +447,7 @@ extension ZFCardBackView: MTSlideToOpenDelegate {
         
         slideView.thumnailImageView.image = imgB
         slideView.thumnailImageView.backgroundColor = .white
-        slideView.updateThumbnailXPosition(slideView.xEndingPoint)
+//        slideView.updateThumbnailXPosition(slideView.xEndingPoint)
         
     }
     

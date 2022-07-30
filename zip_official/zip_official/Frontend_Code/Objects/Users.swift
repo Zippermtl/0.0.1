@@ -100,7 +100,11 @@ class UserCoder: Codable {
 
 }
 
-public class User : CustomStringConvertible {
+public class User : CustomStringConvertible, Equatable {
+    public static func == (lhs: User, rhs: User) -> Bool {
+        return lhs.userId == rhs.userId
+    }
+    
     var userId: String = ""
     var username: String = ""
     var firstName: String = ""
@@ -123,6 +127,8 @@ public class User : CustomStringConvertible {
     var pictureURLs: [URL] = []
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
+    
+    var tableViewCell: AbstractUserTableViewCell? 
 
     public var description : String {
         var out = ""
@@ -695,6 +701,18 @@ public class User : CustomStringConvertible {
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
     static func load(status: Int, completion: @escaping (Bool) -> Void) {
         User.getCurrentUser().load(status: status, completion: {result in completion(result)})
+    }
+    
+    
+    
+    func getMyZips() -> [User]{
+        guard let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] else {
+            return []
+        }
+        let zipsDict = friendsips.filter({ $0.value == 2 })
+        let userIds = Array(zipsDict.keys)
+        let zips = userIds.map({ User(userId: $0) })
+        return zips
     }
     
 }

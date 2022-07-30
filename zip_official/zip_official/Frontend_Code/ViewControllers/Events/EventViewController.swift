@@ -83,9 +83,15 @@ class EventViewController: UIViewController {
 
         self.liveView = UIView()
         super.init(nibName: nil, bundle: nil)
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+        if event.usersGoing.contains(User(userId: userId)) {
+            goingUI()
+        }
+        let events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
+        if events[event.eventId] != nil {
+            savedUI()
+        }
         
-    
-        goingButton.backgroundColor = .zipGray
         goingButton.layer.borderWidth = 3
         goingButton.layer.borderColor = UIColor.zipBlue.cgColor
            
@@ -103,7 +109,6 @@ class EventViewController: UIViewController {
         icon.isUserInteractionEnabled = false
         
         
-        
         hostLabel.isUserInteractionEnabled = true
         let hostTap = UITapGestureRecognizer(target: self, action: #selector(didTapHost))
         hostLabel.addGestureRecognizer(hostTap)
@@ -119,7 +124,6 @@ class EventViewController: UIViewController {
         liveView.isHidden = true
         liveView.layer.masksToBounds = true
         
-
 
         configureNavBar()
         configureTable()
@@ -150,19 +154,48 @@ class EventViewController: UIViewController {
     
     @objc func didTapGoingButton(){
         if !isGoing {
-            isGoing = true
-            goingButton.backgroundColor = .zipBlue
+            DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                
+                strongSelf.goingUI()
+                guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+                strongSelf.event.usersGoing.append(User(userId: userId))
+                strongSelf.configureUserCountLabel()
+            })
         } else {
-            isGoing = false
-            goingButton.backgroundColor = .zipGray
+            DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                
+                strongSelf.notGoingUI()
+                guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
+                      let idx = strongSelf.event.usersGoing.firstIndex(of: User(userId: userId)) else { return }
+                strongSelf.event.usersGoing.remove(at: idx)
+                strongSelf.configureUserCountLabel()
+            })
         }
+    }
+    
+    private func goingUI(){
+        isGoing = true
+        goingButton.backgroundColor = .zipBlue
+    }
+    
+    private func notGoingUI() {
+        isGoing = false
+        goingButton.backgroundColor = .zipGray
     }
     
     @objc private func didTapParticipantsButton(){
         navigationController!.navigationBar.setTitleVerticalPositionAdjustment(0, for: .default)
 
-        let zipListView = ZipListViewController(event: event)
-        
+        let zipListView = UsersTableViewController(users: event.usersGoing)
+        zipListView.title = "Participants"
         let transition = CATransition()
         transition.duration = 0.5
         transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
@@ -181,18 +214,37 @@ class EventViewController: UIViewController {
     
     @objc func didTapSaveButton(){
         if !isSaved {
-            isSaved = true
-            saveButton.iconButton.backgroundColor = .zipGreen
+            DatabaseManager.shared.markSaved(event: event, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                strongSelf.savedUI()
+            })
         } else {
-            isSaved = false
-            saveButton.iconButton.backgroundColor = .zipLightGray
+            DatabaseManager.shared.markUnsaved(event: event, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                strongSelf.notSavedUI()
+            })
         }
     }
     
+    private func savedUI() {
+        isSaved = true
+        saveButton.iconButton.backgroundColor = .zipBlue
+    }
+    
+    private func notSavedUI() {
+        isSaved = false
+        saveButton.iconButton.backgroundColor = .zipLightGray
+    }
+    
     @objc private func didTapHost(){
-        //        let vc = OtherProfileViewController(id: event.hosts[0].userId)
-
-        let vc = HostsViewController(event: event)
+        let vc = UsersTableViewController(users: event.hosts)
+        vc.title = "Hosts"
         navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -246,7 +298,7 @@ class EventViewController: UIViewController {
     
     
     private func fetchEvent(completion: (() -> Void)? = nil) {
-        DatabaseManager.shared.loadEvent(key: event.eventId, completion: { [weak self] result in
+        DatabaseManager.shared.loadEvent(event: event, completion: { [weak self] result in
             switch result {
             case .success(let event):
                 guard let strongSelf = self else {
@@ -263,10 +315,7 @@ class EventViewController: UIViewController {
                 
                 strongSelf.tableView.reloadData()
                 
-                
-                strongSelf.event.usersGoing = MapViewController.getTestUsers()
-                strongSelf.event.hosts = [MapViewController.getTestUsers()[1]]
-                
+
                 strongSelf.eventTypeLabel.textColor = event.getType().color
                 strongSelf.eventBorder.layer.borderColor = event.getType().color.cgColor
                 
@@ -401,7 +450,7 @@ class EventViewController: UIViewController {
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
 //        tableHeader.topAnchor.constraint(equalTo: eventPhotoView.topAnchor).isActive = true
-        tableHeader.bottomAnchor.constraint(equalTo: participantsButton.bottomAnchor, constant: 35).isActive = true
+        tableHeader.bottomAnchor.constraint(equalTo: participantsButton.bottomAnchor, constant: 20).isActive = true
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
         goingButton.layer.cornerRadius = 8
@@ -432,12 +481,8 @@ class EventViewController: UIViewController {
 
     //MARK: - Label Config
     func configureLabels(){
-        if event.maxGuests == -1 {
-            userCountLabel.text = String(event.usersGoing.count) + " participants"
-        } else {
-            userCountLabel.text = String(event.usersGoing.count) + "/" + String(event.maxGuests) + " participants"
-        }
-        
+    
+        configureUserCountLabel()
         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
@@ -449,6 +494,14 @@ class EventViewController: UIViewController {
         titleLabel.text = event.title
         navigationItem.titleView = titleLabel
 
+    }
+    
+    func configureUserCountLabel(){
+        if event.maxGuests == -1 {
+            userCountLabel.text = String(event.usersGoing.count) + " participants"
+        } else {
+            userCountLabel.text = String(event.usersGoing.count) + "/" + String(event.maxGuests) + " participants"
+        }
     }
     
 

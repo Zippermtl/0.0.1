@@ -539,7 +539,7 @@ extension CreateEventViewController: UITextFieldDelegate {
                 
                 // Round down to nearest date:
                 let ceilingMinute = Int(ceil(minute / minuteGranuity) * minuteGranuity)%60
-                if ceilingMinute == 0 { hour += 1 }
+                if minute == 0 && ceilingMinute == 0 { hour = (hour + 1)%24 }
                 let ceilingDate = calendar.date(bySettingHour: hour,
                                                 minute: ceilingMinute,
                                                 second: 0,
@@ -571,11 +571,12 @@ extension CreateEventViewController: UITextFieldDelegate {
                 
                 // Round down to nearest date:
                 let ceilingMinute = Int(ceil(minute / minuteGranuity) * minuteGranuity)%60
-                if minute == 0 && ceilingMinute == 0 { hour += 1 }
+                if minute == 0 && ceilingMinute == 0 { hour = (hour + 1)%24 }
                 let ceilingDate = calendar.date(bySettingHour: hour,
                                                 minute: ceilingMinute,
                                                 second: 0,
-                                                of: minEndTime)!
+                                                of: minEndTime,
+                                                direction: .forward)!
                 
                 
                 let formatter = DateFormatter()

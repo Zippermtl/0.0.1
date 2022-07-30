@@ -67,10 +67,15 @@ class AbstractEventTableViewCell: UITableViewCell {
     public func configure(_ event: Event){
         backgroundColor = .clear
         self.event = event
-        
-        eventImage.image = event.image
-//        eventImage.sd_setImage(with: event.imageUrl, completed: nil)
         configureLabels()
+        configureImage(event)
+    }
+    
+    public func configureImage(_ event: Event) {
+        guard let url = event.imageUrl else {
+            return
+        }
+        eventImage.sd_setImage(with: url, completed: nil)
     }
     
 

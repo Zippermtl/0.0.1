@@ -15,7 +15,7 @@ protocol FPCMapDelegate: AnyObject {
     func openNotifications()
     func openMessages()
     func openFPC()
-    func openZipRequests(requests: [ZipRequest])
+    func openZipRequests()
     func openEventInvites(events: [Event])
 }
 
@@ -37,7 +37,6 @@ class FPCViewController: UIViewController {
     private var searchTable: SearchBarTableView
     private var searchBg: UIView
     private var events: [Event]
-    var requests: [ZipRequest]
     
     private let findEventsIcon: IconButton
     private let createEventIcon: IconButton
@@ -50,7 +49,7 @@ class FPCViewController: UIViewController {
     private var dismissTap: UITapGestureRecognizer?
     private var dismissTapCV: UITapGestureRecognizer?
     
-    init(requests: [ZipRequest], events: [Event]) {
+    init(events: [Event]) {
         self.userLoc = CLLocation()
         self.scrollView = UIScrollView()
         self.zipFinderButton = UIButton()
@@ -60,11 +59,10 @@ class FPCViewController: UIViewController {
         self.eventsLabel = UILabel.zipTextFill()
         self.zipRequestsButton = UIButton()
         self.eventsButton = UIButton()
-        self.requests = requests
         self.events = events
         
         self.searchBg = UIView()
-        self.zipRequestsTable = ZipRequestTableView(requests: requests)
+        self.zipRequestsTable = ZipRequestTableView()
         self.eventsTable = EventInvitesTableView(events: events)
         self.searchTable = SearchBarTableView(eventData: events)
         
@@ -173,7 +171,7 @@ class FPCViewController: UIViewController {
     }
     
     @objc private func didTapZipRequests(){
-        delegate?.openZipRequests(requests: requests)
+        delegate?.openZipRequests()
     }
     
     @objc private func didTapEventInvites(){
@@ -205,7 +203,14 @@ class FPCViewController: UIViewController {
         
         zipRequestsTable.FPCDelegate = self
         eventsTable.FPCDelegate = self
-        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
+        
+        if let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
+            let zipsDict = friendsips.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
+            let userIds = Array(zipsDict.keys)
+            zipRequestsLabel.text = "Zip Requests (\(userIds.count))"
+        } else {
+            zipRequestsLabel.text = "Zip Requests (0)"
+        }
         eventsLabel.text = "Event Invites (\(events.count))"
 
         //Search Bar
@@ -411,10 +416,9 @@ extension FPCViewController: UITextFieldDelegate {
 
 
 extension FPCViewController: FPCTableDelegate {
-    func updateRequestsLabel(requests: [ZipRequest]) {
+    func updateRequestsLabel(requests: [User]) {
         print("running this? ", requests.count)
         zipRequestsLabel.text = "Zip Requests (\(requests.count))"
-        self.requests = requests
     }
     
     func updateEventsLabel(events: [Event]) {

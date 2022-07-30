@@ -106,7 +106,23 @@ class MapViewController: UIViewController {
 //
         
 //        let vc = OtherProfileViewController(id: "u2158018458")
+
+        let friendships: [String : Int] = ["u2158018458" : 0,
+                                           "u2508575270" : 0,
+                                           "u1" : 2,
+                                           "u2" : 2,
+                                           "u3" : 2,
+                                           "u4" : 2,
+                                           "u5" : 2,
+                                           "u6" : 2,
+                                           "u7" : 2,
+                                           "u8" : 2,
+                                           "u9" : 2,
+                                           "u10" : 2,
+                                           "u6502222222" : 1
+        ]
         
+        AppDelegate.userDefaults.set(friendships, forKey: "friendships")
  
     
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
@@ -205,10 +221,9 @@ class MapViewController: UIViewController {
     
     private func configureFloatingPanel() {
         fpc.delegate = self
-        let requests = MapViewController.generateRequests()
         let events = MapViewController.generateEvents()
         
-        let fpcContent = FPCViewController(requests: requests, events: events)
+        let fpcContent = FPCViewController(events: events)
         
         fpc.layout = ZipFloatingPanelLayout()
         fpcContent.delegate = self
@@ -432,8 +447,8 @@ extension MapViewController: FPCMapDelegate {
         fpc.move(to: .full, animated: true, completion: nil)
     }
     
-    func openZipRequests(requests: [ZipRequest]) {
-        let vc = ZipRequestsViewController(requests: requests)
+    func openZipRequests() {
+        let vc = ZipRequestsViewController()
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)
@@ -490,7 +505,7 @@ extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
         if let annotation = view.annotation as? EventAnnotation {
-            let eventVC = MyEventViewController(event: annotation.event)
+            let eventVC = EventViewController(event: annotation.event)
             
             let nav = UINavigationController(rootViewController: eventVC)
             nav.modalPresentationStyle = .fullScreen

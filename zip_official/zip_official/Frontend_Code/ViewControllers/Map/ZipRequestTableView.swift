@@ -8,19 +8,29 @@
 import UIKit
 
 protocol FPCTableDelegate: AnyObject {
-    func updateRequestsLabel(requests: [ZipRequest])
+    func updateRequestsLabel(requests: [User])
     func updateEventsLabel(events: [Event])
 }
 
 
 class ZipRequestTableView: UITableView {
-    var requests: [ZipRequest]
+    var requests: [User]
     weak var FPCDelegate: FPCTableDelegate?
     
-    init(requests: [ZipRequest]){
-        self.requests = requests
+    init(){
+        if let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
+            print("we here FRIENDS")
+            print(friendships)
+            let zipsDict = friendships.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
+            let userIds = Array(zipsDict.keys)
+            requests = userIds.map({ User(userId: $0) })
+        } else {
+            requests = []
+        }
         super.init(frame: .zero, style: .plain)
-
+        
+        DatabaseManager.shared.userLoadTableView(users: requests, completion: { result in})
+        
         register(ZipRequestTableViewCell.self, forCellReuseIdentifier: ZipRequestTableViewCell.identifier)
         register(UITableViewCell.self, forCellReuseIdentifier: "noRequests")
         delegate = self
@@ -59,7 +69,8 @@ extension ZipRequestTableView: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if requests.count != 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: ZipRequestTableViewCell.identifier) as! ZipRequestTableViewCell
-            cell.configure(with: requests[indexPath.row])
+            cell.configure(requests[indexPath.row])
+            requests[indexPath.row].tableViewCell = cell
             cell.delegate = self
             return cell
         } else {

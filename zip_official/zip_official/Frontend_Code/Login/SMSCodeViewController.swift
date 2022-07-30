@@ -166,27 +166,39 @@ class SMSCodeViewController: UIViewController {
                         
                         AppDelegate.userDefaults.set(user.userId, forKey: "userId")
                         AppDelegate.userDefaults.set(user.username, forKey: "username")
-                        AppDelegate.userDefaults.set((user.fullName), forKey: "name")
-                        AppDelegate.userDefaults.set((user.firstName), forKey: "firstName")
-                        AppDelegate.userDefaults.set((user.lastName), forKey: "lastName")
-                        AppDelegate.userDefaults.set((user.birthday), forKey: "birthday")
-                        AppDelegate.userDefaults.set(0, forKey: "picNum")
+                        AppDelegate.userDefaults.set(user.fullName, forKey: "name")
+                        AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
+                        AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
+                        AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
+                        AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
                         AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
 
-                        DispatchQueue.main.async {
-                            guard let strongSelf = self else {
-                                return
+                        DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { result in
+                            switch result {
+                            case .success(let friendships):
+                                AppDelegate.userDefaults.set(friendships, forKey: "friendships")
+                                DispatchQueue.main.async {
+                                    guard let strongSelf = self else {
+                                        return
+                                    }
+                                    
+                                    let vc = LoadingViewController()
+                                    vc.modalPresentationStyle = .fullScreen
+                                    DispatchQueue.main.async {
+                                        strongSelf.spinner.dismiss()
+                                    }
+                                    
+                                    strongSelf.present(vc, animated: true, completion: nil)
+            
+                                }
+                            case .failure(let error):
+                                print("failure to log in user Error: \(error)")
                             }
                             
-                            let vc = LoadingViewController()
-                            vc.modalPresentationStyle = .fullScreen
-                            DispatchQueue.main.async {
-                                strongSelf.spinner.dismiss()
-                            }
                             
-                            strongSelf.present(vc, animated: true, completion: nil)
-    
-                        }
+                        })
+                        
+                        
                         
                     })
                     

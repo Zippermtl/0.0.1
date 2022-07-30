@@ -109,98 +109,48 @@ class LoadingViewController: UIViewController {
     }
     
     @objc private func didTapYianni() {
-        var dateComponents = DateComponents()
-        dateComponents.year = 2001
-        dateComponents.month = 12
-        dateComponents.day = 06
-
-        let userCalendar = Calendar(identifier: .gregorian)
-        let birthday = userCalendar.date(from: dateComponents)!
-        
-        let user = User(userId: "u9789070602",
-                          username: "yianni_zav",
-                          firstName: "Yianni",
-                          lastName: "Zavaliagkos",
-                          birthday: birthday)
-        
-        AppDelegate.userDefaults.set(user.userId, forKey: "userId")
-        AppDelegate.userDefaults.set(user.username, forKey: "username")
-        AppDelegate.userDefaults.set(user.fullName, forKey: "name")
-        AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
-        AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
-        AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
-        AppDelegate.userDefaults.set(1, forKey: "picNum")
-        
-        let emptyFriendships: [String: Int]  = [:]
-        AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
-        AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
-        AppDelegate.userDefaults.set("https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e", forKey: "profilePictureUrl")
-        
-        didTapContinueButton()
-
+        loadUser(id: "u9789070602", completion: { [weak self] error in
+            self?.didTapContinueButton()
+        })
     }
     
     @objc private func didTapSeung() {
-        var dateComponents = DateComponents()
-        dateComponents.year = 2002
-        dateComponents.month = 1
-        dateComponents.day = 1
-
-        let userCalendar = Calendar(identifier: .gregorian)
-        let birthday = userCalendar.date(from: dateComponents)!
-        
-        let user = User(userId: "u2508575270",
-                          username: "seungchoi",
-                          firstName: "Seung",
-                          lastName: "Choi",
-                          birthday: birthday)
-        
-        AppDelegate.userDefaults.set(user.userId, forKey: "userId")
-        AppDelegate.userDefaults.set(user.username, forKey: "username")
-        AppDelegate.userDefaults.set(user.fullName, forKey: "name")
-        AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
-        AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
-        AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
-        AppDelegate.userDefaults.set(1, forKey: "picNum")
-        
-        let emptyFriendships: [String: Int]  = [:]
-        AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
-        AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
-        AppDelegate.userDefaults.set("https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e", forKey: "profilePictureUrl")
-        
-        didTapContinueButton()
-
+        loadUser(id: "u2508575270", completion: { [weak self] error in
+            self?.didTapContinueButton()
+        })
     }
     
     @objc private func didTapEzra(){
-        var dateComponents = DateComponents()
-        dateComponents.year = 2001
-        dateComponents.month = 10
-        dateComponents.day = 21
+        loadUser(id: "u2158018458", completion: { [weak self] error in
+            self?.didTapContinueButton()
+        })
+    }
+    
+    private func loadUser(id: String, completion: @escaping (Error?) -> Void) {
+        let user = User(userId: id)
+        DatabaseManager.shared.loadUserProfile(given: user, completion: { result in
+            AppDelegate.userDefaults.set(user.userId, forKey: "userId")
+            AppDelegate.userDefaults.set(user.username, forKey: "username")
+            AppDelegate.userDefaults.set((user.fullName), forKey: "name")
+            AppDelegate.userDefaults.set((user.firstName), forKey: "firstName")
+            AppDelegate.userDefaults.set((user.lastName), forKey: "lastName")
+            AppDelegate.userDefaults.set((user.birthday), forKey: "birthday")
+            AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
+            AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
+            
+            DatabaseManager.shared.loadUserFriendships(given: id, completion: { result in
+                switch result {
+                case .success(let friendships):
+                    AppDelegate.userDefaults.set(friendships, forKey: "friendships")
+                    completion(nil)
+                case .failure(let error):
+                    completion(error)
+                }
+                
+                
+            })
+        })
 
-        let userCalendar = Calendar(identifier: .gregorian)
-        let birthday = userCalendar.date(from: dateComponents)!
-        
-        let user = User(userId: "u2158018458",
-                          username: "ezrataylor55",
-                          firstName: "Ezra",
-                          lastName: "Taylor",
-                          birthday: birthday)
-        
-        AppDelegate.userDefaults.set(user.userId, forKey: "userId")
-        AppDelegate.userDefaults.set(user.username, forKey: "username")
-        AppDelegate.userDefaults.set(user.fullName, forKey: "name")
-        AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
-        AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
-        AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
-        AppDelegate.userDefaults.set(1, forKey: "picNum")
-        
-        let emptyFriendships: [String: Int]  = [:]
-        AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
-        AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
-        AppDelegate.userDefaults.set("https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e", forKey: "profilePictureUrl")
-        
-        didTapContinueButton()
     }
 
     
@@ -314,7 +264,6 @@ class LoadingViewController: UIViewController {
     
     private func presentMap(){
         let vc = MapViewController(isNewAccount: false)
-        print("ZIP REQUESTS = \(zipRequests)")
         vc.modalPresentationStyle = .overFullScreen
         vc.modalTransitionStyle = .crossDissolve
         present(vc, animated: true, completion: nil)

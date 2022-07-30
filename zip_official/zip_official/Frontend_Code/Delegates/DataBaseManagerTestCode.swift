@@ -123,7 +123,7 @@ extension DatabaseManager {
     public func checkSampleEvent(){
         print("check Sample")
         let key = "sample"
-        loadEvent(key: key) { result in
+        loadEvent(event: Event(eventId: key)) { result in
             switch result{
             case .success(let event):
                 print("check sample event suc")

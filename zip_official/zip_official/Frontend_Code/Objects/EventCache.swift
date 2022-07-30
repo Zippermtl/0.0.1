@@ -52,7 +52,7 @@ public class EventCache {
         }
         
         // Create object and store it in the cache
-        DatabaseManager.shared.loadEvent(key: id, completion: {result in completion(result)})
+        DatabaseManager.shared.loadEvent(event: Event(eventId: id), completion: {result in completion(result)})
     }
     
     func putInCache(newEvent: Event) {

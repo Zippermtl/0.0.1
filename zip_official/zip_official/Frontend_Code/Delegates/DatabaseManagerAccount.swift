@@ -125,6 +125,9 @@ extension DatabaseManager {
             
             let emptyFriendships: [String: Int]  = [:]
             AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
+            let emptyEvents: [String : Int] = [:]
+            AppDelegate.userDefaults.set(emptyEvents, forKey:  "savedEvents")
+
             AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
 
             AppDelegate.userDefaults.setValue(2, forKey: "maxRangeFilter")
@@ -271,7 +274,7 @@ extension DatabaseManager {
 
 //MARK: - User Data Retreival
 extension DatabaseManager {
-    public func loadUserProfile(given user: User, completion: @escaping (Result<User, Error>) -> Void) {
+    public func loadUserProfileNoPic (given user: User, completion: @escaping (Result<User, Error>) -> Void) {
         firestore.collection("UserProfiles").document(user.userId).getDocument(as: UserCoder.self)  { result in
             switch result {
             case .success(let userCoder):
@@ -283,27 +286,29 @@ extension DatabaseManager {
                     user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
                 }
                 userCoder.updateUser(user)
-
-                
-                let imagesPath = "images/" + user.userId
-                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
-                    switch result {
-                    case .success(let url):
-                        user.pictureURLs = url
-                        print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                        print(user.pictureURLs)
-                        completion(.success(user))
-
-                    case .failure(let error):
-                        print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
-                    }
-                        
-                })
-                
+                completion(.success(user))
             case .failure(let error):
                 print("failed to load user \(user.userId): \(error)")
             }
         }
+    }
+    
+    public func loadUserProfile(given user: User, completion: @escaping (Result<User, Error>) -> Void) {
+        loadUserProfileNoPic(given: user, completion: { result in
+            let imagesPath = "images/" + user.userId
+            StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
+                switch result {
+                case .success(let url):
+                    user.pictureURLs = url
+                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                    print(user.pictureURLs)
+                    completion(.success(user))
+
+                case .failure(let error):
+                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                }
+            })
+        })
     }
     
     public func loadUserProfileSubView(given id: String, completion: @escaping (Result<User, Error>) -> Void) {
@@ -358,15 +363,39 @@ extension DatabaseManager {
     
     public func userLoadTableView(users: [User], completion: @escaping (Result<User, Error>) -> Void){
         for i in users{
-            loadUserProfile(given: i, completion: { result in
-            switch result {
-            case .success(let user):
-                completion(.success(user))
-            case .failure(let error):
-                print("error loading event in tableview: \(error)")
-                completion(.failure(error))
-            }
-        })
+            loadUserProfileNoPic(given: i, completion: { result in
+                switch result {
+                case .success(let user):
+                    completion(.success(user))
+                    
+                    if user.tableViewCell != nil {
+                        user.tableViewCell?.configure(user)
+                    }
+                    
+                    StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { result in 
+                        switch result {
+                        case .success(let url):
+                            if user.pictureURLs.count > 0 {
+                                user.pictureURLs[0] = url
+                            } else {
+                                user.pictureURLs.append(url)
+                            }
+                            
+                            guard let cell = user.tableViewCell else {
+                                return
+                            }
+                            cell.configureImage(user)
+                        case .failure(let error):
+                            print("error loading event in tableview: \(error)")
+                        }
+                        
+                        
+                    })
+                case .failure(let error):
+                    print("error loading event in tableview: \(error)")
+                    completion(.failure(error))
+                }
+            })
         }
     }
     

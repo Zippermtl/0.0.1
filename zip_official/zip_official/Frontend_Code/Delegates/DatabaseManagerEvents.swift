@@ -48,7 +48,7 @@ extension DatabaseManager {
                 print("data =", data)
                 
                 guard let coordinates = data["coordinates"] as? [String:Double],
-                      let hostIds = data["hosts"] as? [String],
+                      let hostIds = data["hosts"] as? [String:String],
                       let goingIds = data["usersGoing"] as? [String],
                       let InviteIds = data["usersInvite"] as? [String],
                       let startTimestamp = data["startTime"] as? Timestamp,
@@ -66,7 +66,14 @@ extension DatabaseManager {
                 let endTime = endTimestamp.dateValue()
                 let startTime = startTimestamp.dateValue()
                 
-                let hosts = hostIds.map({ User(userId: $0 )})
+                var hostUsers: [User] = []
+                for (id,fullName) in hostIds {
+                    let fullNameArr = fullName.components(separatedBy: " ")
+                    let firstName: String = fullNameArr[0]
+                    let lastName: String = fullNameArr[1]
+                    hostUsers.append(User(userId: id, firstName: firstName, lastName: lastName))
+                }
+                
                 let usersGoing = goingIds.map({ User(userId: $0 )})
                 let usersInvite = InviteIds.map({ User(userId: $0 )})
                 
@@ -77,7 +84,7 @@ extension DatabaseManager {
                 let currentEvent = strongSelf.createEventLocal(eventId: eventId,
                                                                title: title,
                                                                coordinates: CLLocation(latitude: lat, longitude: long),
-                                                               hosts: hosts,
+                                                               hosts: hostUsers,
                                                                description: desc,
                                                                address: address,
                                                                maxGuests: max,
@@ -103,20 +110,19 @@ extension DatabaseManager {
         }
     }
     
-    public func loadEvent(key: String, completion: @escaping (Result<Event, Error>) -> Void){
-        firestore.collection("EventProfiles").document(key).getDocument(as: EventCoder.self)  { result in
+    public func loadEvent(event: Event, completion: @escaping (Result<Event, Error>) -> Void){
+        firestore.collection("EventProfiles").document(event.eventId).getDocument(as: EventCoder.self)  { result in
             switch result {
             case .success(let eventCoder):
-                let event = eventCoder.createEvent()
-                event.eventId = key
-                
-                let imagePath = "Event/" + key
+                eventCoder.updateEvent(event: event)
+                let imagePath = "Event/" + event.eventId
+                completion(.success(event))
+
                 StorageManager.shared.getProfilePicture(path: imagePath) { result in
                     switch result{
                     case .success(let url):
                         print("making event")
                         event.imageUrl = url
-                        completion(.success(event))
 
                     case .failure(let error):
                         completion(.failure(error))
@@ -133,6 +139,10 @@ extension DatabaseManager {
     
     
     public func createEvent(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
+        var hostsData : [String : String] = [:]
+        for host in event.hosts {
+            hostsData[host.userId] = host.fullName
+        }
         let eventDataDict: [String:Any] = [
             "title" : event.title,
             "coordinates" : ["lat" : event.coordinates.coordinate.latitude, "long" : event.coordinates.coordinate.longitude],
@@ -142,7 +152,7 @@ extension DatabaseManager {
             "startTime" : Timestamp(date: event.startTime),
             "endTime" : Timestamp(date: event.endTime),
             "max" : event.maxGuests,
-            "hosts" : event.hosts.map { $0.userId },
+            "hosts" : hostsData,
             "usersInvite": event.usersInvite.map { $0.userId },
             "usersGoing": [event.hosts[0].userId]
         ]
@@ -163,6 +173,35 @@ extension DatabaseManager {
                 }
             })
             
+        }
+    }
+
+    public func updateEvent(event: Event, completion: @escaping (Error?) -> Void) {
+        var hostsData : [String : String] = [:]
+        for host in event.hosts {
+            hostsData[host.userId] = host.fullName
+        }
+        let eventDataDict: [String:Any] = [
+            "title" : event.title,
+            "coordinates" : ["lat" : event.coordinates.coordinate.latitude, "long" : event.coordinates.coordinate.longitude],
+            "description" : event.description,
+            "address" : event.address,
+            "type" : event.getType().rawValue,
+            "startTime" : Timestamp(date: event.startTime),
+            "endTime" : Timestamp(date: event.endTime),
+            "max" : event.maxGuests,
+            "hosts" : hostsData,
+            "usersInvite": event.usersInvite.map { $0.userId },
+            "usersGoing": [event.hosts[0].userId]
+        ]
+        
+        firestore.collection("EventProfiles").document(event.eventId).updateData(eventDataDict) { error in
+            guard error == nil else{
+                print("failed to write to database")
+                completion(error)
+                return
+            }
+            completion(nil)
         }
     }
     
@@ -198,16 +237,73 @@ extension DatabaseManager {
     }
     
     public func markGoing(event: Event, completion: @escaping (Error?) -> Void){
-        var datadic: [String:Any] = [:]
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        let selfName = AppDelegate.userDefaults.value(forKey: "name") as! String
-        let ref = Database.database().reference()
-        //TODO: Yianni should I remove from interested if going?
-        datadic["eventProfiles/\(event.eventId)/usersGoing/\(selfId)"] = selfName
-        ref.updateChildValues(datadic) { (error, _) in
-            if let error = error {
-                completion(error)
+        firestore.collection("EventProfiles").document(event.eventId).updateData(["usersGoing" : FieldValue.arrayUnion([selfId])]) { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                completion(error!)
+                return
             }
+            
+            strongSelf.firestore.collection("UserStoredEvents").document(selfId).setData([event.eventId:EventSaveStatus.GOING.rawValue]) { error in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
+                events[event.eventId] = EventSaveStatus.GOING.rawValue
+                AppDelegate.userDefaults.set(events, forKey: "savedEvents")
+                completion(nil)
+            }
+        }
+    }
+    
+    public func markNotGoing(event: Event, completion: @escaping (Error?) -> Void){
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        firestore.collection("EventProfiles").document(event.eventId).updateData(["usersGoing" : FieldValue.arrayRemove([selfId])]) { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                completion(error!)
+                return
+            }
+            
+            strongSelf.firestore.collection("UserStoredEvents").document(selfId).updateData([event.eventId:FieldValue.delete()] ) { error in
+                guard error == nil else {
+                    completion(error!)
+                    return
+                }
+                var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
+                events.removeValue(forKey: event.eventId)
+                AppDelegate.userDefaults.set(events, forKey: "savedEvents")
+                completion(nil)
+            }
+        }
+    }
+    
+    public func markSaved(event: Event, completion: @escaping (Error?) -> Void){
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        firestore.collection("UserStoredEvents").document(selfId).updateData([event.eventId:EventSaveStatus.SAVED.rawValue] ) { error in
+            guard error == nil else {
+                completion(error!)
+                return
+            }
+            var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
+            events[event.eventId] = EventSaveStatus.SAVED.rawValue
+            AppDelegate.userDefaults.set(events, forKey: "savedEvents")
+            completion(nil)
+        }
+    }
+    
+    public func markUnsaved(event: Event, completion: @escaping (Error?) -> Void){
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        firestore.collection("UserStoredEvents").document(selfId).updateData([event.eventId:FieldValue.delete()] ) { error in
+            guard error == nil else {
+                completion(error!)
+                return
+            }
+            var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
+            events.removeValue(forKey: event.eventId)
+            AppDelegate.userDefaults.set(events, forKey: "savedEvents")
             completion(nil)
         }
     }
@@ -272,7 +368,7 @@ extension DatabaseManager {
     
     public func eventLoadTableView(events: [Event], completion: @escaping (Result<Event, Error>) -> Void){
         for i in events{
-            loadEvent(key: i.eventId, completion: { result in
+            loadEvent(event: i, completion: { result in
             switch result {
             case .success(let event):
                 completion(.success(event))

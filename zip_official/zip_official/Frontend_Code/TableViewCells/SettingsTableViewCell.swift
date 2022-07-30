@@ -20,15 +20,12 @@ class SettingsCellTableViewCell: UITableViewCell {
             textLabel?.font = .zipBody
             switchControl.isHidden = !sectionType.containsSwitch
             disclosureIndicator.isHidden = !sectionType.containsDisclosureIndiciated
-
         }
     }
     
     lazy var switchControl: UISwitch = {
         let switchControl = UISwitch()
-        switchControl.isOn = true
         switchControl.onTintColor = UIColor(red: 55/255, green: 120/255, blue: 250/255, alpha: 1)
-
         switchControl.translatesAutoresizingMaskIntoConstraints = false
         accessoryView = switchControl
         return switchControl

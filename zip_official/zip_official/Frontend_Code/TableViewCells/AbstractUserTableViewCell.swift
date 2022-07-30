@@ -49,10 +49,17 @@ class AbstractUserTableViewCell: UITableViewCell {
         
         self.user = user
         nameLabel.text = user.fullName
-        pictureView.image = user.pictures[0]
         
-        print("configuring")
+        if user.pictureURLs.count > 0 {
+            configureImage(user)
+        }
     }
+    
+    public func configureImage(_ user: User) {
+        pictureView.sd_setImage(with: user.profilePicUrl)
+    }
+    
+    
 
     
     //MARK: -Add Subviews
