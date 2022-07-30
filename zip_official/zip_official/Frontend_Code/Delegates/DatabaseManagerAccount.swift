@@ -33,6 +33,55 @@ extension DatabaseManager {
         }
     }
     
+    public func createDatabaseUser(user: User, completion: @escaping (Error?) -> Void){
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        let joinDate =  formatter.string(from: Date())
+        let deviceId = UIDevice.current.identifierForVendor!.uuidString
+        let userData : [String:Any] = [
+            "id": user.userId,
+            "username": user.username,
+            "firstName": user.firstName,
+            "lastName": user.lastName,
+            "birthday": Timestamp(date: user.birthday),
+            "notifications": EncodePreferences(user.notificationPreferences),
+            "picNum": user.picNum,
+            "school": "",
+            "joinDate": joinDate,
+            "deviceId": [deviceId],
+            "bio" : "",
+            "interests" : []
+        ]
+        firestore.collection("UserProfiles").document("\(user.userId)").setData(userData)  { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                print("failure to create user with id: \(user.userId) to FireStore")
+                completion(error)
+                return
+            }
+            
+            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData([user.userId:user.fullName])
+            
+            if user.pictures.count != 0 {
+                let image = user.pictures[0]
+                guard let data = image.pngData() else {
+                    return
+                }
+                
+                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
+                    switch results {
+                    case .success(let downloadUrl):
+                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+                        completion(nil)
+                    case .failure(let error):
+                        print("Storage Manager Error: \(error)")
+                        completion(error)
+                    }
+                })
+            }
+        }
+    }
+    
     /// Inserts new user to database
     public func insertUser(with user: User, completion: @escaping (Error?) -> Void) {
         let formatter = DateFormatter()
@@ -304,6 +353,20 @@ extension DatabaseManager {
                 return
             }
             completion(nil)
+        }
+    }
+    
+    public func userLoadTableView(users: [User], completion: @escaping (Result<User, Error>) -> Void){
+        for i in users{
+            loadUserProfile(given: i, completion: { result in
+            switch result {
+            case .success(let user):
+                completion(.success(user))
+            case .failure(let error):
+                print("error loading event in tableview: \(error)")
+                completion(.failure(error))
+            }
+        })
         }
     }
     
