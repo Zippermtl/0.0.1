@@ -19,10 +19,11 @@ class MyEventsViewController: UIViewController {
                    "Upcoming" : [],
                    "Previous" : []],
         "Saved" : ["Today" : [],
-                   "Upcoming" : []],
+                   "Upcoming" : [],
+                   "Previous": []],
         "Hosting" : ["Today" : [],
                      "Upcoming" : [],
-                     "Previous": []],
+                     "Previous": []]
     ]
     
     var tableData: [String:[Event]] =
@@ -36,6 +37,10 @@ class MyEventsViewController: UIViewController {
     var goingButton = UIButton()
     var savedButton = UIButton()
     var hostingButton = UIButton()
+    
+    var hostEvents: [Event]
+    var saveEvents: [Event]
+    var goingEvents: [Event]
     
     // MARK: - Button Actions
     @objc private func didTapBackButton(){
@@ -71,13 +76,87 @@ class MyEventsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-        generateTestData()
 
         configureNavBar()
         configureTable()
         configureButtons()
         configureSubviewLayout()
     }
+    
+    init() {
+        let hostedIds = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
+        self.hostEvents = hostedIds.map({ Event(eventId: $0) })
+        let eventDict = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
+        var s: [Event] = []
+        var g: [Event] = []
+        for (key,val) in eventDict {
+            if val == EventSaveStatus.GOING.rawValue {
+                g.append(Event(eventId: key))
+            } else {
+                s.append(Event(eventId: key))
+            }
+        }
+        self.saveEvents = s
+        self.goingEvents = g
+        super.init(nibName: nil, bundle: nil)
+        loadEvents()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func loadEvents() {
+        for event in hostEvents {
+            DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
+                guard let strongSelf = self else { return }
+                switch result {
+                case .success(let event):
+                    if Calendar.current.isDateInToday(event.startTime) {
+                        strongSelf.eventData["Hosting"]!["Today"]!.append(event)
+                    } else if event.startTime < Date() {
+                        strongSelf.eventData["Hosting"]!["Previous"]!.append(event)
+                    } else {
+                        strongSelf.eventData["Hosting"]!["Upcoming"]!.append(event)
+                    }
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.hostEvents.removeAll(where: { $0 == event })
+                    print("error loading event with id: \(event.eventId) with Error: \(error)")
+                }
+                
+            })
+        }
+        
+        for event in goingEvents {
+            DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.goingEvents.removeAll(where: { $0 == event })
+                    print("error loading event with id: \(event.eventId) with Error: \(error)")
+                }
+                
+            })
+        }
+        
+        for event in saveEvents {
+            DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.saveEvents.removeAll(where: { $0 == event })
+                    print("error loading event with id: \(event.eventId) with Error: \(error)")
+                }
+                
+            })
+        }
+    }
+    
     
     private func configureNavBar() {
         navigationItem.title = "My Events"
@@ -195,21 +274,12 @@ extension MyEventsViewController :  UITableViewDataSource {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
         view.backgroundColor = .zipLightGray
         let title = UILabel()
-        if tableData.count == 1 {
-            title.text = ""
-        } else if tableData.count == 2 {
-            switch section{
-            case 0: title.text = "Today"
-            case 1: title.text = "Upcoming"
-            default: print("section out of range")
-            }
-        } else {
-            switch section{
-            case 0: title.text = "Today"
-            case 1: title.text = "Upcoming"
-            case 2: title.text = "Previous"
-            default: print("section out of range")
-            }
+        
+        switch section{
+        case 0: title.text = "Today"
+        case 1: title.text = "Upcoming"
+        case 2: title.text = "Previous"
+        default: print("section out of range")
         }
         
         title.font = .zipTextNoti
@@ -224,23 +294,14 @@ extension MyEventsViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if tableData.count == 1 {
-            return tableData["Previous"]!.count
+
+        switch section{
+        case 0: return tableData["Today"]!.count
+        case 1: return tableData["Upcoming"]!.count
+        case 2: return tableData["Previous"]!.count
+        default: return 0
         }
-        if tableData.count == 2 {
-            switch section{
-            case 0: return tableData["Today"]!.count
-            case 1: return tableData["Upcoming"]!.count
-            default: return 0
-            }
-        } else {
-            switch section{
-            case 0: return tableData["Today"]!.count
-            case 1: return tableData["Upcoming"]!.count
-            case 2: return tableData["Previous"]!.count
-            default: return 0
-            }
-        }
+        
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -253,92 +314,19 @@ extension MyEventsViewController :  UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var events = [Event]()
-        switch Array(tableData.keys)[indexPath.section] {
-        case "Today": events = tableData["Today"]!
-        case "Upcoming": events = tableData["Upcoming"]!
-        case "Previous": events = tableData["Previous"]!
+        switch indexPath.section {
+        case 0: events = tableData["Today"]!
+        case 1: events = tableData["Upcoming"]!
+        case 2: events = tableData["Previous"]!
         default: print("section out of range")
         }
         
         let cellEvent = events[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
-
+        cellEvent.tableViewCell = cell
         cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.configure(cellEvent)
         return cell
     }
-}
-
-
-extension MyEventsViewController {
-    func generateTestData(){
-        var launchEvent = Event()
-        var fakeFroshEvent = Event()
-        var spikeBallEvent = Event()
-        
-        
-        var yiannipics = [UIImage]()
-        var interests = [Interests]()
-        
-        interests.append(.skiing)
-        interests.append(.coding)
-        interests.append(.chess)
-        interests.append(.wine)
-        interests.append(.workingOut)
-
-        yiannipics.append(UIImage(named: "yianni1")!)
-        yiannipics.append(UIImage(named: "yianni2")!)
-        yiannipics.append(UIImage(named: "yianni3")!)
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd"
-        let yianniBirthday = formatter.date(from: "2001/12/06")!
-        
-        let yianni = User(email: "zavalyia@gmail.com",
-                          username: "yianni_zav",
-                          firstName: "Yianni",
-                          lastName: "Zavaliagkos",
-//                          name: "Yianni Zavaliagkos",
-                          birthday: yianniBirthday,
-                          location: CLLocation(latitude: 51.5013, longitude: -0.2070),
-                          pictures: yiannipics,
-                          bio: "Yianni Zavaliagkos. Second Year at Mcgill. Add my snap and follow my insta @Yianni_Zav. I run this shit. Remember my name when I pass Zuckerberg on Forbes",
-                          school: "McGill University",
-                          interests: interests)
-        
-        
-        launchEvent = PromoterEvent(title: "Zipper Launch Party",
-                            hosts: [yianni],
-                            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "launchevent")!)
-        
-        fakeFroshEvent = PublicEvent(title: "Fake Ass Frosh",
-                            hosts: [yianni],
-                            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "muzique")!)
-        
-        spikeBallEvent = PublicEvent(title: "Zipper Spikeball Tournament",
-                            hosts: [yianni],
-                            description: "Zipper Spikeball Tournament",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            startTime: Date(timeIntervalSinceNow: 100000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "spikeball"))
-        
-        eventData["Going"]?["Today"]?.append(launchEvent)
-        eventData["Going"]?["Upcoming"]?.append(spikeBallEvent)
-        eventData["Going"]?["Previous"]?.append(fakeFroshEvent)
-
-    }
-    
 }

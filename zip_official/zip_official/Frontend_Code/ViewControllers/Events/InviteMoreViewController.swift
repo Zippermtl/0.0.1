@@ -39,7 +39,23 @@ class InviteMoreViewController: UIViewController {
         
         view.backgroundColor = .zipGray
         configureTable()
-        DatabaseManager.shared.userLoadTableView(users: users, completion: { result in })
+        fetchUsers()
+    }
+    
+    private func fetchUsers() {
+        for user in users {
+            DatabaseManager.shared.userLoadTableView(user: user, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.users.removeAll(where: { $0 == user })
+                    print("error loading \(user.userId) with Error: \(error)")
+                }
+            })
+
+        }
     }
     
     private func configureTable(){

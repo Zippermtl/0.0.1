@@ -59,9 +59,6 @@ class AbstractUserTableViewCell: UITableViewCell {
         pictureView.sd_setImage(with: user.profilePicUrl)
     }
     
-    
-
-    
     //MARK: -Add Subviews
     private func addSubviews(){
         contentView.addSubview(outlineView)

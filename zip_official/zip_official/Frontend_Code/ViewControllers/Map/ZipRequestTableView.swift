@@ -29,7 +29,8 @@ class ZipRequestTableView: UITableView {
         }
         super.init(frame: .zero, style: .plain)
         
-        DatabaseManager.shared.userLoadTableView(users: requests, completion: { result in})
+  
+        fetchUsers()
         
         register(ZipRequestTableViewCell.self, forCellReuseIdentifier: ZipRequestTableViewCell.identifier)
         register(UITableViewCell.self, forCellReuseIdentifier: "noRequests")
@@ -44,6 +45,22 @@ class ZipRequestTableView: UITableView {
         backgroundColor = .clear
         isScrollEnabled = false
         bounces = false
+    }
+    
+    private func fetchUsers() {
+        for user in requests {
+            DatabaseManager.shared.userLoadTableView(user: user, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.requests.removeAll(where: { $0 == user })
+                    print("error loading \(user.userId) with Error: \(error)")
+                }
+            })
+
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -81,7 +98,7 @@ extension ZipRequestTableView: UITableViewDelegate, UITableViewDataSource {
             content.textProperties.color = .zipVeryLightGray
             content.textProperties.font = .zipBody.withSize(16)
             content.textProperties.alignment = .center
-            content.text = "You have no requests"
+            content.text = "You have no pending Zip requests"
             cell.contentConfiguration = content
             return cell
         }

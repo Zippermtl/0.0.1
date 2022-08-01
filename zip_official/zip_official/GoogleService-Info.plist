@@ -19,16 +19,18 @@
 	<key>STORAGE_BUCKET</key>
 	<string>zipper-f64e0.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:246270223427:ios:d08bae838fdc4f258ca0f6</string>
+	<key>DATABASE_URL</key>
+	<string>https://zipper-f64e0-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

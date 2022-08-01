@@ -48,9 +48,22 @@ class UsersTableViewController: UIViewController {
     }
 
     
-    private func fetchUsers(){
-        DatabaseManager.shared.userLoadTableView(users: allUsers, completion: { result in })
+    private func fetchUsers() {
+        for user in allUsers {
+            DatabaseManager.shared.userLoadTableView(user: user, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.allUsers.removeAll(where: { $0 == user })
+                    print("error loading \(user.userId) with Error: \(error)")
+                }
+            })
+            
+        }
     }
+    
     
     //MARK: - Table Config
     private func configureTable(){

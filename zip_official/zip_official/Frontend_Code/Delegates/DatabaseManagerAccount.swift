@@ -180,7 +180,7 @@ extension DatabaseManager {
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
-        firestore.collection("UserFastInfo").document("\(userId)").updateData([
+        firestore.collection("UserFastInfo").document("\(userId)").setData([
             "lat": location.coordinate.latitude,
             "long": location.coordinate.longitude
         ]) { error in
@@ -361,42 +361,43 @@ extension DatabaseManager {
         }
     }
     
-    public func userLoadTableView(users: [User], completion: @escaping (Result<User, Error>) -> Void){
-        for i in users{
-            loadUserProfileNoPic(given: i, completion: { result in
-                switch result {
-                case .success(let user):
-                    completion(.success(user))
-                    
-                    if user.tableViewCell != nil {
-                        user.tableViewCell?.configure(user)
-                    }
-                    
-                    StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { result in 
-                        switch result {
-                        case .success(let url):
-                            if user.pictureURLs.count > 0 {
-                                user.pictureURLs[0] = url
-                            } else {
-                                user.pictureURLs.append(url)
-                            }
-                            
-                            guard let cell = user.tableViewCell else {
-                                return
-                            }
-                            cell.configureImage(user)
-                        case .failure(let error):
-                            print("error loading event in tableview: \(error)")
+    
+    
+    public func userLoadTableView(user: User, completion: @escaping (Result<User, Error>) -> Void){
+        loadUserProfileNoPic(given: user, completion: { result in
+            switch result {
+            case .success(let user):
+                completion(.success(user))
+                
+                if user.tableViewCell != nil {
+                    user.tableViewCell?.configure(user)
+                }
+                
+                StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { result in
+                    switch result {
+                    case .success(let url):
+                        if user.pictureURLs.count > 0 {
+                            user.pictureURLs[0] = url
+                        } else {
+                            user.pictureURLs.append(url)
                         }
                         
-                        
-                    })
-                case .failure(let error):
-                    print("error loading event in tableview: \(error)")
-                    completion(.failure(error))
-                }
-            })
-        }
+                        guard let cell = user.tableViewCell else {
+                            return
+                        }
+                        cell.configureImage(user)
+                    case .failure(let error):
+                        print("error loading event in tableview: \(error)")
+                    }
+                    
+                    
+                })
+            case .failure(let error):
+                print("error loading user in tableview: \(error)")
+                completion(.failure(error))
+            }
+        })
+        
     }
     
 //    public func batchPull(idList: [User], completion: @escaping (Error?) -> Void){

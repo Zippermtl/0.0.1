@@ -62,7 +62,16 @@ class FPCEventTableViewCell: AbstractEventTableViewCell {
     }
     
     @objc private func didTapAcceptButton() {
-        delegate?.deleteEventsRow(acceptButton)
+        guard let event = event else {
+            return
+        }
+        DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+            strongSelf.delegate?.deleteEventsRow(strongSelf.acceptButton)
+        })
     }
 
 }

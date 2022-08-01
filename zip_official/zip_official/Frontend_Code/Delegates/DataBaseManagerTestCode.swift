@@ -32,12 +32,9 @@ extension DatabaseManager {
             
         }
         for i in events {
-            createEvent(event: i) { [weak self] fuck in
-                guard let strongSelf = self else {
-                    return
-                }
-                switch fuck{
-                case .success(let f):
+            createEvent(event: i) { result in
+                switch result {
+                case .success(_):
                     print("succcccccccceeeeeeeedddd")
                 case .failure(let error):
                     print(error)
@@ -48,7 +45,9 @@ extension DatabaseManager {
     }
     
     public func testthequery(){
-        getAllPrivateEventsForMap(completion: { [weak self] result in
+        getAllPrivateEventsForMap(eventCompletion: { event in
+            
+        }, allCompletion: { result in
             switch result {
             case .success(let events):
                 print("sucess loading event: \(events)")
@@ -173,14 +172,17 @@ extension DatabaseManager {
         for i in events {
             temps.append(Event(eventId: i.eventId))
         }
-        eventLoadTableView(events: temps, completion: { [weak self] result in
-            switch result {
-            case .success(let event):
-                print(event.eventId + " found")
-            case.failure(let error):
-                print(error)
-            }
-        })
+        for event in temps {
+            eventLoadTableView(event: event, completion: { result in
+                switch result {
+                case .success(let event):
+                    print(event.eventId + " found")
+                case.failure(let error):
+                    print(error)
+                }
+            })
+        }
+        
     }
     
     public func testUserTableView(){
@@ -195,13 +197,17 @@ extension DatabaseManager {
         users.append(User(userId: "u6502222222"))
         users.append(User(userId: "u9789070602"))
 
-        userLoadTableView(users: users, completion: { [weak self] result in
-            switch result {
-            case .success(let user):
-                print(user.userId + " found")
-            case.failure(let error):
-                print(error)
-            }
-        })
+        for user in users {
+            userLoadTableView(user: user, completion: {result in
+                switch result {
+                case .success(let user):
+                    print(user.userId + " found")
+                case.failure(let error):
+                    print(error)
+                }
+            })
+        }
+        
+        
     }
 }

@@ -10,27 +10,64 @@ import UIKit
 class CompleteEventViewController: UIViewController {
     var event: Event
     var invitedUsers: [User]
+    var zipList: [User]
 
     
     init(event: Event) {
         self.event = event
         self.invitedUsers = []
+        if let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
+            print("printing zip list")
+            let zipsDict = friendships.filter({ $0.value == FriendshipStatus.ACCEPTED.rawValue })
+            let userIds = Array(zipsDict.keys)
+            zipList = userIds.map({ User(userId: $0) })
+            print(zipList)
+        } else {
+            zipList = []
+        }
         super.init(nibName: nil, bundle: nil)
+        inviteAllButton.addTarget(self, action: #selector(didTapInviteAllButton), for: .touchUpInside)
+        clearButton.addTarget(self, action: #selector(didTapClearButton), for: .touchUpInside)
+        completeButton.addTarget(self, action: #selector(didTapCompleteButton), for: .touchUpInside)
+
+        configureTable()
+        configureTableHeader()
+        addSubviews()
+        layoutSubviews()
+        
+        fetchUsers()
+    }
+    
+    
+    private func fetchUsers() {
+        for user in zipList {
+            DatabaseManager.shared.userLoadTableView(user: user, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.zipList.removeAll(where: { $0 == user })
+                    print("error loading \(user.userId) with Error: \(error)")
+                }
+            })
+
+        }
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+
+    
     private let tableView = UITableView()
-    var zipList: [User] = MapViewController.getTestUsers()
     
     let inviteAllButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Invite All", for: .normal)
         btn.titleLabel?.font = .zipBodyBold
         btn.backgroundColor = .zipLightGray
-        btn.addTarget(self, action: #selector(didTapInviteAllButton), for: .touchUpInside)
         btn.layer.cornerRadius = 10
         return btn
     }()
@@ -40,7 +77,6 @@ class CompleteEventViewController: UIViewController {
         btn.setTitle("Clear", for: .normal)
         btn.titleLabel?.font = .zipBodyBold
         btn.backgroundColor = .zipLightGray
-        btn.addTarget(self, action: #selector(didTapClearButton), for: .touchUpInside)
         btn.layer.cornerRadius = 10
         return btn
     }()
@@ -61,7 +97,6 @@ class CompleteEventViewController: UIViewController {
         btn.layer.cornerRadius = 15
         btn.layer.masksToBounds = true
         btn.titleLabel?.font = .zipBodyBold//.withSize(20)
-        btn.addTarget(self, action: #selector(didTapCompleteButton), for: .touchUpInside)
         return btn
     }()
     
@@ -94,7 +129,6 @@ class CompleteEventViewController: UIViewController {
     
     @objc private func didTapCompleteButton(){
         
-        completeButton.isEnabled = false
         let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
                         firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
                         lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
@@ -112,17 +146,6 @@ class CompleteEventViewController: UIViewController {
         DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
             switch success {
             case .success(let a):
-                let actionSheet = UIAlertController(title: "Successfull Created an Event",
-                                                    message: "View your event in your profile",
-                                                    preferredStyle: .actionSheet)
-                
-                actionSheet.addAction(UIAlertAction(title: "Continue",
-                                                    style: .cancel,
-                                                    handler: nil))
-                
-                self?.present(actionSheet, animated: true)
-                self?.dismiss(animated: true, completion: nil)
-                self?.completeButton.isEnabled = true
                 self?.dismiss(animated: true, completion: nil)
             case .failure(let error):
                 print(error)
@@ -147,10 +170,7 @@ class CompleteEventViewController: UIViewController {
         title = "Invite Guests"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
-        configureTable()
-        configureTableHeader()
-        addSubviews()
-        layoutSubviews()
+        
     }
     
     private func configureTable(){
@@ -174,13 +194,13 @@ class CompleteEventViewController: UIViewController {
         inviteAllButton.translatesAutoresizingMaskIntoConstraints = false
         inviteAllButton.topAnchor.constraint(equalTo: header.topAnchor, constant: 5).isActive = true
         inviteAllButton.leftAnchor.constraint(equalTo: header.leftAnchor, constant: 10).isActive = true
-        inviteAllButton.rightAnchor.constraint(equalTo: header.centerXAnchor, constant: -5).isActive = true
+        inviteAllButton.rightAnchor.constraint(equalTo: clearButton.leftAnchor, constant: -10).isActive = true
         inviteAllButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
         
         clearButton.translatesAutoresizingMaskIntoConstraints = false
-        clearButton.topAnchor.constraint(equalTo: header.topAnchor, constant: 5).isActive = true
+        clearButton.topAnchor.constraint(equalTo: inviteAllButton.topAnchor).isActive = true
         clearButton.rightAnchor.constraint(equalTo: header.rightAnchor, constant: -10).isActive = true
-        clearButton.leftAnchor.constraint(equalTo: header.centerXAnchor, constant: 5).isActive = true
+        clearButton.widthAnchor.constraint(equalTo: inviteAllButton.widthAnchor).isActive = true
         clearButton.heightAnchor.constraint(equalTo: inviteAllButton.heightAnchor).isActive = true
         
         myZipsLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -250,13 +270,14 @@ extension CompleteEventViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: InviteTableViewCell.identifier) as! InviteTableViewCell
 //        let cell = tableView.dequeueReusableCell(withIdentifier: ZipListTableViewCell.notZippedIdentifier) as! ZipListTableViewCell
-
+        let user = zipList[indexPath.row]
+        user.tableViewCell = cell
         cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.setNeedsLayout()
         cell.layoutIfNeeded()
         
-        cell.configure(zipList[indexPath.row])
+        cell.configure(user)
         cell.delegate = self
         return cell
     }

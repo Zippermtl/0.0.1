@@ -36,30 +36,7 @@ class LoadingViewController: UIViewController {
         return btn
     }()
     
-    private let seungButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("Sign in Seung", for: .normal)
-        btn.titleLabel?.font = .zipBody
-        btn.titleLabel?.textColor = .white
-        return btn
-    }()
-    
-    private let yianniButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("Sign in Yianni", for: .normal)
-        btn.titleLabel?.font = .zipBody
-        btn.titleLabel?.textColor = .white
-        return btn
-    }()
-    
-    private let ezraButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("Sign in Ezra", for: .normal)
-        btn.titleLabel?.font = .zipBody
-        btn.titleLabel?.textColor = .white
-        return btn
-    }()
-    
+
     private let continueButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Continue to App", for: .normal)
@@ -107,61 +84,8 @@ class LoadingViewController: UIViewController {
         }
         presentMap()
     }
-    
-    @objc private func didTapYianni() {
-        loadUser(id: "u9789070602", completion: { [weak self] error in
-            self?.didTapContinueButton()
-        })
-    }
-    
-    @objc private func didTapSeung() {
-        loadUser(id: "u2508575270", completion: { [weak self] error in
-            self?.didTapContinueButton()
-        })
-    }
-    
-    @objc private func didTapEzra(){
-        loadUser(id: "u2158018458", completion: { [weak self] error in
-            self?.didTapContinueButton()
-        })
-    }
-    
-    private func loadUser(id: String, completion: @escaping (Error?) -> Void) {
-        let user = User(userId: id)
-        DatabaseManager.shared.loadUserProfile(given: user, completion: { result in
-            AppDelegate.userDefaults.set(user.userId, forKey: "userId")
-            AppDelegate.userDefaults.set(user.username, forKey: "username")
-            AppDelegate.userDefaults.set((user.fullName), forKey: "name")
-            AppDelegate.userDefaults.set((user.firstName), forKey: "firstName")
-            AppDelegate.userDefaults.set((user.lastName), forKey: "lastName")
-            AppDelegate.userDefaults.set((user.birthday), forKey: "birthday")
-            AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
-            AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
-            
-            DatabaseManager.shared.loadUserFriendships(given: id, completion: { result in
-                switch result {
-                case .success(let friendships):
-                    AppDelegate.userDefaults.set(friendships, forKey: "friendships")
-                    completion(nil)
-                case .failure(let error):
-                    completion(error)
-                }
-                
-                
-            })
-        })
 
-    }
 
-    
-//    private let progressView: UIProgressView = {
-//        let view = UIProgressView(progressViewStyle: .bar)
-//        view.trackTintColor = .clear
-//        view.progressTintColor = .white
-//        view.layer.borderWidth = 2
-//        view.layer.borderColor = UIColor.white.cgColor
-//        return view
-//    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -169,21 +93,10 @@ class LoadingViewController: UIViewController {
         
         signoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         continueButton.addTarget(self, action: #selector(didTapContinueButton), for: .touchUpInside)
-        yianniButton.addTarget(self, action: #selector(didTapYianni), for: .touchUpInside)
-        seungButton.addTarget(self, action: #selector(didTapSeung), for: .touchUpInside)
-        ezraButton.addTarget(self, action: #selector(didTapEzra), for: .touchUpInside)
+
 
         signoutButton.layer.masksToBounds = true
         signoutButton.layer.cornerRadius = 8
-        
-        yianniButton.layer.masksToBounds = true
-        yianniButton.layer.cornerRadius = 8
-        
-        seungButton.layer.masksToBounds = true
-        seungButton.layer.cornerRadius = 8
-        
-        ezraButton.layer.masksToBounds = true
-        ezraButton.layer.cornerRadius = 8
         
         continueButton.layer.masksToBounds = true
         continueButton.layer.cornerRadius = 8
@@ -285,34 +198,10 @@ class LoadingViewController: UIViewController {
         signoutButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         signoutButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5).isActive = true
 
-        view.addSubview(yianniButton)
-        yianniButton.backgroundColor = .zipGreen
-        yianniButton.translatesAutoresizingMaskIntoConstraints = false
-        yianniButton.topAnchor.constraint(equalTo: signoutButton.bottomAnchor, constant: 10).isActive = true
-        yianniButton.heightAnchor.constraint(equalTo: signoutButton.heightAnchor).isActive = true
-        yianniButton.widthAnchor.constraint(equalTo: signoutButton.widthAnchor).isActive = true
-        yianniButton.centerXAnchor.constraint(equalTo: signoutButton.centerXAnchor).isActive = true
-        
-        view.addSubview(seungButton)
-        seungButton.backgroundColor = .zipPink
-        seungButton.translatesAutoresizingMaskIntoConstraints = false
-        seungButton.topAnchor.constraint(equalTo: yianniButton.bottomAnchor, constant: 10).isActive = true
-        seungButton.heightAnchor.constraint(equalTo: signoutButton.heightAnchor).isActive = true
-        seungButton.widthAnchor.constraint(equalTo: signoutButton.widthAnchor).isActive = true
-        seungButton.centerXAnchor.constraint(equalTo: signoutButton.centerXAnchor).isActive = true
-        
-        view.addSubview(ezraButton)
-        ezraButton.backgroundColor = .zipYellow
-        ezraButton.translatesAutoresizingMaskIntoConstraints = false
-        ezraButton.topAnchor.constraint(equalTo: seungButton.bottomAnchor, constant: 10).isActive = true
-        ezraButton.heightAnchor.constraint(equalTo: signoutButton.heightAnchor).isActive = true
-        ezraButton.widthAnchor.constraint(equalTo: signoutButton.widthAnchor).isActive = true
-        ezraButton.centerXAnchor.constraint(equalTo: signoutButton.centerXAnchor).isActive = true
-        
         view.addSubview(continueButton)
         continueButton.backgroundColor = .zipVeryLightGray
         continueButton.translatesAutoresizingMaskIntoConstraints = false
-        continueButton.topAnchor.constraint(equalTo: ezraButton.bottomAnchor, constant: 10).isActive = true
+        continueButton.topAnchor.constraint(equalTo: signoutButton.bottomAnchor, constant: 10).isActive = true
         continueButton.heightAnchor.constraint(equalTo: signoutButton.heightAnchor).isActive = true
         continueButton.widthAnchor.constraint(equalTo: signoutButton.widthAnchor).isActive = true
         continueButton.centerXAnchor.constraint(equalTo: signoutButton.centerXAnchor).isActive = true

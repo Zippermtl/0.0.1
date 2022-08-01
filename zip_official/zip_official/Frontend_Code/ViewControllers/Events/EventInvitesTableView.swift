@@ -34,7 +34,13 @@ class EventInvitesTableView: UITableView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
+    public func updateEvents(events: [Event]) {
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+        self.events = events.filter({ !$0.hosts.contains(User(userId: userId))})
+        FPCDelegate?.updateEventsLabel(events: events)
+        reloadData()
+    }
 }
 
 
@@ -69,7 +75,7 @@ extension EventInvitesTableView: UITableViewDelegate, UITableViewDataSource {
             content.textProperties.color = .zipVeryLightGray
             content.textProperties.font = .zipBody.withSize(16)
             content.textProperties.alignment = .center
-            content.text = "There are no available events near you"
+            content.text = "You have no pending event Invites"
             cell.contentConfiguration = content
             return cell
         }

@@ -27,7 +27,8 @@ public enum EventType: Int {
 
 extension DatabaseManager {
     
-    public func getAllPrivateEventsForMap(completion: @escaping (Result<[Event], Error>) -> Void){
+    public func getAllPrivateEventsForMap(eventCompletion: @escaping (Event) -> Void,
+                                          allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
@@ -36,13 +37,14 @@ extension DatabaseManager {
             guard let strongSelf = self,
                   err == nil else {
                 print("Error getting documents: \(err!)")
-                completion(.failure(err!))
+                allCompletion(.failure(err!))
                 return
             }
             
             var events: [Event] = []
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            
             for document in querySnapshot!.documents {
                 let data = document.data()
                 print("data =", data)
@@ -54,7 +56,8 @@ extension DatabaseManager {
                       let startTimestamp = data["startTime"] as? Timestamp,
                       let endTimestamp = data["endTime"] as? Timestamp
                 else {
-                    return
+                    print("FAIL FAIL FAIL FUCK")
+                    continue
                 }
                 
                 let eventId = document.documentID
@@ -95,6 +98,7 @@ extension DatabaseManager {
                                                                type: EventType(rawValue: type)!)
                 
                 events.append(currentEvent)
+                eventCompletion(currentEvent)
                 
                 StorageManager.shared.getProfilePicture(path: "Event/\(eventId)", completion: { result in
                     switch result {
@@ -106,7 +110,7 @@ extension DatabaseManager {
                     
                 })
             }
-            completion(.success(events))
+            allCompletion(.success(events))
         }
     }
     
@@ -163,6 +167,9 @@ extension DatabaseManager {
                 completion(.failure(error!))
                 return
             }
+            var hostedEvents = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
+            hostedEvents.append(event.eventId)
+            AppDelegate.userDefaults.set(hostedEvents, forKey: "hostedEvents")
             GeoManager.shared.UpdateEventLocation(event: event)
             self?.updateEventImage(event: event, completion: { result in
                 switch result {
@@ -366,9 +373,8 @@ extension DatabaseManager {
         
     }
     
-    public func eventLoadTableView(events: [Event], completion: @escaping (Result<Event, Error>) -> Void){
-        for i in events{
-            loadEvent(event: i, completion: { result in
+    public func eventLoadTableView(event: Event, completion: @escaping (Result<Event, Error>) -> Void){
+        loadEvent(event: event, completion: { result in
             switch result {
             case .success(let event):
                 completion(.success(event))
@@ -377,7 +383,7 @@ extension DatabaseManager {
                 completion(.failure(error))
             }
         })
-        }
+        
     }
     
 }

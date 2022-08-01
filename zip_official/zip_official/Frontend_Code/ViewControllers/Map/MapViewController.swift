@@ -107,22 +107,22 @@ class MapViewController: UIViewController {
         
 //        let vc = OtherProfileViewController(id: "u2158018458")
 
-        let friendships: [String : Int] = ["u2158018458" : 0,
-                                           "u2508575270" : 0,
-                                           "u1" : 2,
-                                           "u2" : 2,
-                                           "u3" : 2,
-                                           "u4" : 2,
-                                           "u5" : 2,
-                                           "u6" : 2,
-                                           "u7" : 2,
-                                           "u8" : 2,
-                                           "u9" : 2,
-                                           "u10" : 2,
-                                           "u6502222222" : 1
-        ]
-        
-        AppDelegate.userDefaults.set(friendships, forKey: "friendships")
+//        let friendships: [String : Int] = ["u2158018458" : 0,
+//                                           "u2508575270" : 0,
+//                                           "u1" : 2,
+//                                           "u2" : 2,
+//                                           "u3" : 2,
+//                                           "u4" : 2,
+//                                           "u5" : 2,
+//                                           "u6" : 2,
+//                                           "u7" : 2,
+//                                           "u8" : 2,
+//                                           "u9" : 2,
+//                                           "u10" : 2,
+//                                           "u6502222222" : 1
+//        ]
+//
+//        AppDelegate.userDefaults.set(friendships, forKey: "friendships")
  
     
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
@@ -295,20 +295,25 @@ class MapViewController: UIViewController {
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
         mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)        
         
-        DatabaseManager.shared.getAllPrivateEventsForMap(completion: { [weak self] result in
+        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+        }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
+
             switch result {
             case .success(let events):
-                print("sucess loading event: \(events)")
-
-                for event in events {
-                    self?.mapView.addAnnotation(EventAnnotation(event: event))
+                guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
+                    return
                 }
-                
+                fpcVC.events = events
+                fpcVC.updateEventsLabel(events: events)
+                fpcVC.eventsTable.updateEvents(events: events)
             case .failure(let error):
-                print("Error loading events on map Error: \(error)")
+                print("failure loading all events: \(error)")
             }
+
             
-            print("done loading events")
         })
         //Events
         // MARK: London

@@ -165,8 +165,11 @@ public class EventCoder: Codable {
     }
 }
 
-
-public class Event : Encodable {
+public class Event : Encodable, Equatable {
+    public static func == (lhs: Event, rhs: Event) -> Bool {
+        return lhs.eventId == rhs.eventId
+    }
+    
     enum CodingKeys: String, CodingKey {
         case eventId
         case title

@@ -20,6 +20,8 @@ protocol FPCMapDelegate: AnyObject {
 }
 
 class FPCViewController: UIViewController {
+    public var eventsTable: EventInvitesTableView
+
     weak var delegate: FPCMapDelegate?
     private var userLoc: CLLocation
     private var scrollView: UIScrollView
@@ -33,10 +35,9 @@ class FPCViewController: UIViewController {
     private let zipRequestsButton: UIButton
     private let eventsButton: UIButton
     private var zipRequestsTable: ZipRequestTableView
-    private var eventsTable: EventInvitesTableView
     private var searchTable: SearchBarTableView
     private var searchBg: UIView
-    private var events: [Event]
+    var events: [Event]
     
     private let findEventsIcon: IconButton
     private let createEventIcon: IconButton
