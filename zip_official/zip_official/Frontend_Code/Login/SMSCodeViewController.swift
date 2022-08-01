@@ -94,6 +94,13 @@ class SMSCodeViewController: UIViewController {
 
         verifyCodeButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         
+        code1.keyboardType = .numberPad
+        code2.keyboardType = .numberPad
+        code3.keyboardType = .numberPad
+        code4.keyboardType = .numberPad
+        code5.keyboardType = .numberPad
+        code6.keyboardType = .numberPad
+
         
         addSubviews()
     }
@@ -295,6 +302,19 @@ extension SMSCodeViewController: UITextFieldDelegate {
         if text.count >= 1 {
             textField.text = ""
         }
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let maxLength = 1
+        let currentString = (textField.text ?? "") as NSString
+        let newString = currentString.replacingCharacters(in: range, with: string)
+        if newString.count <= maxLength {
+            let allowedCharacters = CharacterSet.decimalDigits
+            let characterSet = CharacterSet(charactersIn: string)
+            return allowedCharacters.isSuperset(of: characterSet)
+        }
+        
+        return false
     }
 
 }
