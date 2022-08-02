@@ -237,8 +237,8 @@ extension DatabaseManager {
         let userData: [String:[String]] = [
             "notificationToken": [token],
         ]
-        
-        firestore.collection("UserProfiles").document(AppDelegate.userDefaults.value(forKey: "userId") as! String).updateData(userData) { error in
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+        firestore.collection("UserProfiles").document(userId).updateData(userData) { error in
             guard error == nil else{
                 print("failed to write to database")
                 completion(error)
