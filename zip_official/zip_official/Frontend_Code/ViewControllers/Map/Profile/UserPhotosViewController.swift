@@ -41,7 +41,6 @@ class UserPhotosViewController: UIViewController {
     private let xButton: UIButton = {
         let btn = UIButton()
         btn.setImage(UIImage(systemName: "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        btn.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
         return btn
     }()
     
@@ -53,7 +52,6 @@ class UserPhotosViewController: UIViewController {
 
         btn.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
         
-        btn.addTarget(self, action: #selector(didTapEditButton), for: .touchUpInside)
     
         return btn
     }()
@@ -113,6 +111,7 @@ class UserPhotosViewController: UIViewController {
                     StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
                         switch result {
                         case .success(let url):
+                            print("hey we saved image")
                             img.url = URL(string: url)
                             self?.user.pictureURLs.append(URL(string: url)!)
                         case .failure(let error):
@@ -143,7 +142,8 @@ class UserPhotosViewController: UIViewController {
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
         focusedImage.addGestureRecognizer(tap)
-        
+        xButton.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
+        editButton.addTarget(self, action: #selector(didTapEditButton), for: .touchUpInside)
 //        imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
         imagePicker.modalPresentationStyle = .overCurrentContext

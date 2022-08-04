@@ -171,7 +171,9 @@ final class StorageManager {
             fileName = fileName + "img\(index-1).png"
         }
         
-       
+        if index >= GetNumberOfPictures() {
+            
+        }
         
         guard let data = pictures.pngData() else {
             return

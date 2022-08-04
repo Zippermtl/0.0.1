@@ -19,6 +19,9 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
 
     let textView: UITextView
     weak var cellDelegate: GrowingCellProtocol?
+    
+    var acceptableCharacters: String?
+    var charLimit: Int?
 
     var saveFunc: ((String) -> Void)?
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -78,5 +81,21 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
 extension EditTextFieldTableViewCell: UITextViewDelegate {
     func textViewDidEndEditing(_ textView: UITextView) {
         saveValue()
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if let limit = charLimit {
+            let currentString = (textView.text ?? "") as NSString
+            let str = currentString.replacingCharacters(in: range, with: text)
+            if str.count > limit { return false }
+        }
+        
+        if let aChars = acceptableCharacters {
+            let cs = NSCharacterSet(charactersIn: aChars).inverted
+            let filtered = text.components(separatedBy: cs).joined(separator: "")
+            return (text == filtered)
+        }
+              
+        return true
     }
 }

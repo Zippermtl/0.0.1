@@ -9,16 +9,36 @@ import UIKit
 import JGProgressHUD
 
 class NewChatViewController: UIViewController {
-    public var completion: ((SearchResult) -> Void)?
+    public var completion: ((User) -> Void)?
 
     private let spinner = JGProgressHUD(style: .light)
     
-    private var users = [[String: String]]()
+    private var users = [User]()
     
-    private var results =  [SearchResult]()
+    private var results =  [User]()
     
     private var hasFetched = false
 
+    init() {
+        if let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
+            print("we here FRIENDS")
+            print(friendships)
+            let zipsDict = friendships.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
+            let userIds = Array(zipsDict.keys)
+            self.users = userIds.map({ User(userId: $0) })
+            self.results = users
+        } else {
+            self.users = []
+            self.results = users
+        }
+        
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     
     private let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -37,7 +57,7 @@ class NewChatViewController: UIViewController {
     let tableView: UITableView = {
         let table = UITableView()
         table.isHidden = true
-        table.register(NewConversationTableViewCell.self, forCellReuseIdentifier: NewConversationTableViewCell.identifier)
+        table.register(MyZipsTableViewCell.self, forCellReuseIdentifier: MyZipsTableViewCell.identifier)
         return table
     }()
     
@@ -88,59 +108,13 @@ extension NewChatViewController: UISearchBarDelegate {
         results.removeAll()
         spinner.show(in: view)
         
-        searchUsers(query: text)
-    }
-    
-    func searchUsers(query: String){
-        // check if array has firebase results
-        if hasFetched {
-            // if it does: filter
-            filterUsers(with: query)
-        } else {
-            // if not, fetch then filter
-//            DatabaseManager.shared.getAllusers(completion: { [weak self] result in
-//                switch result {
-//                case .success(let userCollection):
-//                    self?.hasFetched = true
-//                    self?.users = userCollection
-//                    self?.filterUsers(with: query)
-//                case .failure(let error):
-//                    print("Failed to get users: \(error)")
-//                }
-//                
-//            })
-        }
-        
-        
+        filterUsers(with: text)
     }
     
     func filterUsers(with term: String) {
-        // update the UI: either show results or show no results
-        guard let currentUserId = AppDelegate.userDefaults.value(forKey: "userId") as? String, hasFetched else {
-            return
-        }
-                
         spinner.dismiss()
         
-        let results: [SearchResult] = users.filter({
-            guard let id = $0["id"],
-                  id != currentUserId else {
-                      return false
-            }
-            
-            guard let name = $0["name"]?.lowercased() else {
-                return false
-            }
-            
-            return name.hasPrefix(term.lowercased())
-        }).compactMap({
-            guard let id = $0["id"],
-                  let name = $0["name"] else {
-                      return nil
-                  }
-            return SearchResult(name: name, id: id)
-        })
-                      
+        let results: [User] = users.filter({ $0.fullName.hasPrefix(term.lowercased()) || $0.username.hasPrefix(term.lowercased()) })
         self.results = results
         
         updateUI()
@@ -178,8 +152,6 @@ extension NewChatViewController: UITableViewDelegate {
         dismiss(animated: true, completion: { [weak self] in
             self?.completion?(targetUserData)
         })
-        
-        
     }
 
     
@@ -187,18 +159,12 @@ extension NewChatViewController: UITableViewDelegate {
 
 extension NewChatViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let model = results[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: NewConversationTableViewCell.identifier, for: indexPath) as! NewConversationTableViewCell
-        cell.configure(with: model)
+        let user = results[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: MyZipsTableViewCell.identifier, for: indexPath) as! MyZipsTableViewCell
+        cell.configure(user)
+        user.tableViewCell = cell
         return cell
     }
     
-    
-}
-
-
-struct SearchResult {
-    let name: String
-    let id: String
     
 }

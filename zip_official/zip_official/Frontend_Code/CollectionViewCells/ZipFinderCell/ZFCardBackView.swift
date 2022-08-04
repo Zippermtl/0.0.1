@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 import MapKit
-import MTSlideToOpen
 import DropDown
 
 protocol ZFCardBackDelegate: AnyObject {
@@ -53,7 +52,7 @@ class ZFCardBackView: UIView {
     let schoolImage: UIImageView
     let interestsImage: UIImageView
     
-    private var slideView: MTSlideToOpenView
+    private var slideView: MTSlideToOpenViewCopy
     
     
     init() {
@@ -78,7 +77,7 @@ class ZFCardBackView: UIView {
         interestsImage = UIImageView(image: UIImage(systemName: "star.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
         profilePicture = UIImageView()
         
-        slideView = MTSlideToOpenView(frame: CGRect(x: 0, y: 0, width: 317, height: 56))
+        slideView = MTSlideToOpenViewCopy(frame: CGRect(x: 0, y: 0, width: 317, height: 56))
         
         reportPopUp = DropDown()
             
@@ -93,7 +92,8 @@ class ZFCardBackView: UIView {
         messageButton.setIconDimension(width: 60)
         inviteButton.setIconDimension(width: 60)
         
-        reportButton.setImage(UIImage(named: "report"), for: .normal)
+        let reportConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
+        reportButton.setImage(UIImage(systemName: "ellipsis",withConfiguration: reportConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
          
         if AppDelegate.userDefaults.bool(forKey: "hasHomeButton"){
@@ -210,10 +210,11 @@ class ZFCardBackView: UIView {
         slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
         slideView.thumnailImageView.backgroundColor = .zipBlue
         slideView.thumnailImageView.contentMode = .scaleAspectFit
-        slideView.thumbnailViewStartingDistance = -10
+//        slideView.thumbnailViewStartingDistance = -10
         slideView.backgroundColor = .clear
         
-//        slideView.
+        
+        slideView.swipeDistanceMultiplier = 0.6
         slideView.sliderViewTopDistance = 8
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
@@ -411,8 +412,8 @@ class ZFCardBackView: UIView {
 }
 
 //MARK: - Slider Delegate
-extension ZFCardBackView: MTSlideToOpenDelegate {
-    func mtSlideToOpenDelegateDidFinish(_ sender: MTSlideToOpenView) {
+extension ZFCardBackView: MTSlideToOpenDelegateCopy {
+    func mtSlideToOpenDelegateDidFinish(_ sender: MTSlideToOpenViewCopy) {
         request()
     }
     
@@ -447,7 +448,8 @@ extension ZFCardBackView: MTSlideToOpenDelegate {
         
         slideView.thumnailImageView.image = imgB
         slideView.thumnailImageView.backgroundColor = .white
-//        slideView.updateThumbnailXPosition(slideView.xEndingPoint)
+        slideView.updateThumbnailXPosition(slideView.xEndingPoint)
+        slideView.isFinished = true
         
     }
     

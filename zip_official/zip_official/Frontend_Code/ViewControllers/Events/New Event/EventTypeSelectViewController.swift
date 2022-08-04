@@ -6,12 +6,15 @@
 //
 
 import UIKit
+import MapKit
 
 class EventTypeSelectViewController: UIViewController {
     private let tableView: UITableView
     private let tableData: [EventType:(String,String)]
+    private let mapView: MKMapView
     
-    init() {
+    init(map: MKMapView) {
+        self.mapView = map
         self.tableView =  UITableView()
         self.tableData = [
             .Private : ("Invite your Zips",
@@ -127,10 +130,14 @@ extension EventTypeSelectViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            let vc = CreateEventViewController(event: PrivateEvent())
+            let event = PrivateEvent()
+            event.mapView = mapView
+            let vc = CreateEventViewController(event: event)
             navigationController?.pushViewController(vc, animated: true)
         case 1:
-            let vc = CreateEventViewController(event: PublicEvent())
+            let event = PublicEvent()
+            event.mapView = mapView
+            let vc = CreateEventViewController(event: event)
             navigationController?.pushViewController(vc, animated: true)
         case 2:
             break

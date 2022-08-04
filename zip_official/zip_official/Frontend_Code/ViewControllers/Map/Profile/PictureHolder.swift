@@ -12,6 +12,7 @@ class PictureHolder {
     var isEdited: Bool = false
     var url: URL?
     var image: UIImage?
+    var idx: Int
     
     func isUrl() -> Bool {
         if self.url != nil {
@@ -23,30 +24,17 @@ class PictureHolder {
     init(url: URL, edited: Bool = false){
         self.url = url
         self.isEdited = edited
+        self.idx = 0
     }
     
     init(image: UIImage, edited: Bool = false){
         self.image = image
         self.isEdited = edited
+        self.idx = 0
     }
     
-    public func upload(path: String, completion: @escaping (Result<String, Error>) -> Void){
-        if isEdited {
-            guard let pngData = image?.pngData() else {
-                return
-            }
-            
-            StorageManager.shared.uploadProfilePicture(with: pngData, fileName: path, completion: { result in
-                switch result {
-                case .success(let downloadUrl):
-                    completion(.success(downloadUrl))
-                case .failure(let error):
-                    print("Storage Manager Error: \(error)")
-                    completion(.failure(StorageManager.StorageErrors.failedToGetDownloadUrl))
-                }
-            })
-        }
-    }
+   
+    
     
     
 }

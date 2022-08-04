@@ -413,7 +413,7 @@ extension CompleteProfileViewController: UICollectionViewDataSource , UICollecti
             let pictureView = UIView(frame: CGRect(x: 10, y: 10, width: cell.frame.width-20, height: cell.frame.height-20))
             pictureView.backgroundColor = .zipLightGray
             
-            let addButton = UIImageView(image: UIImage(named: "addFilled")?.withTintColor(.zipVeryLightGray))
+            let addButton = UIImageView(image: UIImage(systemName: "plus.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray))
             pictureView.addSubview(addButton)
             addButton.translatesAutoresizingMaskIntoConstraints = false
             addButton.heightAnchor.constraint(equalTo: pictureView.heightAnchor, multiplier: 0.5).isActive = true

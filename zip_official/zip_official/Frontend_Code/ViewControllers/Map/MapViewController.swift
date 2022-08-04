@@ -208,7 +208,7 @@ class MapViewController: UIViewController {
             let url = URL(string: urlString)
             profileButton.sd_setImage(with: url, for: .normal, completed: nil)
         } else {
-            profileButton.setImage(UIImage(named: "profilePicture"), for: .normal)
+            profileButton.setImage(UIImage(named: "defaultProfilePic"), for: .normal)
         }
         
         profileButton.addTarget(self, action: #selector(didTapProfileButton), for: .touchUpInside)
@@ -426,7 +426,7 @@ extension MapViewController: FPCMapDelegate {
     }
     
     func createEvent() {
-        let vc = EventTypeSelectViewController()
+        let vc = EventTypeSelectViewController(map: mapView)
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)
@@ -510,7 +510,13 @@ extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
         if let annotation = view.annotation as? EventAnnotation {
-            let eventVC = EventViewController(event: annotation.event)
+            var eventVC: UIViewController
+            let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
+            if annotation.event.hosts.map({ $0.userId }).contains(userId) {
+                eventVC = MyEventViewController(event: annotation.event)
+            } else {
+                eventVC = EventViewController(event: annotation.event)
+            }
             
             let nav = UINavigationController(rootViewController: eventVC)
             nav.modalPresentationStyle = .fullScreen
@@ -582,6 +588,10 @@ extension MapViewController: UIGestureRecognizerDelegate {
 extension MapViewController: FloatingPanelControllerDelegate {
     func floatingPanelWillBeginDragging(_ fpc: FloatingPanelController) {
 
+    }
+    
+    func floatingPanelDidMove(_ fpc: FloatingPanelController) {
+        self.fpc.view.endEditing(true)
     }
 }
 

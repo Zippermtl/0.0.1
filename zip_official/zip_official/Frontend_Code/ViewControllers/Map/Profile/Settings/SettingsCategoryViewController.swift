@@ -30,31 +30,7 @@ enum SettingsCategory: Int, CaseIterable, CustomStringConvertible {
 class SettingsCategoryViewController: UIViewController {
     var category: SettingsCategory = SettingsCategory(rawValue: 0)!
     // MARK: - SubViews
-    var tableView = UITableView()
-    
-
-    
-    
-    //MARK: - Buttons
-    let backButton: UIButton = {
-        let btn = UIButton()
-        btn.setImage(UIImage(named: "backarrow"), for: .normal)
-        btn.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
-        return btn
-    }()
-    
-    
-    //MARK: - Button Actions
-    @objc private func didTapBackButton(){
-        let transition: CATransition = CATransition()
-        transition.duration = 0.3
-        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeOut)
-        transition.type = CATransitionType.reveal
-        transition.subtype = CATransitionSubtype.fromLeft
-        view.window!.layer.add(transition, forKey: nil)
-        dismiss(animated: false, completion: nil)
-    }
-    
+    var tableView = UITableView()    
     
     override func viewDidLoad() {
         super.viewDidLoad()

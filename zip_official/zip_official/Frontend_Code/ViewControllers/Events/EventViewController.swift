@@ -284,9 +284,6 @@ class EventViewController: UIViewController {
 
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -508,23 +505,23 @@ class EventViewController: UIViewController {
     @objc func updateTime() {
 //        print("start time = \(event.startTime)")
 //        print("currentdate = \(Date())")
-        
-        if Date() >= event.startTime {
-            animateLiveView()
-            guard timer != nil else { return }
-            timer.invalidate()
-            timer = nil
-            
-            return
+        let currentDate = Date()
+
+        if currentDate >= event.startTime {
+            if currentDate >= event.endTime {
+                countDownLabel.text = "Sorry! This event has ended."
+            } else {
+                animateLiveView()
+                guard timer != nil else { return }
+                timer.invalidate()
+                timer = nil
+                
+                return
+            }
+           
         }
         
         let userCalendar = Calendar.current
-        // Set Current Date
-        let components = userCalendar.dateComponents([.hour, .minute, .month, .year, .day, .second], from: Date())
-        let currentDate = userCalendar.date(from: components)!
-        
-        // Change the seconds to days, hours, minutes and seconds
-        
         let timeLeft = userCalendar.dateComponents([.day, .hour, .minute, .second], from: currentDate, to: event.startTime)
         
         // Display Countdown
@@ -537,11 +534,6 @@ class EventViewController: UIViewController {
         } else if timeLeft.day == 0{
             countDownLabel.text = "\(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
         }
-        
-        
-
-
-        
     }
     
     private func animateLiveView() {

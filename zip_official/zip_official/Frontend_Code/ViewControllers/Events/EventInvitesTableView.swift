@@ -38,7 +38,7 @@ class EventInvitesTableView: UITableView {
     public func updateEvents(events: [Event]) {
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         self.events = events.filter({ !$0.hosts.contains(User(userId: userId))})
-        FPCDelegate?.updateEventsLabel(events: events)
+        FPCDelegate?.updateEventsLabel(events: self.events)
         reloadData()
     }
 }

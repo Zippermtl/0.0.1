@@ -11,6 +11,7 @@ import FirebaseFirestore
 import CodableFirebase
 import CoreLocation
 import FirebaseFirestoreSwift
+import MapKit
 
 enum EventSaveStatus: Int {
     case SAVED = 0
@@ -233,7 +234,15 @@ public class Event : Encodable, Equatable {
     
     var annotationView : EventAnnotationView?
     var tableViewCell: AbstractEventTableViewCell?
-    var image: UIImage? = UIImage(named: "launchevent")
+    var mapView: MKMapView?
+    var image: UIImage?
+    
+    func addToMap(){
+        guard let mapView = mapView else {
+            return
+        }
+        mapView.addAnnotation(EventAnnotation(event: self))
+    }
     
     var latitude : Double {
         return coordinates.coordinate.latitude
@@ -411,7 +420,7 @@ public class Event : Encodable, Equatable {
          description desc: String = "",
          address addy: String = "",
          locationName locName: String = "",
-         maxGuests maxG: Int = 0,
+         maxGuests maxG: Int = -1,
          usersGoing ugoing: [User] = [],
          usersInterested uinterested: [User] = [],
          usersInvite uinvite: [User] = [],
@@ -525,7 +534,7 @@ public func createEvent(eventId Id: String = "",
                         description desc: String = "",
                         address addy: String = "",
                         locationName locName: String = "",
-                        maxGuests maxG: Int = 0,
+                        maxGuests maxG: Int = -1,
                         usersGoing ugoing: [User] = [],
                         usersInterested uinterested: [User] = [],
                         usersInvite uinvite: [User] = [],

@@ -375,6 +375,7 @@ extension AbstractProfileViewController: UITableViewDataSource {
     }
     
     private func configureCells() {
+        tableCells.removeAll()
         if user.hasBio {
             bioCell = UITableViewCell()
             bioCell!.backgroundColor = .clear

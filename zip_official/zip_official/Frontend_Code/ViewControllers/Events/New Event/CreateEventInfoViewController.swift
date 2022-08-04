@@ -10,6 +10,9 @@ import UIKit
 class CreateEventInfoViewController: UIViewController {
     var event: Event
     
+    
+    
+    
     init(event: Event) {
         self.event = event
         super.init(nibName: nil, bundle: nil)
@@ -19,6 +22,8 @@ class CreateEventInfoViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    private let hardCapSwitch = UISwitch()
+    private let hardCapLabel = UILabel.zipTextFill()
     
     private let continueButton: UIButton = {
         let btn = UIButton()
@@ -70,7 +75,7 @@ class CreateEventInfoViewController: UIViewController {
     
     private let capacityNumField: UITextField = {
         let tf = UITextField()
-        tf.attributedPlaceholder = NSAttributedString(string: "Date",
+        tf.attributedPlaceholder = NSAttributedString(string: "",
                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
         tf.font = .zipBody
         tf.borderStyle = .roundedRect
@@ -111,25 +116,6 @@ class CreateEventInfoViewController: UIViewController {
         return img
     }()
 
-    private let icons: [UIImage?] =
-    [
-        UIImage(systemName: "plus"),
-        UIImage(named: "defaultEventIcon"),
-        UIImage(named: "defaultEventIcon"),
-        UIImage(named: "defaultEventIcon"),
-        UIImage(named: "defaultEventIcon"),
-        UIImage(named: "defaultEventIcon"),
-        UIImage(named: "defaultEventIcon")
-
-//        UIImage(systemName: "text.book.closed.fill"),
-//        UIImage(systemName: "bicycle"),
-//        UIImage(systemName: "gamecontroller.fill"),
-//        UIImage(systemName: "music.mic"),
-//        UIImage(systemName: "music.mic"),
-//        UIImage(systemName: "music.mic")
-
-    ]
-
     
     @objc func sliderChanged(_ sender: UISlider){
         dismissKeyboard()
@@ -149,80 +135,86 @@ class CreateEventInfoViewController: UIViewController {
     }
     
     @objc private func didTapContinueButton(){
-        if event.getType() == .Public {
-            continueButton.isEnabled = false
-            let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
-                            firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
-                            lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
+        guard descriptionField.text != nil,
+              didUpdatePicture == true else {
+            let alert = UIAlertController(title: "Complete All Fields To Conitnue",
+                                          message: "",
+                                          preferredStyle: .alert)
             
-            event.hosts = [host]
-                    
-            //MARK: Fuckmyass is the variable which contains the string of the url of the picture
-            // the code below was written by Yianni and was originally if success a else b has been
-            // rewritten to be switch: case success a case failure b
-            // note this is with a and b being code blocks excluding the code obviously written by me
-            DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
-                switch success {
-                case .success(let a):
-                    let actionSheet = UIAlertController(title: "Successfull Created an Event",
-                                                        message: "View your event in your profile",
-                                                        preferredStyle: .actionSheet)
-                    
-                    actionSheet.addAction(UIAlertAction(title: "Continue",
-                                                        style: .cancel,
-                                                        handler: nil))
-                    
-                    self?.present(actionSheet, animated: true)
-                    self?.dismiss(animated: true, completion: nil)
-                    self?.continueButton.isEnabled = true
-                case .failure(let error):
-                    print(error)
-                    let actionSheet = UIAlertController(title: "Failed to Create Your Event",
-                                                        message: "Make sure all the information you entered is correct or try again later.",
-                                                        preferredStyle: .actionSheet)
-                    
-                    actionSheet.addAction(UIAlertAction(title: "Continue",
-                                                        style: .cancel,
-                                                        handler: nil))
-                    
-                    self?.present(actionSheet, animated: true)
-                }
-            })
+            alert.addAction(UIAlertAction(title: "Continue",
+                                          style: .cancel,
+                                          handler: nil))
+            
+            present(alert, animated: true)
+            return
+        }
+        
+        event.description = descriptionField.text
+        
+        let vc = CompleteEventViewController(event: event)
+        navigationController?.pushViewController(vc, animated: true)
+        
+//        if event.getType() == .Public {
+//            continueButton.isEnabled = false
+//            let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
+//                            firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
+//                            lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
+//
+//            event.hosts = [host]
+//
+//
+//            DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
+//                guard let strongSelf = self else { return }
+//                switch success {
+//                case .success(let url):
+//                    strongSelf.event.imageUrl = URL(string: url)!
+//                    strongSelf.event.addToMap()
+//                    strongSelf.dismiss(animated: true, completion: nil)
+//                    strongSelf.continueButton.isEnabled = true
+//                case .failure(let error):
+//                    print(error)
+//                    let actionSheet = UIAlertController(title: "Failed to Create Your Event",
+//                                                        message: "Make sure all the information you entered is correct or try again later.",
+//                                                        preferredStyle: .actionSheet)
+//
+//                    actionSheet.addAction(UIAlertAction(title: "Continue",
+//                                                        style: .cancel,
+//                                                        handler: nil))
+//
+//                    self?.present(actionSheet, animated: true)
+//                }
+//            })
 
+//        } else {
+       
+//        }
+    }
+    
+    @objc private func hardCapSwitchTapped() {
+        if hardCapSwitch.isOn {
+            
         } else {
-            guard descriptionField.text != nil,
-                  didUpdatePicture == true else {
-                let alert = UIAlertController(title: "Complete All Fields To Conitnue",
-                                              message: "",
-                                              preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: "Continue",
-                                              style: .cancel,
-                                              handler: nil))
-                
-                present(alert, animated: true)
-                return
-            }
             
-            event.description = descriptionField.text
-            
-            let vc = CompleteEventViewController(event: event)
-            navigationController?.pushViewController(vc, animated: true)
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         view.backgroundColor = .zipGray
         title = "Customize Event"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        hardCapLabel.text = "Allow users to join after full"
+        
+        hardCapSwitch.addTarget(self, action: #selector(hardCapSwitchTapped), for: .valueChanged)
+        
         
         if event.description != "" {
             descriptionField.text = event.description
             descriptionField.textColor = .white
         }
         
-        if event.maxGuests != 0 {
+        if event.maxGuests > 0 {
             capacitySlider.value = Float(event.maxGuests)
         } else {
             if event.isPublic() {
@@ -273,7 +265,9 @@ class CreateEventInfoViewController: UIViewController {
         view.addSubview(pageStatus1)
         view.addSubview(pageStatus2)
         view.addSubview(pageStatus3)
-
+        
+        view.addSubview(hardCapLabel)
+        view.addSubview(hardCapSwitch)
     }
 
     private func layoutSubviews() {
@@ -291,7 +285,7 @@ class CreateEventInfoViewController: UIViewController {
         
         eventPicture.layer.masksToBounds = true
         eventPicture.layer.cornerRadius = view.frame.width/8
-        eventPicture.layer.borderColor = UIColor.zipYellow.cgColor
+        eventPicture.layer.borderColor = event.getType().color.cgColor
         eventPicture.layer.borderWidth = 2
         
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -316,6 +310,14 @@ class CreateEventInfoViewController: UIViewController {
         capacityNumField.translatesAutoresizingMaskIntoConstraints = false
         capacityNumField.topAnchor.constraint(equalTo: capacityLabel.bottomAnchor, constant: 15).isActive = true
         capacityNumField.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
+        
+        hardCapLabel.translatesAutoresizingMaskIntoConstraints = false
+        hardCapLabel.topAnchor.constraint(equalTo: capacityNumField.bottomAnchor, constant: 15).isActive = true
+        hardCapLabel.leftAnchor.constraint(equalTo: capacityNumField.leftAnchor).isActive = true
+        
+        hardCapSwitch.translatesAutoresizingMaskIntoConstraints = false
+        hardCapSwitch.rightAnchor.constraint(equalTo: capacitySlider.rightAnchor).isActive = true
+        hardCapSwitch.centerYAnchor.constraint(equalTo: hardCapLabel.centerYAnchor).isActive = true
         
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40).isActive = true
@@ -349,58 +351,6 @@ class CreateEventInfoViewController: UIViewController {
 
 
 
-extension CreateEventInfoViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.row == 0 {
-            presentPhotoActionSheet()
-        } else {
-            eventPicture.image = icons[indexPath.row]
-            event.image = icons[indexPath.row]
-            didUpdatePicture = true
-        }
-    }
-}
-
-extension CreateEventInfoViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return icons.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .zipGray
-        let cellWidth = (view.frame.size.width-20-10*4)/5
-        
-        let circleBg = UIView()
-        circleBg.backgroundColor = .zipLightGray
-        circleBg.layer.cornerRadius = cellWidth/2
-        circleBg.layer.masksToBounds = true
-        
-        let imgView = UIImageView()
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
-        imgView.image = icons[indexPath.row]?.withConfiguration(largeConfig)
-        imgView.tintColor = .white
-        imgView.backgroundColor = .clear
-        imgView.layer.masksToBounds = true
-        
-        circleBg.addSubview(imgView)
-        imgView.translatesAutoresizingMaskIntoConstraints = false
-        imgView.centerXAnchor.constraint(equalTo: circleBg.centerXAnchor).isActive = true
-        imgView.centerYAnchor.constraint(equalTo: circleBg.centerYAnchor).isActive = true
-        
-        cell.contentView.addSubview(circleBg)
-        circleBg.translatesAutoresizingMaskIntoConstraints = false
-        circleBg.topAnchor.constraint(equalTo: cell.contentView.topAnchor).isActive = true
-        circleBg.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor).isActive = true
-        circleBg.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
-        circleBg.heightAnchor.constraint(equalTo: circleBg.widthAnchor).isActive = true
-
-        
-        return cell
-    }
-    
-    
-}
 
 
 
@@ -504,4 +454,68 @@ extension CreateEventInfoViewController: UITextViewDelegate {
         
         event.description = textView.text
     }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        let currentString = (textView.text ?? "") as NSString
+        let str = currentString.replacingCharacters(in: range, with: text)
+        if str.count > 300 { return false }
+        return true
+    }
 }
+
+
+
+/*
+ extension CreateEventInfoViewController: UICollectionViewDelegate {
+ func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+     if indexPath.row == 0 {
+         presentPhotoActionSheet()
+     } else {
+         eventPicture.image = icons[indexPath.row]
+         event.image = icons[indexPath.row]
+         didUpdatePicture = true
+     }
+ }
+}
+
+extension CreateEventInfoViewController: UICollectionViewDataSource {
+ func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+     return icons.count
+ }
+ 
+ func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+     cell.backgroundColor = .zipGray
+     let cellWidth = (view.frame.size.width-20-10*4)/5
+     
+     let circleBg = UIView()
+     circleBg.backgroundColor = .zipLightGray
+     circleBg.layer.cornerRadius = cellWidth/2
+     circleBg.layer.masksToBounds = true
+     
+     let imgView = UIImageView()
+     let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
+     imgView.image = icons[indexPath.row]?.withConfiguration(largeConfig)
+     imgView.tintColor = .white
+     imgView.backgroundColor = .clear
+     imgView.layer.masksToBounds = true
+     
+     circleBg.addSubview(imgView)
+     imgView.translatesAutoresizingMaskIntoConstraints = false
+     imgView.centerXAnchor.constraint(equalTo: circleBg.centerXAnchor).isActive = true
+     imgView.centerYAnchor.constraint(equalTo: circleBg.centerYAnchor).isActive = true
+     
+     cell.contentView.addSubview(circleBg)
+     circleBg.translatesAutoresizingMaskIntoConstraints = false
+     circleBg.topAnchor.constraint(equalTo: cell.contentView.topAnchor).isActive = true
+     circleBg.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor).isActive = true
+     circleBg.widthAnchor.constraint(equalToConstant: cellWidth).isActive = true
+     circleBg.heightAnchor.constraint(equalTo: circleBg.widthAnchor).isActive = true
+
+     
+     return cell
+ }
+ 
+ 
+}
+*/

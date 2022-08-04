@@ -196,9 +196,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
+        AppDelegate.userDefaults.set(token, forKey: "notifToken")
         print("Device Token: \(token)")
         DatabaseManager.shared.updateNotificationToken(token: token, completion: { error in
-            AppDelegate.userDefaults.set(token, forKey: "deviceId")
         })
     }
     

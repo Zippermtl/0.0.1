@@ -68,10 +68,7 @@ class EventFinderViewController: UIViewController {
         tableView.reloadData()
     }
     
-    @objc private func didTapAddButton(){
-        let vc = EventTypeSelectViewController()
-        navigationController?.pushViewController(vc, animated: true)
-    }
+
     
     @objc private func didTapDismiss(){
         dismiss(animated: true)
@@ -89,21 +86,12 @@ class EventFinderViewController: UIViewController {
         configureEventLists()
         configureTable()
         configureButtons()
-
     }
-    
-    
     
     private func configureNavBar(){
         navigationItem.title = "Find Events"
+        
 
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage.init(named: "add")!.withRenderingMode(.alwaysOriginal),
-                                                            landscapeImagePhone: nil,
-                                                            style: .plain,
-                                                            target: self,
-                                                            action: #selector(didTapAddButton))
-        
         //removes the text section of the back button from pushed VCs
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         let dismissButton = UIButton(type: .system)

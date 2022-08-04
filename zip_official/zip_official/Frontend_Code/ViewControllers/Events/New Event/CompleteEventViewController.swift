@@ -144,8 +144,11 @@ class CompleteEventViewController: UIViewController {
         // rewritten to be switch: case success a case failure b
         // note this is with a and b being code blocks excluding the code obviously written by me
         DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
+            guard let strongSelf = self else { return }
             switch success {
-            case .success(let a):
+            case .success(let url):
+                strongSelf.event.imageUrl = URL(string: url)!
+                strongSelf.event.addToMap()
                 self?.dismiss(animated: true, completion: nil)
             case .failure(let error):
                 print(error)

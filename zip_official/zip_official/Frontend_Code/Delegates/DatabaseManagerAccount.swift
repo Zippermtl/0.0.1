@@ -205,7 +205,6 @@ extension DatabaseManager {
             "picNum": user.picNum,
             "interests": user.interests.map{ $0.rawValue },
             "notifications": EncodePreferences(user.notificationPreferences),
-            "deviceId": user.deviceId
         ]
         
         firestore.collection("UserProfiles").document(user.userId).updateData(userData) { error in

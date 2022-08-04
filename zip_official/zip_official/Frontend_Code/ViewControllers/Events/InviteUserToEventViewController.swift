@@ -21,7 +21,8 @@ class InviteUserToEventViewController: UIViewController {
    
     
     init() {
-        events = MapViewController.generateEvents()
+        let hostedIds = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
+        self.events = hostedIds.map({ Event(eventId: $0) })
         eventsToInvite = []
         self.tableView = UITableView()
         super.init(nibName: nil, bundle: nil)

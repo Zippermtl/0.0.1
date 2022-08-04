@@ -21,8 +21,6 @@ struct LatestMessage {
     let isRead: Bool
 }
 
-
-
 class ZipMessagesViewController: UIViewController {
     static let title = "MessagesVC"
     
@@ -50,12 +48,11 @@ class ZipMessagesViewController: UIViewController {
             let currentConversations = strongSelf.conversations
             
             if let targetConversation = currentConversations.first(where: {
-                $0.otherUserId == result.id
+                $0.otherUserId == result.userId
             }) {
                 let vc = ChatViewController(with: targetConversation.otherUserId, id: targetConversation.id)
                 vc.isNewConversation = true
                 vc.title = targetConversation.name
-                vc.navigationItem.largeTitleDisplayMode = .never
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
             } else {
                 strongSelf.createNewConversation(result: result)
@@ -65,9 +62,9 @@ class ZipMessagesViewController: UIViewController {
         present(navVC, animated: true)
     }
     
-    private func createNewConversation(result: SearchResult){
-        let name = result.name
-        let userId = result.id
+    private func createNewConversation(result: User){
+        let name = result.fullName
+        let userId = result.userId
         
         // check in database if conversation with these two uses exists
         // if it does, reuse conversation id

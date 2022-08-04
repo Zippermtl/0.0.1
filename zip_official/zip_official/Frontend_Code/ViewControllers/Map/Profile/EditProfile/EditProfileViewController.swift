@@ -268,6 +268,8 @@ extension EditProfileViewController :  UITableViewDataSource {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "First name", content: user.firstName, saveFunc: saveFirstNameFunc(_:))
+            cell.charLimit = 20
+            cell.acceptableCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
             cell.selectionStyle = .none
             cell.cellDelegate = self
 
@@ -275,6 +277,8 @@ extension EditProfileViewController :  UITableViewDataSource {
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Last name", content: user.lastName, saveFunc: saveLastNameFunc(_:))
+            cell.charLimit = 20
+            cell.acceptableCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz0123456789-"
             cell.selectionStyle = .none
             cell.cellDelegate = self
 
@@ -282,6 +286,8 @@ extension EditProfileViewController :  UITableViewDataSource {
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Username", content: user.username, saveFunc: saveUsernameFunc(_:))
+            cell.charLimit = 20
+            cell.acceptableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789_."
             cell.cellDelegate = self
             cell.selectionStyle = .none
 
@@ -289,6 +295,7 @@ extension EditProfileViewController :  UITableViewDataSource {
         case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Bio", content: user.bio, saveFunc: saveBioFunc(_:))
+            cell.charLimit = 300
             cell.cellDelegate = self
             cell.selectionStyle = .none
 
@@ -296,6 +303,7 @@ extension EditProfileViewController :  UITableViewDataSource {
         case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "School", content: user.school ?? "", saveFunc: saveSchoolFunc(_:))
+            cell.charLimit = 40
             cell.cellDelegate = self
             cell.selectionStyle = .none
             return cell

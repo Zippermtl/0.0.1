@@ -157,8 +157,7 @@ class FPCViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc private func dismissKeyboardTouchOutside(){
-        print("tap is gay")
+    @objc func dismissKeyboardTouchOutside(){
         view.endEditing(true)
     }
 

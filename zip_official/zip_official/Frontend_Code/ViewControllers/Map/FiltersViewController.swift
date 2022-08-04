@@ -111,7 +111,7 @@ class FiltersViewController: UIViewController {
     
     let xButton: UIButton = {
         let btn = UIButton()
-        btn.setImage(UIImage(named: "grayXButton")?.withTintColor(.zipVeryLightGray), for: .normal)
+//        btn.setImage(UIImage(named: "grayXButton")?.withTintColor(.zipVeryLightGray), for: .normal)
         btn.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
         return btn
     }()

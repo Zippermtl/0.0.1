@@ -74,8 +74,8 @@ class CreateEventViewController: UIViewController {
 
         super.init(nibName: nil, bundle: nil)
         mapView.delegate = self
-        mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
-        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
+        mapView.isUserInteractionEnabled = false
+        mapView.register(MKAnnotationView.self, forAnnotationViewWithReuseIdentifier: "pin")
         
         eventNameLabel.text = "Event Name:"
         startTimeLabel.text = "Start Time: "
@@ -89,8 +89,8 @@ class CreateEventViewController: UIViewController {
         continueButton.layer.masksToBounds = true
         continueButton.titleLabel?.font = .zipBodyBold//.withSize(20)
        
-        pageStatus1.select()
         
+        pageStatus1.select()
         configureTextFields()
     }
     
@@ -386,19 +386,11 @@ class CreateEventViewController: UIViewController {
         layoutSubviews()
     }
     
-    @objc private func didTapDismiss(){
-        navigationController?.popViewController(animated: true)
-    }
+
     
     private func configureNavBar(){
         title = "Create Event"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-
-        let dismissButton = UIButton(type: .system)
-        dismissButton.setImage(UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
-        dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
     }
     
     private func addSubviews(){
@@ -591,6 +583,15 @@ extension CreateEventViewController: UITextFieldDelegate {
         
         
     }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == eventNameField {
+            let currentString = (textField.text ?? "") as NSString
+            let str = currentString.replacingCharacters(in: range, with: string)
+            if str.count > 30 { return false }
+        }
+        return true
+    }
 }
 
 
@@ -626,36 +627,21 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
 extension CreateEventViewController: MKMapViewDelegate {
     private func zoomToEventLocation(){
         mapView.removeAnnotations(mapView.annotations)
-        mapView.addAnnotation(EventAnnotation(event: event))
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = event.coordinates.coordinate
+        mapView.addAnnotation(annotation)
         let zoomRegion = MKCoordinateRegion(center: event.coordinates.coordinate, latitudinalMeters: 2000,longitudinalMeters: 2000)
         mapView.setRegion(zoomRegion, animated: true)
     }
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            guard let eventAnnotation = annotation as? EventAnnotation else {
-                return nil
-            }
-            
-            switch eventAnnotation.event.getType() {
-            case .Private, .Public, .Friends:
-                guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PrivateEventAnnotationView.identifier) as? PrivateEventAnnotationView else {
-                    return MKAnnotationView()
-                }
-                annotationView.configure(event: eventAnnotation.event)
-                
-                annotationView.canShowCallout = false
-                return annotationView
-                
-            case .Promoter:
-                guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PromoterEventAnnotationView.identifier) as? PromoterEventAnnotationView else {
-                    return MKAnnotationView()
-                }
-                annotationView.configure(event: eventAnnotation.event)
-                
-                annotationView.canShowCallout = false
-                return annotationView
-                
-            case .Event:
-                return MKAnnotationView()
-            }    }
+        let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "pin")
+        let imgView = UIImageView(image: UIImage(named: "locationPin"))
+        imgView.contentMode = .scaleAspectFit
+        annotationView?.addSubview(imgView)
+        imgView.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+        return annotationView
+    }
 }
+
+

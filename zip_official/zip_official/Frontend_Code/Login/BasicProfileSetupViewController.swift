@@ -7,6 +7,7 @@
 
 import UIKit
 import JGProgressHUD
+import SwiftUI
 
 
 class BasicProfileSetupViewController: UIViewController {
@@ -468,7 +469,7 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
             }
             
             if text.isEmpty == false {
-                status1.accept()
+                status2.accept()
             } else {
                 status1.clear()
             }
@@ -479,7 +480,7 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
                 return
             }
             
-            if text.isEmpty == false {
+            if !text.isEmpty {
                 status2.accept()
             } else {
                 status2.clear()
@@ -496,9 +497,12 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
             if allUsernames.contains(text) {
                 status3.reject()
                 usernameErrorLabel.isHidden = false
+               
             } else {
+      
                 status3.accept()
                 usernameErrorLabel.isHidden = true
+                
             }
             
         } else if textField == birthdayField {
@@ -512,12 +516,34 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentString = (textField.text ?? "") as NSString
+        let str = currentString.replacingCharacters(in: range, with: string)
         if textField == usernameField {
-            if let _ = string.rangeOfCharacter(from: .uppercaseLetters) {
-                // Do not allow upper case letters
-                return false
-            }
+            if str.count > 20 { return false }
+            let ACCEPTABLE_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789_."
+            return checkAcceptable(string: string, acceptableChars: ACCEPTABLE_CHARACTERS)
+        } else if textField == firstNameField || textField == lastNameField {
+            if str.count > 20 { return false }
+            let ACCEPTABLE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+            return checkAcceptable(string: string, acceptableChars: ACCEPTABLE_CHARACTERS)
         }
         return true
     }
+    
+    func checkAcceptable(string: String, acceptableChars: String) -> Bool {
+        let cs = NSCharacterSet(charactersIn: acceptableChars).inverted
+        let filtered = string.components(separatedBy: cs).joined(separator: "")
+        return (string == filtered)
+    }
 }
+
+
+/*
+ CHARACTER LIMITS
+ First Name: 15
+ Last Name: 15
+ Bio: 300
+ Event Title: 30
+ Event Description: 300
+ Username: 20
+ */

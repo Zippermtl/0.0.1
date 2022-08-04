@@ -35,6 +35,23 @@ class DatabaseManager {
 }
 
 extension DatabaseManager {
+    ///  writes error to database log
+    public func writeError(note: String, error: Error) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        let dateString = dateFormatter.string(from: Date())
+        print(dateString)
+        let errorString: String = "\(error)"
+        
+        let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? "AuthError"
+        let errorData: [String:[String:Any]] = [dateString.description : [
+            "error" : errorString,
+            "localizedDescription" : error.localizedDescription,
+            "note" : note
+        ]]
+        firestore.collection("ErrorLog").document(userId).setData(errorData, merge: true)
+    }
     
     /// returns dictionary node at child path
     public func getDataFor(path: String, completion: @escaping (Result<Any, Error>) -> Void) {
@@ -56,6 +73,7 @@ extension DatabaseManager {
         PhoneAuthProvider.provider().verifyPhoneNumber(phoneNumber, uiDelegate: nil) { [weak self] verificationId, error in
             guard error == nil else {
                 print("error verifying phone numer, Error: \(error!)")
+                self?.writeError(note: "auth error", error: error!)
                 completion(false)
                 return
             }

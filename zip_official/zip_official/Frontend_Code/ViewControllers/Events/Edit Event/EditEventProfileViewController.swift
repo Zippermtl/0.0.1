@@ -174,6 +174,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
         case 1: // Title
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Title", content: event.title, saveFunc: saveTitleFunc(_:))
+            cell.charLimit = 30
             cell.selectionStyle = .none
             cell.cellDelegate = self
             return cell
@@ -194,6 +195,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
         case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Description", content: event.description, saveFunc: saveDescriptionFunc(_:))
+            cell.charLimit = 300
             cell.selectionStyle = .none
             cell.cellDelegate = self
             return cell

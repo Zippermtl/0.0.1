@@ -17,8 +17,8 @@ class StatusCheckView: UIView {
         case selected
     }
 
-    private let checkMark = UIImageView(image: UIImage(named: "accept"))
-    private let xMark = UIImageView(image: UIImage(named: "redX"))
+    private let checkMark = UIImageView(image: UIImage(systemName: "checkmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue))
+    private let xMark = UIImageView(image: UIImage(systemName:  "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.red))
     
     public var status = StatusCheck(rawValue: 0)
     

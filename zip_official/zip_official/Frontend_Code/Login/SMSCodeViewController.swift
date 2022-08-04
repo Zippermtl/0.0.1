@@ -157,6 +157,7 @@ class SMSCodeViewController: UIViewController {
 
     }
     
+    
     private func loginOrRegister(smsCode: String){
         DatabaseManager.shared.verifyCode(smsCode: smsCode, completion: {[weak self] success in
             guard success, let strongSelf = self else { return }
@@ -180,7 +181,7 @@ class SMSCodeViewController: UIViewController {
                         AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
                         AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
 
-                        DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { result in
+                        DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { [weak self] result in
                             switch result {
                             case .success(let friendships):
                                 let encoded = EncodeFriendships(friendships)
@@ -190,6 +191,8 @@ class SMSCodeViewController: UIViewController {
                                         return
                                     }
                                     
+                                    guard let strongSelf = self else { return }
+                                    strongSelf.registerForPushNotifications()
                                     let vc = LoadingViewController()
                                     vc.modalPresentationStyle = .fullScreen
                                     DispatchQueue.main.async {
@@ -219,6 +222,28 @@ class SMSCodeViewController: UIViewController {
                 }
             })
         })
+    }
+    
+    func registerForPushNotifications() {
+        //1
+        UNUserNotificationCenter.current()
+            .requestAuthorization(
+                options: [.alert, .sound, .badge]) { [weak self] granted, _ in
+                    print("Permission granted: \(granted)")
+                    guard granted else { return }
+                    self?.getNotificationSettings()
+                }
+    }
+    
+    func getNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("Notification settings: \(settings)")
+            
+            guard settings.authorizationStatus == .authorized else { return }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
     }
     
     

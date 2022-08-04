@@ -151,6 +151,14 @@ public class User : CustomStringConvertible, Equatable {
         return Calendar.current.dateComponents([.year], from: birthday, to: Date()).year!
     }
 
+    func setProfilePicUrl(url: URL) {
+        if pictureURLs.count == 0 {
+            pictureURLs.append(url)
+        } else {
+            pictureURLs[0] = url
+        }
+    }
+    
     var profilePicUrl : URL {
         return pictureURLs[0]
     }

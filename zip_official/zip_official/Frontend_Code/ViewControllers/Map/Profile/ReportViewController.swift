@@ -93,9 +93,9 @@ class ReportViewController: UIViewController {
         blockUserView.isHidden = true
         blockUserView.delegate = self
         
-        bg.backgroundColor = .black.withAlphaComponent(0.5)
-        bg.isHidden = true
-        
+        bg.backgroundColor = .black.withAlphaComponent(0.7)
+        let bgTap = UITapGestureRecognizer(target: self, action: #selector(didTapCancel))
+        bg.addGestureRecognizer(bgTap)
 
         cancelButton.layer.masksToBounds = true
         cancelButton.layer.cornerRadius = 15
@@ -205,8 +205,7 @@ class ReportViewController: UIViewController {
                        initialSpringVelocity: 1.0,
                        options: .curveEaseInOut, animations: { [weak self] in
             guard let strongSelf = self else { return }
-            strongSelf.bg.isHidden = true
-            strongSelf.bg.alpha = 0.65
+            strongSelf.bg.alpha = 0.7
             strongSelf.reportTableContainer.isHidden = false
             strongSelf.reportTableContainer.frame = CGRect(x: 0,
                                                            y: strongSelf.view.frame.height - strongSelf.reportTableContainer.frame.width,
@@ -243,7 +242,7 @@ class ReportViewController: UIViewController {
     }
     
     private func configureSubviewLayout(){
-        bg.frame = view .bounds
+        bg.frame = view.bounds
         
         reportTableContainer.translatesAutoresizingMaskIntoConstraints = false
         reportTableContainer.topAnchor.constraint(equalTo: reportOptionsMenu.topAnchor).isActive = true
@@ -285,7 +284,7 @@ class ReportViewController: UIViewController {
             cancelButton = UIButton()
             
             super.init(frame: .zero)
-            backgroundColor = .zipGray
+            backgroundColor = .black
             layer.masksToBounds = true
             layer.cornerRadius = 15
             
