@@ -284,6 +284,8 @@ extension DatabaseManager {
                 } else {
                     user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
                 }
+                
+                print("HERE321123 \(user.friendshipStatus)")
                 userCoder.updateUser(user)
                 completion(.success(user))
             case .failure(let error):
@@ -301,6 +303,7 @@ extension DatabaseManager {
                     user.pictureURLs = url
                     print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
                     print(user.pictureURLs)
+                    
                     completion(.success(user))
 
                 case .failure(let error):

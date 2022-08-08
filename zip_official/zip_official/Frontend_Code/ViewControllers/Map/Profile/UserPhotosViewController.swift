@@ -137,6 +137,11 @@ class UserPhotosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        if AppDelegate.userDefaults.value(forKey: "userId") as? String != user.userId {
+            editButton.isHidden = true
+        }
+        
+        
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.8)
         view.isOpaque = false
         

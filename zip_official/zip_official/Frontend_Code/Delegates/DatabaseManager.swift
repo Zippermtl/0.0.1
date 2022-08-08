@@ -85,7 +85,6 @@ extension DatabaseManager {
     public func verifyCode(smsCode : String, completion: @escaping (Bool) -> Void) {
         guard let verificationId = verificationId else {
             print("verif id dont even work")
-
             completion(false)
             return
         }
@@ -100,13 +99,18 @@ extension DatabaseManager {
         print("sms code = \(smsCode)")
 
         
-        Auth.auth().signIn(with: credential) { result, error in
-            guard result != nil, error == nil else {
-                print("completion = false")
+        Auth.auth().signIn(with: credential) { [weak self] result, error in
+            guard error == nil else {
+                self?.writeError(note: "verification error", error: error!)
                 completion(false)
                 return
             }
-            print("completion = true")
+            
+            guard result != nil else {
+                self?.writeError(note: "verification error: result == nil", error: error!)
+                completion(false)
+                return
+            }
 
             completion(true)
         }

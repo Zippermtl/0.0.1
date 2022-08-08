@@ -47,27 +47,28 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        /*
-        switch user.friendshipStatus {
-        case .ACCEPTED:
-            setZippedState()
-        case .REQUESTED_OUTGOING:
-            setRequestedState()
-        case .REQUESTED_INCOMING:
-            setIncomingRequestState()
-//        case default:
-//            centerActionButton?.setTitle("Zip", for: .normal)
-//            centerActionButton?.backgroundColor = .zipBlue
-//
-        }
-         */
-        
-        setIncomingRequestState()
+               
+  
         distanceLabel.update(distance: user.getDistance())
         centerActionButton.layer.borderColor = UIColor.zipBlue.cgColor
-        
+    
 
+    }
+
+    override func initUser() {
+        fetchUser(completion: { [weak self] in
+            guard let strongSelf = self else { return }
+            switch strongSelf.user.friendshipStatus {
+            case .ACCEPTED:
+                strongSelf.setZippedState()
+            case .REQUESTED_OUTGOING:
+                strongSelf.setRequestedState()
+            case .REQUESTED_INCOMING:
+                strongSelf.setIncomingRequestState()
+            default:
+                strongSelf.setNoRelationState()
+            }
+        })
     }
     
     
@@ -83,10 +84,13 @@ class OtherProfileViewController: AbstractProfileViewController  {
                                                 style: .default,
                                                 handler: { [weak self] _ in
                                                     
-            //TODO: update with nics new code
-    //                user.unzip
+                self?.user.unfriend(completion: { [weak self] err in
+                    guard err == nil else {
+                        return
+                    }
+                    self?.setNoRelationState()
+                })
                 
-                self?.setNoRelationState()
             }))
             
             actionSheet.addAction(UIAlertAction(title: "No",
@@ -94,16 +98,29 @@ class OtherProfileViewController: AbstractProfileViewController  {
                                                 handler: nil))
             
             present(actionSheet, animated: true)
-        case .REQUESTED_OUTGOING: //
-            //user.unrequest
-            setNoRelationState()
+        case .REQUESTED_OUTGOING:
+            user.unsendRequest(completion: { [weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.setNoRelationState()
+            })
         case .REQUESTED_INCOMING: // You have now accepted the follow request
-            
-            setZippedState()
-            setNoRelationState()
+            user.acceptRequest(completion: { [weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.setZippedState()
+            })
         case .none:
-            request()
-            setRequestedState()
+            user.acceptRequest(completion: { [weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.request()
+                self?.setRequestedState()
+            })
+            
         }
     }
     

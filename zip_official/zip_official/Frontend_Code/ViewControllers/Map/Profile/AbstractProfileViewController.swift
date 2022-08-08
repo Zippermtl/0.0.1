@@ -101,9 +101,8 @@ class AbstractProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
         
-        
+        initUser()
         configureRefresh()
-        fetchUser(completion: nil)
         configureNavBar()
         
         self.profilePictureView.isUserInteractionEnabled = true
@@ -125,6 +124,10 @@ class AbstractProfileViewController: UIViewController {
         tableView.tableHeaderView = tableHeader
     }
     
+    func initUser() {
+        fetchUser(completion: nil)
+    }
+    
     @objc private func refresh(){
         photoCountLabel.text = ""
         fetchUser(completion: { [weak self] in
@@ -135,7 +138,7 @@ class AbstractProfileViewController: UIViewController {
         })
     }
     
-    private func fetchUser(completion: (() -> Void)? = nil) {
+    func fetchUser(completion: (() -> Void)? = nil) {
         profilePictureView.image = nil
         spinner.show(in: profilePictureView)
         DatabaseManager.shared.loadUserProfile(given: user, completion: { [weak self] result in
@@ -157,7 +160,6 @@ class AbstractProfileViewController: UIViewController {
             strongSelf.ageLabel.text = String(strongSelf.user.age) + " years old"
             strongSelf.photoCountLabel.text = "\(strongSelf.user.otherPictureUrls.count)"
             strongSelf.tableView.reloadData()
-            
             
 
             let profileURL: URL

@@ -132,6 +132,8 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         //Collection View Layout config
 
         collectionView.register(ZipFinderCollectionViewCell.self, forCellWithReuseIdentifier: ZipFinderCollectionViewCell.identifier)
+        collectionView.register(NoMoreUsersCollectionViewCell.self, forCellWithReuseIdentifier: NoMoreUsersCollectionViewCell.identifier)
+
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.decelerationRate = .fast
@@ -189,8 +191,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
             
             cell.transform = CGAffineTransform(scaleX: scale, y: scale)
             
-            let coverCell = cell as! ZipFinderCollectionViewCell
-            coverCell.alpha = sizeScaleToAlphaScale(scale)
+            if let coverCell = cell as? ZipFinderCollectionViewCell {
+                coverCell.alpha = sizeScaleToAlphaScale(scale)
+            } else {
+                let coverCell = cell as! NoMoreUsersCollectionViewCell
+                coverCell.alpha = sizeScaleToAlphaScale(scale)
+            }
         }
     }
     
@@ -293,6 +299,11 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.row == GeoManager.shared.loadedUsers.count {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NoMoreUsersCollectionViewCell.identifier, for: indexPath) as! NoMoreUsersCollectionViewCell
+            return cell
+        }
+        
         if indexPath.row > maxIndex {
             maxIndex = indexPath.row
             checkNeedsNewUsers()
@@ -326,8 +337,8 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("collection view count = \(GeoManager.shared.loadedUsers.count)")
-        return .max
-//        return 0 //GeoManager.shared.loadedUsers.count
+//        return .max
+        return GeoManager.shared.loadedUsers.count + 1
     }
     
     
