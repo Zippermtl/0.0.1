@@ -468,8 +468,8 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
                 return
             }
             
-            if text.isEmpty == false {
-                status2.accept()
+            if !text.isEmpty {
+                status1.accept()
             } else {
                 status1.clear()
             }
@@ -489,7 +489,7 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
         } else if textField == usernameField {
 
             guard let text = textField.text else {
-                status2.clear()
+                status3.clear()
                 return
             }
             textField.text = text.lowercased()
