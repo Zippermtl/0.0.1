@@ -180,17 +180,13 @@ class SMSCodeViewController: UIViewController {
                         AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
                         AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
                         AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
-
+                        
                         DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { [weak self] result in
                             switch result {
                             case .success(let friendships):
                                 let encoded = EncodeFriendships(friendships)
                                 AppDelegate.userDefaults.set(encoded, forKey: "friendships")
                                 DispatchQueue.main.async {
-                                    guard let strongSelf = self else {
-                                        return
-                                    }
-                                    
                                     guard let strongSelf = self else { return }
                                     strongSelf.registerForPushNotifications()
                                     let vc = LoadingViewController()
