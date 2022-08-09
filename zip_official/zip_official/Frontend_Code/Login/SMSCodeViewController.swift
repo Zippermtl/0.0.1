@@ -11,50 +11,125 @@ import JGProgressHUD
 import CoreLocation
 
 class SMSCodeViewController: UIViewController {
-
+    var user: User
+    var number: String
     private let spinner = JGProgressHUD(style: .light)
-    var userId = ""
     
-    private let scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.clipsToBounds = true
-        return scrollView
+
+    private let stepLabel: UILabel
+    private let titleLabel: UILabel
+    private let explanationLabel: UILabel
+    
+    private let SMSCodeStack: UIStackView
+    
+    private let code1 : SMSCodeField
+    private let code2 : SMSCodeField
+    private let code3 : SMSCodeField
+    private let code4 : SMSCodeField
+    private let code5 : SMSCodeField
+    private let code6 : SMSCodeField
+    
+    private let confirmButton: UIButton
+    
+    private let pageStatus1 = StatusCheckView()
+    private let pageStatus2: StatusCheckView = {
+        let s = StatusCheckView()
+        s.select()
+        return s
     }()
     
-    private let logo: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "logopng")
-        imageView.contentMode = .scaleAspectFit
-        return imageView
-    }()
-    
-    private let SMSCodeStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.distribution = .equalSpacing
-        stack.spacing = 15
-        stack.alignment = .center
+    init(user: User, number: String) {
+        self.number = number
+        self.user = user
+        stepLabel = UILabel.zipSubtitle()
+        titleLabel = UILabel.zipHeader()
+        explanationLabel = UILabel.zipTextDetail()
         
-        return stack
-    }()
+        SMSCodeStack = UIStackView()
+        confirmButton = UIButton()
+        code1 = SMSCodeField()
+        code2 = SMSCodeField()
+        code3 = SMSCodeField()
+        code4 = SMSCodeField()
+        code5 = SMSCodeField()
+        code6 = SMSCodeField()
+        super.init(nibName: nil, bundle: nil)
+        stepLabel.text = "Step 2"
+        titleLabel.text = "Verify Your Phone Number"
+        titleLabel.textAlignment = .center
+        titleLabel.lineBreakMode = .byWordWrapping
+        titleLabel.numberOfLines = 0
+        
+        let string              = "Didn't receive a text? Resend my verification code."
+        let range               = (string as NSString).range(of: "Resend my verification code.")
+        let attributedString    = NSMutableAttributedString(string: string)
+
+        attributedString.addAttribute(NSAttributedString.Key.underlineStyle, value: NSNumber(value: 1), range: range)
+        attributedString.addAttribute(NSAttributedString.Key.underlineColor, value: UIColor.white, range: range)
+        explanationLabel.attributedText = attributedString
+        
+        explanationLabel.text = "Didn't receive a text? Resend my verification code."
+        explanationLabel.lineBreakMode = .byWordWrapping
+        explanationLabel.numberOfLines = 0
+        explanationLabel.textAlignment = .center
+        explanationLabel.isUserInteractionEnabled = true
+        
+        let explanationTap = UITapGestureRecognizer(target: self, action: #selector(didTapResendVerificationCode))
+        explanationLabel.addGestureRecognizer(explanationTap)
+        
+        SMSCodeStack.axis = .horizontal
+        SMSCodeStack.distribution = .equalSpacing
+        SMSCodeStack.spacing = 15
+        SMSCodeStack.alignment = .center
+        
+        
+        confirmButton.setTitle("Confirm", for: .normal)
+        confirmButton.backgroundColor = .zipBlue
+        confirmButton.setTitleColor(.white, for: .normal)
+        confirmButton.layer.cornerRadius = 12
+        confirmButton.layer.masksToBounds = true
+        confirmButton.titleLabel?.font = .zipSubtitle
+        
+        view.backgroundColor = .zipGray
+        code1.delegate = self
+        code2.delegate = self
+        code3.delegate = self
+        code4.delegate = self
+        code5.delegate = self
+        code6.delegate = self
+        
+        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+
+        confirmButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
+        
+        code1.keyboardType = .numberPad
+        code2.keyboardType = .numberPad
+        code3.keyboardType = .numberPad
+        code4.keyboardType = .numberPad
+        code5.keyboardType = .numberPad
+        code6.keyboardType = .numberPad
+        
+        addSubviews()
+        configureSubviewLayout()
+    }
     
-    private let code1 = SMSCodeField()
-    private let code2 = SMSCodeField()
-    private let code3 = SMSCodeField()
-    private let code4 = SMSCodeField()
-    private let code5 = SMSCodeField()
-    private let code6 = SMSCodeField()
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
-    private let verifyCodeButton: UIButton = {
-        let btn = UIButton()
-        btn.setTitle("Verify", for: .normal)
-        btn.backgroundColor = .zipBlue
-        btn.setTitleColor(.white, for: .normal)
-        btn.layer.cornerRadius = 12
-        btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold.withSize(20)
-        return btn
-    }()
+    @objc private func didTapResendVerificationCode(){
+        DatabaseManager.shared.startAuth(phoneNumber: number, completion: { [weak self] error in
+            guard error == nil else {
+                self?.alert(error: error!)
+                return
+            }
+        })
+    }
     
     @objc private func didTapLoginButton(){
         code1.resignFirstResponder()
@@ -75,58 +150,68 @@ class SMSCodeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-//        title = "Log In/Register"
-        navigationController?.navigationBar.isHidden = true
-        view.backgroundColor = .zipGray
-        code1.delegate = self
-        code2.delegate = self
-        code3.delegate = self
-        code4.delegate = self
-        code5.delegate = self
-        code6.delegate = self
-        
-        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
 
-        verifyCodeButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
-        
-        code1.keyboardType = .numberPad
-        code2.keyboardType = .numberPad
-        code3.keyboardType = .numberPad
-        code4.keyboardType = .numberPad
-        code5.keyboardType = .numberPad
-        code6.keyboardType = .numberPad
-
-        
-        addSubviews()
     }
     
     
     private func addSubviews(){
-        view.addSubview(scrollView)
-        scrollView.addSubview(logo)
-        scrollView.addSubview(SMSCodeStack)
+  
+        view.addSubview(SMSCodeStack)
         SMSCodeStack.addArrangedSubview(code1)
         SMSCodeStack.addArrangedSubview(code2)
         SMSCodeStack.addArrangedSubview(code3)
         SMSCodeStack.addArrangedSubview(code4)
         SMSCodeStack.addArrangedSubview(code5)
         SMSCodeStack.addArrangedSubview(code6)
-        scrollView.addSubview(verifyCodeButton)
+        view.addSubview(confirmButton)
+        view.addSubview(stepLabel)
+        view.addSubview(titleLabel)
+        view.addSubview(explanationLabel)
+        view.addSubview(pageStatus1)
+        view.addSubview(pageStatus2)
     }
     
-    override func viewDidLayoutSubviews() {
-        scrollView.frame = view.bounds
-
-        logo.translatesAutoresizingMaskIntoConstraints = false
-        logo.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
-        logo.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        logo.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        logo.heightAnchor.constraint(equalTo: logo.widthAnchor, multiplier: 0.5).isActive = true
+    private func configureSubviewLayout() {
+        stepLabel.translatesAutoresizingMaskIntoConstraints = false
+        stepLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        stepLabel.bottomAnchor.constraint(equalTo: titleLabel.topAnchor, constant: -5).isActive = true
+        
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 125).isActive = true
+        titleLabel.widthAnchor.constraint(equalTo: view.widthAnchor,multiplier: 0.5).isActive = true
+        
+        SMSCodeStack.translatesAutoresizingMaskIntoConstraints = false
+        SMSCodeStack.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        SMSCodeStack.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 30).isActive = true
+        SMSCodeStack.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -30).isActive = true
+        SMSCodeStack.heightAnchor.constraint(equalToConstant: 52).isActive = true
+        
+        explanationLabel.translatesAutoresizingMaskIntoConstraints = false
+        explanationLabel.topAnchor.constraint(equalTo: SMSCodeStack.bottomAnchor,constant: 20).isActive = true
+        explanationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        explanationLabel.widthAnchor.constraint(equalTo: view.widthAnchor,multiplier: 0.7).isActive = true
+        
+        confirmButton.translatesAutoresizingMaskIntoConstraints = false
+        confirmButton.bottomAnchor.constraint(equalTo: pageStatus1.topAnchor, constant: -10).isActive = true
+        confirmButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        confirmButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1/3).isActive = true
+        confirmButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        pageStatus1.translatesAutoresizingMaskIntoConstraints = false
+        pageStatus1.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor,constant: -5).isActive = true
+        pageStatus1.heightAnchor.constraint(equalToConstant: 10).isActive = true
+        pageStatus1.widthAnchor.constraint(equalTo: pageStatus1.heightAnchor).isActive = true
+        pageStatus1.rightAnchor.constraint(equalTo: view.centerXAnchor,constant: -5).isActive = true
+        
+        pageStatus2.translatesAutoresizingMaskIntoConstraints = false
+        pageStatus2.centerYAnchor.constraint(equalTo: pageStatus1.centerYAnchor).isActive = true
+        pageStatus2.widthAnchor.constraint(equalTo: pageStatus1.widthAnchor).isActive = true
+        pageStatus2.heightAnchor.constraint(equalTo: pageStatus1.heightAnchor).isActive = true
+        pageStatus2.leftAnchor.constraint(equalTo: view.centerXAnchor,constant: 5).isActive = true
+        
+        pageStatus1.layer.cornerRadius = 5
+        pageStatus2.layer.cornerRadius = 5
         
         code1.widthAnchor.constraint(equalToConstant: 30).isActive = true
         code2.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
@@ -134,90 +219,97 @@ class SMSCodeViewController: UIViewController {
         code4.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
         code5.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
         code6.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
-        
-        SMSCodeStack.translatesAutoresizingMaskIntoConstraints = false
-        SMSCodeStack.topAnchor.constraint(equalTo: logo.bottomAnchor, constant: 10).isActive = true
-        SMSCodeStack.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 30).isActive = true
-        SMSCodeStack.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -30).isActive = true
-        SMSCodeStack.heightAnchor.constraint(equalToConstant: 100).isActive = true
-    
-        
-        verifyCodeButton.translatesAutoresizingMaskIntoConstraints = false
-        verifyCodeButton.topAnchor.constraint(equalTo: SMSCodeStack.bottomAnchor, constant: 10).isActive = true
-        verifyCodeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        verifyCodeButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1, constant: -20).isActive = true
-        verifyCodeButton.heightAnchor.constraint(equalToConstant: 52).isActive = true
     }
 
     
     private func continuteRegistration(){
         let vc = BasicProfileSetupViewController()
-        vc.user.userId = userId
         navigationController?.pushViewController(vc, animated: true)
-
     }
     
     
     private func loginOrRegister(smsCode: String){
-        DatabaseManager.shared.verifyCode(smsCode: smsCode, completion: {[weak self] success in
-            guard success, let strongSelf = self else { return }
+        confirmButton.isEnabled = false
+        spinner.show(in: view)
+        DatabaseManager.shared.verifyCode(smsCode: smsCode, completion: {[weak self] error in
+            guard error == nil,
+                  let strongSelf = self else {
+                self?.alert(error: error!)
+                return
+            }
             
-            DatabaseManager.shared.userExists(with: strongSelf.userId, completion: { [weak self] exists in
-                guard let strongSelf = self else {
-                    return
-                }
-                
-                if exists {
-                    //user already exists
-                    let user = User(userId: strongSelf.userId)
-                    DatabaseManager.shared.loadUserProfile(given: user, completion: { [weak self] result in
-                        
-                        AppDelegate.userDefaults.set(user.userId, forKey: "userId")
-                        AppDelegate.userDefaults.set(user.username, forKey: "username")
-                        AppDelegate.userDefaults.set(user.fullName, forKey: "name")
-                        AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
-                        AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
-                        AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
-                        AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
-                        AppDelegate.userDefaults.set(user.profilePicUrl.description, forKey: "profilePictureUrl")
-                        
-                        DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { [weak self] result in
+            DatabaseManager.shared.userExists(with: strongSelf.user.userId, completion: { [weak self] result in
+                switch result {
+                case .success(let exists):
+                    if exists {
+                        //user already exists
+                        DatabaseManager.shared.loadUserProfile(given: strongSelf.user, completion: { [weak self] result in
                             switch result {
-                            case .success(let friendships):
-                                let encoded = EncodeFriendships(friendships)
-                                AppDelegate.userDefaults.set(encoded, forKey: "friendships")
-                                DispatchQueue.main.async {
-                                    guard let strongSelf = self else { return }
-                                    strongSelf.registerForPushNotifications()
-                                    let vc = LoadingViewController()
-                                    vc.modalPresentationStyle = .fullScreen
-                                    DispatchQueue.main.async {
-                                        strongSelf.spinner.dismiss()
+                            case .success(let user):
+                                AppDelegate.userDefaults.set(user.userId, forKey: "userId")
+                                AppDelegate.userDefaults.set(user.username, forKey: "username")
+                                AppDelegate.userDefaults.set(user.fullName, forKey: "name")
+                                AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
+                                AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
+                                AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
+                                AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
+                                AppDelegate.userDefaults.set(user.profilePicUrl.absoluteString, forKey: "profilePictureUrl")
+                                
+                                DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { [weak self] result in
+                                    switch result {
+                                    case .success(let friendships):
+                                        let encoded = EncodeFriendships(friendships)
+                                        AppDelegate.userDefaults.set(encoded, forKey: "friendships")
+                                        DispatchQueue.main.async {
+                                            guard let strongSelf = self else { return }
+                                            strongSelf.registerForPushNotifications()
+                                            let vc = LoadingViewController()
+                                            vc.modalPresentationStyle = .fullScreen
+                                            DispatchQueue.main.async {
+                                                strongSelf.spinner.dismiss()
+                                                strongSelf.confirmButton.isEnabled = true
+                                            }
+                                            
+                                            strongSelf.present(vc, animated: true, completion: nil)
+                    
+                                        }
+                                    case .failure(let error):
+                                        strongSelf.alert(error: error)
                                     }
-                                    
-                                    strongSelf.present(vc, animated: true, completion: nil)
-            
-                                }
+                                })
                             case .failure(let error):
-                                print("failure to log in user Error: \(error)")
+                                strongSelf.alert(error: error)
                             }
-                            
-                            
                         })
                         
-                        
-                        
-                    })
-                    
-                } else {
-                    //user doens't exist
-                    DispatchQueue.main.async {
-                        strongSelf.spinner.dismiss()
+                    } else {
+                        //user doens't exist
+                        DispatchQueue.main.async {
+                            strongSelf.spinner.dismiss()
+                        }
+                        strongSelf.continuteRegistration()
                     }
-                    strongSelf.continuteRegistration()
+                case .failure(let error):
+                    strongSelf.alert(error: error)
                 }
+               
             })
         })
+    }
+    
+    private func alert(error: Error) {
+        let alert = UIAlertController(title: "Error",
+                                      message: "\(error.localizedDescription)",
+                                      preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Ok",
+                                      style: .cancel,
+                                      handler: { [weak self] _ in
+            self?.confirmButton.isEnabled = true
+        }))
+        
+        present(alert, animated: true)
+        spinner.dismiss()
     }
     
     func registerForPushNotifications() {
@@ -274,7 +366,7 @@ class SMSCodeViewController: UIViewController {
 
 
 extension SMSCodeViewController {
-    private class SMSCodeField: UITextField {
+    internal class SMSCodeField: UITextField {
         override init(frame: CGRect) {
             super.init(frame: frame)
         }
@@ -339,32 +431,3 @@ extension SMSCodeViewController: UITextFieldDelegate {
     }
 
 }
-
-
-// OLD email based insert user
-
-
-//Firebase register
-    
-//                DatabaseManager.shared.insertUser(with: user, completion: { success in
-//                    if success {
-//                        //upload image
-//                        guard let image = strongSelf.imageView.image,
-//                              let data = image.pngData() else {
-//                            return
-//                        }
-//
-//                        let fileName = user.profilePictureFileName
-//                        StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { results in
-//                            switch results {
-//                            case .success(let downloadUrl):
-//                                AppDelegate.userDefaults.set(downloadUrl, forKey: "profilePictureUrl")
-//                                print(downloadUrl)
-//                            case .failure(let error):
-//                                print("Storage Manager Error: \(error)")
-//                            }
-//
-//                        })
-//                    }
-//
-//                })
