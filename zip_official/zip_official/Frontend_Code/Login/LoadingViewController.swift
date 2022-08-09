@@ -58,10 +58,10 @@ class LoadingViewController: UIViewController {
             do {
                 try FirebaseAuth.Auth.auth().signOut()
                 let domain = Bundle.main.bundleIdentifier!
-                UserDefaults.standard.removePersistentDomain(forName: domain)
-                UserDefaults.standard.synchronize()
+                AppDelegate.userDefaults.removePersistentDomain(forName: domain)
+                AppDelegate.userDefaults.synchronize()
                 
-                let vc = LoginViewController()
+                let vc = OpeningLoginViewController()
                 let nav = UINavigationController(rootViewController: vc)
                 nav.modalPresentationStyle = .fullScreen
                 strongSelf.present(nav, animated: true, completion: nil)
