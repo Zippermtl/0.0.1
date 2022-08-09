@@ -24,11 +24,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         
 //        window?.rootViewController = SMSCodeViewController()
+//        window?.rootViewController = LoadingViewController()
         
-//            window?.rootViewController = LoadingViewController()
-
+//        let vc = OpeningLoginViewController()
+//        let navVC = UINavigationController(rootViewController: vc)
+//        window?.rootViewController = navVC
+        
+        
         if Auth.auth().currentUser == nil {
-            let vc = LoginViewController()
+            let vc = OpeningLoginViewController()
             let navVC = UINavigationController(rootViewController: vc)
             window?.rootViewController = navVC
         } else {
@@ -42,7 +46,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     UserDefaults.standard.removePersistentDomain(forName: domain)
                     UserDefaults.standard.synchronize()
 
-                    let vc = LoginViewController()
+                    let vc = OpeningLoginViewController()
                     let navVC = UINavigationController(rootViewController: vc)
                     window?.rootViewController = navVC
                 }
