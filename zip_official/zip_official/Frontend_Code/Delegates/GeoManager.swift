@@ -40,6 +40,16 @@ class GeoManager {
         geoFire = GeoFire(firebaseRef: geofireRef)
         geoFireEventPublic = GeoFire(firebaseRef: geoFireEventRefPublic)
         geoFireEventPromoter = GeoFire(firebaseRef: geoFireEventRefPromoter)
+        var helper: [String:Int]
+        helper = AppDelegate.userDefaults.value(forKey: "friendships") as! [String : Int]
+        for (i,j) in helper{
+            if(j == 1){
+                alreadyReadySeen.append(i)
+            } else if(j == 2){
+                alreadyReadySeen.append(i)
+            }
+
+        }
     }
     
 //    static func safeEmail(email: String) -> String {
@@ -53,13 +63,15 @@ class GeoManager {
                     print("An error occured: \(error)")
                 }
             }
-        } else if (event.getType() == EventType.Public){
-            geoFireEventPublic.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
-                if (error != nil) {
-                    print("An error occured: \(error)")
-                }
-            }
         }
+        //MARK: no longer applicable saved for later use
+//        else if (event.getType() == EventType.Public){
+//            geoFireEventPublic.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
+//                if (error != nil) {
+//                    print("An error occured: \(error)")
+//                }
+//            }
+//        }
         //MARK: GABE COME BACK TOO
     }
 
@@ -102,25 +114,25 @@ class GeoManager {
             })
         }
     }
-    
-    public func GetPublicEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
-        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        if (range < eventRange){
-            eventRange = range
-            
-            let query = self.geoFireEventPublic.query(at: center, withRadius: range)
-            
-            query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
-                guard let strongSelf = self else {
-                    return
-                }
-                if(strongSelf.loadedEvent.count > max){
-                    query.removeAllObservers()
-                }
-                strongSelf.eventIsValid(key: key)
-            })
-        }
-    }
+//MARK: No longer applicable, saved for later use
+//    public func GetPublicEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+//        if (range < eventRange){
+//            eventRange = range
+//
+//            let query = self.geoFireEventPublic.query(at: center, withRadius: range)
+//
+//            query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
+//                guard let strongSelf = self else {
+//                    return
+//                }
+//                if(strongSelf.loadedEvent.count > max){
+//                    query.removeAllObservers()
+//                }
+//                strongSelf.eventIsValid(key: key)
+//            })
+//        }
+//    }
 
     public func eventIsValid(key: String){
         if(!alreadyReadySeenEvent.contains(key)){
@@ -141,6 +153,7 @@ class GeoManager {
                 }
                 
             }
+            
         }
     }
     public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
