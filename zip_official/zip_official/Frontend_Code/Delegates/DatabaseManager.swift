@@ -69,23 +69,24 @@ extension DatabaseManager {
 
 //MARK: - phone auth
 extension DatabaseManager {
-    public func startAuth(phoneNumber: String, completion: @escaping (Bool) -> Void) {
+    public func startAuth(phoneNumber: String, completion: @escaping (Error?) -> Void) {
         PhoneAuthProvider.provider().verifyPhoneNumber(phoneNumber, uiDelegate: nil) { [weak self] verificationId, error in
             guard error == nil else {
                 print("error verifying phone numer, Error: \(error!)")
                 self?.writeError(note: "auth error", error: error!)
-                completion(false)
+                completion(error!)
                 return
             }
             self?.verificationId = verificationId
-            completion(true)
+            completion(nil)
         }
     }
     
-    public func verifyCode(smsCode : String, completion: @escaping (Bool) -> Void) {
+    public func verifyCode(smsCode : String, completion: @escaping (Error?) -> Void) {
         guard let verificationId = verificationId else {
             print("verif id dont even work")
-            completion(false)
+            let error = VerificationCodeError.incorrectCodeError
+            completion(error)
             return
         }
         
@@ -94,28 +95,34 @@ extension DatabaseManager {
             verificationCode: smsCode
         )
         
-        print("Credential = \(credential)")
-        print("verif id = \(verificationId)")
-        print("sms code = \(smsCode)")
-
-        
         Auth.auth().signIn(with: credential) { [weak self] result, error in
             guard error == nil else {
                 self?.writeError(note: "verification error", error: error!)
-                completion(false)
+                completion(error)
                 return
             }
             
             guard result != nil else {
-                self?.writeError(note: "verification error: result == nil", error: error!)
-                completion(false)
+                completion(nil)
                 return
             }
 
-            completion(true)
+            completion(nil)
         }
         
     }
     
     
+}
+
+
+public enum VerificationCodeError: Error, LocalizedError {
+    case incorrectCodeError
+    
+    public var errorDescription: String? {
+        switch self {
+        case .incorrectCodeError:
+            return NSLocalizedString("Incorrect Verification Code", comment: "Incorrect Verification Code")
+        }
+    }
 }
