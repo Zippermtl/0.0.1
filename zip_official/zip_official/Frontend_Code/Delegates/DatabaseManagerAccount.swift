@@ -17,19 +17,24 @@ import FirebaseFirestoreSwift
 extension DatabaseManager {
     /// checks if user exists for given email
     /// parameters
-    /// - `email`: Target email to be checked
     ///  - `completion`: async clusire to return with result
-    public func userExists(with userId: String, completion: @escaping (Bool) -> Void) {
+    public func userExists(with userId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         firestore.collection("AllUserIds").document(userId).getDocument { (document, error) in
-            guard let document = document else {
-                completion(false)
+            guard error == nil  else {
+                completion(.failure(error!))
                 return
             }
-            if document.exists {
-                completion(true)
+            
+            if let document = document {
+                if document.exists {
+                    completion(.success(true))
+                } else {
+                    completion(.success(false))
+                }
             } else {
-                completion(false)
+                completion(.success(false))
             }
+           
         }
     }
     
