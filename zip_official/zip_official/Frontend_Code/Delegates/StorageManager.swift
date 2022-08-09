@@ -172,33 +172,40 @@ final class StorageManager {
         }
         
         if index >= GetNumberOfPictures() {
-            
-        }
-        
-        guard let data = pictures.pngData() else {
-            return
-        }
-        
-        storage.child("\(fileName)").putData(data, metadata: nil, completion: { [weak self] metaData, error in
-            guard error == nil else {
-                //failed
-                completion(.failure(StorageErrors.failedToUpload))
+            appendPicture(with: pictures, path: path, completion: { val in
+                switch val{
+                case .failure(let error):
+                    completion(.failure(error))
+                case .success(let url):
+                    completion(.success(url))
+                }
+            })
+        } else {
+            guard let data = pictures.pngData() else {
                 return
             }
             
-            self?.storage.child("\(fileName)").downloadURL(completion: { url, error in
-                guard let url = url else {
-                    print("Failed to get download url")
-                    completion(.failure(StorageErrors.failedToGetDownloadUrl))
+            storage.child("\(fileName)").putData(data, metadata: nil, completion: { [weak self] metaData, error in
+                guard error == nil else {
+                    //failed
+                    completion(.failure(StorageErrors.failedToUpload))
                     return
                 }
                 
-                let urlString = url.absoluteString
-                print("download url returned: \(urlString)")
-                completion(.success(urlString))
-                
+                self?.storage.child("\(fileName)").downloadURL(completion: { url, error in
+                    guard let url = url else {
+                        print("Failed to get download url")
+                        completion(.failure(StorageErrors.failedToGetDownloadUrl))
+                        return
+                    }
+                    
+                    let urlString = url.absoluteString
+                    print("download url returned: \(urlString)")
+                    completion(.success(urlString))
+                    
+                })
             })
-        })
+        }
     }
     
     //MARK: Deletion Picture Functions
