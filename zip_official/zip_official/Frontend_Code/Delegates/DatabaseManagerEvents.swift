@@ -84,31 +84,34 @@ extension DatabaseManager {
                 let title = data["title"] as? String ?? ""
                 let type = data["type"] as? Int ?? 0
                 
-                let currentEvent = strongSelf.createEventLocal(eventId: eventId,
-                                                               title: title,
-                                                               coordinates: CLLocation(latitude: lat, longitude: long),
-                                                               hosts: hostUsers,
-                                                               description: desc,
-                                                               address: address,
-                                                               maxGuests: max,
-                                                               usersGoing: usersGoing,
-                                                               usersInvite: usersInvite,
-                                                               startTime: startTime,
-                                                               endTime: endTime,
-                                                               type: EventType(rawValue: type)!)
-                
-                events.append(currentEvent)
-                eventCompletion(currentEvent)
-                
-                StorageManager.shared.getProfilePicture(path: "Event/\(eventId)", completion: { result in
-                    switch result {
-                    case .success(let url):
-                        currentEvent.imageUrl = url
-                    case .failure(let error):
-                        print("error loading image in map load Error: \(error)")
-                    }
+                if (endTime > Date()){
+                    let currentEvent = strongSelf.createEventLocal(eventId: eventId,
+                                                                   title: title,
+                                                                   coordinates: CLLocation(latitude: lat, longitude: long),
+                                                                   hosts: hostUsers,
+                                                                   description: desc,
+                                                                   address: address,
+                                                                   maxGuests: max,
+                                                                   usersGoing: usersGoing,
+                                                                   usersInvite: usersInvite,
+                                                                   startTime: startTime,
+                                                                   endTime: endTime,
+                                                                   type: EventType(rawValue: type)!)
                     
-                })
+                    events.append(currentEvent)
+                    eventCompletion(currentEvent)
+                    
+                    StorageManager.shared.getProfilePicture(path: "Event/\(eventId)", completion: { result in
+                        switch result {
+                        case .success(let url):
+                            currentEvent.imageUrl = url
+                        case .failure(let error):
+                            print("error loading image in map load Error: \(error)")
+                        }
+                        
+                    })
+                }
+               
             }
             allCompletion(.success(events))
         }
