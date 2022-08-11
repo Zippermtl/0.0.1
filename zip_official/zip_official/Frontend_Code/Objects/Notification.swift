@@ -19,7 +19,7 @@ import UIKit
 //    case zipAccepted
 //}
 
-public enum NotificationType: CaseIterable {
+public enum NotificationType: CaseIterable, CustomStringConvertible {
     case general
     case zipNotification
     case messageNotification
@@ -27,25 +27,49 @@ public enum NotificationType: CaseIterable {
     
     var subtypes: [NotificationSubtype] {
         switch self {
-        case .general: return [.pause_all, .news_update]
+        case .general: return [.news_update]
         case .zipNotification: return [.zip_request, .accepted_zip_request]
         case .messageNotification: return [.message, .message_request]
         case .EventNotification: return [.event_invite, .public_event, .one_day_reminder, .change_to_event_info]
         }
     }
+    
+    public var description: String {
+        switch self {
+        case .general: return "General"
+        case .zipNotification: return "Zips"
+        case .messageNotification: return "Messages"
+        case .EventNotification: return "Events"
+        }
+    }
 }
 
-public enum NotificationSubtype: Int, Codable, CaseIterable{
-    case pause_all = 0
-    case news_update = 1
-    case zip_request = 2
-    case accepted_zip_request = 3
-    case message = 4
-    case message_request = 5
-    case event_invite = 6
-    case public_event = 7
-    case one_day_reminder = 8
-    case change_to_event_info = 9
+public enum NotificationSubtype: Int, Codable, CaseIterable, CustomStringConvertible{
+    case news_update = 0
+    case zip_request = 1
+    case accepted_zip_request = 2
+    case message = 3
+    case message_request = 4
+    case event_invite = 5
+    case public_event = 6
+    case one_day_reminder = 7
+    case change_to_event_info = 8
+    case event_live = 9
+    
+    public var description: String {
+        switch self {
+        case .news_update: return "News Updates"
+        case .zip_request: return "Someone Zipped you"
+        case .accepted_zip_request: return "Someone Zipped you back"
+        case .message: return "Message"
+        case .message_request: return "Message Request"
+        case .event_invite: return "Event invite"
+        case .public_event: return "Public event near you"
+        case .one_day_reminder: return "24 hour reminder"
+        case .change_to_event_info: return "Event Updates"
+        case .event_live: return "Event live"
+        }
+    }
 }
 
 

@@ -20,6 +20,7 @@ class ProfilePicSetupViewController: UIViewController {
     private let logo: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "zipperLogo")
+        imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     

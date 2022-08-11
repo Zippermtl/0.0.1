@@ -22,6 +22,7 @@ class PermissionsSetupViewController: UIViewController {
     private let logo: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "zipperLogo")
+        imageView.contentMode = .scaleAspectFit
         return imageView
     }()
 
@@ -125,14 +126,12 @@ class PermissionsSetupViewController: UIViewController {
         return label
     }()
     
-    
     @objc private func didTapCompleteButton(){
-        
         AppDelegate.locationManager.requestWhenInUseAuthorization()
-        
+        registerForPushNotifications()
+
         user.notificationPreferences =
         [
-            .pause_all : false,
             .news_update : true,
             .zip_request : true,
             .accepted_zip_request: true,

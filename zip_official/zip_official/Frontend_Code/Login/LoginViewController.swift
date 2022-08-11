@@ -287,6 +287,8 @@ class LoginViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
+        let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(dismissKeyboardTap)
 
         stepLabel.text = "Step 1"
         
@@ -370,6 +372,9 @@ class LoginViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     @objc private func openDD() {

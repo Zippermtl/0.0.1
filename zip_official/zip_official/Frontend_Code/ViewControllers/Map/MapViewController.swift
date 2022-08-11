@@ -356,6 +356,7 @@ extension MapViewController: CLLocationManagerDelegate {
         AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
 
         if !guardingGeoFireCalls {
+            
             GeoManager.shared.UpdateLocation(location: latestLocation)
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
             GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3, completion: {
@@ -691,7 +692,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -714,7 +714,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : false,
                 .accepted_zip_request: true,
@@ -737,7 +736,6 @@ extension MapViewController {
             school: "Vanderbilt University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : true,
                 .news_update : false,
                 .zip_request : false,
                 .accepted_zip_request: false,
@@ -760,7 +758,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -783,7 +780,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -860,7 +856,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -883,7 +878,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -906,7 +900,6 @@ extension MapViewController {
             school: "Vanderbilt University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -929,7 +922,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,
@@ -952,7 +944,6 @@ extension MapViewController {
             school: "McGill University",
             interests: [Interests(rawValue: 0)!, Interests(rawValue: 1)!, Interests(rawValue: 2)!],
             notificationPreferences: [
-                .pause_all : false,
                 .news_update : true,
                 .zip_request : true,
                 .accepted_zip_request: true,

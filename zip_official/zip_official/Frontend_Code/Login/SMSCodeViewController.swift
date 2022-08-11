@@ -54,6 +54,10 @@ class SMSCodeViewController: UIViewController {
         code5 = SMSCodeField()
         code6 = SMSCodeField()
         super.init(nibName: nil, bundle: nil)
+        let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(dismissKeyboardTap)
+        
+        
         stepLabel.text = "Step 2"
         titleLabel.text = "Verify Your Phone Number"
         titleLabel.textAlignment = .center
@@ -116,6 +120,10 @@ class SMSCodeViewController: UIViewController {
         
         addSubviews()
         configureSubviewLayout()
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     required init?(coder: NSCoder) {
@@ -223,7 +231,7 @@ class SMSCodeViewController: UIViewController {
 
     
     private func continuteRegistration(){
-        let vc = BasicProfileSetupViewController()
+        let vc = GenderSelectViewController(user: user)
         navigationController?.pushViewController(vc, animated: true)
     }
     

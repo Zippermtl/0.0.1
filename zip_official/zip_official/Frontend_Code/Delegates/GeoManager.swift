@@ -21,6 +21,7 @@ class GeoManager {
     let noUsers = User(userId: "empty")
     var moreUsersInQuery = false
     var queryRunning = false
+    var initialLaunch = true
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
@@ -77,20 +78,28 @@ class GeoManager {
 
     public func UpdateLocation(location: CLLocation){
         print("got here")
+        guard initialLaunch == true else {
+            return
+        }
+        
         let userID = AppDelegate.userDefaults.value(forKey: "userId")
-        geoFire.setLocation(CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), forKey: userID as! String){ (error) in
-            if (error != nil) {
+        geoFire.setLocation(CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), forKey: userID as! String){ [weak self] error in
+            guard error == nil else {
                 print("An error occured: \(error)")
-//              Yianni insert a call to whatever happens if location is                    unavailable
+                return
             }
+            self?.initialLaunch = false
+//              Yianni insert a call to whatever happens if location is                    unavailable
         }
         //adds test set to test1 -> test4 inclusive
 //        createTestCodeZip()
-        DatabaseManager.shared.updateLocationUserLookUp(location: CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), completion: { err in
+        DatabaseManager.shared.updateLocationUserLookUp(location: CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude), completion: { [weak self] err in
             guard err == nil else {
                 print("failed to updated self userlookup")
                 return
             }
+            self?.initialLaunch = false
+            
             print("successfully updated self userlookup")
            
         })

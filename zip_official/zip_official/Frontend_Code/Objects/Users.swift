@@ -24,6 +24,7 @@ class UserCoder: Codable {
     var deviceId: [String]
     var notificationToken: [String]
     var school: String?
+    var gender: String
     
     enum CodingKeys: String, CodingKey {
         case userId = "id"
@@ -36,6 +37,7 @@ class UserCoder: Codable {
         case school = "school"
         case interests = "interests"
         case deviceId = "deviceId"
+        case gender = "gender"
         case notificationToken = "notificationToken"
     }
     
@@ -47,6 +49,7 @@ class UserCoder: Codable {
         self.lastName = try container.decode(String.self, forKey: .lastName)
         self.picNum = try container.decode(Int.self, forKey: .picNum)
         self.bio = try container.decode(String.self, forKey: .bio)
+        self.gender = try container.decode(String.self, forKey: .gender)
         self.school = try container.decode(String.self, forKey: .school)
         self.interests = try container.decode([Interests].self, forKey: .interests)
         self.birthday = try container.decode(Timestamp.self, forKey: .birthday)
@@ -63,6 +66,7 @@ class UserCoder: Codable {
         try container.encode(lastName, forKey: .lastName)
         try container.encode(birthday, forKey: .picNum)
         try container.encode(bio, forKey: .bio)
+        try container.encode(gender, forKey: .gender)
         try container.encode(picNum, forKey: .picNum)
         try container.encode(school, forKey: .school)
         try container.encode(interests, forKey: .interests)
@@ -77,6 +81,7 @@ class UserCoder: Codable {
             username: username,
             firstName: firstName,
             lastName: lastName,
+            gender: gender,
             birthday: birthday.dateValue(),
             picNum: picNum,
             bio: bio,
@@ -118,6 +123,7 @@ public class User : CustomStringConvertible, Equatable {
     var notificationPreferences: NotificationPreference = [:]
     var deviceId: String = ""
     var notificationToken: String = ""
+    var gender: String = ""
     
     var email: String?
     var friendshipStatus: FriendshipStatus?
@@ -258,7 +264,7 @@ public class User : CustomStringConvertible, Equatable {
     }
     
     var hasBio: Bool { return bio != ""}
-    var hasSchool: Bool { return school != nil}
+    var hasSchool: Bool { return school != "" && school != nil}
     var hasInterests: Bool { return interests != []}
 
     var isInivted: Bool = false
@@ -317,7 +323,7 @@ public class User : CustomStringConvertible, Equatable {
         notificationPreferences = DecodePreferences(np)
     }
 
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notifToken: String = "") {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", gender: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notifToken: String = "") {
         userId = id
         email = em
         username = us

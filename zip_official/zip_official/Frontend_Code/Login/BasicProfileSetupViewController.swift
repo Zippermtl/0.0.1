@@ -14,7 +14,7 @@ class BasicProfileSetupViewController: UIViewController {
     
     private var allUsernames: [String] = []
     
-    var user = User()
+    var user : User
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -230,6 +230,14 @@ class BasicProfileSetupViewController: UIViewController {
         return label
     }()
     
+    init(user: User) {
+        self.user = user
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     @objc private func didTapContinueButton(){
         if  status1.status == .accept,

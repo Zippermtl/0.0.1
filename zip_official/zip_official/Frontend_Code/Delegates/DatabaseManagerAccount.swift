@@ -49,6 +49,7 @@ extension DatabaseManager {
             "firstName": user.firstName,
             "lastName": user.lastName,
             "birthday": Timestamp(date: user.birthday),
+            "gender": user.gender,
             "notifications": EncodePreferences(user.notificationPreferences),
             "picNum": user.picNum,
             "school": "",
@@ -100,6 +101,7 @@ extension DatabaseManager {
             "firstName": user.firstName,
             "lastName": user.lastName,
             "birthday": Timestamp(date: user.birthday),
+            "gender": user.gender,
             "notifications": EncodePreferences(user.notificationPreferences),
             "picNum": user.picNum,
             "school": "",
@@ -126,6 +128,7 @@ extension DatabaseManager {
             AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
             AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
             AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
+            AppDelegate.userDefaults.set(user.gender, forKey: "gender")
             AppDelegate.userDefaults.set(1, forKey: "picNum")
             
             let emptyFriendships: [String: Int]  = [:]
@@ -290,7 +293,6 @@ extension DatabaseManager {
                     user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
                 }
                 
-                print("HERE321123 \(user.friendshipStatus)")
                 userCoder.updateUser(user)
                 completion(.success(user))
             case .failure(let error):
@@ -308,7 +310,6 @@ extension DatabaseManager {
                     user.pictureURLs = url
                     print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
                     print(user.pictureURLs)
-                    
                     completion(.success(user))
 
                 case .failure(let error):
@@ -366,9 +367,19 @@ extension DatabaseManager {
             }
             completion(nil)
         }
+        
     }
     
-    
+    public func updateGender(gender: String, completion: @escaping (Error?) -> Void) {
+        let id = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        firestore.collection("UserProfiles").document(id).updateData(["gender" : gender]) { error in
+            guard error == nil else {
+                completion(error)
+                return
+            }
+            completion(nil)
+        }
+    }
     
     public func userLoadTableView(user: User, completion: @escaping (Result<User, Error>) -> Void){
         loadUserProfileNoPic(given: user, completion: { result in

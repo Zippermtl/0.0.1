@@ -9,13 +9,11 @@ import UIKit
 import FirebaseAuth
 
 class SettingsPageViewController: UIViewController {
-    var settingsCatagories: [String] = ["Account", "Notifications", "Privacy","Help"]
+    var settingsCatagories: [String] = ["Account", "ZipFinder Preferences", "Notifications", "Help"]
     
     // MARK: - SubViews
     var tableView = UITableView()
     var logoutButton = UIButton()
-
-    
     
     // MARK: - Button Actions
     @objc private func didTapBackButton(){
@@ -158,23 +156,18 @@ class SettingsPageViewController: UIViewController {
 
 extension SettingsPageViewController :  UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+        return 70
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let settingsCategoryView = SettingsCategoryViewController()
-        settingsCategoryView.configure(indexPath.row)
-        settingsCategoryView.modalPresentationStyle = .overCurrentContext
-        
-        let transition: CATransition = CATransition()
-        transition.duration = 0.3
-        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeIn)
-        transition.type = CATransitionType.reveal
-        transition.subtype = CATransitionSubtype.fromRight
-        
-        view.window!.layer.add(transition, forKey: nil)
-        
-        navigationController?.pushViewController(settingsCategoryView, animated: true)
+        var vc : UIViewController
+        switch indexPath.row {
+        case 0: vc = AccountSettingsViewController()
+        case 1: vc = FilterSettingsViewController()
+        case 2: vc = NotificationsSettingsViewController()
+        default: vc = HelpSettingsViewController()
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -188,8 +181,7 @@ extension SettingsPageViewController :  UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: SettingsCatagoryTableViewCell.identifier, for: indexPath) as! SettingsCatagoryTableViewCell
-        guard let catagory = SettingsCategory(rawValue: indexPath.row) else { return UITableViewCell() }
-        cell.configure(catagory: catagory)
+        cell.configure(catagory: settingsCatagories[indexPath.row])
         return cell
     }
 }
@@ -218,14 +210,14 @@ extension SettingsPageViewController {
             outlineView.addSubview(catagoryLabel)
             
             outlineView.translatesAutoresizingMaskIntoConstraints = false
-            outlineView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5).isActive = true
-            outlineView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5).isActive = true
-            outlineView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -5).isActive = true
-            outlineView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 5).isActive = true
+            outlineView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10).isActive = true
+            outlineView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
+            outlineView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10).isActive = true
+            outlineView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10).isActive = true
 
             catagoryLabel.translatesAutoresizingMaskIntoConstraints = false
             catagoryLabel.centerYAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
-            catagoryLabel.centerXAnchor.constraint(equalTo: outlineView.centerXAnchor).isActive = true
+            catagoryLabel.leftAnchor.constraint(equalTo: outlineView.leftAnchor, constant: 10).isActive = true
         }
         
         required init?(coder: NSCoder) {
@@ -243,8 +235,8 @@ extension SettingsPageViewController {
             // Configure the view for the selected state
         }
         
-        public func configure(catagory: SettingsCategory){
-            catagoryLabel.text = catagory.description
+        public func configure(catagory: String){
+            catagoryLabel.text = catagory
         }
 
     }
