@@ -26,35 +26,35 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        window?.rootViewController = SMSCodeViewController()
 //        window?.rootViewController = LoadingViewController()
         
-        let vc = FilterSettingsViewController()
-        let navVC = UINavigationController(rootViewController: vc)
-        window?.rootViewController = navVC
+//        let vc = FilterSettingsViewController()
+//        let navVC = UINavigationController(rootViewController: vc)
+//        window?.rootViewController = navVC
         
         
-//        if Auth.auth().currentUser == nil {
-//            let vc = OpeningLoginViewController()
-//            let navVC = UINavigationController(rootViewController: vc)
-//            window?.rootViewController = navVC
-//        } else {
-//
-//            if checkUserDefaults() {
-//                window?.rootViewController = LoadingViewController()
-//            } else {
-//                do {
-//                    try FirebaseAuth.Auth.auth().signOut()
-//                    let domain = Bundle.main.bundleIdentifier!
-//                    UserDefaults.standard.removePersistentDomain(forName: domain)
-//                    UserDefaults.standard.synchronize()
-//
-//                    let vc = OpeningLoginViewController()
-//                    let navVC = UINavigationController(rootViewController: vc)
-//                    window?.rootViewController = navVC
-//                }
-//                catch {
-//                    print("Failed to Logout User")
-//                }
-//            }
-//        }
+        if Auth.auth().currentUser == nil {
+            let vc = OpeningLoginViewController()
+            let navVC = UINavigationController(rootViewController: vc)
+            window?.rootViewController = navVC
+        } else {
+
+            if checkUserDefaults() {
+                window?.rootViewController = LoadingViewController()
+            } else {
+                do {
+                    try FirebaseAuth.Auth.auth().signOut()
+                    let domain = Bundle.main.bundleIdentifier!
+                    UserDefaults.standard.removePersistentDomain(forName: domain)
+                    UserDefaults.standard.synchronize()
+
+                    let vc = OpeningLoginViewController()
+                    let navVC = UINavigationController(rootViewController: vc)
+                    window?.rootViewController = navVC
+                }
+                catch {
+                    print("Failed to Logout User")
+                }
+            }
+        }
          
     }
     
