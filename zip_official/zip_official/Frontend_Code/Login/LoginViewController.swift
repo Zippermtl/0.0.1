@@ -375,6 +375,7 @@ class LoginViewController: UIViewController {
     }
     @objc func dismissKeyboard() {
         view.endEditing(true)
+        phoneField.resignFirstResponder()
     }
     
     @objc private func openDD() {
