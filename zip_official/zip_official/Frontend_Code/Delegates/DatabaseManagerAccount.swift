@@ -41,7 +41,6 @@ extension DatabaseManager {
     public func createDatabaseUser(user: User, completion: @escaping (Error?) -> Void){
         let formatter = DateFormatter()
         formatter.dateStyle = .short
-        let joinDate =  formatter.string(from: Date())
         let deviceId = UIDevice.current.identifierForVendor!.uuidString
         let userData : [String:Any] = [
             "id": user.userId,
@@ -53,7 +52,7 @@ extension DatabaseManager {
             "notifications": EncodePreferences(user.notificationPreferences),
             "picNum": user.picNum,
             "school": "",
-            "joinDate": joinDate,
+            "joinDate": Timestamp(date: Date()),
             "deviceId": [deviceId],
             "bio" : "",
             "interests" : []
@@ -90,11 +89,8 @@ extension DatabaseManager {
     
     /// Inserts new user to database
     public func insertUser(with user: User, completion: @escaping (Error?) -> Void) {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        let joinDate =  formatter.string(from: Date())
         let deviceId = UIDevice.current.identifierForVendor!.uuidString
-        
+
         let userData : [String:Any] = [
             "id": user.userId,
             "username": user.username,
@@ -103,9 +99,10 @@ extension DatabaseManager {
             "birthday": Timestamp(date: user.birthday),
             "gender": user.gender,
             "notifications": EncodePreferences(user.notificationPreferences),
+            "notificationToken": [String](),
             "picNum": user.picNum,
             "school": "",
-            "joinDate": joinDate,
+            "joinDate": Timestamp(date: Date()),
             "deviceId": [deviceId],
             "bio" : "",
             "interests" : []
@@ -240,6 +237,20 @@ extension DatabaseManager {
         }
     }
     
+    public func updateNotificationPreferences(prefs: NotificationPreference, completion: @escaping (Error?) -> Void) {
+        let userData: [String:Int] = [
+            "notifications": EncodePreferences(prefs),
+        ]
+        firestore.collection("UserProfiles").document(AppDelegate.userDefaults.value(forKey: "userId") as! String).updateData(userData) { error in
+            guard error == nil else{
+                print("failed to write to database")
+                completion(error)
+                return
+            }
+            completion(nil)
+        }
+    }
+    
     public func updateNotificationToken(token: String, completion: @escaping (Error?) -> Void) {
         let userData: [String:[String]] = [
             "notificationToken": [token],
@@ -285,14 +296,17 @@ extension DatabaseManager {
         firestore.collection("UserProfiles").document(user.userId).getDocument(as: UserCoder.self)  { result in
             switch result {
             case .success(let userCoder):
-                let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] ?? [:]
-                let friendshipInt = friendships[user.userId] ?? -1
-                if friendshipInt == -1 {
-                    user.friendshipStatus = nil
+                if user.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
+                    user.friendshipStatus = .ACCEPTED
                 } else {
-                    user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
+                    let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] ?? [:]
+                    let friendshipInt = friendships[user.userId] ?? -1
+                    if friendshipInt == -1 {
+                        user.friendshipStatus = nil
+                    } else {
+                        user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
+                    }
                 }
-                
                 userCoder.updateUser(user)
                 completion(.success(user))
             case .failure(let error):
@@ -316,6 +330,41 @@ extension DatabaseManager {
                     print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
                 }
             })
+        })
+    }
+    
+    /// loads uer profile
+    /// - `user`: user to load
+    /// - `dataCompletion`: completion fired after all firestore user data is loaded
+    /// - `pictureCompletion`: completion fired after storage manager data is loaded
+    public func loadUserProfile(given user: User,
+                                dataCompletion: @escaping (Result<User, Error>) -> Void,
+                                pictureCompletion: @escaping (Result<[URL], Error>) -> Void) {
+        
+        loadUserProfileNoPic(given: user, completion: { result in
+            switch result {
+            case .success(let user):
+                let imagesPath = "images/" + user.userId
+                dataCompletion(.success(user))
+                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
+                    print("GETTING ALL IMAGES")
+                    switch result {
+                    case .success(let urls):
+                        user.pictureURLs = urls
+                        print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+                        print(user.pictureURLs)
+                        pictureCompletion(.success(urls))
+
+                    case .failure(let error):
+                        pictureCompletion(.failure(error))
+                        print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                    }
+                })
+            case .failure(let error):
+                print("FAILURE TO LOAD BOTH USER AND PHOTOS")
+                dataCompletion(.failure(error))
+                pictureCompletion(.failure(error))
+            }
         })
     }
     

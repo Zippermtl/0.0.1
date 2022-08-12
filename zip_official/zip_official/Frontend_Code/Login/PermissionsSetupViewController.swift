@@ -144,35 +144,18 @@ class PermissionsSetupViewController: UIViewController {
         ]
                 
 
-        spinner.show(in: view)
-        DatabaseManager.shared.insertUser(with: user, completion: { [weak self] error in
-            guard error == nil  else {
-                let actionSheet = UIAlertController(title: "Failed to create User Profile",
-                                                    message: "Try again later",
-                                                    preferredStyle: .actionSheet)
-                
-                actionSheet.addAction(UIAlertAction(title: "Continue",
-                                                    style: .cancel,
-                                                    handler: nil))
-                
-                self?.present(actionSheet, animated: true)
-                return
-            }
-            DispatchQueue.main.async {
-                if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
-                    print("location services not enabled")
-                    let vc = LocationDeniedViewController()
-                    vc.modalPresentationStyle = .overFullScreen
-                    vc.modalTransitionStyle = .crossDissolve
-                    self?.present(vc, animated: true, completion: nil)
-                } else {
-                    let vc = MapViewController(isNewAccount: true)
-                    vc.modalPresentationStyle = .fullScreen
-                    self?.present(vc, animated: true, completion: nil)
-                }
-            }
-            
-        })
+        if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
+            print("location services not enabled")
+            let vc = LocationDeniedViewController()
+            vc.modalPresentationStyle = .overFullScreen
+            vc.modalTransitionStyle = .crossDissolve
+            present(vc, animated: true, completion: nil)
+        } else {
+            let vc = MapViewController(isNewAccount: true)
+            vc.modalPresentationStyle = .fullScreen
+            present(vc, animated: true, completion: nil)
+        }
+        
 
     }
     
@@ -304,7 +287,6 @@ class PermissionsSetupViewController: UIViewController {
         UNUserNotificationCenter.current()
             .requestAuthorization(
                 options: [.alert, .sound, .badge]) { [weak self] granted, _ in
-                    print("Permission granted: \(granted)")
                     guard granted else { return }
                     self?.getNotificationSettings()
                 }
@@ -312,8 +294,6 @@ class PermissionsSetupViewController: UIViewController {
     
     func getNotificationSettings() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
-            print("Notification settings: \(settings)")
-            
             guard settings.authorizationStatus == .authorized else { return }
             DispatchQueue.main.async {
                 UIApplication.shared.registerForRemoteNotifications()

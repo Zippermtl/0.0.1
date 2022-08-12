@@ -7,10 +7,12 @@
 
 import UIKit
 import UIImageCropper
+import JGProgressHUD
 
 class ProfilePicSetupViewController: UIViewController {
     var user = User()
     
+    let spinner = JGProgressHUD(style: .light)
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.clipsToBounds = true
@@ -115,10 +117,26 @@ class ProfilePicSetupViewController: UIViewController {
         // push to final setup page
         user.pictures.append(pic)
         user.picNum = 1
-        let vc = PermissionsSetupViewController()
-        vc.user = user
-        navigationController?.pushViewController(vc, animated: true)
         
+        spinner.show(in: view)
+        DatabaseManager.shared.insertUser(with: user, completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil  else {
+                let actionSheet = UIAlertController(title: "Failed to create User Profile",
+                                                    message: "Try again later",
+                                                    preferredStyle: .actionSheet)
+                
+                actionSheet.addAction(UIAlertAction(title: "Continue",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                self?.present(actionSheet, animated: true)
+                return
+            }
+            let vc = PermissionsSetupViewController()
+            vc.user = strongSelf.user
+            strongSelf.navigationController?.pushViewController(vc, animated: true)
+        })
     }
     
     @objc private func didTapProfilePicture(){

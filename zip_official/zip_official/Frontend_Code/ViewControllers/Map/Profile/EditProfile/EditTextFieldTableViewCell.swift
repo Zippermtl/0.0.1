@@ -22,6 +22,10 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
     
     var acceptableCharacters: String?
     var charLimit: Int?
+    var placeHolder: String? { didSet {
+        textView.text = placeHolder
+        textView.textColor = .zipVeryLightGray
+    }}
 
     var saveFunc: ((String) -> Void)?
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -80,6 +84,11 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
 
 extension EditTextFieldTableViewCell: UITextViewDelegate {
     func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text.isEmpty && placeHolder != nil{
+            textView.text = placeHolder!
+            textView.textColor = UIColor.lightGray
+        }
+        
         saveValue()
     }
     
@@ -98,4 +107,13 @@ extension EditTextFieldTableViewCell: UITextViewDelegate {
               
         return true
     }
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.textColor == .zipVeryLightGray {
+            textView.text = nil
+            textView.textColor = .white
+        }
+    }
+    
+    
 }

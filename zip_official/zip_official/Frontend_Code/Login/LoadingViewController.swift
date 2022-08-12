@@ -104,6 +104,37 @@ class LoadingViewController: UIViewController {
         configureLayout()
         
         AppDelegate.locationManager.requestWhenInUseAuthorization()
+        let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        DatabaseManager.shared.loadUserProfile(given: User(userId: userId), completion: { [weak self] result in
+            switch result {
+            case .success(let user):
+                AppDelegate.userDefaults.set(user.userId, forKey: "userId")
+                AppDelegate.userDefaults.set(user.username, forKey: "username")
+                AppDelegate.userDefaults.set(user.fullName, forKey: "name")
+                AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
+                AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
+                AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
+                AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
+                if let pfpUrl = user.profilePicUrl {
+                    AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
+                } else {
+                    AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
+                }
+                
+                DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { result in
+                    switch result {
+                    case .success(let friendships):
+                        let encoded = EncodeFriendships(friendships)
+                        AppDelegate.userDefaults.set(encoded, forKey: "friendships")
+                    case .failure(let error):
+                        print("failure loading friendships in loadingVC Error: \(error)")
+                    }
+                })
+            case .failure(let error):
+                print("failure loading profile in loadingVC Error: \(error)")
+
+            }
+        })
     }
     
     private func isLocationEnabled() -> Bool {

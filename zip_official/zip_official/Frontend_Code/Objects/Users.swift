@@ -25,6 +25,7 @@ class UserCoder: Codable {
     var notificationToken: [String]
     var school: String?
     var gender: String
+    var joinDate: Timestamp
     
     enum CodingKeys: String, CodingKey {
         case userId = "id"
@@ -39,6 +40,7 @@ class UserCoder: Codable {
         case deviceId = "deviceId"
         case gender = "gender"
         case notificationToken = "notificationToken"
+        case joinDate = "joinDate"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -56,6 +58,7 @@ class UserCoder: Codable {
         self.school = try container.decode(String.self, forKey: .school)
         self.deviceId = try container.decode([String].self, forKey: .deviceId)
         self.notificationToken = try container.decode([String].self, forKey: .notificationToken)
+        self.joinDate = try container.decode(Timestamp.self, forKey: .joinDate)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -72,6 +75,7 @@ class UserCoder: Codable {
         try container.encode(interests, forKey: .interests)
         try container.encode(deviceId, forKey: .deviceId)
         try container.encode(notificationToken, forKey: .notificationToken)
+        try container.encode(joinDate, forKey: .joinDate)
     }
     
     
@@ -87,7 +91,8 @@ class UserCoder: Codable {
             bio: bio,
             school: school,
             interests: interests,
-            notifToken: notificationToken[0]
+            notificationToken: notificationToken[0],
+            joinDate: joinDate.dateValue()
         )
     }
     
@@ -101,8 +106,8 @@ class UserCoder: Codable {
         user.bio = bio
         user.school = school
         user.interests = interests
+        user.joinDate = joinDate.dateValue()
     }
-
 }
 
 public class User : CustomStringConvertible, Equatable {
@@ -134,7 +139,7 @@ public class User : CustomStringConvertible, Equatable {
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     
-    var tableViewCell: AbstractUserTableViewCell? 
+    var tableViewCell: AbstractUserTableViewCell?
 
     public var description : String {
         var out = ""
@@ -148,7 +153,6 @@ public class User : CustomStringConvertible, Equatable {
         out += "school = \(school ?? "") \n"
         out += "interests = \(interests) \n"
         return out
-
     }
     
     var joinDate = Date()
@@ -165,7 +169,9 @@ public class User : CustomStringConvertible, Equatable {
         }
     }
     
-    var profilePicUrl : URL {
+
+    
+    var profilePicUrl : URL? {
         return pictureURLs[0]
     }
     
@@ -323,7 +329,7 @@ public class User : CustomStringConvertible, Equatable {
         notificationPreferences = DecodePreferences(np)
     }
 
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", gender: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notifToken: String = "") {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", gender: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notificationToken nt: String = "", joinDate jd: Date = Date()) {
         userId = id
         email = em
         username = us
@@ -345,7 +351,8 @@ public class User : CustomStringConvertible, Equatable {
             notificationPreferences = DecodePreferences(enp)
         }
         deviceId = devId
-        notificationToken = notifToken
+        notificationToken = nt
+        joinDate = jd
     }
 
     // Load someone's friendships

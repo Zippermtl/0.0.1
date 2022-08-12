@@ -1,538 +1,279 @@
 //
-//  CompleteProfileViewController.swift
+//  EditProfileViewController.swift
 //  zip_official
 //
 //  Created by Yianni Zavaliagkos on 8/2/21.
 //
 
 import UIKit
+import UIImageCropper
 
 class CompleteProfileViewController: UIViewController {
-    static let photosIdentifier = "photosIdentifier"
-    static let textIdentifier = "textIdentifier"
-    static let nameIdentifier = "nameIdentifier"
-    static let schoolIdentifier = "schoolIdentifier"
-    static let interestsIdentifier = "interestsIdentifier"
-
-
-    var user = User()
-    //MARK: - Subviews
-    //Table
-    var tableView = UITableView()
+    weak var delegate: UpdateUserFromEditProtocol?
     
-    //Pictures
-    var collectionView: UICollectionView?
+    private var user: User
+    private var tableView: UITableView
+    private var tableHeader: UIView
+    private var imagePicker: UIImagePickerController
+    private var collectionView: UICollectionView?
+    private let addPicturesLabel: UILabel
+    private let picturesDescLabel: UILabel
     
-    //Name
-    var firstNameText: UITextView = {
-        let text = UITextView()
-        
-        return text
-    }()
-    
-    var lastNameText = UITextField()
+    let imageCropper : UIImageCropper
+    var userPictures = [PictureHolder]()
 
     
     @objc private func didTapDoneButton(){
-        //MARK: Yianni look below and text what you want me to do at the if success{
-        /*
-         I wrote three functions
-         updateIndividualImage
-         resetUserImages
-         
-         */
+        user.picNum = userPictures.count
+        AppDelegate.userDefaults.set(userPictures.count, forKey: "picNum")
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
             guard let strongSelf = self,
                   err == nil else {
+                let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
+                self?.present(alert, animated: true)
                 return
             }
-            
-            StorageManager.shared.ResetUserImages(with: strongSelf.user.pictures,
-                                                   path: strongSelf.user.picturesPath,
-                                                   completion: { results in
-                switch results {
-                case .success(let downloadUrl):
-                    print(downloadUrl)
-                    DispatchQueue.main.async {
-                        strongSelf.dismiss(animated: true)
-                    }
-                case .failure(let error):
-                    print("Storage Manager Error: \(error)")
-                    DispatchQueue.main.async {
-                        strongSelf.dismiss(animated: true)
-                    }
+            var idx = 1
+            for img in strongSelf.userPictures {
+                if img.isEdited {
+                    guard let cell = strongSelf.collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
+                          let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
+                          let image = cell.picture.image else {
+                              return
+                          }
+                    
+                    StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
+                        switch result {
+                        case .success(let url):
+                            img.url = URL(string: url)
+                            self?.user.pictureURLs.append(URL(string: url)!)
+                            self?.dismiss(animated: true)
+                        case .failure(let error):
+                            print("error: \(error)")
+                        }
+                    })
                 }
-            })
-
+                idx += 1
+            }
+            
+            
         })
     }
     
-    @objc func handleLongGesture(gesture: UILongPressGestureRecognizer) {
-
-           switch(gesture.state) {
-           case .began:
-               guard let selectedIndexPath = collectionView?.indexPathForItem(at: gesture.location(in: collectionView))
-               else { break }
-                collectionView?.beginInteractiveMovementForItem(at: selectedIndexPath)
-                shakeCell((collectionView?.cellForItem(at: selectedIndexPath))!)
-           case .changed:
-                collectionView?.updateInteractiveMovementTargetPosition(gesture.location(in: gesture.view!))
-           case .ended:
-
-                guard let selectedIndexPath = collectionView?.indexPathForItem(at: gesture.location(in: collectionView))
-                else { break }
-                stopShaking((collectionView?.cellForItem(at: selectedIndexPath))!)
-                collectionView?.endInteractiveMovement()
-
-           default:
-                collectionView?.cancelInteractiveMovement()
-          }
-   }
+    @objc private func didTapCancel() {
+        let alert = UIAlertController(title: "Are you sure?", message: "None of the info you've entered will be saved", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Yes I'm sure", style: .default, handler: { [weak self] _ in
+            self?.dismiss(animated: true)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Nevermind", style: .cancel, handler: nil))
+        
+        present(alert, animated: true)
+    }
     
-
+    
+    init(user: User){
+        self.user = user
+        self.tableView = UITableView()
+        self.tableHeader = UIView()
+        self.imagePicker = UIImagePickerController()
+        self.addPicturesLabel = UILabel.zipTextFill()
+        self.picturesDescLabel = UILabel.zipTextNoti()
+        self.imageCropper = UIImageCropper(cropRatio: UIImageCropper.CROP_RATIO)
+        super.init(nibName: nil, bundle: nil)
+        addPicturesLabel.text = "Add Pictures:"
+        picturesDescLabel.text = "These pictures can be viewed from your profile and from your card in the ZipFinder"
+        picturesDescLabel.textColor = .zipVeryLightGray
+        picturesDescLabel.textAlignment = .center
+        picturesDescLabel.lineBreakMode = .byWordWrapping
+        picturesDescLabel.numberOfLines = 0
+        
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.modalPresentationStyle = .overCurrentContext
+        imageCropper.picker = imagePicker
+        imageCropper.delegate = self
+        
+        configureNavBar()
+        configureCollectionView()
+        configureTable()
+        configureTableHeader()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     //MARK: - viewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
+        let height = tableHeader.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        var frame = tableHeader.frame
+        frame.size.height = height
+        tableHeader.frame = frame
         view.backgroundColor = .zipGray
-        configureNavBar()
-        configureCollectionView()
-        configureTable()
-        
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-    }
+    
     
     //MARK: - Nav Bar Config
     private func configureNavBar(){
-        navigationItem.title = "@" + user.username
-        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.title = "Complete Profile"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
                                                             style: UIBarButtonItem.Style.done,
                                                             target: self,
                                                             action: #selector(didTapDoneButton))
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel",
+                                                            style: UIBarButtonItem.Style.done,
+                                                            target: self,
+                                                            action: #selector(didTapCancel))
     }
     
     //MARK: - Table Config
     private func configureTable() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
+        tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         
-        
         tableView.dataSource = self
         tableView.delegate = self
         
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: CompleteProfileViewController.photosIdentifier)
-        tableView.register(NameTableViewCell.self, forCellReuseIdentifier: NameTableViewCell.identifier)
-        tableView.register(GrowingCellTableViewCell.self, forCellReuseIdentifier: GrowingCellTableViewCell.identifier)
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: CompleteProfileViewController.schoolIdentifier)
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: CompleteProfileViewController.interestsIdentifier)
-        
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
-        tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 20))
-        tableView.contentInset = UIEdgeInsets(top: -22, left: 0, bottom: 0, right: 0)
-        tableView.tableHeaderView?.backgroundColor = .clear
-        tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 100))
-        tableView.separatorStyle = .none
+        tableView.register(EditTextFieldTableViewCell.self, forCellReuseIdentifier: EditTextFieldTableViewCell.identifier)
+        tableView.register(EditInterestsTableViewCell.self, forCellReuseIdentifier: EditInterestsTableViewCell.identifier)
     }
     
-    private func configureCollectionView(){
+    private func configureCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: view.frame.width/3,height: view.frame.width/3)
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
+        layout.minimumInteritemSpacing = 20
+        layout.minimumLineSpacing = 20
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
-        collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "singlePicture")
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "lastCell")
+        guard let collectionView = collectionView else {
+            return
+        }
         
-        collectionView?.delegate = self
-        collectionView?.dataSource = self
-        
-        collectionView?.backgroundColor = .zipGray
-        
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongGesture(gesture:)))
-        collectionView?.addGestureRecognizer(longPressGesture)
+        collectionView.register(EditPicturesCollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "default")
+        collectionView.register(AddImageCollectionViewCell.self, forCellWithReuseIdentifier: "addImage")
+
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.isPagingEnabled = false
+        collectionView.backgroundColor = .clear
+        collectionView.bounces = false
+        collectionView.isScrollEnabled = false
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
     }
     
-    //MARK: - Photo Config
-    private func configurePhotos() -> UIView{
-        let view = UIView()
-   
-        view.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.width)
-        
-        
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: view.frame.width/3,height: view.frame.width/3)
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
-        
-        collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "lastCell")
-        
-        collectionView?.backgroundColor = .zipGray
-        
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongGesture(gesture:)))
-        collectionView?.addGestureRecognizer(longPressGesture)
-        view.addSubview(collectionView!)
-        
-        collectionView?.translatesAutoresizingMaskIntoConstraints = false
-        collectionView?.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        collectionView?.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        collectionView?.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        collectionView?.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+    private func configureTableHeader() {
+        guard let collectionView = collectionView else {
+            return
+        }
+        tableHeader.addSubview(addPicturesLabel)
+        tableHeader.addSubview(picturesDescLabel)
+        tableHeader.addSubview(collectionView)
 
-        return view
+        addPicturesLabel.translatesAutoresizingMaskIntoConstraints = false
+        addPicturesLabel.topAnchor.constraint(equalTo: tableHeader.topAnchor, constant: 15).isActive = true
+        addPicturesLabel.leftAnchor.constraint(equalTo: tableHeader.leftAnchor,constant: 15).isActive = true
+        
+        picturesDescLabel.translatesAutoresizingMaskIntoConstraints = false
+        picturesDescLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        picturesDescLabel.topAnchor.constraint(equalTo: addPicturesLabel.bottomAnchor,constant: 10).isActive = true
+        picturesDescLabel.widthAnchor.constraint(equalTo: tableHeader.widthAnchor,multiplier: 0.6).isActive = true
+        
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.topAnchor.constraint(equalTo: picturesDescLabel.bottomAnchor, constant: 15).isActive = true
+//        collectionView.bottomAnchor.constraint(equalTo: tableHeader.topAnchor).isActive = true
+        collectionView.leftAnchor.constraint(equalTo: tableHeader.leftAnchor).isActive = true
+        collectionView.rightAnchor.constraint(equalTo: tableHeader.rightAnchor).isActive = true
+        collectionView.heightAnchor.constraint(equalTo: collectionView.widthAnchor, multiplier: 7/6).isActive = true
+        
+        tableHeader.translatesAutoresizingMaskIntoConstraints = false
+        tableHeader.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor).isActive = true
+        tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        
+        tableView.tableHeaderView = tableHeader
+        
+        
     }
     
-    func shakeCell(_ cell: UICollectionViewCell ) {
-        let shakeAnimation = CABasicAnimation(keyPath: "transform.rotation")
-        shakeAnimation.duration = 0.05
-        shakeAnimation.repeatCount = 2
-        shakeAnimation.autoreverses = true
-        let startAngle: Float = (-2) * 3.14159/180
-        let stopAngle = -startAngle
-        shakeAnimation.fromValue = NSNumber(value: startAngle as Float)
-        shakeAnimation.toValue = NSNumber(value: 3 * stopAngle as Float)
-        shakeAnimation.autoreverses = true
-        shakeAnimation.duration = 0.15
-        shakeAnimation.repeatCount = 10000
-        shakeAnimation.timeOffset = 290 * drand48()
-
-        let layer: CALayer = cell.layer
-        layer.add(shakeAnimation, forKey:"shaking")
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableHeader.setNeedsLayout()
+        tableHeader.layoutIfNeeded()
     }
-
-    func stopShaking(_ cell: UICollectionViewCell) {
-        let layer: CALayer = cell.layer
-        layer.removeAnimation(forKey: "shaking")
+        
+    func saveBioFunc(_ s: String) {
+        user.bio = s
+    }
+    
+    func saveSchoolFunc(_ s: String) {
+        user.school = s
     }
     
     
 }
 
-//MARK: - TableViewDelegte
 extension CompleteProfileViewController :  UITableViewDelegate {
-    
-    
-    //MARK: - HeightForRowAt
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0: return view.frame.width
-        case 1: return 40
-        case 2: return UITableView.automaticDimension
-        case 3: return 40
-        case 4:
-            let text = "Interests: " + user.interests.map{$0.description}.joined(separator: ", ")
-            return text.heightForWrap(width: view.frame.width-60) + 10
-        default: return 0
-        }
-    }
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return UITableView.automaticDimension
     }
 }
 
-//MARK: - TableDataSource
 extension CompleteProfileViewController :  UITableViewDataSource {
-    
-    
-    //MARK: Table Header
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 20))
-        view.backgroundColor = .zipGray
-        let titleLabel = UILabel()
-        titleLabel.textColor = .white
-        titleLabel.font = .zipBodyBold
-        view.addSubview(titleLabel)
-        switch section {
-        case 0:
-            titleLabel.text = "Photos"
-        case 1:
-            titleLabel.text = "Name"
-        case 2:
-            titleLabel.text = "Bio"
-        case 3:
-            titleLabel.text = "School"
-        case 4:
-            titleLabel.text = "Interests"
-        default: break
-        }
-        
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        titleLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
-        
-        switch section{
-        case 0: break
-        case 1:
-            let bottomLine = UIView()
-            bottomLine.backgroundColor = .zipLightGray
-            view.addSubview(bottomLine)
-            
-            bottomLine.translatesAutoresizingMaskIntoConstraints = false
-            bottomLine.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            bottomLine.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-            bottomLine.widthAnchor.constraint(equalToConstant: view.frame.width-20).isActive = true
-            bottomLine.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        default:
-            let bottomLine = UIView()
-            bottomLine.backgroundColor = .zipLightGray
-            view.addSubview(bottomLine)
-            
-            bottomLine.translatesAutoresizingMaskIntoConstraints = false
-            bottomLine.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            bottomLine.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-            bottomLine.widthAnchor.constraint(equalToConstant: view.frame.width-20).isActive = true
-            bottomLine.heightAnchor.constraint(equalToConstant: 1).isActive = true
-            
-            let topLine = UIView()
-            topLine.backgroundColor = .zipLightGray
-            view.addSubview(topLine)
-            
-            topLine.translatesAutoresizingMaskIntoConstraints = false
-            topLine.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            topLine.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-            topLine.widthAnchor.constraint(equalToConstant: view.frame.width-20).isActive = true
-            topLine.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        }
-
-        return view
-    }
-    
     //MARK: # Rows in Section
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 1 {
-            return 2
-        }
-        return 1
+        return 3
     }
-    
     
     //MARK: cellForRowAt
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
+        switch indexPath.row {
         case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CompleteProfileViewController.photosIdentifier, for: indexPath)
-            cell.contentView.addSubview(collectionView!)
-            
-            collectionView?.translatesAutoresizingMaskIntoConstraints = false
-            collectionView?.topAnchor.constraint(equalTo: cell.contentView.topAnchor).isActive = true
-            collectionView?.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor).isActive = true
-            collectionView?.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor).isActive = true
-            collectionView?.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor).isActive = true
-            
-            cell.backgroundColor = .zipGray
-            cell.selectionStyle = .none
-            cell.clipsToBounds = true
-            return cell
-        case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: NameTableViewCell.identifier, for: indexPath) as! NameTableViewCell
-            cell.configure(with: user, idx: indexPath.row)
-            cell.backgroundColor = .zipGray
-            cell.selectionStyle = .none
-            return cell
-        case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: GrowingCellTableViewCell.identifier, for: indexPath) as! GrowingCellTableViewCell
-            cell.configure(with: user)
+            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
+            cell.configure(label: "Bio", content: user.bio, saveFunc: saveBioFunc(_:))
+            cell.placeHolder = "Tell us a little about yourself."
+            cell.charLimit = 300
             cell.cellDelegate = self
             cell.selectionStyle = .none
-            cell.backgroundColor = .zipGray
 
             return cell
-        case 3:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CompleteProfileViewController.schoolIdentifier, for: indexPath)
-            if user.school != nil {
-                cell.textLabel?.text = user.school
-            } else {
-                cell.textLabel?.text = "Add School"
-            }
-            cell.textLabel?.font = .zipBody
-            cell.textLabel?.textColor = .white
-            cell.accessoryType = .disclosureIndicator
-            cell.backgroundColor = .zipGray
+        case 1:
+            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
+            cell.configure(label: "School", content: user.school ?? "", saveFunc: saveSchoolFunc(_:))
+            cell.placeHolder = "Where do you go to school?"
+            cell.charLimit = 40
+            cell.cellDelegate = self
             cell.selectionStyle = .none
             return cell
-        case 4:
-            let cell = tableView.dequeueReusableCell(withIdentifier: CompleteProfileViewController.interestsIdentifier, for: indexPath)
-            cell.backgroundColor = .zipGray
-            cell.selectionStyle = .none
-            cell.accessoryType = .disclosureIndicator
-
-            let label = cell.textLabel!
-            label.text = "Interests: " + user.interests.map{$0.description}.joined(separator: ", ")
-            label.font = .zipBody
-            label.textColor = .white
-            label.lineBreakMode = .byWordWrapping
-            label.numberOfLines = 0
-
+            
+        case 2:
+            let cell = tableView.dequeueReusableCell(withIdentifier: EditInterestsTableViewCell.identifier, for: indexPath) as! EditInterestsTableViewCell
+            cell.configure(label: "Interests", content: user.interests)
+            cell.cellDelegate = self
+            cell.presentInterestDelegate = self
+            cell.updateInterestsDelegate = self
             return cell
         default: return UITableViewCell()
         }
-        
     }
     
     
-    //MARK: didSelectRowAt
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.section == 3 {
-            let schoolSearch = SchoolSearchViewController()
-            schoolSearch.schoolLabel.text = user.school
-            schoolSearch.delegate = self
-            schoolSearch.modalPresentationStyle = .overCurrentContext
-            navigationController?.pushViewController(schoolSearch, animated: true)
-        }
-    }
+
 }
 
-
-
-
-//MARK: - CollectionView
-extension CompleteProfileViewController: UICollectionViewDataSource , UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 9
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        // Empty Cells
-        if user.pictures.count < 9 && indexPath.row >= user.pictures.count{
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "lastCell", for: indexPath)
-            cell.backgroundColor = .clear
-            let pictureView = UIView(frame: CGRect(x: 10, y: 10, width: cell.frame.width-20, height: cell.frame.height-20))
-            pictureView.backgroundColor = .zipLightGray
-            
-            let addButton = UIImageView(image: UIImage(systemName: "plus.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray))
-            pictureView.addSubview(addButton)
-            addButton.translatesAutoresizingMaskIntoConstraints = false
-            addButton.heightAnchor.constraint(equalTo: pictureView.heightAnchor, multiplier: 0.5).isActive = true
-            addButton.widthAnchor.constraint(equalTo: pictureView.widthAnchor, multiplier: 0.5).isActive = true
-            addButton.centerYAnchor.constraint(equalTo: pictureView.centerYAnchor).isActive = true
-            addButton.centerXAnchor.constraint(equalTo: pictureView.centerXAnchor).isActive = true
-            
-            cell.contentView.addSubview(pictureView)
-
-            return cell
-        }
-        
-        let cell: UICollectionViewCell
-        if user.pictures.count != 1 {
-            cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath)
-        } else {
-            cell = collectionView.dequeueReusableCell(withReuseIdentifier: "singlePicture", for: indexPath)
-
-        }
-        
-        let pictureView = UIView(frame: CGRect(x: 5, y: 5, width: cell.frame.width-10, height: cell.frame.height-10))
-        let img = UIImageView(image: user.pictures[indexPath.row])
-        
-        cell.backgroundColor = .clear
-        pictureView.backgroundColor = .clear
-        pictureView.addSubview(img)
-
-        img.translatesAutoresizingMaskIntoConstraints = false
-        img.heightAnchor.constraint(equalTo: pictureView.heightAnchor, constant: -10).isActive = true
-        img.widthAnchor.constraint(equalTo: pictureView.widthAnchor, constant: -10).isActive = true
-        img.leftAnchor.constraint(equalTo: pictureView.leftAnchor, constant: 5).isActive = true
-        img.topAnchor.constraint(equalTo: pictureView.topAnchor, constant: 5).isActive = true
-        
-        // can't delete first picture
-        if user.pictures.count != 1 {
-            let xButton = UIButton()
-            xButton.setImage(UIImage(named: "redX")?.withTintColor(.zipVeryLightGray), for: .normal)
-
-
-            xButton.tag = indexPath.row
-            xButton.addTarget(self, action: #selector(removePicture(_:)), for: .touchUpInside)
-            pictureView.addSubview(xButton)
-            
-            xButton.translatesAutoresizingMaskIntoConstraints = false
-            xButton.centerYAnchor.constraint(equalTo: img.topAnchor).isActive = true
-            xButton.centerXAnchor.constraint(equalTo: img.rightAnchor).isActive = true
-            xButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
-            xButton.widthAnchor.constraint(equalTo: xButton.heightAnchor).isActive = true
-        }
-        
-        cell.contentView.addSubview(pictureView)
-        
-        cell.backgroundColor = .zipGray
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.row >= user.pictures.count && user.pictures.count < 9 {
-            let picturePickerVC = UIImagePickerController()
-            picturePickerVC.allowsEditing = true
-            picturePickerVC.delegate = self
-            picturePickerVC.sourceType = .photoLibrary
-            picturePickerVC.modalPresentationStyle = .overCurrentContext
-            present(picturePickerVC, animated: true)
-        }
-    }
-    
-    @objc func removePicture(_ sender: UIButton){
-        let deleteAlert = UIAlertController(title: "Are you sure you want to delete this image?", message: "", preferredStyle: UIAlertController.Style.alert)
-
-        deleteAlert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [weak self] (action: UIAlertAction!) in
-            self?.user.pictures.remove(at: sender.tag)
-            self?.collectionView?.reloadData()
-            self?.tableView.reloadData()
-        }))
-
-        deleteAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
-              print("Handle Cancel Logic here")
-        }))
-
-        present(deleteAlert, animated: true, completion: nil)
-    }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let image = user.pictures[sourceIndexPath.row]
-
-        if destinationIndexPath.row >= user.pictures.count {
-            user.pictures.remove(at: sourceIndexPath.row)
-            user.pictures.insert(image, at: user.pictures.count)
-        } else {
-            user.pictures.remove(at: sourceIndexPath.row)
-            user.pictures.insert(image, at: destinationIndexPath.row)
-        }
-
-       
-        collectionView.reloadData()
-    }
-    
-}
-
-//MARK: - PicturePicker Delegate
-extension CompleteProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let image = info[.editedImage] as? UIImage {
-            print("edited image")
-            user.pictures.append(image)
-        }
-        
-        collectionView?.reloadData()
-        tableView.reloadData()
-        dismiss(animated: true, completion: nil)
-    }
-}
 
 //MARK: - GrowingCellProtocol
 extension CompleteProfileViewController: GrowingCellProtocol {
     func updateValue(value: String) {
-        user.bio = value
+        
     }
     
     func updateHeightOfRow(_ cell: UITableViewCell, _ view: UIView) {
@@ -547,19 +288,6 @@ extension CompleteProfileViewController: GrowingCellProtocol {
         }
     }
     
-    
-}
-
-//MARK: - UpdateSchoolProtocol
-extension CompleteProfileViewController: UpdateSchoolProtocol {
-    func updateSchoolLabel(_ school: String) {
-        if school != "None" {
-            user.school = school
-        } else {
-            user.school = nil
-        }
-        tableView.reloadData()
-    }
 }
 
 //MARK: - UpdateInterestsProtocol
@@ -572,287 +300,40 @@ extension CompleteProfileViewController: UpdateInterestsProtocol {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-import UIKit
-import SDWebImage
-
-class CompleteProfileViewController: UIViewController {
-    var collectionView: UICollectionView?
-    
-    var user = User()
-    
-    let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "COMPLETE YOUR PROFILE"
-        label.textAlignment = .center
-        label.textColor = .white
-        label.font = .zipBodyBold.withSize(20)
-        return label
-    }()
-    
-    
-    
-    
-    var bioTextView: UITextView = {
-        let textView = UITextView()
-        
-        textView.showsHorizontalScrollIndicator = false
-        textView.showsVerticalScrollIndicator = false
-        textView.isScrollEnabled = false
-        textView.bounces = false
-        textView.layer.cornerRadius = 5
-        
-        
-        textView.backgroundColor = .zipLightGray
-        textView.font = .zipBody
-        textView.textColor = .white
-        textView.tintColor = .white
-        
-        return textView
-    }()
-    
-    let schoolLabel: UILabel = {
-        let label = UILabel()
-        label.text = "COMPLETE YOUR PROFILE"
-        label.textAlignment = .center
-        label.textColor = .white
-        label.font = .zipBodyBold.withSize(20)
-        return label
-    }()
-    
-    @objc func handleLongGesture(gesture: UILongPressGestureRecognizer) {
-        switch(gesture.state) {
-        case .began:
-            guard let selectedIndexPath = collectionView?.indexPathForItem(at: gesture.location(in: collectionView))
-            else { break }
-            collectionView?.beginInteractiveMovementForItem(at: selectedIndexPath)
-            shakeCell((collectionView?.cellForItem(at: selectedIndexPath))!)
-        case .changed:
-            collectionView?.updateInteractiveMovementTargetPosition(gesture.location(in: gesture.view!))
-        case .ended:
-            
-            guard let selectedIndexPath = collectionView?.indexPathForItem(at: gesture.location(in: collectionView))
-            else { break }
-            stopShaking((collectionView?.cellForItem(at: selectedIndexPath))!)
-            collectionView?.endInteractiveMovement()
-            
-        default:
-            collectionView?.cancelInteractiveMovement()
-        }
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .zipGray
-        
-        configureUser()
-        configurePhotos()
-        addSubviews()
-    }
-    
-    
-    
-    private func configureUser(){
-        
-        
-        
-        user.userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        user.username = AppDelegate.userDefaults.value(forKey: "username") as! String
-        user.firstName = "Yianni" //AppDelegate.userDefaults.value(forKey: "firstName") as! String
-        user.lastName = "Zavaliagkos" //AppDelegate.userDefaults.value(forKey: "lastName") as! String
-        
-        guard let url = URL(string: AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as! String) else {
-            return
-        }
-        
-        let getDataTask = URLSession.shared.dataTask(with: url, completionHandler: { [weak self] data, _, error in
-            guard let data = data, error == nil else {
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self?.user.pictures.append(UIImage(data: data) ?? UIImage())
-                self?.collectionView?.reloadData()
-            }
-            
-        })
-        getDataTask.resume()
-        
-    }
-
-    
-    
-    private func configurePhotos(){
-        let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: view.frame.width/3,height: view.frame.width/3)
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
-        
-        collectionView = UICollectionView(frame: view.frame, collectionViewLayout: layout)
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "lastCell")
-        
-        collectionView?.delegate = self
-        collectionView?.dataSource = self
-        
-        collectionView?.backgroundColor = .zipGray
-        
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongGesture(gesture:)))
-        collectionView?.addGestureRecognizer(longPressGesture)
-    }
-    
-    private func addSubviews(){
-        view.addSubview(titleLabel)
-        view.addSubview(collectionView!)
-        view.addSubview(bioTextView)
-        
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        guard let collectionView = collectionView else {
-            return
-        }
-
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
-        
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20).isActive = true
-        collectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        collectionView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        collectionView.heightAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        
-        bioTextView.translatesAutoresizingMaskIntoConstraints = false
-        bioTextView.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 20).isActive = true
-        bioTextView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
-        bioTextView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
-
-    }
-    
-    func shakeCell(_ cell: UICollectionViewCell ) {
-        let shakeAnimation = CABasicAnimation(keyPath: "transform.rotation")
-        shakeAnimation.duration = 0.05
-        shakeAnimation.repeatCount = 2
-        shakeAnimation.autoreverses = true
-        let startAngle: Float = (-2) * 3.14159/180
-        let stopAngle = -startAngle
-        shakeAnimation.fromValue = NSNumber(value: startAngle as Float)
-        shakeAnimation.toValue = NSNumber(value: 3 * stopAngle as Float)
-        shakeAnimation.autoreverses = true
-        shakeAnimation.duration = 0.15
-        shakeAnimation.repeatCount = 10000
-        shakeAnimation.timeOffset = 290 * drand48()
-
-        let layer: CALayer = cell.layer
-        layer.add(shakeAnimation, forKey:"shaking")
-    }
-
-    func stopShaking(_ cell: UICollectionViewCell) {
-        let layer: CALayer = cell.layer
-        layer.removeAnimation(forKey: "shaking")
+extension CompleteProfileViewController: PresentEditInterestsProtocol {
+    func presentInterestSelect() {
+        let interestSelection = InterestSelectionViewController(interests: user.interests)
+        interestSelection.delegate = self
+        navigationController?.pushViewController(interestSelection, animated: true)
     }
 }
 
 
-//MARK: - CollectionView Delegate
 extension CompleteProfileViewController: UICollectionViewDelegate {
     
 }
 
-//MARK: - CollectionView DataSource
-extension CompleteProfileViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 9
+extension CompleteProfileViewController: AddImageCollectionViewCellDelegate {
+    func addImage() {
+        present(imagePicker, animated: true)
     }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if user.pictures.count < 9 && indexPath.row >= user.pictures.count{
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "lastCell", for: indexPath)
-            cell.backgroundColor = .clear
-            let pictureView = UIView(frame: CGRect(x: 10, y: 10, width: cell.frame.width-20, height: cell.frame.height-20))
-            pictureView.backgroundColor = .zipLightGray
-            
-            let addButton = UIImageView(image: UIImage(named: "addFilled")?.withTintColor(.zipVeryLightGray))
-            pictureView.addSubview(addButton)
-            addButton.translatesAutoresizingMaskIntoConstraints = false
-            addButton.heightAnchor.constraint(equalTo: pictureView.heightAnchor, multiplier: 0.5).isActive = true
-            addButton.widthAnchor.constraint(equalTo: pictureView.widthAnchor, multiplier: 0.5).isActive = true
-            addButton.centerYAnchor.constraint(equalTo: pictureView.centerYAnchor).isActive = true
-            addButton.centerXAnchor.constraint(equalTo: pictureView.centerXAnchor).isActive = true
-            
-            cell.contentView.addSubview(pictureView)
+}
 
-            return cell
-        }
-        
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath)
-        let pictureView = UIView(frame: CGRect(x: 5, y: 5, width: cell.frame.width-10, height: cell.frame.height-10))
-        let img = UIImageView(image: user.pictures[indexPath.row])
-
-        let xButton = UIButton()
-        xButton.setImage(UIImage(named: "redX")?.withTintColor(.zipVeryLightGray), for: .normal)
-        cell.backgroundColor = .clear
-        pictureView.backgroundColor = .clear
-
-        xButton.tag = indexPath.row
-        xButton.addTarget(self, action: #selector(removePicture(_:)), for: .touchUpInside)
-        pictureView.addSubview(img)
-        pictureView.addSubview(xButton)
-        
-        img.translatesAutoresizingMaskIntoConstraints = false
-        img.heightAnchor.constraint(equalTo: pictureView.heightAnchor, constant: -10).isActive = true
-        img.widthAnchor.constraint(equalTo: pictureView.widthAnchor, constant: -10).isActive = true
-        img.leftAnchor.constraint(equalTo: pictureView.leftAnchor, constant: 5).isActive = true
-        img.topAnchor.constraint(equalTo: pictureView.topAnchor, constant: 5).isActive = true
-        
-        xButton.translatesAutoresizingMaskIntoConstraints = false
-        xButton.centerYAnchor.constraint(equalTo: img.topAnchor).isActive = true
-        xButton.centerXAnchor.constraint(equalTo: img.rightAnchor).isActive = true
-        xButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        xButton.widthAnchor.constraint(equalTo: xButton.heightAnchor).isActive = true
-        
-        cell.contentView.addSubview(pictureView)
-        
-        cell.backgroundColor = .zipGray
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.row >= user.pictures.count && user.pictures.count < 9 {
-            let picturePickerVC = UIImagePickerController()
-            picturePickerVC.allowsEditing = true
-            picturePickerVC.delegate = self
-            picturePickerVC.sourceType = .photoLibrary
-            picturePickerVC.modalPresentationStyle = .overCurrentContext
-            present(picturePickerVC, animated: true)
-        }
-    }
-    
-    @objc func removePicture(_ sender: UIButton){
+extension CompleteProfileViewController: EditPicturesCollectionViewCellDelegate {
+    func deleteCell(_ sender: UIButton) {
         let deleteAlert = UIAlertController(title: "Are you sure you want to delete this image?", message: "", preferredStyle: UIAlertController.Style.alert)
 
         deleteAlert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [weak self] (action: UIAlertAction!) in
-            self?.user.pictures.remove(at: sender.tag)
-            self?.collectionView?.reloadData()
+            guard let strongSelf = self else {
+                return
+            }
+            
+            strongSelf.userPictures.remove(at: sender.tag)
+            strongSelf.collectionView?.reloadData()
+            
+            for i in sender.tag..<strongSelf.userPictures.count {
+                strongSelf.userPictures[i].isEdited = true
+            }
         }))
 
         deleteAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
@@ -861,37 +342,46 @@ extension CompleteProfileViewController: UICollectionViewDataSource {
 
         present(deleteAlert, animated: true, completion: nil)
     }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let image = user.pictures[sourceIndexPath.row]
+}
 
-        if destinationIndexPath.row >= user.pictures.count {
-            user.pictures.remove(at: sourceIndexPath.row)
-            user.pictures.insert(image, at: user.pictures.count)
+extension CompleteProfileViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 9
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.row < userPictures.count {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath) as! EditPicturesCollectionViewCell
+            cell.delegate = self
+            cell.xButton.tag = indexPath.row
+            cell.configure(pictureHolder: userPictures[indexPath.row])
+            return cell
         } else {
-            user.pictures.remove(at: sourceIndexPath.row)
-            user.pictures.insert(image, at: destinationIndexPath.row)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "addImage", for: indexPath) as! AddImageCollectionViewCell
+            cell.delegate = self
+            cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+            return cell
         }
-
-       
-        collectionView.reloadData()
     }
-    
 }
 
 
-//MARK: - PicturePicker Delegate
-extension CompleteProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let image = info[.editedImage] as? UIImage {
-            print("edited image")
-            user.pictures.append(image)
+extension CompleteProfileViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let numCells = 3
+        let flowLayout = collectionViewLayout as! UICollectionViewFlowLayout
+        let totalSpace = collectionView.bounds.width - (flowLayout.minimumInteritemSpacing * CGFloat(numCells - 1))
+        let size = totalSpace / CGFloat(numCells) - collectionView.contentInset.right - collectionView.contentInset.left
+        return CGSize(width: size, height: size/UIImageCropper.CROP_RATIO)
+    }
+}
+
+extension CompleteProfileViewController: UIImageCropperProtocol {
+    func didCropImage(originalImage: UIImage?, croppedImage: UIImage?) {
+        guard let croppedImage = croppedImage else {
+            return
         }
-        
+        userPictures.append(PictureHolder(image: croppedImage, edited: true))
         collectionView?.reloadData()
-        dismiss(animated: true, completion: nil)
     }
 }
-
-*/

@@ -45,7 +45,7 @@ class AbstractEventTableViewCell: UITableViewCell {
         self.dateLabel = IconLabel(iconImage: UIImage(systemName: "calendar")?.withConfiguration(smallConfig), labelFont: .zipTextDetail, color: .zipVeryLightGray)
 
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
+        eventImage.backgroundColor = .zipLightGray
         eventImage.isUserInteractionEnabled = true
         
         participantsLabel.numberOfLines = 0

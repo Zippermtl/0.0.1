@@ -47,7 +47,7 @@ extension DatabaseManager {
             
             for document in querySnapshot!.documents {
                 let data = document.data()
-                print("data =", data)
+//                print("data =", data)
                 
                 guard let coordinates = data["coordinates"] as? [String:Double],
                       let hostIds = data["hosts"] as? [String:String],
@@ -56,7 +56,7 @@ extension DatabaseManager {
                       let startTimestamp = data["startTime"] as? Timestamp,
                       let endTimestamp = data["endTime"] as? Timestamp
                 else {
-                    print("FAIL FAIL FAIL FUCK")
+//                    print("FAIL FAIL FAIL FUCK")
                     continue
                 }
                 

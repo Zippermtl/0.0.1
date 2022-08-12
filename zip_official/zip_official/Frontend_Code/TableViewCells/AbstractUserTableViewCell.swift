@@ -28,7 +28,7 @@ class AbstractUserTableViewCell: UITableViewCell {
         self.outlineView = UIView()
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .zipGray
-        
+        pictureView.backgroundColor = .zipLightGray
         addSubviews()
         configureSubviewLayout()
     }

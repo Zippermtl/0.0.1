@@ -59,7 +59,8 @@ extension EditEventProfileViewController: OpenGMSCellDelegate {
             super.configure(label: "Location", content: event.address, saveFunc: saveFunc)
         }
         
-        func textViewDidBeginEditing(_ textView: UITextView) {
+        override func textViewDidBeginEditing(_ textView: UITextView) {
+            super.textViewDidBeginEditing(textView)
             GMSDelegate?.openSearch()
             textView.resignFirstResponder()
         }

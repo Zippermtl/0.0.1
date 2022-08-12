@@ -261,7 +261,11 @@ class SMSCodeViewController: UIViewController {
                                 AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
                                 AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
                                 AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
-                                AppDelegate.userDefaults.set(user.profilePicUrl.absoluteString, forKey: "profilePictureUrl")
+                                if let pfpUrl = user.profilePicUrl {
+                                    AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
+                                } else {
+                                    AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
+                                }
                                 
                                 DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { [weak self] result in
                                     switch result {

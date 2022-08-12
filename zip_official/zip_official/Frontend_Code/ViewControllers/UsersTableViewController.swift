@@ -21,17 +21,18 @@ class UsersTableViewController: UIViewController {
         searchBar = UISearchBar()
         super.init(nibName: nil, bundle: nil)
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        
-
-
-//        if user.userId == userId {
-//            navigationItem.title = "My Zips"
-//        } else {
-//            navigationItem.title = "\(user.firstName)'s Zips"
-//        }
 
         configureTable()
         configureSubviewLayout()
+        if !users.isEmpty {
+            fetchUsers()
+        }
+    }
+    
+    public func reload(users: [User]) {
+        allUsers = users
+        tableData = users
+        tableView.reloadData()
         fetchUsers()
     }
     
@@ -132,17 +133,21 @@ extension UsersTableViewController :  UITableViewDataSource {
     
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let vc : UIViewController
+        if tableData[indexPath.row].userId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
+            vc = ProfileViewController(id: tableData[indexPath.row].userId)
+        } else {
+             vc = OtherProfileViewController(id: tableData[indexPath.row].userId)
+        }
         
-        let userProfileView = OtherProfileViewController(id: tableData[indexPath.row].userId)
-        userProfileView.modalPresentationStyle = .overCurrentContext
-        
+        vc.modalPresentationStyle = .overCurrentContext
         let transition: CATransition = CATransition()
         transition.duration = 0.3
         transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeIn)
         transition.type = CATransitionType.reveal
         transition.subtype = CATransitionSubtype.fromRight
         view.window!.layer.add(transition, forKey: nil)
-        navigationController?.pushViewController(userProfileView, animated: true)
+        navigationController?.pushViewController(vc, animated: true)
         
     }
     

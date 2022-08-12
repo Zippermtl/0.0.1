@@ -255,7 +255,7 @@ import UIKit
         case .began:
             break
         case .changed:
-            if translatedPoint >= xEndingPoint * swipeDistanceMultiplier {
+            if translatedPoint >= xEndingPoint {
                 updateThumbnailXPosition(xEndingPoint)
                 return
             }
@@ -268,7 +268,7 @@ import UIKit
             textLabel.alpha = (xEndingPoint - translatedPoint) / xEndingPoint
             break
         case .ended:
-            if translatedPoint >= xEndingPoint {
+            if translatedPoint >= xEndingPoint * swipeDistanceMultiplier{
                 textLabel.alpha = 0
                 updateThumbnailXPosition(xEndingPoint)
                 // Finish action

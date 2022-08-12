@@ -98,8 +98,9 @@ class UserPhotosViewController: UIViewController {
             collectionView?.reloadData()
             
         } else { // save
+            user.picNum = userPictures.count + 1
+            AppDelegate.userDefaults.set(userPictures.count + 1, forKey: "picNum")
             var idx = 0
-            
             for img in userPictures {
                 if img.isEdited {
                     guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
@@ -111,7 +112,7 @@ class UserPhotosViewController: UIViewController {
                     StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
                         switch result {
                         case .success(let url):
-                            print("hey we saved image")
+                            // TODO: potential error with order of photos
                             img.url = URL(string: url)
                             self?.user.pictureURLs.append(URL(string: url)!)
                         case .failure(let error):
@@ -350,19 +351,12 @@ extension UserPhotosViewController: UICollectionViewDelegateFlowLayout {
 
 extension UserPhotosViewController: UIImageCropperProtocol {
     func didCropImage(originalImage: UIImage?, croppedImage: UIImage?) {
-        print("1")
         guard let croppedImage = croppedImage else {
-            print("2")
-
             return
         }
-        print("3")
-
         userPictures.append(PictureHolder(image: croppedImage, edited: true))
         collectionView?.reloadData()
     }
-    
-    
 }
 
 

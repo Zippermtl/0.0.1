@@ -295,11 +295,14 @@ final class StorageManager {
                         print("URL = \(url)")
                         picURLs.append(url)
                     case .failure(let error):
+                        completion(.failure(error))
                         print("failed to get image URL: \(error)")
                     }
-                    print("got a url")
-                    if(i == size-1){
+                    print("got profile pic url")
+                    if(i == size){
 //                        printOn.pictureURLs = picURLs
+                        print("completing and returning1")
+
                         picURLs = picURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
 
                         completion(.success(picURLs))
@@ -317,10 +320,12 @@ final class StorageManager {
                         print("URL = \(url)")
                         picURLs.append(url)
                     case .failure(let error):
+                        completion(.failure(error))
                         print("failed to get image URL: \(error)")
                     }
                     print("got a url")
                     if(picURLs.count == size){
+                        print("completing and returning2")
 //                        printOn.pictureURLs = picURLs
                         picURLs = picURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
 

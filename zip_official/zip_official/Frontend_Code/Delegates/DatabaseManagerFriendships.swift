@@ -11,6 +11,7 @@ import MessageKit
 import FirebaseAuth
 import CoreLocation
 import FirebaseFirestore
+import SwiftUI
 
 
 
@@ -29,6 +30,20 @@ extension DatabaseManager {
             completion(.success(friendships))
         })
     }
+    
+    public func loadUserZipsIds(given id: String, completion: @escaping (Result<[User], Error>) -> Void) {
+        loadUserFriendships(given: id, completion: { result in
+            switch result {
+            case .success(let friendships):
+                let users = friendships.filter({ $0.status == FriendshipStatus.ACCEPTED }).map({ $0.receiver })
+                completion(.success(users))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        })
+    }
+    
+    
     
     public func unsendRequest(user: User, completion: @escaping (Error?) -> Void) {
         let otherId = user.userId

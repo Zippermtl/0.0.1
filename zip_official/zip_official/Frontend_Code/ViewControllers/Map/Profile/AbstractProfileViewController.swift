@@ -79,7 +79,7 @@ class AbstractProfileViewController: UIViewController {
         self.centerActionButton = UIButton()
 
         super.init(nibName: nil, bundle: nil)
-        
+        profilePictureView.backgroundColor = .zipLightGray
         self.rightNavBarButton = UIBarButtonItem(image: rightBarButtonIcon,
                                                  landscapeImagePhone: nil,
                                                  style: .plain,
@@ -141,7 +141,7 @@ class AbstractProfileViewController: UIViewController {
     func fetchUser(completion: (() -> Void)? = nil) {
         profilePictureView.image = nil
         spinner.show(in: profilePictureView)
-        DatabaseManager.shared.loadUserProfile(given: user, completion: { [weak self] result in
+        DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { [weak self] result in
             guard let strongSelf = self
             else {
                 if let complete = completion {
@@ -158,33 +158,43 @@ class AbstractProfileViewController: UIViewController {
             strongSelf.firstnameLabel.text = strongSelf.user.firstName
             strongSelf.lastnameLabel.text = strongSelf.user.lastName
             strongSelf.ageLabel.text = String(strongSelf.user.age) + " years old"
-            strongSelf.photoCountLabel.text = "\(strongSelf.user.otherPictureUrls.count)"
             strongSelf.tableView.reloadData()
-            
-
-            let profileURL: URL
-            
-            if strongSelf.user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
-                guard let profileString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String else {
-                    return
-                }
-                profileURL = URL(string: profileString)!
-            } else {
-                profileURL = strongSelf.user.profilePicUrl
-            }
-            
-            strongSelf.profilePictureView.sd_setImage(with: profileURL, completed: nil)
-
-            if strongSelf.user.picNum == 1 {
-                strongSelf.photoCountLabel.isHidden = true
-            }
-            
-            strongSelf.spinner.dismiss()
-            strongSelf.tableView.reloadData()
-
+           
             if let complete = completion {
                 complete()
             }
+        }, pictureCompletion: { [weak self] result in
+            print("COMPLETING PICTURES")
+            guard let strongSelf = self else { return }
+            switch result {
+            case .success(let urls):
+                strongSelf.photoCountLabel.text = "\(urls.count)"
+                let profileURL: URL?
+                
+                if strongSelf.user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
+                    let profileString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String ?? ""
+                    profileURL = URL(string: profileString)
+                } else {
+                    profileURL = strongSelf.user.profilePicUrl
+                }
+                
+                if strongSelf.user.picNum == 1 {
+                    strongSelf.photoCountLabel.isHidden = true
+                }
+                print("URL = \(profileURL)")
+                strongSelf.spinner.dismiss()
+                guard let url = profileURL else {
+                    strongSelf.profilePictureView.image = UIImage(named: "defaultProfilePic")
+                    return
+                }
+                strongSelf.profilePictureView.sd_setImage(with: url, completed: nil)
+            
+                
+            case .failure(let error):
+                print("Failure to load user photos in profile, Error: \(error)")
+            }
+
+        
         })
     }
     

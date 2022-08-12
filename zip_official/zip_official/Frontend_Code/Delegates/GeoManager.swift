@@ -245,7 +245,7 @@ class GeoManager {
     public func LoadUsers(size: Int){
         print("LoadUsers \(size) with array size \(userIdList.count)")
         for _ in 0..<size{
-            DatabaseManager.shared.loadUserProfile(given: userIdList[0], completion: { [weak self] result in
+            DatabaseManager.shared.loadUserProfile(given: userIdList[0], dataCompletion: { [weak self] result in
                 switch result {
                 case .success(let user):
                     self?.loadedUsers.append(user)
@@ -254,7 +254,7 @@ class GeoManager {
                 case .failure(let error):
                     print("error load in LoadUser -> LoadUserProfile \(error)")
                 }
-            })
+            }, pictureCompletion: { result in })
             let temp = userIdList[0]
             alreadyReadySeen.append(temp.userId)
             userIdList.remove(at: 0)

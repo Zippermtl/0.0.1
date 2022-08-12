@@ -113,7 +113,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
                 self?.setZippedState()
             })
         case .none:
-            user.acceptRequest(completion: { [weak self] err in
+            user.sendRequest(completion: { [weak self] err in
                 guard err == nil else {
                     return
                 }
@@ -166,6 +166,16 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     override func didTapB3Button() {
         let myZipsView = UsersTableViewController(users: [])
+
+        DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
+            switch result {
+            case .success(let users):
+                print("loading ezras friends \(users)")
+                myZipsView.reload(users: users)
+            case .failure(let error):
+                print("failure loading other users ids, Error: \(error)")
+            }
+        })
         myZipsView.title = "\(user.firstName)'s Zips"
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)

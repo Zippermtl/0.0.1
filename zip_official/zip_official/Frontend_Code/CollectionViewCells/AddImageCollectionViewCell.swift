@@ -28,14 +28,14 @@ class AddImageCollectionViewCell: UICollectionViewCell {
         
         btn.setImage(img, for: .normal)
         btn.contentMode = .scaleAspectFit
-        btn.addTarget(self, action: #selector(didTapAddButton), for: .touchUpInside)
         return btn
     }()
         
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.backgroundColor = .clear
-        
+        addButton.addTarget(self, action: #selector(didTapAddButton), for: .touchUpInside)
+
         contentView.addSubview(addButton)
         addButton.layer.masksToBounds = true
 
