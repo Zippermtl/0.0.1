@@ -20,13 +20,12 @@ extension DatabaseManager {
     public func loadUserFriendships(given id: String, completion: @escaping (Result<[Friendship], Error>) -> Void) {
         // Get user id inside userFriendships
         database.child("userFriendships").child(id).observe(.value, with: { result in
-            guard let value = result.value as? [String: Int] else {
+            guard let value = result.value as? [String: Any] else {
                 completion(.success([]))
                 return
             }
-            
+
             let friendships = DecodeFriendships(value)
-            
             completion(.success(friendships))
         })
     }
@@ -68,13 +67,23 @@ extension DatabaseManager {
     public func sendRequest(user: User, completion: @escaping (Error?) -> Void) {
         let otherId = user.userId
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        database.child("userFriendships/\(otherId)").updateChildValues([selfId: FriendshipStatus.REQUESTED_INCOMING.rawValue]) { [weak self] error, _ in
+        database.child("userFriendships/\(otherId)").updateChildValues([selfId: ["status" : FriendshipStatus.REQUESTED_INCOMING.rawValue,
+                                                                                 "name" : user.fullName,
+                                                                                 "username" : user.username]
+                                                                       ]) { [weak self] error, _ in
             guard let strongSelf = self,
                   error == nil else {
                       completion(error!)
                       return
                   }
-            strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([otherId: FriendshipStatus.REQUESTED_OUTGOING.rawValue]) { error, _ in
+            
+            
+            let name = AppDelegate.userDefaults.value(forKey: "name")  as? String ?? ""
+            let username = AppDelegate.userDefaults.value(forKey: "username")
+            strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([user.userId: ["status" : FriendshipStatus.REQUESTED_OUTGOING.rawValue,
+                                                                                               "name" : name,
+                                                                                               "username" : username]
+                                                                                     ]) { error, _ in
                 guard error == nil else {
                     completion(error!)
                     return
@@ -88,13 +97,23 @@ extension DatabaseManager {
     public func acceptRequest(user: User, completion: @escaping (Error?) -> Void) {
         let otherId = user.userId
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        database.child("userFriendships/\(otherId)").updateChildValues([selfId: FriendshipStatus.ACCEPTED.rawValue]) { [weak self] error, _  in
+        database.child("userFriendships/\(otherId)").updateChildValues([selfId: ["status" : FriendshipStatus.ACCEPTED.rawValue,
+                                                                                 "name" : user.fullName,
+                                                                                 "username" : user.username]
+                                                                       ]) { [weak self] error, _ in
             guard let strongSelf = self,
                   error == nil else {
                       completion(error!)
                       return
                   }
-            strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([otherId: FriendshipStatus.ACCEPTED.rawValue]) { error, _ in
+            
+            
+            let name = AppDelegate.userDefaults.value(forKey: "name")  as? String ?? ""
+            let username = AppDelegate.userDefaults.value(forKey: "username")
+            strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([user.userId: ["status" : FriendshipStatus.ACCEPTED.rawValue,
+                                                                                               "name" : name,
+                                                                                               "username" : username]
+                                                                                     ]) { error, _ in
                 guard error == nil else {
                     completion(error!)
                     return

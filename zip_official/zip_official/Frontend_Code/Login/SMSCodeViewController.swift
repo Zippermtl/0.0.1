@@ -270,7 +270,7 @@ class SMSCodeViewController: UIViewController {
                                 DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { [weak self] result in
                                     switch result {
                                     case .success(let friendships):
-                                        let encoded = EncodeFriendships(friendships)
+                                        let encoded = EncodeFriendsUserDefaults(friendships)
                                         AppDelegate.userDefaults.set(encoded, forKey: "friendships")
                                         DispatchQueue.main.async {
                                             guard let strongSelf = self else { return }

@@ -16,15 +16,8 @@ class CompleteEventViewController: UIViewController {
     init(event: Event) {
         self.event = event
         self.invitedUsers = []
-        if let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
-            print("printing zip list")
-            let zipsDict = friendships.filter({ $0.value == FriendshipStatus.ACCEPTED.rawValue })
-            let userIds = Array(zipsDict.keys)
-            zipList = userIds.map({ User(userId: $0) })
-            print(zipList)
-        } else {
-            zipList = []
-        }
+        zipList = User.getMyZips()
+        
         super.init(nibName: nil, bundle: nil)
         inviteAllButton.addTarget(self, action: #selector(didTapInviteAllButton), for: .touchUpInside)
         clearButton.addTarget(self, action: #selector(didTapClearButton), for: .touchUpInside)

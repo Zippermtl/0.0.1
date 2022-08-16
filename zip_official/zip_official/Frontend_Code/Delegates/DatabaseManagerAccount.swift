@@ -128,7 +128,7 @@ extension DatabaseManager {
             AppDelegate.userDefaults.set(user.gender, forKey: "gender")
             AppDelegate.userDefaults.set(1, forKey: "picNum")
             
-            let emptyFriendships: [String: Int]  = [:]
+            let emptyFriendships: [String: [String:String]]  = [:]
             AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
             let emptyEvents: [String : Int] = [:]
             AppDelegate.userDefaults.set(emptyEvents, forKey:  "savedEvents")
@@ -299,12 +299,12 @@ extension DatabaseManager {
                 if user.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
                     user.friendshipStatus = .ACCEPTED
                 } else {
-                    let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] ?? [:]
-                    let friendshipInt = friendships[user.userId] ?? -1
-                    if friendshipInt == -1 {
-                        user.friendshipStatus = nil
-                    } else {
+                    if let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]],
+                        let friendshipString = raw_friendships[user.userId]?["status"],
+                        let friendshipInt = Int(friendshipString) {
                         user.friendshipStatus = FriendshipStatus(rawValue: friendshipInt)
+                    } else {
+                        user.friendshipStatus = nil
                     }
                 }
                 userCoder.updateUser(user)
@@ -321,7 +321,7 @@ extension DatabaseManager {
             StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
                 switch result {
                 case .success(let url):
-                    user.pictureURLs = url
+                    user.pictureURLs.append(url)
                     print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
                     print(user.pictureURLs)
                     completion(.success(user))
@@ -349,11 +349,15 @@ extension DatabaseManager {
                 StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
                     print("GETTING ALL IMAGES")
                     switch result {
-                    case .success(let urls):
-                        user.pictureURLs = urls
+                    case .success(let url):
+                        user.pictureURLs.append(url)
+                        user.pictureURLs = user.pictureURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
+
                         print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
                         print(user.pictureURLs)
-                        pictureCompletion(.success(urls))
+                        if user.pictureURLs.count == user.picNum {
+                            pictureCompletion(.success(user.pictureURLs))
+                        }
 
                     case .failure(let error):
                         pictureCompletion(.failure(error))
@@ -450,9 +454,11 @@ extension DatabaseManager {
                         }
                         
                         guard let cell = user.tableViewCell else {
+                            print("user has no table view cell")
                             return
                         }
                         cell.configureImage(user)
+                        print("configuring cell image")
                     case .failure(let error):
                         print("error loading event in tableview: \(error)")
                     }

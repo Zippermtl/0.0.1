@@ -41,15 +41,14 @@ class GeoManager {
         geoFire = GeoFire(firebaseRef: geofireRef)
         geoFireEventPublic = GeoFire(firebaseRef: geoFireEventRefPublic)
         geoFireEventPromoter = GeoFire(firebaseRef: geoFireEventRefPromoter)
-        var helper: [String:Int]
-        helper = AppDelegate.userDefaults.value(forKey: "friendships") as! [String : Int]
-        for (i,j) in helper{
-            if(j == 1){
-                alreadyReadySeen.append(i)
-            } else if(j == 2){
-                alreadyReadySeen.append(i)
+        let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as! [String : [String: String]]
+        let helper = DecodeFriendsUserDefaults(raw_friendships)
+        for friendship in helper{
+            if(friendship.status == .REQUESTED_OUTGOING){
+                alreadyReadySeen.append(friendship.receiver.userId)
+            } else if(friendship.status == .ACCEPTED){
+                alreadyReadySeen.append(friendship.receiver.userId)
             }
-
         }
     }
     

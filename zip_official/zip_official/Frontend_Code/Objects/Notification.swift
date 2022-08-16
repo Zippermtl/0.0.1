@@ -116,13 +116,13 @@ public func EncodePreferences(_ preferences: NotificationPreference) -> Int {
     return total
 }
 
-
 struct ZipNotification {
     var fromId: String = " " //figure this shit out later
     var fromName: String = "default Notif Name"
     let type: NotificationType
-    let image: UIImage
-    let time: TimeInterval
+    let subtype: NotificationSubtype
+    let imageUrl: UIImage
+    let time: Date
     var hasRead: Bool = false
 }
 

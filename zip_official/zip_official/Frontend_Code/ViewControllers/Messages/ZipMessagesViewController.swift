@@ -10,8 +10,7 @@ import JGProgressHUD
 
 struct Conversation {
     let id: String
-    let name: String
-    let otherUserId: String
+    let otherUser: User
     let latestMessage: LatestMessage
 }
 
@@ -48,11 +47,11 @@ class ZipMessagesViewController: UIViewController {
             let currentConversations = strongSelf.conversations
             
             if let targetConversation = currentConversations.first(where: {
-                $0.otherUserId == result.userId
+                $0.otherUser.userId == result.userId
             }) {
-                let vc = ChatViewController(with: targetConversation.otherUserId, id: targetConversation.id)
+                let vc = ChatViewController(with: targetConversation.otherUser.userId, id: targetConversation.id)
                 vc.isNewConversation = true
-                vc.title = targetConversation.name
+                vc.title = targetConversation.otherUser.userId
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
             } else {
                 strongSelf.createNewConversation(result: result)
@@ -110,6 +109,7 @@ class ZipMessagesViewController: UIViewController {
             }
             strongSelf.startListeningForConversations()
         })
+        
     }
     
     private func startListeningForConversations(){
@@ -135,7 +135,8 @@ class ZipMessagesViewController: UIViewController {
                 self?.tableView.isHidden = false
                 self?.noConversationsLabel.isHidden = true
                 self?.conversations = conversations
-                
+                self?.loadCells()
+
                 DispatchQueue.main.async {
                     self?.tableView.reloadData()
                 }
@@ -151,13 +152,29 @@ class ZipMessagesViewController: UIViewController {
         })
     }
     
+    private func loadCells(){
+        for conversation in conversations {
+            DatabaseManager.shared.userLoadTableView(user: conversation.otherUser, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.conversations.removeAll(where: { $0.otherUser == conversation.otherUser })
+                    print("error loading user in convo Error: \(error)")
+                }
+            })
+            
+        }
+    }
+    
     @objc private func didTapDismiss(){
         dismiss(animated: true)
     }
     
     //MARK: - Configure Navigation
     private func configureNavigation(){
-        navigationItem.title = "MESSAGES"
+        navigationItem.title = "Messages"
         navigationController?.navigationBar.barTintColor = .zipGray
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(didTapComposeButton))
@@ -211,7 +228,7 @@ class ZipMessagesViewController: UIViewController {
 
 extension ZipMessagesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 120
+        return 90
     }
 }
 
@@ -223,6 +240,7 @@ extension ZipMessagesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ConversationTableViewCell.identifier ,for: indexPath) as! ConversationTableViewCell
         let model = conversations[indexPath.row]
+        model.otherUser.tableViewCell = cell
         cell.configure(with: model)
         return cell
     }
@@ -230,15 +248,14 @@ extension ZipMessagesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let model = conversations[indexPath.row]
-
         openConversation(model)
     }
     
     func openConversation(_ model: Conversation){
         //show chat messages
-        let vc = ChatViewController(with: model.otherUserId, id: model.id)
-        vc.title = model.name
-        print("title = \(model.name)")
+        let vc = ChatViewController(with: model.otherUser.userId, id: model.id)
+        vc.title = model.otherUser.fullName
+        print("title = \(model.otherUser.fullName)")
         vc.navigationItem.largeTitleDisplayMode = .never
         navigationController?.pushViewController(vc, animated: true)
     }

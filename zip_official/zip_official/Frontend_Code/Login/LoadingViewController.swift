@@ -124,7 +124,7 @@ class LoadingViewController: UIViewController {
                 DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { result in
                     switch result {
                     case .success(let friendships):
-                        let encoded = EncodeFriendships(friendships)
+                        let encoded = EncodeFriendsUserDefaults(friendships)
                         AppDelegate.userDefaults.set(encoded, forKey: "friendships")
                     case .failure(let error):
                         print("failure loading friendships in loadingVC Error: \(error)")

@@ -98,6 +98,24 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
+        let user = User(userId: "u9789070602")
+        user.firstName = "Yianni"
+        user.lastName = "Zavaliagkos"
+        user.username = "yianni_zav"
+        DatabaseManager.shared.acceptRequest(user: user, completion: { error in
+            
+            
+        })
+        
+        let user2 = User(userId: "u2158018458")
+        user2.firstName = "Ezra"
+        user2.lastName = "Taylor"
+        user2.username = "ezrataylor55"
+        DatabaseManager.shared.acceptRequest(user: user2, completion: { error in
+            
+            
+        })
+        
 //        DatabaseManager.shared.testWrite()
         
         
@@ -200,7 +218,6 @@ class MapViewController: UIViewController {
            profileButton.setImage(UIImage(named: "defaultProfilePic"), for: .normal)
        }
         
-        isNewAccount = true
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -431,7 +448,6 @@ extension MapViewController: FPCMapDelegate {
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)
-        
     }
     
     func createEvent() {

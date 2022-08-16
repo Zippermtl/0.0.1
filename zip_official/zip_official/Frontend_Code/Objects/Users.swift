@@ -172,6 +172,7 @@ public class User : CustomStringConvertible, Equatable {
 
     
     var profilePicUrl : URL? {
+        if pictureURLs.count == 0 { return nil }
         return pictureURLs[0]
     }
     
@@ -514,7 +515,7 @@ public class User : CustomStringConvertible, Equatable {
 
     func unsendRequest(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.unsendRequest(user: self) {  [weak self] error in
-            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]],
                   let strongSelf = self,
                     error == nil else {
                 completion(error)
@@ -530,14 +531,14 @@ public class User : CustomStringConvertible, Equatable {
     // Requests a friend
     func sendRequest(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.sendRequest(user: self) {  [weak self] error in
-            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]],
                   let strongSelf = self,
                     error == nil else {
                 completion(error)
                 return
             }
             strongSelf.friendshipStatus = .REQUESTED_OUTGOING
-            selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
+            selfFriendships[strongSelf.userId] = ["status" : strongSelf.friendshipStatus!.rawValue.description, "name" : strongSelf.fullName, "username" : strongSelf.username]
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
             completion(nil)
 
@@ -547,24 +548,23 @@ public class User : CustomStringConvertible, Equatable {
     // Accepts a friend (who made a friend request)
     func acceptRequest(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.acceptRequest(user: self) { [weak self] error in
-            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]],
                   let strongSelf = self,
                     error == nil else {
                 completion(error)
                 return
             }
             strongSelf.friendshipStatus = .ACCEPTED
-            selfFriendships[strongSelf.userId] = strongSelf.friendshipStatus!.rawValue
+            selfFriendships[strongSelf.userId] = ["status" : strongSelf.friendshipStatus!.rawValue.description, "name" : strongSelf.fullName, "username" : strongSelf.username]
             AppDelegate.userDefaults.set(selfFriendships, forKey: "friendships")
             completion(nil)
         }
-    
     }
 
     // Rejects a friend (who made a friend request)
     func rejectRequest(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.rejectRequest(user: self) { [weak self] error in
-            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String:String]],
                   let strongSelf = self,
                     error == nil else {
                 completion(error)
@@ -580,7 +580,7 @@ public class User : CustomStringConvertible, Equatable {
     
     func unfriend(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.unfriend(user: self) {  [weak self] error in
-            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int],
+            guard var selfFriendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]],
                   let strongSelf = self,
                     error == nil else {
                 completion(error)
@@ -726,14 +726,24 @@ public class User : CustomStringConvertible, Equatable {
     
     
     
-    func getMyZips() -> [User]{
-        guard let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] else {
+    static func getMyZips() -> [User]{
+        guard let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]] else {
             return []
         }
-        let zipsDict = friendsips.filter({ $0.value == 2 })
-        let userIds = Array(zipsDict.keys)
-        let zips = userIds.map({ User(userId: $0) })
-        return zips
+        let friendships = DecodeFriendsUserDefaults(raw_friendships)
+        let requestsArr = friendships.filter({ $0.status == .ACCEPTED })
+       
+        return requestsArr.map({ $0.receiver })
+    }
+    
+    static func getMyRequests() -> [User]{
+        guard let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]] else {
+            return []
+        }
+        let friendships = DecodeFriendsUserDefaults(raw_friendships)
+        let requestsArr = friendships.filter({ $0.status == .REQUESTED_INCOMING })
+       
+        return requestsArr.map({ $0.receiver })
     }
     
 }

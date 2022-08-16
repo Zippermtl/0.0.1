@@ -4,8 +4,8 @@
 //
 //  Created by Yianni Zavaliagkos on 8/18/21.
 //
-
 import UIKit
+
 protocol UpdateZipRequestsTableDelegate: AnyObject {
     func deleteZipRequestRow(_ sender: UIButton)
     func deleteEventsRow(_ sender: UIButton)
@@ -88,16 +88,5 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         selectionStyle = .none
-        // Configure the view for the selected state
     }
-    
-  
-        
-        
-        
-
-
-        
 }
-
-

@@ -13,25 +13,14 @@ class NewChatViewController: UIViewController {
 
     private let spinner = JGProgressHUD(style: .light)
     
-    private var users = [User]()
+    private var allUsers = [User]()
     
     private var results =  [User]()
     
     private var hasFetched = false
 
     init() {
-        if let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
-            print("we here FRIENDS")
-            print(friendships)
-            let zipsDict = friendships.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
-            let userIds = Array(zipsDict.keys)
-            self.users = userIds.map({ User(userId: $0) })
-            self.results = users
-        } else {
-            self.users = []
-            self.results = users
-        }
-        
+        self.allUsers = User.getMyZips()
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -114,10 +103,24 @@ extension NewChatViewController: UISearchBarDelegate {
     func filterUsers(with term: String) {
         spinner.dismiss()
         
-        let results: [User] = users.filter({ $0.fullName.hasPrefix(term.lowercased()) || $0.username.hasPrefix(term.lowercased()) })
-        self.results = results
-        
+        self.results = allUsers.filter({ $0.firstName.hasPrefix(term.lowercased()) || $0.lastName.hasPrefix(term.lowercased()) || $0.username.hasPrefix(term.lowercased()) })
+        loadUsers()
         updateUI()
+    }
+    
+    func loadUsers(){
+        for user in results {
+            DatabaseManager.shared.userLoadTableView(user: user, completion: { [weak self] result in
+                switch result {
+                case .success(_):
+                    break
+                case .failure(let error):
+                    guard let strongSelf = self else { break }
+                    strongSelf.results.removeAll(where: { $0 == user })
+                    print("error loading \(user.userId) with Error: \(error)")
+                }
+            })
+        }
         
     }
     

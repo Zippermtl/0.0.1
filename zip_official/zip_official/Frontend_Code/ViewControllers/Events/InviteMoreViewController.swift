@@ -29,12 +29,8 @@ class InviteMoreViewController: UIViewController {
                                                             target: self,
                                                             action: #selector(didTapInvite))
         
-        guard let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] else {
-            return
-        }
-        let zipsDict = friendsips.filter({ $0.value == 2 })
-        let userIds = Array(zipsDict.keys)
-        let zips = userIds.map({ User(userId: $0) })
+ 
+        let zips = User.getMyZips()
         users = zips.filter({ !event.usersInvite.contains($0)})
         
         view.backgroundColor = .zipGray

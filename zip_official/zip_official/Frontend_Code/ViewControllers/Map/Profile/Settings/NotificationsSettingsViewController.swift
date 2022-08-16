@@ -69,7 +69,6 @@ class NotificationsSettingsViewController: UITableViewController, NotificationSe
         let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 1))
         view.backgroundColor = .zipSeparator
         return view
-//        return nil
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

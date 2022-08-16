@@ -204,13 +204,9 @@ class FPCViewController: UIViewController {
         zipRequestsTable.FPCDelegate = self
         eventsTable.FPCDelegate = self
         
-        if let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
-            let zipsDict = friendsips.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
-            let userIds = Array(zipsDict.keys)
-            zipRequestsLabel.text = "Zip Requests (\(userIds.count))"
-        } else {
-            zipRequestsLabel.text = "Zip Requests (0)"
-        }
+      
+        zipRequestsLabel.text = "Zip Requests (\(User.getMyRequests().count))"
+    
         eventsLabel.text = "Event Invites (\(events.count))"
 
         //Search Bar

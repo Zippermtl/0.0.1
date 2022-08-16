@@ -386,7 +386,7 @@ extension AbstractProfileViewController: UITableViewDataSource {
         return tableCells[indexPath.row]
     }
     
-    private func configureCells() {
+    func configureCells() {
         tableCells.removeAll()
         if user.hasBio {
             bioCell = UITableViewCell()

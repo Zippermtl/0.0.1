@@ -37,6 +37,7 @@ class EditProfileViewController: UIViewController {
     private var changedPFP = false
     
     @objc private func didTapDoneButton(){
+        view.endEditing(true)
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
             guard let strongSelf = self,
                   err == nil else {

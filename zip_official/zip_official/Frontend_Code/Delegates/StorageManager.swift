@@ -273,7 +273,7 @@ final class StorageManager {
         
     }
     //MARK: Only use default on picNum if for yourself. THE PICNUM IT WILL USE WILL BE THE LOCAL VARIABLE!
-    public func getAllImagesManually(path: String, picNum: Int = -1, completion: @escaping (Result<[URL], Error>) -> Void) {
+    public func getAllImagesManually(path: String, picNum: Int = -1, completion: @escaping (Result<URL, Error>) -> Void) {
         print("picNum in getAllImagesManual is \(picNum)")
         var picURLs: [URL] = []
         var size = picNum
@@ -293,21 +293,12 @@ final class StorageManager {
                     case .success(let url):
                         print(tempPath)
                         print("URL = \(url)")
-                        picURLs.append(url)
+                        completion(.success(url))
                     case .failure(let error):
                         completion(.failure(error))
                         print("failed to get image URL: \(error)")
                     }
-                    print("got profile pic url")
-                    if(i == size){
-//                        printOn.pictureURLs = picURLs
-                        print("completing and returning1")
-
-                        picURLs = picURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
-
-                        completion(.success(picURLs))
-                        
-                    }
+                    
                 })
             } else {
                 tempPath = path + "/img\(i-1).png"
@@ -319,17 +310,10 @@ final class StorageManager {
                         print(tempPath)
                         print("URL = \(url)")
                         picURLs.append(url)
+                        completion(.success(url))
                     case .failure(let error):
                         completion(.failure(error))
                         print("failed to get image URL: \(error)")
-                    }
-                    print("got a url")
-                    if(picURLs.count == size){
-                        print("completing and returning2")
-//                        printOn.pictureURLs = picURLs
-                        picURLs = picURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
-
-                        completion(.success(picURLs))
                     }
                 })
             }

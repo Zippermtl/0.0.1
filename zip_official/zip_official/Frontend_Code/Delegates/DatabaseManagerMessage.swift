@@ -76,14 +76,13 @@ extension DatabaseManager {
             ]
         ]
         
-        print("at least getting here")
         
         //update recipient conversation entry
         database.child("userConvos/\(otherUserId)").observeSingleEvent(of: .value, with: { [weak self] snapshot in
             if var conversations = snapshot.value as? [[String: Any]] {
                 // append
                 conversations.append(recipient_newConversationData)
-                self?.database.child("userConvos/\(otherUserId)").setValue([conversations])
+                self?.database.child("userConvos/\(otherUserId)").setValue(conversations)
                 
             } else {
                 // create
@@ -95,7 +94,7 @@ extension DatabaseManager {
             if var conversations = snapshot.value as? [[String: Any]] {
                 // append
                 conversations.append(newConversationData)
-                self?.database.child("userConvos/\(currentId)").setValue([conversations], withCompletionBlock: { [weak self] error , _ in
+                self?.database.child("userConvos/\(currentId)").setValue(conversations, withCompletionBlock: { [weak self] error , _ in
                     guard error == nil else {
                         completion(false)
                         return
@@ -190,13 +189,16 @@ extension DatabaseManager {
     public func getAllConversations(for id: String, completion: @escaping (Result<[Conversation], Error>) -> Void){
         print("get all conversations for id \(id)")
         database.child("userConvos/\(id)").observe(.value, with: { snapshot in
+            print("value = \(snapshot.value!)")
+//            print("id = \(snapshot.value!["id"])")
+
+            print("value type = \(type(of:snapshot.value))")
+
             guard let value = snapshot.value as? [[String: Any]] else {
                 print("failed to fetch conversations")
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
-            
-            print("value = \(value)")
 
             let conversations: [Conversation] = value.compactMap({ dictionary in
                 guard let conversationID = dictionary["id"] as? String,
@@ -210,10 +212,12 @@ extension DatabaseManager {
                       }
                 
                 let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
-                
+                let otherUser = User(userId: otherUserId)
+                let components = name.split(separator: " ")
+                otherUser.firstName = String(components[0])
+                otherUser.lastName = String(components[1])
                 return Conversation(id: conversationID,
-                                    name: name,
-                                    otherUserId: otherUserId,
+                                    otherUser: otherUser,
                                     latestMessage: latestMessageObject)
                 
             })

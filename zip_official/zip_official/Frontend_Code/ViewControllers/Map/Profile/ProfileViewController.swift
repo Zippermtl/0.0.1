@@ -93,7 +93,7 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB3Button() {
-        let myZipsView = UsersTableViewController(users: user.getMyZips())
+        let myZipsView = UsersTableViewController(users: User.getMyZips())
         myZipsView.title = "My Zips"
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)
@@ -114,5 +114,6 @@ extension ProfileViewController: UpdateUserFromEditProtocol {
         print("updating")
         tableView.reloadData()
         title = user.username
+        configureCells()
     }
 }

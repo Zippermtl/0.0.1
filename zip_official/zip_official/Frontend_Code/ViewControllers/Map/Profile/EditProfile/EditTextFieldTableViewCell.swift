@@ -74,9 +74,10 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
     
     public func saveValue() {
         guard let saveFunc = saveFunc else {
+            print("retunring")
             return
         }
- 
+        print("SAVING TEXT")
         saveFunc(textView.text)
     }
 }
@@ -88,7 +89,6 @@ extension EditTextFieldTableViewCell: UITextViewDelegate {
             textView.text = placeHolder!
             textView.textColor = UIColor.lightGray
         }
-        
         saveValue()
     }
     
@@ -104,7 +104,7 @@ extension EditTextFieldTableViewCell: UITextViewDelegate {
             let filtered = text.components(separatedBy: cs).joined(separator: "")
             return (text == filtered)
         }
-              
+        
         return true
     }
     

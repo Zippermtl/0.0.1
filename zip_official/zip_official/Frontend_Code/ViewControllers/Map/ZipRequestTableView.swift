@@ -18,15 +18,7 @@ class ZipRequestTableView: UITableView {
     weak var FPCDelegate: FPCTableDelegate?
     
     init(){
-        if let friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
-            print("we here FRIENDS")
-            print(friendships)
-            let zipsDict = friendships.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
-            let userIds = Array(zipsDict.keys)
-            requests = userIds.map({ User(userId: $0) })
-        } else {
-            requests = []
-        }
+        requests = User.getMyRequests()
         super.init(frame: .zero, style: .plain)
         
   
