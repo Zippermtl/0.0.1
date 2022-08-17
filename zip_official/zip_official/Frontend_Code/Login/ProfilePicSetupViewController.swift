@@ -116,7 +116,7 @@ class ProfilePicSetupViewController: UIViewController {
         picErrorLabel.isHidden = true
         // push to final setup page
         user.pictures.append(pic)
-        user.picNum = 1
+        user.picNum = 0
         
         spinner.show(in: view)
         DatabaseManager.shared.insertUser(with: user, completion: { [weak self] error in
