@@ -72,8 +72,10 @@ extension DatabaseManager{
                                 StorageManager.shared.addProfilePicture(with: dataholder, key: key, index: images[0].idx, completion:{ res in
                                     switch res{
                                     case .success(let pics):
+                                        completion(.success([pics]))
                                         completionProfileUrl(.success([pics]))
                                     case .failure(let error):
+                                        completion(.failure(error))
                                         completionProfileUrl(.failure(error))
                                     }
                                 })
