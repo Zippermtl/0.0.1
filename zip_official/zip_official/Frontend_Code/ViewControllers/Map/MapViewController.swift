@@ -110,29 +110,6 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
-        let user = User(userId: "u6501111111")
-          
-        user.username = "yianni_zavtest"
-        user.firstName = "YianniTest"
-        user.lastName = "ZavaliagkosTest"
-        user.birthday = Date()
-        user.gender = "M"
-        user.notificationPreferences = NotificationPreference()
-        user.picNum = 0
-        
-        DatabaseManager.shared.BBBinsertUser(with: user, completion: { error in
-            guard error == nil else {
-                return
-            }
-            let p = PictureHolder(image: UIImage(named: "yianni1")!)
-            DatabaseManager.shared.updateImages(key: user.userId, images: [p], forKey: "profileIndex", completion: { result in
-                
-            })
-            
-            
-        })
-        
- 
     
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
