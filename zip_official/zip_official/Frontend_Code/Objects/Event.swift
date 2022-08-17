@@ -203,6 +203,7 @@ public class Event : Equatable {
     var eventCoverIndex: [Int] = []
     var eventPicIndices: [Int] = []
     var eventPicUrls: [URL] = []
+    var picNum: Int = 0
     
     var imageUrl: URL? {
         didSet {

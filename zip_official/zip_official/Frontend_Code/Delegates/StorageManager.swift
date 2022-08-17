@@ -54,7 +54,7 @@ final class StorageManager {
     //adds pictures
     //MARK: DO NOT USE UNLESS YOU UNDERSTAND THAT IT DOES NOT AUTO INCREMENT FOR YOU
     public func AddPicture(with data: Data, key: String, index: Int, completion: @escaping (Result<PictureHolder,Error>) -> Void) {
-        let filename = "images/" + key + "/" + "img\(index).jpeg"
+        let filename =  key + "/" + "img\(index).jpeg"
         storage.child(filename).putData(data, metadata: nil, completion: { [weak self] metaData, error in
             guard error == nil else {
                 //failed
@@ -178,7 +178,7 @@ final class StorageManager {
     }
     
     public func addProfilePicture(with data: Data, key: String, index: Int, completion: @escaping (Result<PictureHolder, Error>) -> Void){
-        let filename = "images/" + key + "/profile_picture.jpeg"
+        let filename = key + "/profile_picture.jpeg"
         storage.child(filename).putData(data, metadata: nil, completion: { [weak self] metaData, error in
             guard error == nil else {
                 //failed

@@ -233,7 +233,7 @@ extension EditEventProfileViewController: UIImagePickerControllerDelegate, UINav
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.editedImage] as? UIImage {
             let pic = PictureHolder(image: image)
-            DatabaseManager.shared.updateEventImage(key: event.eventId, images: [pic], forKey: "eventCoverIndex", completion: { [weak self] res in
+            DatabaseManager.shared.updateEventImage(event: event, images: [pic], forKey: "eventCoverIndex", completion: { [weak self] res in
                 switch res {
                 case .success(let url):
                     self?.event.imageUrl = url[0].url!
