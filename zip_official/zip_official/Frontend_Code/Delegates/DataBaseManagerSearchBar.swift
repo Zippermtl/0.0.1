@@ -24,7 +24,7 @@ extension DatabaseManager {
             let birthday = datefix.date(from: snapshot.childSnapshot(forPath: "birthday").value as! String)
             let firstname = snapshot.childSnapshot(forPath: "firstName").value as! String
             let notifications = snapshot.childSnapshot(forPath: "notifications").value
-            let picnum = snapshot.childSnapshot(forPath: "picNum").value
+            let picNum = snapshot.childSnapshot(forPath: "picNum").value
             let school = snapshot.childSnapshot(forPath: "school").value as! String
             let lastname = snapshot.childSnapshot(forPath: "lastName").value as! String
             let userN = snapshot.childSnapshot(forPath: "username").value as! String
@@ -46,7 +46,7 @@ extension DatabaseManager {
 //                let school = snap.childSnapshot(forPath: "school") as String
 //                let lastname = snap.childSnapshot(forPath: "lastName") as String
 //                let username = snap.childSnapshot(forPath: "username") as String
-            let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picnum as! Int, bio: bio as! String, school: school)
+            let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picNum as! Int, bio: bio as! String, school: school)
                 SearchManager.shared.loadedUsers.append(temp)
                 print(temp)
 //            }
@@ -98,11 +98,11 @@ extension DatabaseManager {
                 let birthday = datefix.date(from: rest.childSnapshot(forPath: "birthday").value as! String)
                 let firstname = rest.childSnapshot(forPath: "firstName").value as! String
                 let notifications = rest.childSnapshot(forPath: "notifications").value
-                let picnum = rest.childSnapshot(forPath: "picNum").value
+                let picNum = rest.childSnapshot(forPath: "picNum").value
                 let school = rest.childSnapshot(forPath: "school").value as! String
                 let lastname = rest.childSnapshot(forPath: "lastName").value as! String
                 let userN = rest.childSnapshot(forPath: "username").value as! String
-                let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picnum as! Int, bio: bio as! String, school: school)
+                let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picNum as! Int, bio: bio as! String, school: school)
 //                    SearchManager.shared.loadedUsers.append(temp)
                     print(temp)
     //            }
