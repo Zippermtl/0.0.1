@@ -17,7 +17,7 @@ import AVKit
 
 
 struct Sender: SenderType {
-    public var photoURL: String
+    public var photoURL: URL?
     public var senderId: String
     public var displayName: String
 }
@@ -81,30 +81,33 @@ class ChatViewController: MessagesViewController {
     private var senderPhotoURL: URL?
     private var otherPhotoURL: URL?
     
+    private let sendButton: InputBarSendButton
+    
     
     private var selfSender: Sender? = {
-        guard let myId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+        guard let myId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
+              let myName = AppDelegate.userDefaults.value(forKey: "name") as? String,
+              let pfpString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String else {
             return nil
         }
         
-        return Sender(photoURL: "",
+        return Sender(photoURL: URL(string: pfpString),
                       senderId: myId,
-                      displayName: "Yianni Zavaliakgos")
+                      displayName: myName)
     }()
     
     
-    public let otherUser = Sender(photoURL: "",
-                           senderId: "other",
-                           displayName: "Ezra Taylor")
+    public let otherUser: Sender
     
     var messages: [MessageType] = []
     
-    init(with recipientId: String, id: String?){
+    init(toUser otherUser: User, id: String?){
         conversationId = id
-        otherUserId = recipientId
+        otherUserId = otherUser.userId
+        sendButton = InputBarSendButton()
+
+        self.otherUser = Sender(photoURL: otherUser.profilePicUrl, senderId: otherUser.userId, displayName: otherUser.fullName)
         super.init(nibName: nil, bundle: nil)
-        
-        
     }
     
     required init?(coder: NSCoder) {
@@ -121,8 +124,45 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messageCellDelegate = self
 
         messageInputBar.delegate = self
+        messageInputBar.tintColor = .white
+        messageInputBar.contentView.backgroundColor = .zipLightGray
+        messageInputBar.middleContentView?.tintColor = .zipVeryLightGray
+        messageInputBar.backgroundView.backgroundColor = .zipGray
         
-        setupInputButton()
+        sendButton.setup()
+        sendButton.backgroundColor = .white
+        sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
+        let config = UIImage.SymbolConfiguration(pointSize: 40)
+        let img = UIImage(systemName: "arrow.up.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
+        sendButton.setImage(img, for: .normal)
+        sendButton.layer.masksToBounds = true
+        sendButton.layer.cornerRadius = 35/2
+
+        
+        sendButton.onTouchUpInside({ [weak self] _ in
+            self?.sendMessage()
+        })
+
+        let attatchmentButton = InputBarButtonItem()
+        attatchmentButton.setSize(CGSize(width: 35, height: 35), animated: false)
+        attatchmentButton.setImage(UIImage(systemName: "paperclip"), for: .normal)
+        attatchmentButton.onTouchUpInside({ [weak self] _ in
+            self?.presentInputActionSheet()
+        })
+        
+        messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
+        messageInputBar.setStackViewItems([attatchmentButton], forStack: .left, animated: false)
+        
+        messageInputBar.setRightStackViewWidthConstant(to: 36, animated: false)
+        messageInputBar.setStackViewItems([sendButton], forStack: .right, animated: false)
+        
+        
+        
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        messageInputBar.contentView.layer.cornerRadius = messageInputBar.contentView.frame.height/2
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -133,17 +173,6 @@ class ChatViewController: MessagesViewController {
         }
     }
     
-    private func setupInputButton(){
-        let button = InputBarButtonItem()
-        button.setSize(CGSize(width: 35, height: 35), animated: false)
-        button.setImage(UIImage(systemName: "paperclip"), for: .normal)
-        button.onTouchUpInside({ [weak self] _ in
-            self?.presentInputActionSheet()
-        })
-        
-        messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
-        messageInputBar.setStackViewItems([button], forStack: .left, animated: false)
-    }
     
     private func presentInputActionSheet(){
         let actionSheet = UIAlertController(title: "Attach Media",
@@ -277,25 +306,28 @@ class ChatViewController: MessagesViewController {
 
 extension ChatViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        guard !text.replacingOccurrences(of: " ", with: "").isEmpty,
+        sendMessage()
+    }
+    
+    @objc private func sendMessage(){
+       
+        guard let text = messageInputBar.inputTextView.text,
+              !text.replacingOccurrences(of: " ", with: "").isEmpty,
               let selfSender = self.selfSender,
               let messageID = createMessageId()
         else {
-            print("error here")
+            print("error here \(messageInputBar.inputTextView.text)")
             return
         }
-        
         
         let message = Message(sender: selfSender,
                               messageId: messageID,
                               sentDate: Date(),
                               kind: .text(text))
-
         
         // Send Message
         if isNewConversation {
             //create convo in database
-
             DatabaseManager.shared.createNewConversation(with: otherUserId, name: title ?? "User", firstMessage: message, completion: { [weak self] success in
                 if success {
                     print("message sent")
@@ -309,7 +341,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 }
             })
         } else {
-            print("this is where the issue really is")
             guard let conversationId = self.conversationId else {
                 print("Failed to find messageId")
                 return
@@ -409,48 +440,17 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
         
         if sender.senderId == selfSender?.senderId {
             // show our image
-            if let currentUserImageURL = senderPhotoURL {
-                avatarView.sd_setImage(with: currentUserImageURL, completed: nil)
+            if let pfpUrl = selfSender?.photoURL {
+                avatarView.sd_setImage(with: pfpUrl, completed: nil)
             } else {
-                // images/safeemail_profile_picture.png
-                guard let myId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-                    return
-                }
-                
-                let path = "images/\(myId)_profile_picture.png"
-                // fetch url
-                StorageManager.shared.downloadURL(for: path, completion: { [weak self] result in
-                    switch result {
-                    case .success(let url):
-                        self?.senderPhotoURL = url
-                        DispatchQueue.main.async {
-                            avatarView.sd_setImage(with: url, completed: nil)
-                        }
-                    case .failure(let error):
-                        print("\(error)")
-                    }
-                })
+                avatarView.image = UIImage(named: "defaultProfilePic")
             }
         } else {
             //other image
-            if let otherUserImageURL = otherPhotoURL {
-                avatarView.sd_setImage(with: otherUserImageURL, completed: nil)
+            if let otherPfpUrl = otherUser.photoURL {
+                avatarView.sd_setImage(with: otherPfpUrl, completed: nil)
             } else {
-                // images/safeemail_profile_picture.png
-
-                let path = "images/\(otherUserId)_profile_picture.png"
-                // fetch url
-                StorageManager.shared.downloadURL(for: path, completion: { [weak self] result in
-                    switch result {
-                    case .success(let url):
-                        self?.otherPhotoURL = url
-                        DispatchQueue.main.async {
-                            avatarView.sd_setImage(with: url, completed: nil)
-                        }
-                    case .failure(let error):
-                        print("\(error)")
-                    }
-                })
+                avatarView.image = UIImage(named: "defaultProfilePic")
             }
         }
     }

@@ -67,7 +67,7 @@ class UserCoder: Codable {
         try container.encode(username, forKey: .username)
         try container.encode(firstName, forKey: .firstName)
         try container.encode(lastName, forKey: .lastName)
-        try container.encode(birthday, forKey: .picNum)
+        try container.encode(birthday, forKey: .birthday)
         try container.encode(bio, forKey: .bio)
         try container.encode(gender, forKey: .gender)
         try container.encode(picNum, forKey: .picNum)

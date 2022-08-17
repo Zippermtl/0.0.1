@@ -270,7 +270,7 @@ extension EditProfileViewController :  UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "First name", content: user.firstName, saveFunc: saveFirstNameFunc(_:))
             cell.charLimit = 20
-            cell.acceptableCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+            cell.acceptableCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-$.,&%!?^*"
             cell.selectionStyle = .none
             cell.cellDelegate = self
 
@@ -279,7 +279,7 @@ extension EditProfileViewController :  UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Last name", content: user.lastName, saveFunc: saveLastNameFunc(_:))
             cell.charLimit = 20
-            cell.acceptableCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz0123456789-"
+            cell.acceptableCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-$.,&%!?^*"
             cell.selectionStyle = .none
             cell.cellDelegate = self
 

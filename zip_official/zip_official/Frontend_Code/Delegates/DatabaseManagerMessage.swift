@@ -277,7 +277,7 @@ extension DatabaseManager {
                     return nil
                 }
                 
-                let sender = Sender(photoURL: "", senderId: senderEmail, displayName: name)
+                let sender = Sender(photoURL: nil, senderId: senderEmail, displayName: name)
                 
                 return Message(sender: sender,
                                messageId: messageID,

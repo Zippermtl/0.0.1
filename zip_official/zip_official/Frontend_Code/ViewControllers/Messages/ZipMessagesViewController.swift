@@ -49,7 +49,7 @@ class ZipMessagesViewController: UIViewController {
             if let targetConversation = currentConversations.first(where: {
                 $0.otherUser.userId == result.userId
             }) {
-                let vc = ChatViewController(with: targetConversation.otherUser.userId, id: targetConversation.id)
+                let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
                 vc.isNewConversation = true
                 vc.title = targetConversation.otherUser.userId
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
@@ -61,9 +61,9 @@ class ZipMessagesViewController: UIViewController {
         present(navVC, animated: true)
     }
     
-    private func createNewConversation(result: User){
-        let name = result.fullName
-        let userId = result.userId
+    private func createNewConversation(result otherUser: User){
+        let name = otherUser.fullName
+        let userId = otherUser.userId
         
         // check in database if conversation with these two uses exists
         // if it does, reuse conversation id
@@ -74,13 +74,13 @@ class ZipMessagesViewController: UIViewController {
             }
             switch result{
             case.success(let conversationId):
-                let vc = ChatViewController(with: userId, id: conversationId)
+                let vc = ChatViewController(toUser: otherUser, id: conversationId)
                 vc.isNewConversation = false
                 vc.title = name
                 vc.navigationItem.largeTitleDisplayMode = .never
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
             case .failure(_):
-                let vc = ChatViewController(with: userId, id: nil)
+                let vc = ChatViewController(toUser: otherUser, id: nil)
                 vc.isNewConversation = true
                 vc.title = name
                 vc.navigationItem.largeTitleDisplayMode = .never
@@ -253,9 +253,8 @@ extension ZipMessagesViewController: UITableViewDataSource {
     
     func openConversation(_ model: Conversation){
         //show chat messages
-        let vc = ChatViewController(with: model.otherUser.userId, id: model.id)
-        vc.title = model.otherUser.fullName
-        print("title = \(model.otherUser.fullName)")
+        let vc = ChatViewController(toUser: model.otherUser, id: model.id)
+        vc.title = model.otherUser.firstName
         vc.navigationItem.largeTitleDisplayMode = .never
         navigationController?.pushViewController(vc, animated: true)
     }

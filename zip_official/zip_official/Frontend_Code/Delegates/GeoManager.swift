@@ -118,7 +118,9 @@ class GeoManager {
                 if(strongSelf.loadedEvent.count > max){
                     query.removeAllObservers()
                 }
-                strongSelf.eventIsValid(key: key)
+                let event = Event(eventId: key)
+                event.coordinates = location
+                strongSelf.eventIsValid(event: event)
             })
         }
     }
@@ -142,9 +144,9 @@ class GeoManager {
 //        }
 //    }
 
-    public func eventIsValid(key: String){
-        if(!alreadyReadySeenEvent.contains(key)){
-            DatabaseManager.shared.loadEvent(event: Event(eventId: key)) { [weak self] result in
+    public func eventIsValid(event: Event){
+        if(!alreadyReadySeenEvent.contains(event.eventId)){
+            DatabaseManager.shared.loadEvent(event: event) { [weak self] result in
                 guard let strongSelf = self else {
                     return
                 }
@@ -154,9 +156,9 @@ class GeoManager {
                 switch result{
                 case .success(let event):
                     GeoManager.shared.loadedEvent.append(event)
-                    strongSelf.alreadyReadySeenEvent.append(key)
+                    strongSelf.alreadyReadySeenEvent.append(event.eventId)
                 case .failure(let error):
-                    strongSelf.alreadyReadySeenEvent.removeAll(where: { $0 == key})
+                    strongSelf.alreadyReadySeenEvent.removeAll(where: { $0 == event.eventId})
                     print(error)
                 }
                 
@@ -185,7 +187,9 @@ class GeoManager {
                 query.removeAllObservers()
                 strongSelf.moreUsersInQuery = true
             }
-            if(strongSelf.userIsValid(key: key)){
+            let user = User(userId: key)
+            user.location = location
+            if(strongSelf.userIsValid(checkUser: user)){
                 GeoManager.shared.userIdList.append(User(userId:key))
                 print("userIdList appending \(key.description)")
             }
@@ -201,20 +205,20 @@ class GeoManager {
         
     }
     
-    public func userIsValid(key: String) -> Bool{
+    public func userIsValid(checkUser: User) -> Bool{
         for user in userIdList{
-            if(user.userId == key){
+            if(user.userId == checkUser.userId){
                 print("A user is duplicated")
                 return false
             }
         }
         for user in alreadyReadySeen{
-            if(user == key){
+            if(user == checkUser.userId){
                 print("A user is already seen")
                 return false
             }
         }
-        if(key == AppDelegate.userDefaults.value(forKey: "userId") as? String){
+        if(checkUser.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String){
             return false
         }
         return true

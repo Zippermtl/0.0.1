@@ -50,6 +50,18 @@ class MapViewController: UIViewController {
     var guardingGeoFireCalls: Bool
     
     var mapDidMove: Bool
+    
+//    typealias LoadCircle = (center: CLLocation, radius: Double)
+//    var eventId_circles = [LoadCircle]()
+//    var loadedEvent_circles = [LoadCircle]()
+//    var userCenter: CLLocation
+//    var currentCenter: CLLocation
+//    var currentRadius: Double
+//
+//    var getCurrentCircle: LoadCircle = {
+//        return LoadCircle()
+//    }()
+
 
     
     init(isNewAccount: Bool){
@@ -98,49 +110,28 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
-        let user = User(userId: "u9789070602")
-        user.firstName = "Yianni"
-        user.lastName = "Zavaliagkos"
-        user.username = "yianni_zav"
-        DatabaseManager.shared.acceptRequest(user: user, completion: { error in
+        let user = User(userId: "u6501111111")
+          
+        user.username = "yianni_zavtest"
+        user.firstName = "YianniTest"
+        user.lastName = "ZavaliagkosTest"
+        user.birthday = Date()
+        user.gender = "M"
+        user.notificationPreferences = NotificationPreference()
+        user.picNum = 0
+        
+        DatabaseManager.shared.BBBinsertUser(with: user, completion: { error in
+            guard error == nil else {
+                return
+            }
+            let p = PictureHolder(image: UIImage(named: "yianni1")!)
+            DatabaseManager.shared.updateImages(key: user.userId, images: [p], forKey: "profileIndex", completion: { result in
+                
+            })
             
             
         })
         
-        let user2 = User(userId: "u2158018458")
-        user2.firstName = "Ezra"
-        user2.lastName = "Taylor"
-        user2.username = "ezrataylor55"
-        DatabaseManager.shared.acceptRequest(user: user2, completion: { error in
-            
-            
-        })
-        
-//        DatabaseManager.shared.testWrite()
-        
-        
-//        createNewUsersInDB()
-//        updateUsersInDB()
-//
-        
-//        let vc = OtherProfileViewController(id: "u2158018458")
-
-//        let friendships: [String : Int] = ["u2158018458" : 0,
-//                                           "u2508575270" : 0,
-//                                           "u1" : 2,
-//                                           "u2" : 2,
-//                                           "u3" : 2,
-//                                           "u4" : 2,
-//                                           "u5" : 2,
-//                                           "u6" : 2,
-//                                           "u7" : 2,
-//                                           "u8" : 2,
-//                                           "u9" : 2,
-//                                           "u10" : 2,
-//                                           "u6502222222" : 1
-//        ]
-//
-//        AppDelegate.userDefaults.set(friendships, forKey: "friendships")
  
     
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String

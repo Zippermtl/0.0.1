@@ -493,5 +493,32 @@ final class StorageManager {
         return AppDelegate.userDefaults.value(forKey: "picNum") as! Int
     }
  
+ 
+    
+    
+    
+    public func AddPicture(with data: Data, key: String, index: Int, completion: @escaping (Result<PictureHolder,Error>) -> Void) {
+            let filename = "images/" + key + "/" + "img\(index).jpeg"
+            storage.child(filename).putData(data, metadata: nil, completion: { [weak self] metaData, error in
+                guard error == nil else {
+                    //failed
+                    completion(.failure(StorageErrors.failedToUpload))
+                    return
+                }
+                
+                self?.storage.child(filename).downloadURL(completion: { url, error in
+                    guard let url = url else {
+                        print("Failed to get download url")
+                        completion(.failure(StorageErrors.failedToGetDownloadUrl))
+                        return
+                    }
+                    
+                    let urlString = url.absoluteString
+                    print("download url returned: \(urlString)")
+                    completion(.success(PictureHolder(url: url, index: index)))
+                    
+                })
+            })
+        }
     
 }

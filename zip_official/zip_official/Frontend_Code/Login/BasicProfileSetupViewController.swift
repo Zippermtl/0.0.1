@@ -38,7 +38,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.layer.cornerRadius = 15
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.zipLightGray.cgColor
-        field.attributedPlaceholder = NSAttributedString(string: "FIRST NAME",
+        field.attributedPlaceholder = NSAttributedString(string: "First Name",
                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
                                                                       NSAttributedString.Key.font: UIFont.zipBodyBold])
         
@@ -62,7 +62,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.layer.cornerRadius = 15
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.zipLightGray.cgColor
-        field.attributedPlaceholder = NSAttributedString(string: "LAST NAME",
+        field.attributedPlaceholder = NSAttributedString(string: "Last Name",
                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
                                                                       NSAttributedString.Key.font: UIFont.zipBodyBold])
 
@@ -89,7 +89,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.layer.cornerRadius = 15
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.zipLightGray.cgColor
-        field.attributedPlaceholder = NSAttributedString(string: "USERNAME",
+        field.attributedPlaceholder = NSAttributedString(string: "Username",
                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
                                                                       NSAttributedString.Key.font: UIFont.zipBodyBold])
 
@@ -129,7 +129,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.layer.cornerRadius = 15
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.zipLightGray.cgColor
-        field.attributedPlaceholder = NSAttributedString(string: "BIRTHDAY",
+        field.attributedPlaceholder = NSAttributedString(string: "Birthday",
                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
                                                                       NSAttributedString.Key.font: UIFont.zipBodyBold])
 
@@ -532,7 +532,7 @@ extension BasicProfileSetupViewController: UITextFieldDelegate {
             return checkAcceptable(string: string, acceptableChars: ACCEPTABLE_CHARACTERS)
         } else if textField == firstNameField || textField == lastNameField {
             if str.count > 20 { return false }
-            let ACCEPTABLE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+            let ACCEPTABLE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-$.,&%!?^*"
             return checkAcceptable(string: string, acceptableChars: ACCEPTABLE_CHARACTERS)
         }
         return true

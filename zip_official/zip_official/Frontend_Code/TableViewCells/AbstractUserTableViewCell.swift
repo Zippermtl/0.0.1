@@ -19,12 +19,11 @@ class AbstractUserTableViewCell: UITableViewCell {
     var nameLabel: UILabel
     var extraInfoLabel: UILabel
     
-    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         self.user = User()
         self.pictureView = UIImageView()
-        self.nameLabel = UILabel.zipTextNotiBold()
-        self.extraInfoLabel = UILabel()
+        self.nameLabel = UILabel.zipSubtitle()
+        self.extraInfoLabel = UILabel.zipTextNotiBold()
         self.outlineView = UIView()
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .zipGray

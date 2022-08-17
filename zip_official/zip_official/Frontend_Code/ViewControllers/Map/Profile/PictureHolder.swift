@@ -21,16 +21,16 @@ class PictureHolder {
         return false
     }
     
-    init(url: URL, edited: Bool = false){
+    init(url: URL, edited: Bool = false, index: Int = 0){
         self.url = url
         self.isEdited = edited
-        self.idx = 0
+        self.idx = index
     }
     
-    init(image: UIImage, edited: Bool = false){
+    init(image: UIImage, edited: Bool = false, index: Int = 0){
         self.image = image
         self.isEdited = edited
-        self.idx = 0
+        self.idx = index
     }
     
    

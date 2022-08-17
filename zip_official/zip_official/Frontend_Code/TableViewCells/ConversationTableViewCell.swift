@@ -12,12 +12,14 @@ class ConversationTableViewCell: AbstractUserTableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
+        outlineView.backgroundColor = .zipGray
     }
 
     public func configure(with model: Conversation){
         extraInfoLabel.text = model.latestMessage.text
+        extraInfoLabel.textColor = .zipVeryLightGray
         super.configure(model.otherUser)
+        
     }
     
     required init?(coder: NSCoder) {
