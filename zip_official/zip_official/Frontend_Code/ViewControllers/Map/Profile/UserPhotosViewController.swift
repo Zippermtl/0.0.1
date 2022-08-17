@@ -85,7 +85,7 @@ class UserPhotosViewController: UIViewController {
     @objc private func didTapEditButton() {
         if editButton.titleLabel?.text == "Edit" { // edit
             //show xButtons
-            for i in 0..<user.picNum {
+            for i in 0..<userPictures.count {
                 let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as? EditPicturesCollectionViewCell
                 cell?.xButton.isHidden = false
             }
@@ -98,30 +98,75 @@ class UserPhotosViewController: UIViewController {
             collectionView?.reloadData()
             
         } else { // save
-            user.picNum = userPictures.count + 1
-            AppDelegate.userDefaults.set(userPictures.count + 1, forKey: "picNum")
+//            var pics: [PictureHolder] = []
+//            for img in userPictures {
+//                pics.append(img)
+//            }
             var idx = 0
-            for img in userPictures {
-                if img.isEdited {
+            for i in 0...userPictures.count {
+                if userPictures[i].isEdited {
                     guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
-                          let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
                           let image = cell.picture.image else {
                               return
                           }
-                    
-                    StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
-                        switch result {
-                        case .success(let url):
-                            // TODO: potential error with order of photos
-                            img.url = URL(string: url)
-                            self?.user.pictureURLs.append(URL(string: url)!)
-                        case .failure(let error):
-                            print("error: \(error)")
-                        }
-                    })
+                    userPictures[i].image = image
                 }
-                idx += 1
             }
+            let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
+            let indices = AppDelegate.userDefaults.value(forKey: "picIndices") as? [Int]
+//            guard let id = userId,
+//                  let ind = indices else {
+//                      print("ERROR SOMEWHERE IN USERDEFAULTS")
+//                      return
+//                  }
+            guard let id = userId else {
+                      print("ERROR SOMEWHERE IN USERDEFAULTS")
+                      return
+                  }
+            DatabaseManager.shared.updateImages(key: id, images: userPictures, forKey: "picIndices", completion: { [weak self] res in
+                guard let strongself = self else {
+                    print("Big error on line 124 of UserPhotos...wController")
+                    return
+                }
+                switch res {
+                case .success(let pics):
+                    print("editButtonPressed and pics recieved")
+                    //trusting no issues
+                    var tempUrls: [URL] = []
+                    for i in pics{
+                        guard let url = i.url else {
+                            print("something wrong with url in obj at line 134 of UserPhotos...wController")
+                            continue
+                        }
+                        tempUrls.append(url)
+                    }
+                case .failure(let error):
+                    print("error: \(error)")
+                }
+            }, completionProfileUrl: {_ in})
+//            user.picNum = userPictures.count + 1
+//            AppDelegate.userDefaults.set(userPictures.count + 1, forKey: "picNum")
+//            var idx = 0
+//            for img in userPictures {
+//                if img.isEdited {
+//                    guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
+//                          let image = cell.picture.image else {
+//                              return
+//                          }
+//
+//                    StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
+//                        switch result {
+//                        case .success(let url):
+//                            // TODO: potential error with order of photos
+//                            img.url = URL(string: url)
+//                            self?.user.pictureURLs.append(URL(string: url)!)
+//                        case .failure(let error):
+//                            print("error: \(error)")
+//                        }
+//                    })
+//                }
+//                idx += 1
+//            }
             
             let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                              .foregroundColor: UIColor.zipBlue]
