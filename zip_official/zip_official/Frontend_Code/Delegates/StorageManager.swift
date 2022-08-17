@@ -46,6 +46,7 @@ final class StorageManager {
                 completion(.success(PictureHolder(url: url, index: index)))
             case .failure(let error):
                 print("failed to get image URL: \(error)")
+                completion(.failure(error))
             }
         })
     }
