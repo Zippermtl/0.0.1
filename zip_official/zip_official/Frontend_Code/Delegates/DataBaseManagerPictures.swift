@@ -245,7 +245,9 @@ extension DatabaseManager{
         var indicesCopy = indices
         var urls: [Int : URL] = [:]
         var returnUrls: [URL] = []
-        
+        if (indices.count == 0){
+            completion(.success([]))
+        }
         for i in indices {
             StorageManager.shared.getPicture(key: key, index: i, completion: { [weak self] res in
                 guard let strongself = self else {
