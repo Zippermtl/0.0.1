@@ -271,6 +271,8 @@ extension DatabaseManager{
                                 completion(.success(returnUrls))
                             }
                         }
+                    } else {
+                        completion(.failure(DatabaseError.failedWithIndices))
                     }
                 case .failure(let error):
                     completion(.failure(error))
