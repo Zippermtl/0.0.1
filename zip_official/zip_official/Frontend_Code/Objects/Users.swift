@@ -26,6 +26,8 @@ class UserCoder: Codable {
     var school: String?
     var gender: String
     var joinDate: Timestamp
+    var picIndices: [Int]
+    var profilePicIndex: [Int]
     
     enum CodingKeys: String, CodingKey {
         case userId = "id"
@@ -41,6 +43,8 @@ class UserCoder: Codable {
         case gender = "gender"
         case notificationToken = "notificationToken"
         case joinDate = "joinDate"
+        case picIndices = "picIndices"
+        case profilePicIndex = "profileIndex"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -59,6 +63,8 @@ class UserCoder: Codable {
         self.deviceId = try container.decode([String].self, forKey: .deviceId)
         self.notificationToken = try container.decode([String].self, forKey: .notificationToken)
         self.joinDate = try container.decode(Timestamp.self, forKey: .joinDate)
+        self.picIndices = try container.decode([Int].self, forKey: .picIndices)
+        self.profilePicIndex = try container.decode([Int].self, forKey: .profilePicIndex)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -76,6 +82,8 @@ class UserCoder: Codable {
         try container.encode(deviceId, forKey: .deviceId)
         try container.encode(notificationToken, forKey: .notificationToken)
         try container.encode(joinDate, forKey: .joinDate)
+        try container.encode(picIndices, forKey: .picIndices)
+        try container.encode(profilePicIndex, forKey: .profilePicIndex)
     }
     
     
@@ -92,7 +100,9 @@ class UserCoder: Codable {
             school: school,
             interests: interests,
             notificationToken: notificationToken[0],
-            joinDate: joinDate.dateValue()
+            joinDate: joinDate.dateValue(),
+            profilePicIndex: profilePicIndex,
+            picIndices: picIndices
         )
     }
     
@@ -107,6 +117,8 @@ class UserCoder: Codable {
         user.school = school
         user.interests = interests
         user.joinDate = joinDate.dateValue()
+        user.picIndices = picIndices
+        user.profilePicIndex = profilePicIndex
     }
 }
 
@@ -136,6 +148,9 @@ public class User : CustomStringConvertible, Equatable {
     var location: CLLocation = CLLocation()
     var pictures: [UIImage] = []
     var pictureURLs: [URL] = []
+    var profilePicIndex: [Int] = []
+    var profilePicUrl: URL?
+    var picIndices: [Int] = []
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     
@@ -148,7 +163,7 @@ public class User : CustomStringConvertible, Equatable {
         out += "firstname = \(firstName) \n"
         out += "lastname = \(lastName) \n"
         out += "birthday = \(birthdayString) \n"
-        out += "picnum = \(picNum) \n"
+        out += "picNum = \(picNum) \n"
         out += "bio = \(bio) \n"
         out += "school = \(school ?? "") \n"
         out += "interests = \(interests) \n"
@@ -162,29 +177,11 @@ public class User : CustomStringConvertible, Equatable {
     }
 
     func setProfilePicUrl(url: URL) {
-        if pictureURLs.count == 0 {
-            pictureURLs.append(url)
-        } else {
-            pictureURLs[0] = url
-        }
-    }
-    
-
-    
-    var profilePicUrl : URL? {
-        if pictureURLs.count == 0 { return nil }
-        return pictureURLs[0]
+        profilePicUrl = url
     }
     
     var otherPictureUrls: [URL] {
-        if pictureURLs.count > 1 {
-            return Array(pictureURLs[1 ..< pictureURLs.count])
-        }
-        return []
-    }
-    
-    var otherPicNum: Int {
-        return picNum-1
+        return pictureURLs
     }
 
     func getDistance() -> Double {
@@ -330,7 +327,7 @@ public class User : CustomStringConvertible, Equatable {
         notificationPreferences = DecodePreferences(np)
     }
 
-    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", gender: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notificationToken nt: String = "", joinDate jd: Date = Date()) {
+    init(userId id: String = "", email em: String = "", username us: String = "", firstName fn: String = "", lastName ln: String = "", gender: String = "", birthday bd: Date = Date(), location loc: CLLocation = CLLocation(latitude: 0, longitude: 0), picNum pn: Int = 0, pictures pics: [UIImage] = [], pictureURLs picurls: [URL] = [], bio b: String = "", school sc: String? = "", interests inters: [Interests] = [], previousEvents preve: [Event] = [], goingEvents goinge: [Event] = [], notificationPreferences np: NotificationPreference = [:], encodedNotifPref enp: Int? = 0, deviceId devId: String = "", notificationToken nt: String = "", joinDate jd: Date = Date(), profilePicUrl pUrl: URL? = URL(string: ""), profilePicIndex pInd: [Int] = [], picIndices picInds: [Int] = []) {
         userId = id
         email = em
         username = us
@@ -354,6 +351,9 @@ public class User : CustomStringConvertible, Equatable {
         deviceId = devId
         notificationToken = nt
         joinDate = jd
+        profilePicUrl = pUrl
+        profilePicIndex = pInd
+        picIndices = picInds
     }
 
     // Load someone's friendships
