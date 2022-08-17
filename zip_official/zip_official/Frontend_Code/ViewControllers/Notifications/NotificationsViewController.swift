@@ -16,6 +16,7 @@ class NotificationsViewController: UIViewController {
     private let tableHeader: UIView
     private let zipRequestButton: UIButton
     private let eventInvitesButton: UIButton
+
         
     @objc private func didTapZipRequestsButton(){
         let vc = ZipRequestsViewController()
@@ -37,6 +38,15 @@ class NotificationsViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         zipRequestButton.setTitle("Zip Requests (\(User.getMyRequests().count))", for: .normal)
+//        super.init(nibName: nil, bundle: nil)
+//        if let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
+//            let zipsDict = friendsips.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
+//            let userIds = Array(zipsDict.keys)
+//            zipRequestButton.setTitle("Zip Requests (\(userIds.count))", for: .normal)
+//        } else {
+//            zipRequestButton.setTitle("Zip Requests (0)", for: .normal)
+//        }
+        
         zipRequestButton.addTarget(self, action: #selector(didTapZipRequestsButton), for: .touchUpInside)
         zipRequestButton.backgroundColor = .clear
         zipRequestButton.titleLabel?.textColor = .white
@@ -53,7 +63,6 @@ class NotificationsViewController: UIViewController {
         eventInvitesButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         
   
-        
         configureNavBar()
         configureTable()
         configureTableHeader()
@@ -169,6 +178,7 @@ class NotificationsViewController: UIViewController {
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
         tableView.tableHeaderView = tableHeader
+
     }
 }
 
