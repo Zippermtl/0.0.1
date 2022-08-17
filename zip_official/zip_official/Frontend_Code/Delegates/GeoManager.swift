@@ -104,7 +104,7 @@ class GeoManager {
         })
     }
     
-    public func GetPromoterEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+    public func GetPromoterEventByLocation(location: CLLocation, range: Double, max: Int, autoLoad: Bool = true, completion: @escaping (Event) -> Void){
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         if (range < eventRange){
             eventRange = range
@@ -120,7 +120,30 @@ class GeoManager {
                 }
                 let event = Event(eventId: key)
                 event.coordinates = location
-                strongSelf.eventIsValid(event: event)
+                let valid = strongSelf.eventIsValid(event: event)
+                if(valid){
+                    if(autoLoad){
+                        DatabaseManager.shared.loadEvent(event: event, completion: { [weak self] result in
+                            guard let strongSelf = self else {
+                                return
+                            }
+            //                guard strongSelf = self {
+            //                    return
+            //                }
+                            switch result{
+                            case .success(let eventfull):
+//                                GeoManager.shared.loadedEvent.append(event)
+                                strongSelf.alreadyReadySeenEvent.append(eventfull.eventId)
+                                completion(eventfull)
+                            case .failure(let error):
+                                strongSelf.alreadyReadySeenEvent.removeAll(where: { $0 == event.eventId})
+                                print(error)
+                            }
+                        })
+                    } else {
+                        completion(event)
+                    }
+                }
             })
         }
     }
@@ -144,34 +167,20 @@ class GeoManager {
 //        }
 //    }
 
-    public func eventIsValid(event: Event){
+    public func eventIsValid(event: Event) -> Bool{
         if(!alreadyReadySeenEvent.contains(event.eventId)){
-            DatabaseManager.shared.loadEvent(event: event) { [weak self] result in
-                guard let strongSelf = self else {
-                    return
-                }
-//                guard strongSelf = self {
-//                    return
-//                }
-                switch result{
-                case .success(let event):
-                    GeoManager.shared.loadedEvent.append(event)
-                    strongSelf.alreadyReadySeenEvent.append(event.eventId)
-                case .failure(let error):
-                    strongSelf.alreadyReadySeenEvent.removeAll(where: { $0 == event.eventId})
-                    print(error)
-                }
+            return true
                 
-            }
-            
+        } else{
+            return false
         }
     }
     public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
-        print("Entering GetUserByLoc, range = \(range) max = \(max)")
-        let userID = AppDelegate.userDefaults.value(forKey: "userID")
-        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        let geoRange = Double(range)
-        //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
+       print("Entering GetUserByLoc, range = \(range) max = \(max)")
+       let userID = AppDelegate.userDefaults.value(forKey: "userID")
+       let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+       let geoRange = Double(range)
+       //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
 //        let circleQuery = self.geoFire.query(at: center, withRadius: geoRange)
 //        _ = circleQuery.observe(.keyEntered, with: { key, location in
 //            guard let key = key else { return }
@@ -204,7 +213,7 @@ class GeoManager {
         })
         
     }
-    
+          
     public func userIsValid(checkUser: User) -> Bool{
         for user in userIdList{
             if(user.userId == checkUser.userId){
