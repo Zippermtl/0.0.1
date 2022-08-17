@@ -24,8 +24,6 @@ class CompleteProfileViewController: UIViewController {
 
     
     @objc private func didTapDoneButton(){
-        user.picNum = userPictures.count
-        AppDelegate.userDefaults.set(userPictures.count, forKey: "picNum")
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
             guard let strongSelf = self,
                   err == nil else {
@@ -34,28 +32,28 @@ class CompleteProfileViewController: UIViewController {
                 self?.present(alert, animated: true)
                 return
             }
-            var idx = 1
-            for img in strongSelf.userPictures {
-                if img.isEdited {
-                    guard let cell = strongSelf.collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
-                          let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
-                          let image = cell.picture.image else {
-                              return
-                          }
-                    
-                    StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
-                        switch result {
-                        case .success(let url):
-                            img.url = URL(string: url)
-                            self?.user.pictureURLs.append(URL(string: url)!)
-                            self?.dismiss(animated: true)
-                        case .failure(let error):
-                            print("error: \(error)")
-                        }
-                    })
+           
+            DatabaseManager.shared.updateImages(key: strongSelf.user.userId, images: strongSelf.userPictures, forKey: "picIndices", completion: { [weak self] res in
+                guard let strongself = self else {
+                    print("Big error on line 124 of UserPhotos...wController")
+                    return
                 }
-                idx += 1
-            }
+                switch res {
+                case .success(let pics):
+                    print("temp")
+                    //trusting no issues
+                    var tempUrls: [URL] = []
+                    for i in pics{
+                        guard let url = i.url else {
+                            print("something wrong with url in obj at line 134 of UserPhotos...wController")
+                            continue
+                        }
+                        tempUrls.append(url)
+                    }
+                case .failure(let error):
+                    print("error: \(error)")
+                }
+            }, completionProfileUrl: {_ in})
             
             
         })
