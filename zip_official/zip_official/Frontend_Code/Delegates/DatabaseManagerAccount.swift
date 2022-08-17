@@ -395,16 +395,21 @@ extension DatabaseManager {
                     switch res {
                     case .success(let url):
                         user.profilePicUrl = url[0]
-                        DatabaseManager.shared.getImages(key: user.userId, indices: user.picIndices, completion: { res in
-                            switch res {
-                            case.success(let urls):
-                                user.pictureURLs = urls
-                                pictureCompletion(.success(urls))
-                            case .failure(let error):
-                                pictureCompletion(.failure(error))
-                                print("failed to get non profile pictures with getImages")
-                            }
-                        })
+                        if( user.picIndices.count > 0){
+                            DatabaseManager.shared.getImages(key: user.userId, indices: user.picIndices, completion: { res in
+                                switch res {
+                                case.success(let urls):
+                                    user.pictureURLs = urls
+                                    pictureCompletion(.success(urls))
+                                case .failure(let error):
+                                    pictureCompletion(.failure(error))
+                                    print("failed to get non profile pictures with getImages")
+                                }
+                            })
+                        } else {
+                            pictureCompletion(.success(url))
+                        }
+                       
                     case .failure(let error):
                         pictureCompletion(.failure(error))
                         print("failed getImages for Profile picture")
