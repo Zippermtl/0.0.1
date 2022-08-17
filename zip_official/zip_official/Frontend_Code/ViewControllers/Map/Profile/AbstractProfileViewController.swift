@@ -178,7 +178,7 @@ class AbstractProfileViewController: UIViewController {
                     profileURL = strongSelf.user.profilePicUrl
                 }
                 
-                if strongSelf.user.picNum == 1 {
+                if strongSelf.user.picIndices.count == 0 {
                     strongSelf.photoCountLabel.isHidden = true
                 }
                 print("URL = \(profileURL)")
