@@ -34,7 +34,7 @@ class CompleteProfileViewController: UIViewController {
             }
            
             DatabaseManager.shared.updateImages(key: strongSelf.user.userId, images: strongSelf.userPictures, forKey: "picIndices", completion: { [weak self] res in
-                guard let strongself = self else {
+                guard let strongSelf = self else {
                     print("Big error on line 124 of UserPhotos...wController")
                     return
                 }
@@ -50,8 +50,16 @@ class CompleteProfileViewController: UIViewController {
                         }
                         tempUrls.append(url)
                     }
+                    strongSelf.dismiss(animated: true, completion: nil)
+                    
                 case .failure(let error):
-                    print("error: \(error)")
+                    guard let strongSelf = self,
+                          err == nil else {
+                        let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
+                        self?.present(alert, animated: true)
+                        return
+                    }
                 }
             }, completionProfileUrl: {_ in})
             
