@@ -31,6 +31,7 @@ class DatabaseManager {
     public enum DatabaseError: Error {
         case failedToFetch
         case failedToSyncStorage
+        case failedWithIndices
     }
     
 }
