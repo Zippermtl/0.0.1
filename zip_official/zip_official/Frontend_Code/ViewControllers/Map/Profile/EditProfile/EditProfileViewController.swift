@@ -45,11 +45,15 @@ class EditProfileViewController: UIViewController {
             }
             
             if strongSelf.changedPFP {
-                StorageManager.shared.updateIndividualImage(with: strongSelf.profilePic.image!, path: "images/\(strongSelf.user.userId)/", index: 0, completion: { [weak self] result in
-                    switch result {
-                    case .success(let url):
-                        AppDelegate.userDefaults.setValue(url, forKey: "profilePictureUrl")
+                let id = strongSelf.user.userId
+                let pp = [PictureHolder(image: strongSelf.profilePic.image!)]
+                let key = "profileIndex"
+                DatabaseManager.shared.updateImages(key: id, images: pp, forKey: key, completion: { [weak self] res in
+                    switch res{
+                    case .success(let urls):
+                        AppDelegate.userDefaults.setValue(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
                         self?.navigationController?.popViewController(animated: true)
+                        print("success changing profile 56 in editprofileviewcontroller")
                         self?.delegate?.updateUser()
                     case .failure(let error):
                         print("error uploading profile pic: \(error)")
@@ -65,7 +69,7 @@ class EditProfileViewController: UIViewController {
                         }))
                         self?.present(actionSheet, animated: true)
                     }
-                })
+                }, completionProfileUrl: {_ in})
             } else {
                 self?.delegate?.updateUser()
                 strongSelf.navigationController?.popViewController(animated: true)
