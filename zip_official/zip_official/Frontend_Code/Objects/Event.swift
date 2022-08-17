@@ -57,7 +57,34 @@ extension EventType: CustomStringConvertible {
     }
 }
 
-
+public class PromoterEventCoder: EventCoder {
+    var price: Double?
+    init(event: PromoterEvent){
+        super.init(event: event)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case price = "price"
+    }
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        price = try container.decode(Double.self, forKey: .price)
+        let superDecoder = try container.superDecoder()
+        try super.init(from: superDecoder)
+    }
+    
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(price, forKey: .price)
+        let superEncoder = container.superEncoder()
+        try super.encode(to: superEncoder)
+    }
+    
+    public func updateEvent(event: PromoterEvent) {
+        super.updateEvent(event: event)
+        event.price = price
+    }
+}
 
 //for future, enumerate event type
 public class EventCoder: Codable {
@@ -74,17 +101,31 @@ public class EventCoder: Codable {
     var type: Int
     var eventCoverIndex: [Int]
     var eventPicIndices: [Int]
+    var picNum: Int
+    
+    init(event: Event) {
+        self.title = event.title
+        self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
+        self.hosts = Dictionary(uniqueKeysWithValues: event.hosts.map({($0.userId,$0.fullName)}))
+        self.description = event.description
+        self.address = event.address
+        self.maxGuests = event.maxGuests
+        self.usersGoing = event.usersGoing.map({$0.userId})
+        self.usersInvite = event.usersInvite.map({$0.userId})
+        self.startTime = Timestamp(date: event.startTime)
+        self.endTime = Timestamp(date: event.endTime)
+        self.type = event.getType().rawValue
+        self.eventCoverIndex = event.eventCoverIndex
+        self.eventPicIndices = event.eventPicIndices
+        self.picNum = event.picNum
+    }
     
     enum CodingKeys: String, CodingKey {
         case title = "title"
         case coordinates = "coordinates"
-        
         case hosts = "hosts"
-        
         case description = "description"
-        
         case address = "address"
-        
         case maxGuests = "max"
         case usersGoing = "usersGoing"
         case usersInvite = "usersInvite"
@@ -93,6 +134,7 @@ public class EventCoder: Codable {
         case type = "type"
         case eventCoverIndex = "eventCoverIndex"
         case eventPicIndices = "eventPicIndices"
+        case picNum = "picNum"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -110,6 +152,7 @@ public class EventCoder: Codable {
         self.type = try container.decode(Int.self, forKey: .type)
         self.eventCoverIndex = try container.decode([Int].self, forKey: .eventCoverIndex)
         self.eventPicIndices = try container.decode([Int].self, forKey: .eventPicIndices)
+        self.picNum = try container.decode(Int.self, forKey: .picNum)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -124,8 +167,10 @@ public class EventCoder: Codable {
         try container.encode(usersInvite, forKey: .usersInvite)
         try container.encode(startTime, forKey: .startTime)
         try container.encode(endTime, forKey: .endTime)
+        try container.encode(type, forKey: .type)
         try container.encode(eventCoverIndex, forKey: .eventCoverIndex)
         try container.encode(eventPicIndices, forKey: .eventPicIndices)
+        try container.encode(picNum, forKey: .picNum)
     }
     
     public func createEvent() -> Event {
@@ -204,6 +249,12 @@ public class Event : Equatable {
     var eventPicIndices: [Int] = []
     var eventPicUrls: [URL] = []
     var picNum: Int = 0
+    
+    
+    func getEncoder() -> EventCoder {
+        let encoder = EventCoder(event: self)
+        return encoder
+    }
     
     var imageUrl: URL? {
         didSet {
@@ -464,16 +515,20 @@ public class PublicEvent: Event {
     public override func isPublic() -> Bool {
         return true
     }
+
     
 }
 
 public class PromoterEvent: PublicEvent {
-    
+    var price: Double?
     override public func dispatch(user:User) -> Bool {
         return true
     }
     override public func getType() -> EventType {
         return .Promoter
+    }
+    override func getEncoder() -> EventCoder {
+        return PromoterEventCoder(event: self)
     }
 }
 
@@ -487,12 +542,7 @@ public class PrivateEvent: Event {
         } else {
             return false
         }
-//        for i in usersInvite{
-//            if (i == user.userId){
-//                return true
-//            }
-//        }
-//        return false
+
     }
     override public func getType() -> EventType {
         return .Private

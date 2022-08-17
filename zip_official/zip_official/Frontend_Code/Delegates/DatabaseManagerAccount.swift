@@ -358,7 +358,9 @@ extension DatabaseManager {
             DatabaseManager.shared.getImages(key: id, indices: proindex, completion: { res in
                 switch res {
                 case .success(let url):
-                    user.profilePicUrl = url[0]
+                    if (url.count > 0){
+                        user.profilePicUrl = url[0]
+                    } 
                     DatabaseManager.shared.getImages(key: id, indices: index, completion: { res in
                         switch res {
                         case.success(let urls):
@@ -394,7 +396,9 @@ extension DatabaseManager {
                 DatabaseManager.shared.getImages(key: user.userId, indices: user.profilePicIndex, completion: { res in
                     switch res {
                     case .success(let url):
-                        user.profilePicUrl = url[0]
+                        if (url.count > 0){
+                            user.profilePicUrl = url[0]
+                        } 
                         if( user.picIndices.count > 0){
                             DatabaseManager.shared.getImages(key: user.userId, indices: user.picIndices, completion: { res in
                                 switch res {

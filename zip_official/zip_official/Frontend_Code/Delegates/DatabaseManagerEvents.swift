@@ -125,13 +125,16 @@ extension DatabaseManager {
             switch result {
             case .success(let eventCoder):
                 eventCoder.updateEvent(event: event)
-                let imagePath = "Event/" + event.eventId
                 completion(.success(event))
                 DatabaseManager.shared.getImages(key: event.eventId, indices: event.eventCoverIndex, completion: { res in
                     switch res{
                     case .success(let url):
                         print("making event")
-                        event.imageUrl = url[0]
+                        if url.count == 0 {
+                            
+                        } else {
+                            event.imageUrl = url[0]
+                        }
 
                     case .failure(let error):
                         completion(.failure(error))
@@ -148,44 +151,32 @@ extension DatabaseManager {
     
     
     public func createEvent(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
-        var hostsData : [String : String] = [:]
-        for host in event.hosts {
-            hostsData[host.userId] = host.fullName
-        }
-        let eventDataDict: [String:Any] = [
-            "title" : event.title,
-            "coordinates" : ["lat" : event.coordinates.coordinate.latitude, "long" : event.coordinates.coordinate.longitude],
-            "description" : event.description,
-            "address" : event.address,
-            "type" : event.getType().rawValue,
-            "startTime" : Timestamp(date: event.startTime),
-            "endTime" : Timestamp(date: event.endTime),
-            "max" : event.maxGuests,
-            "hosts" : hostsData,
-            "usersInvite": event.usersInvite.map { $0.userId },
-            "usersGoing": [event.hosts[0].userId]
-        ]
-        
-        firestore.collection("EventProfiles").document("\(event.eventId)").setData(eventDataDict)  { [weak self] error in
-            guard error == nil else {
-                print("failure to write event with id: \(event.eventId) to FireStore")
-                completion(.failure(error!))
-                return
-            }
-            var hostedEvents = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
-            hostedEvents.append(event.eventId)
-            AppDelegate.userDefaults.set(hostedEvents, forKey: "hostedEvents")
-            GeoManager.shared.UpdateEventLocation(event: event)
-            self?.updateEventImage(event: event, completion: { result in
-                switch result {
-                case .success(let url):
-                    completion(.success(url))
-                case .failure(let error):
-                    completion(.failure(error))
+        do {
+            try firestore.collection("EventProfiles").document("\(event.eventId)").setData(from: event.getEncoder())  { [weak self] error in
+                guard error == nil else {
+                    print("failure to write event with id: \(event.eventId) to FireStore")
+                    completion(.failure(error!))
+                    return
                 }
-            })
-            
+                var hostedEvents = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
+                hostedEvents.append(event.eventId)
+                AppDelegate.userDefaults.set(hostedEvents, forKey: "hostedEvents")
+                
+                GeoManager.shared.UpdateEventLocation(event: event)
+                self?.updateEventImage(event: event, completion: { result in
+                    switch result {
+                    case .success(let url):
+                        completion(.success(url))
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                })
+                
+            }
+        } catch let error {
+            print("Error writing event to Firestore: \(error)")
         }
+        
     }
 
     public func updateEvent(event: Event, completion: @escaping (Error?) -> Void) {
