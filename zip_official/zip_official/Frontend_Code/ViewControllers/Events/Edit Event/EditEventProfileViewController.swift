@@ -232,11 +232,11 @@ extension EditEventProfileViewController: GrowingCellProtocol {
 extension EditEventProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.editedImage] as? UIImage {
-            
-            StorageManager.shared.updateIndividualImage(with: image, path: "Event/\(event.eventId)/", index: 0, completion: { [weak self] result in
-                switch result {
+            let pic = PictureHolder(image: image)
+            DatabaseManager.shared.updateEventImage(key: event.eventId, images: [pic], forKey: "eventCoverIndex", completion: { [weak self] res in
+                switch res {
                 case .success(let url):
-                    self?.event.imageUrl = URL(string: url)!
+                    self?.event.imageUrl = url[0].url!
                     self?.dismiss(animated: true, completion: nil)
                     self?.profilePic.image = image
                 case .failure(let error):
@@ -250,6 +250,8 @@ extension EditEventProfileViewController: UIImagePickerControllerDelegate, UINav
                                                         handler: { [weak self] _ in
                         
                         self?.dismiss(animated: true, completion: nil)
+
+                        
                     }))
                     self?.present(actionSheet, animated: true)
                 }
