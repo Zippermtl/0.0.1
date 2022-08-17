@@ -38,6 +38,7 @@ class DataStorageManager {
               let lastname = AppDelegate.userDefaults.value(forKey: "lastName") as? String,
               let picNum = AppDelegate.userDefaults.value(forKey: "picNum") as? Int,
               let pfpString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
+//              let picIndices = AppDelegate.userDefaults.value(forKey: <#T##String#>)
               let birthday = AppDelegate.userDefaults.value(forKey: "birthday") as? Date else {
                   return
         }
