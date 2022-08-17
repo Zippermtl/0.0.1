@@ -72,6 +72,8 @@ public class EventCoder: Codable {
     var startTime: Timestamp
     var endTime: Timestamp
     var type: Int
+    var eventCoverIndex: [Int]
+    var eventPicIndices: [Int]
     
     enum CodingKeys: String, CodingKey {
         case title = "title"
@@ -89,6 +91,8 @@ public class EventCoder: Codable {
         case startTime = "startTime"
         case endTime = "endTime"
         case type = "type"
+        case eventCoverIndex = "eventCoverIndex"
+        case eventPicIndices = "eventPicIndices"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -104,6 +108,8 @@ public class EventCoder: Codable {
         self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
         self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
         self.type = try container.decode(Int.self, forKey: .type)
+        self.eventCoverIndex = try container.decode([Int].self, forKey: .eventCoverIndex)
+        self.eventPicIndices = try container.decode([Int].self, forKey: .eventPicIndices)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -118,6 +124,8 @@ public class EventCoder: Codable {
         try container.encode(usersInvite, forKey: .usersInvite)
         try container.encode(startTime, forKey: .startTime)
         try container.encode(endTime, forKey: .endTime)
+        try container.encode(eventCoverIndex, forKey: .eventCoverIndex)
+        try container.encode(eventPicIndices, forKey: .eventPicIndices)
     }
     
     public func createEvent() -> Event {
@@ -140,7 +148,9 @@ public class EventCoder: Codable {
             usersInvite: usersInvite.map( { User(userId: $0 )} ),
             startTime: startTime.dateValue(),
             endTime: endTime.dateValue(),
-            type: EventType(rawValue: type) ?? .Event
+            type: EventType(rawValue: type) ?? .Event,
+            eventCoverIndex: eventCoverIndex,
+            eventPicIndices: eventPicIndices
         )
     }
     
@@ -166,39 +176,9 @@ public class EventCoder: Codable {
     }
 }
 
-public class Event : Encodable, Equatable {
+public class Event : Equatable {
     public static func == (lhs: Event, rhs: Event) -> Bool {
         return lhs.eventId == rhs.eventId
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case eventId
-        case title
-        case coordinates
-        case hosts
-        case description
-        case address
-        case maxGuests = "max"
-        case usersGoing
-        case usersInvite
-        case startTime
-        case endTime
-        case type
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(eventId, forKey: .eventId)
-        try container.encode(title, forKey: .title)
-        try container.encode(["lat" : latitude, "long": longitude], forKey: .coordinates)
-        try container.encode(Dictionary(uniqueKeysWithValues: hosts.map { ($0.userId, $0.fullName )}), forKey: .hosts)
-        try container.encode(description, forKey: .description)
-        try container.encode(address, forKey: .address)
-        try container.encode(maxGuests, forKey: .maxGuests)
-        try container.encode(Dictionary(uniqueKeysWithValues: usersGoing.map { ($0.userId, $0.fullName )}), forKey: .usersGoing)
-        try container.encode(Dictionary(uniqueKeysWithValues: usersInvite.map { ($0.userId, $0.fullName )}), forKey: .usersInvite)
-        try container.encode(startTime, forKey: .startTime)
-        try container.encode(endTime, forKey: .endTime)
     }
     
     var eventId: String = ""
@@ -220,6 +200,9 @@ public class Event : Encodable, Equatable {
     var startTime: Date = Date()
     var endTime: Date = Date(timeInterval: TimeInterval(3600), since: Date())
     var duration: TimeInterval = TimeInterval(1)
+    var eventCoverIndex: [Int] = []
+    var eventPicIndices: [Int] = []
+    var eventPicUrls: [URL] = []
     
     var imageUrl: URL? {
         didSet {
@@ -430,7 +413,9 @@ public class Event : Encodable, Equatable {
          image im: UIImage? = UIImage(named: "launchevent"),
          imageURL url: URL = URL(string: "a")!,
          endTimeString ets: String = "",
-         startTimeString sts: String = "") {
+         startTimeString sts: String = "",
+         eventCoverIndex ecI: [Int] = [],
+         eventPicIndices epI: [Int] = []) {
         eventId = Id
         title = tit
         coordinates = loc
@@ -447,6 +432,8 @@ public class Event : Encodable, Equatable {
         duration = dur
         image = im
         imageUrl = url
+        eventCoverIndex = ecI
+        eventPicIndices = epI
         if(ets != ""){
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -545,17 +532,19 @@ public func createEvent(eventId Id: String = "",
                         imageURL url: URL = URL(string: "a")!,
                         endTimeString ets: String = "",
                         startTimeString sts: String = "",
-                        type t: EventType = .Event) -> Event{
+                        type t: EventType = .Event,
+                        eventCoverIndex ecI: [Int] = [],
+                        eventPicIndices epI: [Int] = []) -> Event{
     switch t{
     case .Event:
-        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Public:
-        return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+        return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Promoter:
-        return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+        return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Private:
-        return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+        return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Friends:
-        return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+        return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     }
 }
