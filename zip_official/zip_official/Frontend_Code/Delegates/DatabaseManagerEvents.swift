@@ -48,13 +48,16 @@ extension DatabaseManager {
             for document in querySnapshot!.documents {
                 let data = document.data()
 //                print("data =", data)
-                
+                //MARK: forKey is either eventCoverIndex or eventPicIndices
+
                 guard let coordinates = data["coordinates"] as? [String:Double],
                       let hostIds = data["hosts"] as? [String:String],
                       let goingIds = data["usersGoing"] as? [String],
                       let InviteIds = data["usersInvite"] as? [String],
                       let startTimestamp = data["startTime"] as? Timestamp,
-                      let endTimestamp = data["endTime"] as? Timestamp
+                      let endTimestamp = data["endTime"] as? Timestamp,
+                      let eventCoverIndex = data["eventCoverIndex"] as? [Int],
+                      let eventPicIndices = data["eventPicIndices"] as? [Int]
                 else {
 //                    print("FAIL FAIL FAIL FUCK")
                     continue
@@ -96,19 +99,19 @@ extension DatabaseManager {
                                                                    usersInvite: usersInvite,
                                                                    startTime: startTime,
                                                                    endTime: endTime,
-                                                                   type: EventType(rawValue: type)!)
+                                                                   type: EventType(rawValue: type)!,
+                                                                   eventCoverIndex: eventCoverIndex,
+                                                                   eventPicIndices: eventPicIndices)
                     
                     events.append(currentEvent)
                     eventCompletion(currentEvent)
-                    
-                    StorageManager.shared.getProfilePicture(path: "Event/\(eventId)", completion: { result in
-                        switch result {
+                    DatabaseManager.shared.getImages(key: eventId, indices: eventCoverIndex, completion: { res in
+                        switch res {
                         case .success(let url):
-                            currentEvent.imageUrl = url
+                            currentEvent.imageUrl = url[0]
                         case .failure(let error):
                             print("error loading image in map load Error: \(error)")
                         }
-                        
                     })
                 }
                
@@ -124,18 +127,17 @@ extension DatabaseManager {
                 eventCoder.updateEvent(event: event)
                 let imagePath = "Event/" + event.eventId
                 completion(.success(event))
-
-                StorageManager.shared.getProfilePicture(path: imagePath) { result in
-                    switch result{
+                DatabaseManager.shared.getImages(key: event.eventId, indices: event.eventCoverIndex, completion: { res in
+                    switch res{
                     case .success(let url):
                         print("making event")
-                        event.imageUrl = url
+                        event.imageUrl = url[0]
 
                     case .failure(let error):
                         completion(.failure(error))
                         print("Failed to make event because image failed to load Error: \(error)")
                     }
-                }
+                })
                 
             case .failure(let error):
                 print("failed to load event Error: \(error)")
@@ -216,14 +218,27 @@ extension DatabaseManager {
     }
     
     public func updateEventImage(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
-        StorageManager.shared.updateIndividualImage(with: event.image!, path: "Event/" + event.eventId + "/", index: 0, completion: { result in
-            switch result {
+        guard let image = event.image else {
+            print("failed to get image from event.image")
+            return
+        }
+        let pic = PictureHolder(image: image)
+        DatabaseManager.shared.updateEventImage(key: event.eventId, images: [pic], forKey: "eventCoverIndex", completion: { res in
+            switch res {
             case .success(let url):
-                completion(.success(url))
+                completion(.success(url[0].url!.absoluteString))
             case .failure(let error):
                 completion(.failure(error))
             }
         })
+//        StorageManager.shared.updateIndividualImage(with: event.image!, path: "Event/" + event.eventId + "/", index: 0, completion: { result in
+//            switch result {
+//            case .success(let url):
+//                completion(.success(url))
+//            case .failure(let error):
+//                completion(.failure(error))
+//            }
+//        })
     }
     
     
@@ -358,18 +373,20 @@ extension DatabaseManager {
                                  imageURL url: URL = URL(string: "a")!,
                                  endTimeString ets: String = "",
                                  startTimeString sts: String = "",
-                                 type t: EventType = .Event) -> Event{
+                                 type t: EventType = .Event,
+                                 eventCoverIndex ecI: [Int] = [],
+                                 eventPicIndices epI: [Int] = []) -> Event{
         switch t{
         case .Event:
-            return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+            return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
         case .Public:
-            return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+            return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
         case .Promoter:
-            return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+            return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
         case .Private:
-            return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+            return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
         case .Friends:
-            return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+            return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
 //        default:
 //            return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
         }
