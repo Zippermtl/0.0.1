@@ -55,7 +55,9 @@ extension DatabaseManager {
             "joinDate": Timestamp(date: Date()),
             "deviceId": [deviceId],
             "bio" : "",
-            "interests" : []
+            "interests" : [],
+            "picIndices" : user.picIndices,
+            "profileIndex" : user.profilePicIndex
         ]
         firestore.collection("UserProfiles").document("\(user.userId)").setData(userData)  { [weak self] error in
             guard let strongSelf = self,
@@ -68,21 +70,35 @@ extension DatabaseManager {
             strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData([user.userId:user.fullName])
             
             if user.pictures.count != 0 {
-                let image = user.pictures[0]
-                guard let data = image.pngData() else {
-                    return
-                }
-                
-                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
-                    switch results {
-                    case .success(let downloadUrl):
-                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+                let image = PictureHolder(image: user.pictures[0])
+//                guard let data = image.pngData() else {
+//                    return
+//                }
+                DatabaseManager.shared.updateImages(key: user.userId, images: [image], forKey: "profileIndex", completion: { res in
+                    switch res{
+                    case .success(let urls):
+//                        guard let urls = url else {
+//                            completion(nil)
+//                            return
+//                        }
+                        AppDelegate.userDefaults.set(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
                         completion(nil)
                     case .failure(let error):
-                        print("Storage Manager Error: \(error)")
+                        print("storage manager error \(error)")
                         completion(error)
                     }
-                })
+                    
+                }, completionProfileUrl: {_ in})
+//                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
+//                    switch results {
+//                    case .success(let downloadUrl):
+//                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+//                        completion(nil)
+//                    case .failure(let error):
+//                        print("Storage Manager Error: \(error)")
+//                        completion(error)
+//                    }
+//                })
             }
         }
     }
@@ -105,7 +121,9 @@ extension DatabaseManager {
             "joinDate": Timestamp(date: Date()),
             "deviceId": [deviceId],
             "bio" : "",
-            "interests" : []
+            "interests" : [],
+            "picIndices" : user.picIndices,
+            "profileIndex" : user.profilePicIndex
         ]
         
         
@@ -126,7 +144,9 @@ extension DatabaseManager {
             AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
             AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
             AppDelegate.userDefaults.set(user.gender, forKey: "gender")
-            AppDelegate.userDefaults.set(1, forKey: "picNum")
+            AppDelegate.userDefaults.set(0, forKey: "picNum")
+            AppDelegate.userDefaults.set(user.profilePicIndex, forKey: "profileIndex")
+            AppDelegate.userDefaults.set(user.picIndices, forKey: "picIndices")
             
             let emptyFriendships: [String: [String:String]]  = [:]
             AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
@@ -142,21 +162,32 @@ extension DatabaseManager {
                 AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
                 completion(nil)
             } else {
-                let image = user.pictures[0]
-                guard let data = image.pngData() else {
-                    return
-                }
-                
-                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
-                    switch results {
-                    case .success(let downloadUrl):
-                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+                let image = PictureHolder(image: user.pictures[0])
+                DatabaseManager.shared.updateImages(key: user.userId, images: [image], forKey: "profileIndex", completion: { res in
+                    switch res{
+                    case .success(let urls):
+//                        guard let urls = url else {
+//                            completion(nil)
+//                            return
+//                        }
+                        AppDelegate.userDefaults.set(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
                         completion(nil)
                     case .failure(let error):
-                        print("Storage Manager Error: \(error)")
+                        print("storage manager error \(error)")
                         completion(error)
                     }
-                })
+                    
+                }, completionProfileUrl: {_ in})
+//                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
+//                    switch results {
+//                    case .success(let downloadUrl):
+//                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
+//                        completion(nil)
+//                    case .failure(let error):
+//                        print("Storage Manager Error: \(error)")
+//                        completion(error)
+//                    }
+//                })
             }
         }
     }
@@ -210,6 +241,8 @@ extension DatabaseManager {
             "picNum": user.picNum,
             "interests": user.interests.map{ $0.rawValue },
             "notifications": EncodePreferences(user.notificationPreferences),
+            "picIndices" : user.picIndices,
+            "profileIndex" : user.profilePicIndex
         ]
         
         firestore.collection("UserProfiles").document(user.userId).updateData(userData) { error in
@@ -224,7 +257,7 @@ extension DatabaseManager {
     
     public func updateDeviceId(devId: String, completion: @escaping (Error?) -> Void) {
         let userData: [String:[String]] = [
-            "deviceId": [devId],
+            "deviceId": [devId]
         ]
         
         firestore.collection("UserProfiles").document(AppDelegate.userDefaults.value(forKey: "userId") as! String).updateData(userData) { error in
@@ -317,21 +350,33 @@ extension DatabaseManager {
     
     public func loadUserProfile(given user: User, completion: @escaping (Result<User, Error>) -> Void) {
         loadUserProfileNoPic(given: user, completion: { result in
-            let imagesPath = "images/" + user.userId
-            StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
-                switch result {
+//            let imagesPath = "images/" + user.userId
+            //MARK: GABE TODO --> finished needs test function
+            let id = user.userId
+            let index = user.picIndices
+            let proindex = user.profilePicIndex
+            DatabaseManager.shared.getImages(key: id, indices: proindex, completion: { res in
+                switch res {
                 case .success(let url):
-                    user.pictureURLs.append(url)
-                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                    print(user.pictureURLs)
-                    completion(.success(user))
-
+                    user.profilePicUrl = url[0]
+                    DatabaseManager.shared.getImages(key: id, indices: index, completion: { res in
+                        switch res {
+                        case.success(let urls):
+                            user.pictureURLs = urls
+                            completion(.success(user))
+                        case .failure(let error):
+                            completion(.failure(error))
+                            print("failed to get non profile pictures with getImages")
+                        }
+                    })
                 case .failure(let error):
-                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                    completion(.failure(error))
+                    print("failed getImages for Profile picture")
                 }
             })
         })
     }
+    //MARK: Gabe todo --> test function needed
     
     /// loads uer profile
     /// - `user`: user to load
@@ -344,26 +389,45 @@ extension DatabaseManager {
         loadUserProfileNoPic(given: user, completion: { result in
             switch result {
             case .success(let user):
-                let imagesPath = "images/" + user.userId
+//                let imagesPath = "images/" + user.userId
                 dataCompletion(.success(user))
-                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
-                    print("GETTING ALL IMAGES")
-                    switch result {
+                DatabaseManager.shared.getImages(key: user.userId, indices: user.profilePicIndex, completion: { res in
+                    switch res {
                     case .success(let url):
-                        user.pictureURLs.append(url)
-                        user.pictureURLs = user.pictureURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
-
-                        print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                        print(user.pictureURLs)
-                        if user.pictureURLs.count == user.picNum {
-                            pictureCompletion(.success(user.pictureURLs))
-                        }
-
+                        user.profilePicUrl = url[0]
+                        DatabaseManager.shared.getImages(key: user.userId, indices: user.picIndices, completion: { res in
+                            switch res {
+                            case.success(let urls):
+                                user.pictureURLs = urls
+                                pictureCompletion(.success(urls))
+                            case .failure(let error):
+                                pictureCompletion(.failure(error))
+                                print("failed to get non profile pictures with getImages")
+                            }
+                        })
                     case .failure(let error):
                         pictureCompletion(.failure(error))
-                        print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                        print("failed getImages for Profile picture")
                     }
                 })
+//                StorageManager.shared.getAllImagesManually(path: imagesPath, picNum: user.picNum, completion: { result in
+//                    print("GETTING ALL IMAGES")
+//                    switch result {
+//                    case .success(let url):
+//                        user.pictureURLs.append(url)
+//                        user.pictureURLs = user.pictureURLs.sorted(by: { $0.description.imgNumber < $1.description.imgNumber})
+//
+//                        print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
+//                        print(user.pictureURLs)
+//                        if user.pictureURLs.count == user.picNum {
+//                            pictureCompletion(.success(user.pictureURLs))
+//                        }
+//
+//                    case .failure(let error):
+//                        pictureCompletion(.failure(error))
+//                        print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+//                    }
+//                })
             case .failure(let error):
                 print("FAILURE TO LOAD BOTH USER AND PHOTOS")
                 dataCompletion(.failure(error))
@@ -391,36 +455,17 @@ extension DatabaseManager {
             user.location = CLLocation(latitude: data["lat"] as! Double, longitude: data["long"] as! Double)
             
             let imagesPath = "images/" + id
-            StorageManager.shared.getProfilePicture(path: imagesPath, completion: { result in
-                switch result {
+            DatabaseManager.shared.getImages(key: user.userId, indices: user.profilePicIndex, completion: { res in
+                switch res {
                 case .success(let url):
-                    if user.pictureURLs.count > 0 {
-                        user.pictureURLs[0] = url
-                    } else {
-                        user.pictureURLs.append(url)
-                    }
-                    
-                    print("Successful pull of user image URLS for \(user.fullName) with \(user.pictureURLs.count) URLS ")
-                    print(user.pictureURLs)
+                    user.profilePicUrl = url[0]
                     completion(.success(user))
 
                 case .failure(let error):
-                    print("error load in LoadUser image URLS -> LoadUserProfile -> LoadImagesManually \(error)")
+                    print("error load in LoadUser image URLS -> LoadUserProfile -> getImages \(error)")
                 }
-                    
             })
         }
-    }
-    
-    public func updatePicNum(id: String, picNum: Int, completion: @escaping (Error?) -> Void) {
-        firestore.collection("UserProfiles").document(id).updateData(["picNum" : picNum]) { error in
-            guard error == nil else {
-                completion(error)
-                return
-            }
-            completion(nil)
-        }
-        
     }
     
     public func updateGender(gender: String, completion: @escaping (Error?) -> Void) {
@@ -433,7 +478,7 @@ extension DatabaseManager {
             completion(nil)
         }
     }
-    
+    //MARK: Gabe todo --> finished needs testing
     public func userLoadTableView(user: User, completion: @escaping (Result<User, Error>) -> Void){
         loadUserProfileNoPic(given: user, completion: { result in
             switch result {
@@ -443,25 +488,35 @@ extension DatabaseManager {
                 if user.tableViewCell != nil {
                     user.tableViewCell?.configure(user)
                 }
-                
-                StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { result in
-                    switch result {
+                var key = user.userId
+                var index = user.profilePicIndex
+                DatabaseManager.shared.getImages(key: key, indices: index, completion: { res in
+                    switch res{
                     case .success(let url):
-                        if user.pictureURLs.count > 0 {
-                            user.pictureURLs[0] = url
-                        } else {
-                            user.pictureURLs.append(url)
-                        }
-                        
-                        guard let cell = user.tableViewCell else {
-                            print("user has no table view cell")
-                            return
-                        }
-                        cell.configureImage(user)
-                        print("configuring cell image")
+                        user.profilePicUrl = url[0]
                     case .failure(let error):
                         print("error loading event in tableview: \(error)")
                     }
+                    guard let cell = user.tableViewCell else {
+                        return
+                    }
+                    cell.configureImage(user)
+//                StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { result in
+//                    switch result {
+//                    case .success(let url):
+//                        if user.pictureURLs.count > 0 {
+//                            user.pictureURLs[0] = url
+//                        } else {
+//                            user.pictureURLs.append(url)
+//                        }
+//
+//                        guard let cell = user.tableViewCell else {
+//                            return
+//                        }
+//                        cell.configureImage(user)
+//                    case .failure(let error):
+//                        print("error loading event in tableview: \(error)")
+//                    }
                     
                     
                 })
@@ -614,7 +669,7 @@ extension DatabaseManager {
                     completion(nil)
                 } else {
                     let image = PictureHolder(image: user.pictures[0], index: user.picNum)
-                    DatabaseManager.shared.updateImages(key: user.userId, images: [image], forKey: user.userId, completion: { res in
+                    DatabaseManager.shared.updateImages(key: user.userId, images: [image], forKey: "profileIndex", completion: { res in
                         switch res{
                         case .success(let urls):
     //                        guard let urls = url else {
@@ -628,7 +683,7 @@ extension DatabaseManager {
                             completion(error)
                         }
                         
-                    })
+                    }, completionProfileUrl: {_ in})
     //                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
     //                    switch results {
     //                    case .success(let downloadUrl):
@@ -642,113 +697,113 @@ extension DatabaseManager {
                 }
             }
         }
-    
-    public func updateImages(key: String, images: [PictureHolder], forKey: String, completion: @escaping (Result<[PictureHolder], Error>) -> Void){
-            let localRef = firestore.collection("UserProfiles").document("\(key)")
-            var altered: [PictureHolder] = []
-            var indices: [Int] = []
-            var pres = AppDelegate.userDefaults.value(forKey: "picNum") as! Int
-            if(images.count == 0){
-                localRef.updateData([forKey : []]) { err in
-                    if let err = err {
-                        AppDelegate.userDefaults.set([] , forKey: forKey)
-                        completion(.failure(err))
-                    } else {
-                        completion(.success([]))
-                    }
-                }
-            } else {
-                var indicesCopy : [Int] = []
-                for i in 0..<images.count {
-                    
-                    guard let image = images[i].image else {
-                        indices.append(images[i].idx)
-                        continue
-                    }
-                    images[i].idx = pres + 1
-                    pres += 1
-                    altered.append(images[i])
-                    indices.append(images[i].idx)
-                    indicesCopy.append(images[i].idx)
-                }
-                
-                if(altered.count > 0){
-                    for i in altered {
-                        guard let imgtemp = i.image else {
-                            continue
-                        }
-                        guard let dataholder = imgtemp.jpegData(compressionQuality: 0.8) else {
-                            print("something is very wrong")
-                            continue
-                        }
-                        StorageManager.shared.AddPicture(with: dataholder, key: key, index: i.idx, completion: { [weak self] res in
-                            guard let strongself = self else {
-                                AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                                completion(.failure(StorageManager.StorageErrors.failedToUpload))
-                               return
-                            }
-                            switch res{
-                            case .success(let holder):
-                                if let indexofItem = indicesCopy.firstIndex(of: holder.idx){
-                                    indicesCopy.remove(at: indexofItem)
-                                    var checkadded = false
-                                    for j in 0..<images.count{
-                                        if (images[j].idx == holder.idx) {
-                                            images[j].url = holder.url
-                                            checkadded = true
-                                        }
-                                    }
-                                    if(checkadded && (indicesCopy.count == 0)){
-                                        if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
-                                            localRef.updateData([forKey : indices, "picNum" : pres]) { [weak self] err in
-                                                guard err == nil,
-                                                      let strongself = self
-                                                     else {
-                                                    AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                                                    completion(.failure(err!))
-                                                   return
-                                                }
-                                                AppDelegate.userDefaults.set(indices , forKey: forKey)
-                                                AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                                                completion(.success(images))
-                                            }
-                                        } else {
-                                            localRef.updateData([forKey : indices]) { [weak self] err in
-                                                guard err == nil,
-                                                      let strongself = self
-                                                     else {
-                                                    completion(.failure(err!))
-                                                   return
-                                                }
-                                                AppDelegate.userDefaults.set(indices , forKey: forKey)
-                                                completion(.success(images))
-                                            }
-                                        }
-                                        
-                                    }
-                                }
-                            case .failure(let error):
-                                completion(.failure(error))
-                            }
-                        })
-                    }
-                } else {
-                    localRef.updateData([forKey : indices]) { [weak self] err in
-                        guard let strongself = self else {
-                            completion(.failure(StorageManager.StorageErrors.failedToUpload))
-                            return
-                        }
-                        if let err = err {
-                            completion(.failure(err))
-                        } else {
-                            if(AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
-                                AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                            }
-                            AppDelegate.userDefaults.set([] , forKey: forKey)
-                            completion(.success([]))
-                        }
-                    }
-                }
-            }
-        }
 }
+//MARK: Depreciated
+//public func updateImages(key: String, images: [PictureHolder], forKey: String, completion: @escaping (Result<[PictureHolder], Error>) -> Void){
+//        let localRef = firestore.collection("UserProfiles").document("\(key)")
+//        var altered: [PictureHolder] = []
+//        var indices: [Int] = []
+//        var pres = AppDelegate.userDefaults.value(forKey: "picNum") as! Int
+//        if(images.count == 0){
+//            localRef.updateData([forKey : []]) { err in
+//                if let err = err {
+//                    AppDelegate.userDefaults.set([] , forKey: forKey)
+//                    completion(.failure(err))
+//                } else {
+//                    completion(.success([]))
+//                }
+//            }
+//        } else {
+//            var indicesCopy : [Int] = []
+//            for i in 0..<images.count {
+//
+//                guard let image = images[i].image else {
+//                    indices.append(images[i].idx)
+//                    continue
+//                }
+//                images[i].idx = pres + 1
+//                pres += 1
+//                altered.append(images[i])
+//                indices.append(images[i].idx)
+//                indicesCopy.append(images[i].idx)
+//            }
+//
+//            if(altered.count > 0){
+//                for i in altered {
+//                    guard let imgtemp = i.image else {
+//                        continue
+//                    }
+//                    guard let dataholder = imgtemp.jpegData(compressionQuality: 0.8) else {
+//                        print("something is very wrong")
+//                        continue
+//                    }
+//                    StorageManager.shared.AddPicture(with: dataholder, key: key, index: i.idx, completion: { [weak self] res in
+//                        guard let strongself = self else {
+//                            AppDelegate.userDefaults.set(pres, forKey: "picNum")
+//                            completion(.failure(StorageManager.StorageErrors.failedToUpload))
+//                           return
+//                        }
+//                        switch res{
+//                        case .success(let holder):
+//                            if let indexofItem = indicesCopy.firstIndex(of: holder.idx){
+//                                indicesCopy.remove(at: indexofItem)
+//                                var checkadded = false
+//                                for j in 0..<images.count{
+//                                    if (images[j].idx == holder.idx) {
+//                                        images[j].url = holder.url
+//                                        checkadded = true
+//                                    }
+//                                }
+//                                if(checkadded && (indicesCopy.count == 0)){
+//                                    if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
+//                                        localRef.updateData([forKey : indices, "picNum" : pres]) { [weak self] err in
+//                                            guard err == nil,
+//                                                  let strongself = self
+//                                                 else {
+//                                                AppDelegate.userDefaults.set(pres, forKey: "picNum")
+//                                                completion(.failure(err!))
+//                                               return
+//                                            }
+//                                            AppDelegate.userDefaults.set(indices , forKey: forKey)
+//                                            AppDelegate.userDefaults.set(pres, forKey: "picNum")
+//                                            completion(.success(images))
+//                                        }
+//                                    } else {
+//                                        localRef.updateData([forKey : indices]) { [weak self] err in
+//                                            guard err == nil,
+//                                                  let strongself = self
+//                                                 else {
+//                                                completion(.failure(err!))
+//                                               return
+//                                            }
+//                                            AppDelegate.userDefaults.set(indices , forKey: forKey)
+//                                            completion(.success(images))
+//                                        }
+//                                    }
+//
+//                                }
+//                            }
+//                        case .failure(let error):
+//                            completion(.failure(error))
+//                        }
+//                    })
+//                }
+//            } else {
+//                localRef.updateData([forKey : indices]) { [weak self] err in
+//                    guard let strongself = self else {
+//                        completion(.failure(StorageManager.StorageErrors.failedToUpload))
+//                        return
+//                    }
+//                    if let err = err {
+//                        completion(.failure(err))
+//                    } else {
+//                        if(AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
+//                            AppDelegate.userDefaults.set(pres, forKey: "picNum")
+//                        }
+//                        AppDelegate.userDefaults.set([] , forKey: forKey)
+//                        completion(.success([]))
+//                    }
+//                }
+//            }
+//        }
+//    }
