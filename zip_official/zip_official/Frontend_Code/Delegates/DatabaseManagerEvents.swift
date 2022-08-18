@@ -48,7 +48,6 @@ extension DatabaseManager {
             for document in querySnapshot!.documents {
                 let data = document.data()
 //                print("data =", data)
-                //MARK: forKey is either eventCoverIndex or eventPicIndices
 
                 guard let coordinates = data["coordinates"] as? [String:Double],
                       let hostIds = data["hosts"] as? [String:String],
@@ -105,7 +104,7 @@ extension DatabaseManager {
                     
                     events.append(currentEvent)
                     eventCompletion(currentEvent)
-                    DatabaseManager.shared.getImages(key: eventId, indices: eventCoverIndex, completion: { res in
+                    DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { res in
                         switch res {
                         case .success(let url):
                             currentEvent.imageUrl = url[0]
@@ -126,7 +125,7 @@ extension DatabaseManager {
             case .success(let eventCoder):
                 eventCoder.updateEvent(event: event)
                 completion(.success(event))
-                DatabaseManager.shared.getImages(key: event.eventId, indices: event.eventCoverIndex, completion: { res in
+                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
                     switch res{
                     case .success(let url):
                         print("making event")
