@@ -115,6 +115,7 @@ public class EventCoder: Codable {
     var eventCoverIndex: [Int]
     var eventPicIndices: [Int]
     var picNum: Int
+    var LCTitle: String
     
     init(event: Event) {
         self.title = event.title
@@ -131,6 +132,7 @@ public class EventCoder: Codable {
         self.eventCoverIndex = event.eventCoverIndex
         self.eventPicIndices = event.eventPicIndices
         self.picNum = event.picNum
+        self.LCTitle = event.title.lowercased()
     }
     
     enum CodingKeys: String, CodingKey {
@@ -148,6 +150,7 @@ public class EventCoder: Codable {
         case eventCoverIndex = "eventCoverIndex"
         case eventPicIndices = "eventPicIndices"
         case picNum = "picNum"
+        case LCTitle = "LCTitle"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -166,6 +169,7 @@ public class EventCoder: Codable {
         self.eventCoverIndex = try container.decode([Int].self, forKey: .eventCoverIndex)
         self.eventPicIndices = try container.decode([Int].self, forKey: .eventPicIndices)
         self.picNum = try container.decode(Int.self, forKey: .picNum)
+        self.LCTitle = try container.decode(String.self, forKey: .LCTitle)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -184,6 +188,7 @@ public class EventCoder: Codable {
         try container.encode(eventCoverIndex, forKey: .eventCoverIndex)
         try container.encode(eventPicIndices, forKey: .eventPicIndices)
         try container.encode(picNum, forKey: .picNum)
+        try container.encode(LCTitle, forKey: .LCTitle)
     }
     
     public func createEvent() -> Event {
@@ -242,7 +247,6 @@ public class Event : Equatable {
     var eventPicIndices: [Int] = []
     var eventPicUrls: [URL] = []
     var picNum: Int = 0
-    
     
     func getEncoder() -> EventCoder {
         let encoder = EventCoder(event: self)
