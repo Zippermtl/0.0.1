@@ -7,294 +7,253 @@
 
 import Foundation
 import FirebaseDatabase
+import FirebaseFirestore
+import FirebaseFirestoreSwift
+import CodableFirebase
 import MessageKit
 import FirebaseAuth
 import CoreLocation
+import GeoFire
+import CoreData
 
 extension DatabaseManager {
-    public func searchUserWithUpdates(first: String, last: String, username: String, completion: @escaping ((Error?) -> Void)){
-        database.child("userProfiles").observe(.childAdded, with: {
-            (snapshot) in
-            let keyvalue = snapshot.key
-//            print("aaaaaaaaaa")
-            let bio = snapshot.childSnapshot(forPath: "bio").value
-            let datefix = DateFormatter()
-            datefix.dateFormat = "MM-dd-yy"
-            var canadd = true
-            let birthday = datefix.date(from: snapshot.childSnapshot(forPath: "birthday").value as! String)
-            let firstname = snapshot.childSnapshot(forPath: "firstName").value as! String
-            let notifications = snapshot.childSnapshot(forPath: "notifications").value
-            let picNum = snapshot.childSnapshot(forPath: "picNum").value
-            let school = snapshot.childSnapshot(forPath: "school").value as! String
-            let lastname = snapshot.childSnapshot(forPath: "lastName").value as! String
-            let userN = snapshot.childSnapshot(forPath: "username").value as! String
-            print(snapshot)
-            print("birthday")
-            print(birthday)
-//            DatabaseManager.shared.filterUser(users: allChildren!, first: first, last: last, username: "", completion: {_ in
-//                completion(nil)
-//            })
-//                .children.allObjects
-//            for snap in allChildren {
-//                print(snap.key)
-                
-//                let bio = snap.childSnapshot(forPath: "bio")
-//                let birthday = snap.childSnapshot(forPath: "birthday") as Date
-//                let firstname = snap.childSnapshot(forPath: "firstName") as String
-//                let notifications = snap.childSnapshot(forPath: "notifications")
-//                let picnum = snap.childSnapshot(forPath: "picnum")
-//                let school = snap.childSnapshot(forPath: "school") as String
-//                let lastname = snap.childSnapshot(forPath: "lastName") as String
-//                let username = snap.childSnapshot(forPath: "username") as String
-            let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picNum as! Int, bio: bio as! String, school: school)
-                SearchManager.shared.loadedUsers.append(temp)
-                print(temp)
-//            }
-            if(username != ""){
-                if(temp.username.lowercased().contains(username.lowercased()) || temp.username.lowercased() == username.lowercased()){
-                    SearchManager.shared.loadedUsers.append(temp)
-                    canadd = false
-                }
-            }
-            if(first != "" && last != ""){
-                if(temp.fullName.lowercased().contains(first.lowercased()) || temp.fullName.lowercased().contains(last.lowercased())){
-                    if canadd {
-                        SearchManager.shared.loadedUsers.append(temp)
-                    }
-                }
-            }
-            completion(nil)
-            //SearchManager.shared.loadedUsers.append(contentsOf: snapshot)
-        }) { (error) in
-            print(error.localizedDescription)
-            completion(error)
-        }
-        
-//        firebase.database().ref('users')
-//            .orderByChild('user_details/username')
-//            .equalTo(username)
-//            .once('value', snapshot => {
-//              if (!snapshot.exists()) {
-//                console.log('No users found')
-//              }
-//              else {
-//                snapshot.forEach(child => {
-//                  console.log('User found: '+child.key)
-//                });
-//              }
-//            });
-    }
-//    database.child("userProfiles").observeSingleEvent(of: DataEventType.value, with: T##(FIRDataSnapshot) -> Void)
-    public func searchUserWithoutUpdates(first: String, last: String, username: String, completion: @escaping ((Error?) -> Void)){
-        database.child("userProfiles").observeSingleEvent(of: DataEventType.value, with: {
-            (snapshot) in
-            for rest in snapshot.children.allObjects as! [DataSnapshot] {
-                var canadd = true
-                let keyvalue = rest.key
-//                print("aaaaaaaaaa")
-                let bio = rest.childSnapshot(forPath: "bio").value
-                let datefix = DateFormatter()
-                datefix.dateFormat = "MM-dd-yy"
-                let birthday = datefix.date(from: rest.childSnapshot(forPath: "birthday").value as! String)
-                let firstname = rest.childSnapshot(forPath: "firstName").value as! String
-                let notifications = rest.childSnapshot(forPath: "notifications").value
-                let picNum = rest.childSnapshot(forPath: "picNum").value
-                let school = rest.childSnapshot(forPath: "school").value as! String
-                let lastname = rest.childSnapshot(forPath: "lastName").value as! String
-                let userN = rest.childSnapshot(forPath: "username").value as! String
-                let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picNum as! Int, bio: bio as! String, school: school)
-//                    SearchManager.shared.loadedUsers.append(temp)
-                    print(temp)
-    //            }
-                let copy = SearchManager.shared.loadedUsers
-                if(username != ""){
-                    if(temp.username.lowercased().contains(username.lowercased()) || temp.username.lowercased() == username.lowercased()){
-                        if canadd {
-                            SearchManager.shared.loadedUsers.append(temp)
-                            canadd = false
-                        }
-                    }
-                }
-                if(first != "" && last != ""){
-                    if canadd {
-                        if(temp.fullName.lowercased().contains(first.lowercased()) || temp.fullName.lowercased().contains(last.lowercased())){
-                            SearchManager.shared.loadedUsers.append(temp)
-                        }
-                    }
-                }
-            }
-//            let keyvalue = snapshot.key
-//            print("aaaaaaaaaa")
-//            let bio = snapshot.childSnapshot(forPath: "bio").value
-//            let datefix = DateFormatter()
-//            datefix.dateFormat = "MM-dd-yy"
-//            let birthday = datefix.date(from: snapshot.childSnapshot(forPath: "birthday").value as! String)
-//            let firstname = snapshot.childSnapshot(forPath: "firstName").value as! String
-//            let notifications = snapshot.childSnapshot(forPath: "notifications").value
-//            let picnum = snapshot.childSnapshot(forPath: "picNum").value
-//            let school = snapshot.childSnapshot(forPath: "school").value as! String
-//            let lastname = snapshot.childSnapshot(forPath: "lastName").value as! String
-//            let userN = snapshot.childSnapshot(forPath: "username").value as! String
-//            print(snapshot)
-//            print("birthday")
-//            print(birthday)
-//            DatabaseManager.shared.filterUser(users: allChildren!, first: first, last: last, username: "", completion: {_ in
-//                completion(nil)
-//            })
-//                .children.allObjects
-//            for snap in allChildren {
-//                print(snap.key)
-                
-//                let bio = snap.childSnapshot(forPath: "bio")
-//                let birthday = snap.childSnapshot(forPath: "birthday") as Date
-//                let firstname = snap.childSnapshot(forPath: "firstName") as String
-//                let notifications = snap.childSnapshot(forPath: "notifications")
-//                let picnum = snap.childSnapshot(forPath: "picnum")
-//                let school = snap.childSnapshot(forPath: "school") as String
-//                let lastname = snap.childSnapshot(forPath: "lastName") as String
-//                let username = snap.childSnapshot(forPath: "username") as String
-//            let temp = User(userId: keyvalue, username: userN, firstName: firstname, lastName: lastname, birthday: birthday!, picNum: picnum as! Int, bio: bio as! String, school: school)
-//                SearchManager.shared.loadedUsers.append(temp)
-//                print(temp)
-////            }
-//            if(username != ""){
-//                if(temp.username.contains(username) || temp.username == username){
-//                    SearchManager.shared.loadedUsers.append(temp)
-//                }
-//            }
-//            if(first != "" && last != ""){
-//                if(temp.fullName.contains(first) || temp.fullName.contains(last)){
-//                    SearchManager.shared.loadedUsers.append(temp)
-//                }
-//            }
-            completion(nil)
-            //SearchManager.shared.loadedUsers.append(contentsOf: snapshot)
-        }) { (error) in
-            print(error.localizedDescription)
-            completion(error)
-        }
-        
-//        firebase.database().ref('users')
-//            .orderByChild('user_details/username')
-//            .equalTo(username)
-//            .once('value', snapshot => {
-//              if (!snapshot.exists()) {
-//                console.log('No users found')
-//              }
-//              else {
-//                snapshot.forEach(child => {
-//                  console.log('User found: '+child.key)
-//                });
-//              }
-//            });
+    
+    private func sortSearch(returns: [Any]) -> [Any] {
+        var local = returns
+        var friends = User.getMyZips()
+        return
     }
     
-    public func searchEventWithUpdates(name: String, completion: @escaping ((Error?) -> Void)){
-        database.child("eventProfiles").observe(.childAdded, with: {
-            (snapshot) in
-//            var addtolist = true
-            let keyvalue = snapshot.key
-//            print(keyvalue)
-            print("bbbbb")
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-//            print(snapshot.childSnapshot(forPath: "username").value)
-            let bio = snapshot.childSnapshot(forPath: "bio").value
-            let address = snapshot.childSnapshot(forPath: "address").value
-            let lat = snapshot.childSnapshot(forPath: "coordinates").childSnapshot(forPath: "lat").value
-            let long = snapshot.childSnapshot(forPath: "coordinates").childSnapshot(forPath: "long").value
-            let desc = snapshot.childSnapshot(forPath: "description").value
-            let endtime = formatter.date(from: snapshot.childSnapshot(forPath: "endTime").value as! String)
-            let starttime = formatter.date(from: snapshot.childSnapshot(forPath: "startTime").value as! String)
-            let max = snapshot.childSnapshot(forPath: "max").value
-            let title = snapshot.childSnapshot(forPath: "title").value
-            let type = snapshot.childSnapshot(forPath: "type").value
-            var hosts: [User] = []
-//            print("cccc")
-//            print(snapshot.childSnapshot(forPath: "hosts"))
-//            print("BbbbbBBbbB")
-//            print(snapshot)
-            for rest in snapshot.childSnapshot(forPath: "hosts").children.allObjects as! [DataSnapshot] {
-                let keyval = rest.key
-                let dataval = rest.value as! String
-                let names = dataval.split(separator: " ")
-                let temp = User(userId: keyval, firstName: String(names[0]), lastName: String(names[1]))
-                hosts.append(temp)
-            }
-            let temp = zip_official.createEvent(eventId: keyvalue, title: title as! String, coordinates: CLLocation(latitude: lat as! Double, longitude: long as! Double), hosts: hosts, description: desc as! String, address: address as! String, maxGuests: max as! Int, startTime: starttime!, endTime: endtime!, type: EventType(rawValue: type as! Int)!)
-            if(temp.title.lowercased().contains(name.lowercased())){
-                SearchManager.shared.loadedEvents.append(temp)
-            } else {
-                for i in temp.hosts {
-                    if(i.username.lowercased().contains(name.lowercased()) || i.fullName.lowercased().contains(name.lowercased())){
-                        SearchManager.shared.loadedEvents.append(temp)
-                    } else if (i.username.lowercased() == name.lowercased() || i.fullName.lowercased() == name.lowercased()){
-                        SearchManager.shared.loadedEvents.append(temp)
-                    }
+    public func getSearchBarData(queryText: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<Any, Error>) -> Void, allCompletion: @escaping (Result <[Any], Error>) -> Void){
+        var finishedEvent = false
+        var finishedUsername = false
+        var finishedName = false
+        var dataholder: [Any] = []
+        if(user){
+            searchFullNameWithUpdates(queryText: queryText, indivCompletion: { res in
+                switch res{
+                case .success(let uInd1):
+                    finishedLoadingCompletion(.success(uInd1))
+                case .failure(let err1):
+                    finishedLoadingCompletion(.failure(err1))
                 }
+            }, allCompletion: { res in
+                switch res{
+                case .success(let uInd2):
+                    dataholder.append(contentsOf: uInd2)
+                    finishedName = true
+                    if (event){
+                        if(finishedEvent && finishedUsername){
+                            allCompletion(.success(dataholder))
+                        }
+                    } else if (finishedUsername){
+                        allCompletion(.success(dataholder))
+                    }
+                case .failure(let err1):
+                    allCompletion(.failure(err1))
+                }
+            })
+            
+            
+            searchUsernameWithUpdates(queryText: queryText, indivCompletion: { res in
+                switch res{
+                case .success(let uInd1):
+                    finishedLoadingCompletion(.success(uInd1))
+                case .failure(let err1):
+                    finishedLoadingCompletion(.failure(err1))
+                }
+            }, allCompletion: { res in
+                switch res{
+                case .success(let uInd2):
+                    dataholder.append(contentsOf: uInd2)
+                    finishedUsername = true
+                    if (event){
+                        if(finishedEvent && finishedName){
+                            allCompletion(.success(dataholder))
+                        }
+                    } else if (finishedName){
+                        allCompletion(.success(dataholder))
+                    }
+                case .failure(let err1):
+                    allCompletion(.failure(err1))
+                }
+            })
+            
+            
+            if(event){
+                searchEvent(queryText: queryText, indivCompletion: { res in
+                    switch res{
+                    case .success(let Ind1):
+                        finishedLoadingCompletion(.success(Ind1))
+                    case .failure(let err):
+                        finishedLoadingCompletion(.failure(err))
+                    }
+                }, allCompletion:{ res in
+                    switch res{
+                    case .success(let uInd2):
+                        dataholder.append(contentsOf: uInd2)
+                        finishedUsername = true
+                        if(finishedUsername && finishedName){
+                            allCompletion(.success(dataholder))
+                        }
+                    case .failure(let err1):
+                        allCompletion(.failure(err1))
+                    }
+                })
             }
-
+            
+            
+        } else if(event){
+            searchEvent(queryText: queryText, indivCompletion: { res in
+                switch res{
+                case .success(let Ind1):
+                    finishedLoadingCompletion(.success(Ind1))
+                case .failure(let err):
+                    finishedLoadingCompletion(.failure(err))
+                }
+            }, allCompletion: { res in
+                switch res{
+                case .success(let uInd2):
+                    dataholder.append(contentsOf: uInd2)
+                    finishedEvent = true
+                    allCompletion(.success(dataholder))
+                case .failure(let err1):
+                    allCompletion(.failure(err1))
+                }
+            })
+        }
+    }
+    
+    private func searchFullNameWithUpdates(queryText: String, indivCompletion: @escaping (Result<User, Error>) -> Void, allCompletion: @escaping (Result<[User], Error>) -> Void){
+//        let usernameRef = firestore.collection("UserProfiles")
+        let nameRef = firestore.collection("AllUserIds")
+        var users: [User] = []
+//        var friends = User.getMyZips()
+        nameRef.whereField("fullName", isGreaterThanOrEqualTo: queryText).whereField("fullName", isLessThanOrEqualTo: queryText+"~").getDocuments() { [weak self] (querySnapshot, err) in
+            guard let strongSelf = self,
+                  err == nil else {
+                print("Error getting documents: \(err!)")
+                allCompletion(.failure(err!))
+                return
+            }
+//            let decoder = JSONDecoder()
+            for doc in querySnapshot!.documents {
+                let dataAr = doc.data()
+                let id = doc.documentID
+                let fullName = dataAr["fullName"] as? String ?? ""
+                let fullNameArr = fullName.components(separatedBy: " ")
+                let firstName: String = fullNameArr[0]
+                let lastName: String = fullNameArr[1]
+                let user = User(userId: id, firstName: firstName, lastName: lastName)
+                users.append(user)
+                DatabaseManager.shared.loadUserProfile(given: user, completion: { res in
+                    switch res {
+                    case .success(let pres):
+                        indivCompletion(.success(pres))
+                    case .failure(let err):
+                        indivCompletion(.failure(err))
+                    }
+                })
+            }
+            allCompletion(.success(users))
+        }
+    }
+    
+    private func searchUsernameWithUpdates(queryText: String, indivCompletion: @escaping (Result<User, Error>) -> Void, allCompletion: @escaping (Result<[User], Error>) -> Void){
+//        let usernameRef = firestore.collection("UserProfiles")
+        let nameRef = firestore.collection("UserProfiles")
+        var users: [User] = []
+//        var friends = User.getMyZips()
+        nameRef.whereField("username", isGreaterThanOrEqualTo: queryText).whereField("username", isLessThanOrEqualTo: queryText+"~").getDocuments() { [weak self] (querySnapshot, err) in
+            guard let strongSelf = self,
+                  err == nil else {
+                print("Error getting documents: \(err!)")
+                allCompletion(.failure(err!))
+                return
+            }
+//            let decoder = JSONDecoder()
+            for doc in querySnapshot!.documents {
+//                if let dataAr = doc.data(as: UserCoder.self){
+//                    let user dataAr.createUser()
+//                }
+                do {
+                    var user = try doc.data(as: UserCoder.self).createUser()
+//                    if(friends.contains(user)){
 //
-        }) { (error) in
-            print(error.localizedDescription)
-            completion(error)
+//                    }
+                    
+                    StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { res in
+                        switch res {
+                        case .success(let url):
+                            user.profilePicUrl = url
+                            indivCompletion(.success(user))
+                        case .failure(let err):
+                            indivCompletion(.failure(err))
+                        }
+                        
+                    })
+                    users.append(user)
+                    
+                } catch {
+                    indivCompletion(.failure(DatabaseError.failedToFetch))
+                    continue
+                }
+//                let dataAr = doc.data()
+////                let userId = doc.
+//                let userdecoder = try? decoder.decode(UserCoder.self, from: dataAr).createUser()
+            }
+            allCompletion(.success(users))
+//                for doc in querySnapshot!.documents {
+//                    let data = doc.data()
+//                    let userdecoder = try decoder.decode(UserCoder.self, from: data).createUser()
+//
+//                }
+//                allCompletion(.success(users))
+            
         }
     }
     
-    public func searchEventWithoutUpdates(name: String, completion: @escaping ((Error?) -> Void)){
-        database.child("eventProfiles").observeSingleEvent(of: DataEventType.value, with: {
-            (ds) in
-            for snapshot in ds.children.allObjects as! [DataSnapshot] {
-                let keyvalue = snapshot.key
-    //            print(keyvalue)
-                print("bbbbb")
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-    //            print(snapshot.childSnapshot(forPath: "username").value)
-                let bio = snapshot.childSnapshot(forPath: "bio").value
-                let address = snapshot.childSnapshot(forPath: "address").value
-                let lat = snapshot.childSnapshot(forPath: "coordinates").childSnapshot(forPath: "lat").value
-                let long = snapshot.childSnapshot(forPath: "coordinates").childSnapshot(forPath: "long").value
-                let desc = snapshot.childSnapshot(forPath: "description").value
-                let endtime = formatter.date(from: snapshot.childSnapshot(forPath: "endTime").value as! String)
-                let starttime = formatter.date(from: snapshot.childSnapshot(forPath: "startTime").value as! String)
-                let max = snapshot.childSnapshot(forPath: "max").value
-                let title = snapshot.childSnapshot(forPath: "title").value
-                let type = snapshot.childSnapshot(forPath: "type").value
-                var hosts: [User] = []
-                var fml = SearchManager.shared.loadedEvents
-    //            print("cccc")
-    //            print(snapshot.childSnapshot(forPath: "hosts"))
-    //            print("BbbbbBBbbB")
-    //            print(snapshot)
-                for rest in snapshot.childSnapshot(forPath: "hosts").children.allObjects as! [DataSnapshot] {
-                    let keyval = rest.key
-                    let dataval = rest.value as! String
-                    let names = dataval.split(separator: " ")
-                    let temp = User(userId: keyval, firstName: String(names[0]), lastName: String(names[1]))
-                    hosts.append(temp)
-                    }
-                let temp = zip_official.createEvent(eventId: keyvalue, title: title as! String, coordinates: CLLocation(latitude: lat as! Double, longitude: long as! Double), hosts: hosts, description: desc as! String, address: address as! String, maxGuests: max as! Int, startTime: starttime!, endTime: endtime!, type: EventType(rawValue: type as! Int)!)
-                print(temp.title)
-                if(temp.title.lowercased().contains(name.lowercased())){
-                    print("adding " + temp.title)
-                    SearchManager.shared.loadedEvents.append(temp)
-                } else {
-                    for i in temp.hosts {
-                        if(i.username.lowercased().contains(name.lowercased()) || i.fullName.lowercased().contains(name.lowercased())){
-                            print("adding " + temp.title)
-                            SearchManager.shared.loadedEvents.append(temp)
-                        } else if (i.username.lowercased() == name.lowercased() || i.fullName.lowercased() == name.lowercased()){
-                            print("adding " + temp.title)
-                            SearchManager.shared.loadedEvents.append(temp)
+    private func searchEvent(queryText: String, indivCompletion: @escaping (Result<Event, Error>) -> Void, allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        let nameRef = firestore.collection("EventProfiles")
+        var events: [Event] = []
+//        var friends = User.getMyZips()
+        nameRef.whereField("LCTitle", isGreaterThanOrEqualTo: queryText).whereField("LCTitle", isLessThanOrEqualTo: queryText+"~").getDocuments() { [weak self] (querySnapshot, err) in
+            guard let strongSelf = self,
+                  err == nil else {
+                print("Error getting documents: \(err!)")
+                allCompletion(.failure(err!))
+                return
+            }
+//            let decoder = JSONDecoder()
+            for doc in querySnapshot!.documents {
+//                if let dataAr = doc.data(as: UserCoder.self){
+//                    let user dataAr.createUser()
+//                }
+                do {
+                    var event = try doc.data(as: EventCoder.self).createEvent()
+//                    if(friends.contains(user)){
+//
+//                    }
+                    
+                    StorageManager.shared.getProfilePicture(path: "images/\(event.eventId)", completion: { res in
+                        switch res {
+                        case .success(let url):
+                            event.imageUrl = url
+                            indivCompletion(.success(event))
+                        case .failure(let err):
+                            indivCompletion(.failure(err))
                         }
-                    }
+                        
+                    })
+                    events.append(event)
+                    
+                } catch {
+                    indivCompletion(.failure(DatabaseError.failedToFetch))
+                    continue
                 }
             }
-            completion(nil)
-        }) { (error) in
-            print(error.localizedDescription)
-            completion(error)
+            allCompletion(.success(events))
+            
         }
     }
 }
