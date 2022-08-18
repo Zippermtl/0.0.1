@@ -104,7 +104,7 @@ class GeoManager {
         })
     }
     
-    public func GetPromoterEventByLocation(location: CLLocation, range: Double, max: Int, autoLoad: Bool = true, completion: @escaping (Event) -> Void){
+    public func GetPromoterEventByLocation(location: CLLocation, range: Double, max: Int = Int(UInt64.max), autoLoad: Bool = true, completion: @escaping (Event) -> Void){
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         if (range < eventRange){
             eventRange = range
