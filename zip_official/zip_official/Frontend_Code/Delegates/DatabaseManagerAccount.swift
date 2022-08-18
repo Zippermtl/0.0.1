@@ -67,7 +67,7 @@ extension DatabaseManager {
                 return
             }
             
-            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData(["fullName":user.fullName])
+            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData(["fullName":user.fullName.lowercased()])
             
             if user.pictures.count != 0 {
                 let image = PictureHolder(image: user.pictures[0])
