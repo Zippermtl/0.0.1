@@ -67,7 +67,7 @@ extension DatabaseManager {
                 return
             }
             
-            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData([user.userId:user.fullName])
+            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData(["fullName":user.fullName])
             
             if user.pictures.count != 0 {
                 let image = PictureHolder(image: user.pictures[0])
@@ -135,7 +135,7 @@ extension DatabaseManager {
                 return
             }
             
-            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData([user.userId:user.fullName])
+            strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData(["fullName":user.fullName.lowercased()])
             
             AppDelegate.userDefaults.set(user.userId, forKey: "userId")
             AppDelegate.userDefaults.set(user.username, forKey: "username")
@@ -309,18 +309,19 @@ extension DatabaseManager {
                 completion(.failure(error!))
                 return
             }
-
+//
             var out : [String:Any] = [:]
-            for document in querySnapshot!.documents {
-                document.data().forEach { (key, value) in out[key] = value }
+//            for document in querySnapshot!.documents {
+//                document.data().forEach { (key, value) in
+//                    out[key] = value }
+//            }
+            for doc in querySnapshot!.documents {
+                out[doc.documentID] = doc.value(forKey:"fullName")
             }
             
             completion(.success(out))
         }
     }
-    
-   
-    
 }
 
 //MARK: - User Data Retreival
@@ -355,13 +356,13 @@ extension DatabaseManager {
             let id = user.userId
             let index = user.picIndices
             let proindex = user.profilePicIndex
-            DatabaseManager.shared.getImages(key: id, indices: proindex, completion: { res in
+            DatabaseManager.shared.getImages(Id: id, indices: proindex, event: false, completion: { res in
                 switch res {
                 case .success(let url):
                     if (url.count > 0){
                         user.profilePicUrl = url[0]
                     } 
-                    DatabaseManager.shared.getImages(key: id, indices: index, completion: { res in
+                    DatabaseManager.shared.getImages(Id: id, indices: index, event: false, completion: { res in
                         switch res {
                         case.success(let urls):
                             user.pictureURLs = urls
@@ -393,14 +394,14 @@ extension DatabaseManager {
             case .success(let user):
 //                let imagesPath = "images/" + user.userId
                 dataCompletion(.success(user))
-                DatabaseManager.shared.getImages(key: user.userId, indices: user.profilePicIndex, completion: { res in
+                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
                     switch res {
                     case .success(let url):
                         if (url.count > 0){
                             user.profilePicUrl = url[0]
                         } 
                         if( user.picIndices.count > 0){
-                            DatabaseManager.shared.getImages(key: user.userId, indices: user.picIndices, completion: { res in
+                            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
                                 switch res {
                                 case.success(let urls):
                                     user.pictureURLs = urls
@@ -463,8 +464,8 @@ extension DatabaseManager {
             user.lastName = names[1]
             user.location = CLLocation(latitude: data["lat"] as! Double, longitude: data["long"] as! Double)
             
-            let imagesPath = "images/" + id
-            DatabaseManager.shared.getImages(key: user.userId, indices: user.profilePicIndex, completion: { res in
+//            let imagesPath = "images/" + id
+            DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
                 switch res {
                 case .success(let url):
                     user.profilePicUrl = url[0]
@@ -499,7 +500,7 @@ extension DatabaseManager {
                 }
                 var key = user.userId
                 var index = user.profilePicIndex
-                DatabaseManager.shared.getImages(key: key, indices: index, completion: { res in
+                DatabaseManager.shared.getImages(Id: key, indices: index, event: false, completion: { res in
                     switch res{
                     case .success(let url):
                         user.profilePicUrl = url[0]
@@ -650,7 +651,7 @@ extension DatabaseManager {
                     return
                 }
                 
-                strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData([user.userId:user.fullName])
+                strongSelf.firestore.collection("AllUserIds").document("\(user.userId)").setData(["fullName":user.fullName.lowercased()])
                 
                 AppDelegate.userDefaults.set(user.userId, forKey: "userId")
                 AppDelegate.userDefaults.set(user.username, forKey: "username")
