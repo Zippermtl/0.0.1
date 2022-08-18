@@ -51,6 +51,13 @@ class EventViewController: UIViewController {
     private let inviteButton: IconButton
     private let participantsButton: IconButton
     
+    var tableCells : [UITableViewCell]
+    var locationCell : UITableViewCell?
+    var distanceCell : UITableViewCell?
+    var dateCell : UITableViewCell?
+    var timeCell : UITableViewCell?
+    var descriptionCell : UITableViewCell?
+
     init(event: Event) {
         self.event = event
         self.isGoing = false
@@ -75,13 +82,15 @@ class EventViewController: UIViewController {
                                        icon: UIImage(systemName: "calendar.badge.plus")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
                                        config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
         self.saveButton = IconButton(text: "Save",
-                                     icon: UIImage(systemName: "square.and.arrow.down.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+                                     icon: UIImage(systemName: "bookmark.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
                                      config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
         
         self.participantsButton = IconButton.zipsIcon()
         participantsButton.setTextLabel(s: "Participants")
 
         self.liveView = UIView()
+        
+        self.tableCells = []
         super.init(nibName: nil, bundle: nil)
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         if event.usersGoing.contains(User(userId: userId)) {
@@ -309,7 +318,7 @@ class EventViewController: UIViewController {
                 strongSelf.configureLabels()
                 strongSelf.eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
                 strongSelf.updateTime()
-                
+                strongSelf.configureCells()
                 strongSelf.tableView.reloadData()
                 
 
@@ -549,6 +558,71 @@ class EventViewController: UIViewController {
         animation.isRemovedOnCompletion = false   //Set this property to false.
         liveView.layer.add(animation, forKey: "pulsating")
     }
+    
+    func configureCells() {
+        tableCells.removeAll()
+        locationCell = UITableViewCell()
+        locationCell?.backgroundColor = .zipGray
+        locationCell?.selectionStyle = .none
+        var locationContent = locationCell!.defaultContentConfiguration()
+        locationContent.textProperties.color = .white
+        locationContent.textProperties.font = .zipTextFill
+        locationContent.image = UIImage(systemName: "map.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        locationContent.text = event.address
+        locationCell?.contentConfiguration = locationContent
+        tableCells.append(locationCell!)
+        
+        distanceCell = UITableViewCell()
+        distanceCell?.backgroundColor = .zipGray
+        distanceCell?.selectionStyle = .none
+        var distanceContent = distanceCell!.defaultContentConfiguration()
+        distanceContent.textProperties.color = .white
+        distanceContent.textProperties.font = .zipTextFill
+        distanceContent.image = UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        distanceContent.text = event.getDistanceString()
+        distanceCell?.contentConfiguration = distanceContent
+        tableCells.append(distanceCell!)
+        
+        dateCell = UITableViewCell()
+        dateCell?.backgroundColor = .zipGray
+        dateCell?.selectionStyle = .none
+        var dateContent = dateCell!.defaultContentConfiguration()
+        dateContent.textProperties.color = .white
+        dateContent.textProperties.font = .zipTextFill
+        dateContent.image = UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let df = DateFormatter()
+        df.dateFormat = "EEEE, MMMM d"
+        dateContent.text = df.string(from: event.startTime)
+        dateCell?.contentConfiguration = dateContent
+        tableCells.append(dateCell!)
+        
+        timeCell = UITableViewCell()
+        timeCell?.backgroundColor = .zipGray
+        timeCell?.selectionStyle = .none
+        var timeContent = timeCell!.defaultContentConfiguration()
+        timeContent.textProperties.color = .white
+        timeContent.textProperties.font = .zipTextFill
+        timeContent.image = UIImage(systemName: "clock.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let startTimeFormatter = DateFormatter()
+        startTimeFormatter.dateStyle = .none
+        startTimeFormatter.timeStyle = .short
+        let endTimeFormatter = DateFormatter()
+        endTimeFormatter.dateStyle = .none
+        endTimeFormatter.timeStyle = .short
+        timeContent.text = startTimeFormatter.string(from: event.startTime) + " - " + endTimeFormatter.string(from: Date(timeInterval: event.duration, since: event.startTime))
+        timeCell?.contentConfiguration = timeContent
+        tableCells.append(timeCell!)
+        
+        descriptionCell = UITableViewCell()
+        descriptionCell?.backgroundColor = .zipGray
+        descriptionCell?.selectionStyle = .none
+        var descContent = descriptionCell!.defaultContentConfiguration()
+        descContent.textProperties.color = .white
+        descContent.textProperties.font = .zipTextFill
+        descContent.text = event.description
+        descriptionCell?.contentConfiguration = descContent
+        tableCells.append(descriptionCell!)
+    }
 }
 
 
@@ -566,62 +640,10 @@ extension EventViewController: UITableViewDelegate {
 
 extension EventViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return tableCells.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.row == 3 { // description
-            let cell = tableView.dequeueReusableCell(withIdentifier: "desc", for: indexPath)
-            cell.backgroundColor = .clear
-            cell.selectionStyle = .none
-            var content = cell.defaultContentConfiguration()
-            content.textProperties.color = .white
-            content.textProperties.font = .zipTextFill
-            content.text = event.description
-            cell.contentConfiguration = content
-            return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-            cell.backgroundColor = .clear
-            cell.selectionStyle = .none
-            var content = cell.defaultContentConfiguration()
-            content.textProperties.color = .white
-            content.textProperties.font = .zipTextFill
-            
-
-            switch indexPath.row {
-            case 0: // address
-                content.image = UIImage(systemName: "map.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-                content.text = event.address
-            case 1:
-                content.image = UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-                content.text = event.getDistanceString()
-            case 2: // Date
-                content.image = UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-                
-                let startDateFormatter = DateFormatter()
-                startDateFormatter.dateFormat = "EEEE, MMMM d"
-                
-                content.text = startDateFormatter.string(from: event.startTime)
- 
-            default: // Time
-                content.image = UIImage(systemName: "clock.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-
-                let startTimeFormatter = DateFormatter()
-                startTimeFormatter.dateStyle = .none
-                startTimeFormatter.timeStyle = .short
-                
-                let endTimeFormatter = DateFormatter()
-                endTimeFormatter.dateStyle = .none
-                endTimeFormatter.timeStyle = .short
-                
-                content.text = startTimeFormatter.string(from: event.startTime) + " - " +
-                endTimeFormatter.string(from: Date(timeInterval: event.duration, since: event.startTime))
-            }
-            
-            cell.contentConfiguration = content
-            
-            return cell
-        }
+        return tableCells[indexPath.row]
     }
 }

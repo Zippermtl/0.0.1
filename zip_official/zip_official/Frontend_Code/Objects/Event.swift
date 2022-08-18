@@ -59,16 +59,21 @@ extension EventType: CustomStringConvertible {
 
 public class PromoterEventCoder: EventCoder {
     var price: Double?
+    var link: String?
     init(event: PromoterEvent){
+        self.price = event.price
+        self.link = event.buyTicketsLink
         super.init(event: event)
     }
     
     enum CodingKeys: String, CodingKey {
         case price = "price"
+        case link = "buyTicketsLink"
     }
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         price = try container.decode(Double.self, forKey: .price)
+        link = try container.decode(String.self, forKey: .link)
         let superDecoder = try container.superDecoder()
         try super.init(from: superDecoder)
     }
@@ -76,6 +81,7 @@ public class PromoterEventCoder: EventCoder {
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(price, forKey: .price)
+        try container.encode(link, forKey: .link)
         let superEncoder = container.superEncoder()
         try super.encode(to: superEncoder)
     }
@@ -83,6 +89,13 @@ public class PromoterEventCoder: EventCoder {
     public func updateEvent(event: PromoterEvent) {
         super.updateEvent(event: event)
         event.price = price
+        event.buyTicketsLink = link
+    }
+    
+    override public func createEvent() -> Event {
+        let event = PromoterEvent()
+        updateEvent(event: event)
+        return event
     }
 }
 
@@ -174,29 +187,9 @@ public class EventCoder: Codable {
     }
     
     public func createEvent() -> Event {
-        var hostUsers: [User] = []
-        for (id,fullName) in hosts {
-            let fullNameArr = fullName.components(separatedBy: " ")
-            let firstName: String = fullNameArr[0]
-            let lastName: String = fullNameArr[1]
-            hostUsers.append(User(userId: id, firstName: firstName, lastName: lastName))
-        }
-        
-        return zip_official.createEvent(
-            title: title,
-            coordinates: CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!),
-            hosts: hostUsers,
-            description: description,
-            address: address,
-            maxGuests: maxGuests,
-            usersGoing: usersGoing.map( { User(userId: $0 )} ),
-            usersInvite: usersInvite.map( { User(userId: $0 )} ),
-            startTime: startTime.dateValue(),
-            endTime: endTime.dateValue(),
-            type: EventType(rawValue: type) ?? .Event,
-            eventCoverIndex: eventCoverIndex,
-            eventPicIndices: eventPicIndices
-        )
+        let event = Event()
+        updateEvent(event: event)
+        return event
     }
     
     public func updateEvent(event: Event) {
@@ -521,6 +514,7 @@ public class PublicEvent: Event {
 
 public class PromoterEvent: PublicEvent {
     var price: Double?
+    var buyTicketsLink: String?
     override public func dispatch(user:User) -> Bool {
         return true
     }

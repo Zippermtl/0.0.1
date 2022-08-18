@@ -178,11 +178,21 @@ class ZFCardBackView: UIView {
     public func configure(user: User){
         backgroundColor = .clear
         self.user = user
+        if user.hasSchool  {
+            interestsImage.isHidden = false
+        } else {
+            interestsImage.isHidden = true
+        }
+        
+        if user.hasInterests  {
+            interestsImage.isHidden = false
+        } else {
+            interestsImage.isHidden = true
+        }
+        
         configureLabels()
         profilePicture.sd_setImage(with: user.profilePicUrl, completed: nil)
     }
-    
-    
     
     private func configureLabels() {
         guard let user = user else { return }
@@ -297,7 +307,6 @@ class ZFCardBackView: UIView {
         addSubview(slideView)
         addSubview(tapToFlipLabel)
     }
-    
     
     //MARK: - Add Constraints
     func configureSubviewLayout(){

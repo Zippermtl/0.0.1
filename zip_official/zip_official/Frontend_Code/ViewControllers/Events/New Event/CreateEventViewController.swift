@@ -601,14 +601,17 @@ extension CreateEventViewController: GMSAutocompleteViewControllerDelegate {
               let address = place.formattedAddress else {
                   return
               }
+
+  
         
-        if name.range(of: address) != nil { // if name is included in address
+        if address.contains(name) {
             locationField.text = name
+            event.address = name
         } else {
-            locationField.text = name + ", " + address.split(separator: ",")[0]
+            locationField.text = address
+            event.address = address
         }
         event.coordinates = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-        event.address = address
         event.locationName = name
         zoomToEventLocation()
         navigationController?.popViewController(animated: true)

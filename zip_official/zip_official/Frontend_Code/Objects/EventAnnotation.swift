@@ -30,6 +30,7 @@ class EventAnnotationView: MKAnnotationView {
     private var eventImage: UIImageView
     private var liveLabel: IconLabel
     private var labelBG: UIView
+    private var coverView: UIView
     
     private var ringColor: UIColor
     
@@ -41,6 +42,8 @@ class EventAnnotationView: MKAnnotationView {
         self.eventImage = UIImageView()
         self.labelBG = UIView()
         self.liveLabel = IconLabel(iconImage: nil, labelFont: .zipBodyBold.withSize(6), color: .white)
+        
+        coverView = UIView()
 
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)        
@@ -58,7 +61,7 @@ class EventAnnotationView: MKAnnotationView {
         self.eventImage = UIImageView()
         self.labelBG = UIView()
         self.liveLabel = IconLabel(iconImage: nil, labelFont: .zipBodyBold.withSize(6), color: .white)
-        
+        coverView = UIView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)
         layer.anchorPoint = CGPoint(x:0 , y: 0)
@@ -74,6 +77,7 @@ class EventAnnotationView: MKAnnotationView {
     
     private func addSubviews(){
         addSubview(containingView)
+        containingView.addSubview(coverView)
         containingView.addSubview(ring)
         containingView.addSubview(eventImage)
         containingView.addSubview(labelBG)
@@ -83,6 +87,7 @@ class EventAnnotationView: MKAnnotationView {
     private func configureSubviews(){
         print("configuring")
         containingView.frame = bounds
+        coverView.frame = bounds
 
         ring.translatesAutoresizingMaskIntoConstraints = false
         ring.bottomAnchor.constraint(equalTo: containingView.bottomAnchor).isActive = true
@@ -117,7 +122,8 @@ class EventAnnotationView: MKAnnotationView {
     
     public func configure(event: Event) {
         eventImage.sd_setImage(with: event.imageUrl, completed: nil)
-        
+        coverView.backgroundColor = ringColor
+        coverView.isHidden = true
         if event.startTime < Date() {
             liveLabel.update(string: "LIVE")
             let small = UIImage.SymbolConfiguration(pointSize: 6, weight: .bold, scale: .small)
