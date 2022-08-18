@@ -38,7 +38,7 @@ final class StorageManager {
     
     
     public func getPicture(key: String, index: Int, completion: @escaping (Result<PictureHolder,Error>) -> Void) {
-        let filename = "images/" + key + "/" + "img\(index).jpeg"
+        let filename = key + "/" + "img\(index).jpeg"
         self.downloadURL(for: filename, completion: { result in
             print("got here in getPicture")
             switch result {
