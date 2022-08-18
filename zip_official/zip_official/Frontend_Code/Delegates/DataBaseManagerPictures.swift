@@ -367,8 +367,14 @@ extension DatabaseManager{
         }
     }
     
-    public func getImages(key: String, indices: [Int], completion: @escaping (Result<[URL],Error>)-> Void){
+    public func getImages(Id: String, indices: [Int], event: Bool, completion: @escaping (Result<[URL],Error>)-> Void){
         var indicesCopy = indices
+        var key = Id
+        if(event){
+            key = "Event/" + key
+        } else {
+            key = "images/" + key
+        }
         var urls: [Int : URL] = [:]
         var returnUrls: [URL] = []
         if (indices.count == 0){
