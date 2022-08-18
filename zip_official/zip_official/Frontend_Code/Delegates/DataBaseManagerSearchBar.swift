@@ -18,17 +18,11 @@ import CoreData
 
 extension DatabaseManager {
     
-    private func sortSearch(returns: [Any]) -> [Any] {
-        var local = returns
-        var friends = User.getMyZips()
-        return
-    }
-    
-    public func getSearchBarData(queryText: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<Any, Error>) -> Void, allCompletion: @escaping (Result <[Any], Error>) -> Void){
+    public func getSearchBarData(queryText: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result <[SearchObject], Error>) -> Void){
         var finishedEvent = false
         var finishedUsername = false
         var finishedName = false
-        var dataholder: [Any] = []
+        var dataholder: [SearchObject] = []
         if(user){
             searchFullNameWithUpdates(queryText: queryText, indivCompletion: { res in
                 switch res{
@@ -124,7 +118,7 @@ extension DatabaseManager {
         }
     }
     
-    private func searchFullNameWithUpdates(queryText: String, indivCompletion: @escaping (Result<User, Error>) -> Void, allCompletion: @escaping (Result<[User], Error>) -> Void){
+    private func searchFullNameWithUpdates(queryText: String, indivCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result<[SearchObject], Error>) -> Void){
 //        let usernameRef = firestore.collection("UserProfiles")
         let nameRef = firestore.collection("AllUserIds")
         var users: [User] = []
@@ -149,17 +143,22 @@ extension DatabaseManager {
                 DatabaseManager.shared.loadUserProfile(given: user, completion: { res in
                     switch res {
                     case .success(let pres):
-                        indivCompletion(.success(pres))
+                        indivCompletion(.success(SearchObject(pres)))
                     case .failure(let err):
                         indivCompletion(.failure(err))
                     }
                 })
             }
-            allCompletion(.success(users))
+            var returns: [SearchObject] = []
+            for i in users {
+                returns.append(SearchObject(i))
+            }
+            allCompletion(.success(returns))
+//            allCompletion(.success(users))
         }
     }
     
-    private func searchUsernameWithUpdates(queryText: String, indivCompletion: @escaping (Result<User, Error>) -> Void, allCompletion: @escaping (Result<[User], Error>) -> Void){
+    private func searchUsernameWithUpdates(queryText: String, indivCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result<[SearchObject], Error>) -> Void){
 //        let usernameRef = firestore.collection("UserProfiles")
         let nameRef = firestore.collection("UserProfiles")
         var users: [User] = []
@@ -186,7 +185,7 @@ extension DatabaseManager {
                         switch res {
                         case .success(let url):
                             user.profilePicUrl = url
-                            indivCompletion(.success(user))
+                            indivCompletion(.success(SearchObject(user)))
                         case .failure(let err):
                             indivCompletion(.failure(err))
                         }
@@ -202,7 +201,12 @@ extension DatabaseManager {
 ////                let userId = doc.
 //                let userdecoder = try? decoder.decode(UserCoder.self, from: dataAr).createUser()
             }
-            allCompletion(.success(users))
+            var returns: [SearchObject] = []
+            for i in users {
+                returns.append(SearchObject(i))
+            }
+            allCompletion(.success(returns))
+//            allCompletion(.success(users))
 //                for doc in querySnapshot!.documents {
 //                    let data = doc.data()
 //                    let userdecoder = try decoder.decode(UserCoder.self, from: data).createUser()
@@ -213,7 +217,7 @@ extension DatabaseManager {
         }
     }
     
-    private func searchEvent(queryText: String, indivCompletion: @escaping (Result<Event, Error>) -> Void, allCompletion: @escaping (Result<[Event], Error>) -> Void){
+    private func searchEvent(queryText: String, indivCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result<[SearchObject], Error>) -> Void){
         let nameRef = firestore.collection("EventProfiles")
         var events: [Event] = []
 //        var friends = User.getMyZips()
@@ -239,7 +243,8 @@ extension DatabaseManager {
                         switch res {
                         case .success(let url):
                             event.imageUrl = url
-                            indivCompletion(.success(event))
+                            let temp = SearchObject(event)
+                            indivCompletion(.success(temp))
                         case .failure(let err):
                             indivCompletion(.failure(err))
                         }
@@ -252,7 +257,11 @@ extension DatabaseManager {
                     continue
                 }
             }
-            allCompletion(.success(events))
+            var returns: [SearchObject] = []
+            for i in events {
+                returns.append(SearchObject(i))
+            }
+            allCompletion(.success(returns))
             
         }
     }

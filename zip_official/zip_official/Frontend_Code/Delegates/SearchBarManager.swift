@@ -4,96 +4,113 @@
 //
 //  Created by user on 6/27/22.
 //
-
 import Foundation
 import FirebaseDatabase
 
 class SearchManager{
     static let shared = SearchManager()
-    var loadedEvents: [Event] = []
-    var loadedUsers: [User] = []
+    var loadedData: [SearchObject] = []
+    var returnData: [SearchObject] = []
 //    var unfinishedUsers: [User] = []
 //    var unfinishedEvents: [Event] = []
 //    var tempData = NSDictionary
-    var searchString: String = ""
+    var searchVal: [String] = []
+    var presQuery: String = ""
     
     init(){
     }
     
-    public func searchBarUserFullName(first: String, last: String, completion: @escaping (Error?) -> Void){
-        if searchString == first + " " + last {
-            print("dryFire")
-            completion(nil)
-        } else {
-            searchString = first + " " + last
-            loadedUsers = []
-            DatabaseManager.shared.searchUserWithoutUpdates(first: first, last: last, username: "") { _ in
-                completion(nil)
-                for i in SearchManager.shared.loadedUsers {
-                    let temp = SearchManager.shared.loadedUsers
-                    print(i.fullName)
-                }
+    public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result <[SearchObject], Error>) -> Void){
+        var queryText = searchString.lowercased()
+        var index = -1
+        var newq = true
+        for i in 0..<searchVal.count {
+            if (queryText.contains(searchVal[i])) {
+                newq = false
+                index = i
+                print("Data Exists in previous query")
             }
+        }
+        
+        if(index != -1 || newq){
+            updateSearch(ss: queryText)
+            DatabaseManager.shared.getSearchBarData(queryText: presQuery, event: event, user: user, finishedLoadingCompletion: { res in
+                switch res{
+                case .success(let data):
+                    finishedLoadingCompletion(.success(data))
+                case .failure(let err):
+                    finishedLoadingCompletion(.failure(err))
+                }
+            }, allCompletion: { [weak self] res in
+                switch res{
+                case .success(let data):
+                    self?.loadedData.append(contentsOf: data)
+                    let finalData = self?.sortSearch(returns: data)
+                    allCompletion(.success(finalData ?? []))
+                case .failure(let err):
+                    allCompletion(.failure(err))
+                }
+            })
+        } else if (searchVal[index] == presQuery){
+            
+        } else {
+            
+        }
+        
+    }
+    
+    private func updateSearch(ss: String, new: Bool = true){
+        presQuery = ss
+        if (new){
+            searchVal.append(ss)
         }
     }
     
-    public func searchBarUserName(username: String, completion: @escaping (Error?) -> Void){
-        if searchString == username {
-            completion(nil)
-        } else {
-            searchString = username
-            loadedUsers = []
-            DatabaseManager.shared.searchUserWithoutUpdates(first: "", last: "", username: username) { _ in
-                completion(nil)
-            }
-        }
-    }
-    
-    public func searchBarEvent(input: String, completion: @escaping (Error?) -> Void){
-        if searchString == input {
-            completion(nil)
-        } else {
-            searchString = input
-            loadedEvents = []
-            DatabaseManager.shared.searchEventWithoutUpdates(name: input) { _ in
-                
-                var temp = SearchManager.shared.loadedEvents
-                for i in SearchManager.shared.loadedEvents {
-                    print(i.title)
-                }
-                completion(nil)
-            }
-        }
-    }
-    
-    public func searchBoth(input: String, completion: @escaping (Error?) -> Void){
-        if searchString == input {
-            completion(nil)
-        } else {
-            searchString = input
-            loadedUsers = []
-            loadedEvents = []
-            DatabaseManager.shared.searchEventWithoutUpdates(name: input) { _ in
-                
-//                var temp = SearchManager.shared.loadedEvents
-                for i in SearchManager.shared.loadedEvents {
-                    print(i.title)
-                }
-                let tp = input.split(separator: " ")
-                if (tp.count > 1) {
-                    DatabaseManager.shared.searchUserWithoutUpdates(first: String(tp[0]), last: String(tp[1]), username: input) { _ in
-                        completion(nil)
+    private func sortSearch(returns: [SearchObject] = [], empty: Bool = false) -> [SearchObject] {
+        var local: [SearchObject] = []
+        var front: [SearchObject] = []
+        let friends = User.getMyZips().map({SearchObject($0)})
+        let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
+        
+        let Priority = friends+invitedEvents
+//        var
+        if(returns.count == 0 || empty){
+            for i in loadedData{
+                for i in loadedData{
+                    if (i.isEvent()) {
+                        if invitedEvents.contains(i){
+                            front.append(i)
+                        } else {
+                            local.append(i)
+                        }
+                    } else if (i.isUser()) {
+                        if friends.contains(i){
+                            front.append(i)
+                        } else {
+                            local.append(i)
+                        }
                     }
-                } else {
-                    DatabaseManager.shared.searchUserWithoutUpdates(first: "", last: "", username: input) { _ in
-                        let a = SearchManager.shared.loadedUsers
-                        completion(nil)
+                }
+            }
+        } else {
+            for i in returns{
+                if (i.isEvent()) {
+                    if invitedEvents.contains(i){
+                        front.append(i)
+                    } else {
+                        local.append(i)
+                    }
+                } else if (i.isUser()) {
+                    if friends.contains(i){
+                        front.append(i)
+                    } else {
+                        local.append(i)
                     }
                 }
-                
             }
         }
+        front.append(contentsOf: local)
+        return front
     }
     
 }
-

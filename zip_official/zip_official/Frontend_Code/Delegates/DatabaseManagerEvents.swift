@@ -27,6 +27,100 @@ public enum EventType: Int {
 
 extension DatabaseManager {
     
+    
+    public func getAllHostedEventsForMap(eventCompletion: @escaping (Event) -> Void,
+                                         allCompletion: @escaping (Result<[Event], Error>) -> Void){
+       guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+           return
+       }
+       
+       firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
+           guard let strongSelf = self,
+                 err == nil else {
+               print("Error getting documents: \(err!)")
+               allCompletion(.failure(err!))
+               return
+           }
+           
+           var events: [Event] = []
+           let formatter = DateFormatter()
+           formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+           
+           for document in querySnapshot!.documents {
+               let data = document.data()
+//                print("data =", data)
+
+               guard let coordinates = data["coordinates"] as? [String:Double],
+                     let hostIds = data["hosts"] as? [String:String],
+                     let goingIds = data["usersGoing"] as? [String],
+                     let InviteIds = data["usersInvite"] as? [String],
+                     let startTimestamp = data["startTime"] as? Timestamp,
+                     let endTimestamp = data["endTime"] as? Timestamp,
+                     let eventCoverIndex = data["eventCoverIndex"] as? [Int],
+                     let eventPicIndices = data["eventPicIndices"] as? [Int]
+               else {
+//                    print("FAIL FAIL FAIL FUCK")
+                   continue
+               }
+               
+               let eventId = document.documentID
+               let address = data["address"] as? String ?? ""
+               let lat = coordinates["lat"] ?? 0.0
+               let long = coordinates["long"] ?? 0.0
+               let desc = data["description"] as? String ?? ""
+               
+               let endTime = endTimestamp.dateValue()
+               let startTime = startTimestamp.dateValue()
+               
+               var hostUsers: [User] = []
+               for (id,fullName) in hostIds {
+                   let fullNameArr = fullName.components(separatedBy: " ")
+                   let firstName: String = fullNameArr[0]
+                   let lastName: String = fullNameArr[1]
+                   hostUsers.append(User(userId: id, firstName: firstName, lastName: lastName))
+               }
+               
+               let usersGoing = goingIds.map({ User(userId: $0 )})
+               let usersInvite = InviteIds.map({ User(userId: $0 )})
+               
+               let max = data["max"] as? Int ?? -1
+               let title = data["title"] as? String ?? ""
+               let type = data["type"] as? Int ?? 0
+               
+               if (endTime > Date()){
+                   let currentEvent = strongSelf.createEventLocal(eventId: eventId,
+                                                                  title: title,
+                                                                  coordinates: CLLocation(latitude: lat, longitude: long),
+                                                                  hosts: hostUsers,
+                                                                  description: desc,
+                                                                  address: address,
+                                                                  maxGuests: max,
+                                                                  usersGoing: usersGoing,
+                                                                  usersInvite: usersInvite,
+                                                                  startTime: startTime,
+                                                                  endTime: endTime,
+                                                                  type: EventType(rawValue: type)!,
+                                                                  eventCoverIndex: eventCoverIndex,
+                                                                  eventPicIndices: eventPicIndices)
+                   
+                   events.append(currentEvent)
+                   eventCompletion(currentEvent)
+                   DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { res in
+                       switch res {
+                       case .success(let url):
+                           currentEvent.imageUrl = url[0]
+                       case .failure(let error):
+                           print("error loading image in map load Error: \(error)")
+                       }
+                   })
+               }
+           }
+           let invitedEvents: [String] = events.map({ $0.eventId })
+           AppDelegate.userDefaults.set(invitedEvents, forKey: "myHostedEvents")
+           allCompletion(.success(events))
+       }
+   }
+    
     public func getAllPrivateEventsForMap(eventCompletion: @escaping (Event) -> Void,
                                           allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
@@ -115,6 +209,8 @@ extension DatabaseManager {
                 }
                
             }
+            let invitedEvents: [String] = events.map({ $0.eventId })
+            AppDelegate.userDefaults.set(invitedEvents, forKey: "myInvitedEvents")
             allCompletion(.success(events))
         }
     }

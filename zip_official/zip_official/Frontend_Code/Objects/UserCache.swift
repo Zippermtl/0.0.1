@@ -25,7 +25,7 @@ public class UserCache {
         return cache
     }
     
-    func loadUser(id: String, loadLevel: Int = 0, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void) {
+    func loadUser(id: String, loadLevel: User.UserLoadType, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void) {
         if let cachedUser = cache[id] {
             // Use the cached version
             completion(.success(cachedUser))

@@ -661,11 +661,18 @@ public class User : CustomStringConvertible, Equatable {
         }
     }
 
-    // Load someone's profile
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
-    func load(status: Int, completion: @escaping (Bool) -> Void) {
+    public enum UserLoadType: Int {
+        case zipFinder = 0
+        case SubWithLoc = 1
+        case SubNoLoc = 2
+        
+    }
+    
+    //load someone's profile
+    func load(status: UserLoadType, completion: @escaping (Bool) -> Void) {
         switch status{
-        case 1:
+        case .zipFinder:
             DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
                 switch results {
                 case .success(let user):
@@ -677,7 +684,7 @@ public class User : CustomStringConvertible, Equatable {
                     completion(false)
                 }
             })
-        case 2:
+        case .SubNoLoc:
             DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
                 switch results {
                 case .success(let user):
@@ -689,7 +696,7 @@ public class User : CustomStringConvertible, Equatable {
                     completion(false)
                 }
             })
-        case 3:
+        case .SubWithLoc:
             DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
                 switch results {
                 case .success(let user):
@@ -701,26 +708,26 @@ public class User : CustomStringConvertible, Equatable {
                     completion(false)
                 }
             })
-        case 4:
-            print("add this later for expansion")
-        default:
-            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
-                switch results {
-                case .success(let user):
-                    print("completed user profile copy for: ")
-                    print("copied \(user.username)")
-                    completion(true)
-                case .failure(let error):
-                    print("error load in LoadUser -> LoadUserProfile \(error)")
-                    completion(false)
-                }
-            })
+//        case 4:
+//            print("add this later for expansion")
+//        default:
+//            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
+//                switch results {
+//                case .success(let user):
+//                    print("completed user profile copy for: ")
+//                    print("copied \(user.username)")
+//                    completion(true)
+//                case .failure(let error):
+//                    print("error load in LoadUser -> LoadUserProfile \(error)")
+//                    completion(false)
+//                }
+//            })
         }
     }
 
     // Load your own profile
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
-    static func load(status: Int, completion: @escaping (Bool) -> Void) {
+    static func load(status: UserLoadType, completion: @escaping (Bool) -> Void) {
         User.getCurrentUser().load(status: status, completion: {result in completion(result)})
     }
     
@@ -734,6 +741,22 @@ public class User : CustomStringConvertible, Equatable {
         let requestsArr = friendships.filter({ $0.status == .ACCEPTED })
        
         return requestsArr.map({ $0.receiver })
+    }
+    
+    static func getInvitedEvents() -> [Event]{
+        guard let raw_events = AppDelegate.userDefaults.value(forKey: "myInvitedEvents") as? [String] else {
+            return []
+        }
+        let events = raw_events.map({ Event(eventId: $0)})
+        return events
+    }
+    
+    static func getHostedEvents() -> [Event]{
+        guard let raw_events = AppDelegate.userDefaults.value(forKey: "myHostedEvents") as? [String] else {
+            return []
+        }
+        let events = raw_events.map({ Event(eventId: $0)})
+        return events
     }
     
     static func getMyRequests() -> [User]{
