@@ -134,7 +134,8 @@ class UserPhotosViewController: UIViewController {
                 case .success(let pics):
                     strongSelf.userPictures = pics
                     strongSelf.originalPicUrls = pics.map({$0.url!})
-                    
+                    strongSelf.user.pictureURLs = strongSelf.originalPicUrls
+                    strongSelf.user.picIndices = pics.map({ $0.idx })
                     DispatchQueue.main.async {
                         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                                          .foregroundColor: UIColor.zipBlue]
@@ -206,10 +207,10 @@ class UserPhotosViewController: UIViewController {
     public func configure(user: User) {
         self.user = user
         collectionView?.reloadData()
-        originalPicUrls = user.otherPictureUrls
+        originalPicUrls = user.pictureURLs
         
         var idx = 0
-        for url in user.otherPictureUrls {
+        for url in user.pictureURLs {
             userPictures.append(PictureHolder(url: url, index: user.picIndices[idx]))
             idx+=1
         }
