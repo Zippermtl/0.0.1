@@ -51,7 +51,7 @@ class ZipMessagesViewController: UIViewController {
             }) {
                 let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
                 vc.isNewConversation = true
-                vc.title = targetConversation.otherUser.userId
+                vc.title = targetConversation.otherUser.firstName
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
             } else {
                 strongSelf.createNewConversation(result: result)
@@ -62,13 +62,10 @@ class ZipMessagesViewController: UIViewController {
     }
     
     private func createNewConversation(result otherUser: User){
-        let name = otherUser.fullName
-        let userId = otherUser.userId
-        
         // check in database if conversation with these two uses exists
         // if it does, reuse conversation id
         // otherwise use existing code
-        DatabaseManager.shared.conversationExists(with: userId, completion: { [weak self] result in
+        DatabaseManager.shared.conversationExists(with: otherUser.userId, completion: { [weak self] result in
             guard let strongSelf = self else {
                 return
             }
@@ -76,19 +73,17 @@ class ZipMessagesViewController: UIViewController {
             case.success(let conversationId):
                 let vc = ChatViewController(toUser: otherUser, id: conversationId)
                 vc.isNewConversation = false
-                vc.title = name
+                vc.title = otherUser.firstName
                 vc.navigationItem.largeTitleDisplayMode = .never
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
             case .failure(_):
                 let vc = ChatViewController(toUser: otherUser, id: nil)
                 vc.isNewConversation = true
-                vc.title = name
+                vc.title = otherUser.firstName
                 vc.navigationItem.largeTitleDisplayMode = .never
                 strongSelf.navigationController?.pushViewController(vc, animated: true)
             }    
         })
-        
-        
     }
     
     
@@ -147,8 +142,6 @@ class ZipMessagesViewController: UIViewController {
                 self?.noConversationsLabel.isHidden = false
                 print("failed to get conversations: \(error)")
             }
-            
-            
         })
     }
     
@@ -185,7 +178,8 @@ class ZipMessagesViewController: UIViewController {
     
         
         let dismissButton = UIButton(type: .system)
-        dismissButton.setImage(UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        let config = UIImage.SymbolConfiguration(weight: .semibold)
+        dismissButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
         dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)

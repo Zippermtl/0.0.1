@@ -49,7 +49,7 @@ class PromoterEventViewController: EventViewController {
         var linkContent = locationCell!.defaultContentConfiguration()
         linkContent.textProperties.color = .white
         linkContent.textProperties.font = .zipTextFill
-        linkContent.image = UIImage(systemName: "dollarsign.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        linkContent.image = UIImage(systemName: "ticket.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         linkContent.text = link
         linkCell?.contentConfiguration = priceContent
         tableCells.append(locationCell!)        

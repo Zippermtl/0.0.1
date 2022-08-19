@@ -23,113 +23,88 @@ class EventAnnotation: NSObject, MKAnnotation {
 
 
 class EventAnnotationView: MKAnnotationView {
-    static let length: CGFloat = 60
+    static let VIEW_LENGTH: CGFloat = 40
+    static let DOT_LENGTH: CGFloat = 12
     
-    private let containingView: UIView
-    private var ring: UIImageView
     private var eventImage: UIImageView
-    private var liveLabel: IconLabel
-    private var labelBG: UIView
-    private var coverView: UIView
-    
+    private var dotView: UIView
     private var ringColor: UIColor
     
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        self.containingView = UIView()
-        self.ring = UIImageView()
         self.ringColor = .white
-        ring.image = UIImage(named: "EventAnnotationRing")?.withTintColor(ringColor)
         self.eventImage = UIImageView()
-        self.labelBG = UIView()
-        self.liveLabel = IconLabel(iconImage: nil, labelFont: .zipBodyBold.withSize(6), color: .white)
-        
-        coverView = UIView()
+        self.dotView = UIView()
 
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)        
-        layer.anchorPoint = CGPoint(x:0 , y: 0)
-        
-        addSubviews()
+       
         configureSubviews()
+        addSubviews()
+        configureSubviewLayout()
     }
     
     init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor: UIColor) {
-        self.containingView = UIView()
-        self.ring = UIImageView()
         self.ringColor = ringColor
-        ring.image = UIImage(named: "EventAnnotationRing")?.withTintColor(ringColor)
         self.eventImage = UIImageView()
-        self.labelBG = UIView()
-        self.liveLabel = IconLabel(iconImage: nil, labelFont: .zipBodyBold.withSize(6), color: .white)
-        coverView = UIView()
+        self.dotView = UIView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length, height: EventAnnotationView.length)
-        layer.anchorPoint = CGPoint(x:0 , y: 0)
-
-        addSubviews()
+        
         configureSubviews()
+        addSubviews()
+        configureSubviewLayout()
+
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    private func configureSubviews() {
+        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.VIEW_LENGTH, height: EventAnnotationView.VIEW_LENGTH)
+        layer.anchorPoint = CGPoint(x:0 , y: 0)
+        
+        centerOffset = CGPoint(x: -EventAnnotationView.VIEW_LENGTH/2, y: -EventAnnotationView.VIEW_LENGTH/2)
+        dotView.backgroundColor = ringColor
+        
+        dotView.layer.masksToBounds = true
+        dotView.layer.cornerRadius = EventAnnotationView.DOT_LENGTH/2
+        dotView.layer.borderWidth = 1
+        dotView.layer.borderColor = UIColor.white.cgColor
+
     
-    private func addSubviews(){
-        addSubview(containingView)
-        containingView.addSubview(coverView)
-        containingView.addSubview(ring)
-        containingView.addSubview(eventImage)
-        containingView.addSubview(labelBG)
-        containingView.addSubview(liveLabel)
+        eventImage.layer.masksToBounds = true
+        eventImage.layer.cornerRadius = EventAnnotationView.VIEW_LENGTH/2
+        eventImage.layer.borderColor = ringColor.cgColor
+        eventImage.layer.borderWidth = 1
+        
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.5
+        layer.shadowOffset = CGSize(width: 1, height: 4)
+        layer.shadowRadius = 2
     }
     
-    private func configureSubviews(){
+    private func addSubviews(){
+        addSubview(eventImage)
+        addSubview(dotView)
+    }
+    
+    private func configureSubviewLayout(){
         print("configuring")
-        containingView.frame = bounds
-        coverView.frame = bounds
+        eventImage.frame = bounds
 
-        ring.translatesAutoresizingMaskIntoConstraints = false
-        ring.bottomAnchor.constraint(equalTo: containingView.bottomAnchor).isActive = true
-        ring.topAnchor.constraint(equalTo: containingView.topAnchor).isActive = true
-        ring.rightAnchor.constraint(equalTo: containingView.rightAnchor).isActive = true
-        ring.leftAnchor.constraint(equalTo: containingView.leftAnchor).isActive = true
-
-        eventImage.frame = CGRect(x: 7, y: 7, width: EventAnnotationView.length-14, height: EventAnnotationView.length-14)
-        
-        labelBG.translatesAutoresizingMaskIntoConstraints = false
-        labelBG.bottomAnchor.constraint(equalTo: containingView.bottomAnchor).isActive = true
-        labelBG.centerXAnchor.constraint(equalTo: containingView.centerXAnchor).isActive = true
-        labelBG.widthAnchor.constraint(equalToConstant: 24).isActive = true
-        labelBG.heightAnchor.constraint(equalToConstant: 8).isActive = true
-        
-        labelBG.layer.masksToBounds = true
-        labelBG.layer.cornerRadius = 4
-        labelBG.backgroundColor = ringColor
-        
-        liveLabel.translatesAutoresizingMaskIntoConstraints = false
-        liveLabel.bottomAnchor.constraint(equalTo: labelBG.bottomAnchor, constant: 2).isActive = true
-        liveLabel.centerXAnchor.constraint(equalTo: containingView.centerXAnchor).isActive = true
-
-        liveLabel.numberOfLines = 1
-        
-        containingView.bringSubviewToFront(liveLabel)
-
-        eventImage.layer.masksToBounds = true
-        eventImage.layer.cornerRadius = (EventAnnotationView.length-14)/2
+        dotView.translatesAutoresizingMaskIntoConstraints = false
+        dotView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        dotView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        dotView.widthAnchor.constraint(equalToConstant: EventAnnotationView.DOT_LENGTH).isActive = true
+        dotView.heightAnchor.constraint(equalTo: dotView.widthAnchor).isActive = true
     }
     
     
     public func configure(event: Event) {
         eventImage.sd_setImage(with: event.imageUrl, completed: nil)
-        coverView.backgroundColor = ringColor
-        coverView.isHidden = true
-        if event.startTime < Date() {
-            liveLabel.update(string: "LIVE")
-            let small = UIImage.SymbolConfiguration(pointSize: 6, weight: .bold, scale: .small)
-            liveLabel.setIcon(newIcon: UIImage(systemName: "circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.red).withConfiguration(small))
-            liveLabel.sizeToFit()
-        }
+        dotView.backgroundColor = ringColor
+        dotView.isHidden = true
+        eventImage.layer.borderColor = ringColor.cgColor
+        eventImage.layer.borderWidth = 2
     }
     
     public func updateImage(_ url: URL) {
@@ -137,17 +112,28 @@ class EventAnnotationView: MKAnnotationView {
     }
     
     public func updateSize(scale: CGFloat){
-        
+        eventImage.isHidden = false
+        dotView.isHidden = true
         transform = CGAffineTransform(scaleX: scale, y: scale)
-        centerOffset = CGPoint(x: -(EventAnnotationView.length/2)*scale, y: -(EventAnnotationView.length/2)*scale)
-
-//        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.length * scale, height: EventAnnotationView.length * scale)
-//        containingView.frame = frame
-//        eventImage.frame = CGRect(x: 7 * scale, y: 7 * scale, width: (EventAnnotationView.length-14) * scale, height: (EventAnnotationView.length-14) * scale)
-//        eventImage.layer.cornerRadius = ((EventAnnotationView.length-14) * scale)/2
-////        centerOffset = CGPoint(x: -frame.size.width/2, y: -frame.size.height/2)
-//        print("SCALE = \(scale)")
+        centerOffset = CGPoint(x: -(EventAnnotationView.VIEW_LENGTH/2)*scale, y: -(EventAnnotationView.VIEW_LENGTH/2)*scale)
     }
+    
+    public func makeDot(){
+        eventImage.isHidden = true
+        dotView.isHidden = false
+        transform = CGAffineTransform(scaleX: 1, y: 1)
+        centerOffset = CGPoint(x: -EventAnnotationView.VIEW_LENGTH/2, y: -EventAnnotationView.VIEW_LENGTH/2)
+        layer.shadowColor = UIColor.clear.cgColor
+    }
+    
+    public func makeEvent() {
+        eventImage.isHidden = false
+        dotView.isHidden = true
+        layer.shadowColor = UIColor.black.cgColor
+
+    }
+    
+    
     
 }
 

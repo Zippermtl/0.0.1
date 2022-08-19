@@ -50,6 +50,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.textColor = .white
         field.font = .zipBodyBold
 
+        field.keyboardType = .asciiCapable
         return field
     }()
     
@@ -74,7 +75,8 @@ class BasicProfileSetupViewController: UIViewController {
         field.tintColor = .white
         field.textColor = .white
         field.font = .zipBodyBold
-
+        
+        field.keyboardType = .asciiCapable
         return field
     }()
     
@@ -117,6 +119,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.textColor = .white
         field.font = .zipBodyBold
 
+        field.keyboardType = .asciiCapable
         return field
     }()
     

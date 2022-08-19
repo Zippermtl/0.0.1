@@ -22,19 +22,9 @@ class CreateEventViewController: UIViewController {
     private let locationLabel: UILabel
     private let endTimeLabel: UILabel
     
-    private let endDatePicker: UIDatePicker
-    private let endTimePicker: UIDatePicker
-    private let startDatePicker: UIDatePicker
-    private let startTimePicker: UIDatePicker
-
-    
     
     private let eventNameField: UITextField
-    private let startDateField: UITextField
-    private let startTimeField: UITextField
-    private let endDateField: UITextField
-    private let endTimeField: UITextField
-    
+    private let datePicker: EventDatePickerView
     private let locationField: UITextField
     
     private let continueButton: UIButton
@@ -48,27 +38,22 @@ class CreateEventViewController: UIViewController {
         event.eventId = event.createEventId
         event.imageUrl = event.getType().defaultProfilePictureUrl
 
+        self.datePicker = EventDatePickerView(event: event)
+        
         self.mapView = MKMapView()
         self.eventNameLabel = UILabel.zipTextFill()
         self.startTimeLabel = UILabel.zipTextFill()
         self.locationLabel = UILabel.zipTextFill()
         self.endTimeLabel = UILabel.zipTextFill()
         
-        self.eventNameField = UITextField()
-        self.startDateField = UITextField()
-        self.startTimeField = UITextField()
-        self.endDateField = UITextField()
-        self.endTimeField = UITextField()
         self.locationField = UITextField()
+        self.eventNameField = UITextField()
+
         
         self.pageStatus1 = StatusCheckView()
         self.pageStatus2 = StatusCheckView()
         self.pageStatus3 = StatusCheckView()
         
-        self.startTimePicker = UIDatePicker()
-        self.startDatePicker = UIDatePicker()
-        self.endDatePicker = UIDatePicker()
-        self.endTimePicker = UIDatePicker()
         
         self.continueButton = UIButton()
 
@@ -99,27 +84,7 @@ class CreateEventViewController: UIViewController {
     }
     
     private func configureTextFields() {
-        startDateField.delegate = self
-        startTimeField.delegate = self
-        endDateField.delegate = self
-        endTimeField.delegate = self
         
-        endDatePicker.datePickerMode = .date
-        endDatePicker.minuteInterval = 15
-        endDatePicker.preferredDatePickerStyle = .inline
-        endDatePicker.minimumDate = Date()
-        endDatePicker.addTarget(self, action: #selector(endDateChanged), for: .valueChanged)
-
-        
-        endDateField.inputView = endDatePicker
-        
-        
-        endTimePicker.datePickerMode = .time
-        endTimePicker.minuteInterval = 15
-        endTimePicker.preferredDatePickerStyle = .wheels
-        endTimePicker.addTarget(self, action: #selector(endTimeChanged), for: .valueChanged)
-
-        endTimeField.inputView = endTimePicker
         
         eventNameField.returnKeyType = .continue
         eventNameField.borderStyle = .roundedRect
@@ -134,73 +99,6 @@ class CreateEventViewController: UIViewController {
         eventNameField.textColor = .white
         eventNameField.font = .zipBodyBold
 
-        
-        startDateField.attributedPlaceholder = NSAttributedString(string: "Date",
-                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        startDateField.font = .zipBody
-        startDateField.borderStyle = .roundedRect
-        startDateField.tintColor = .white
-        startDateField.backgroundColor = .zipLightGray
-        startDateField.textColor = .white
-        startDateField.adjustsFontSizeToFitWidth = true
-        startDateField.minimumFontSize = 10.0
-        startDateField.textAlignment = .center
-
-            
-        startDatePicker.datePickerMode = .date
-        startDatePicker.minuteInterval = 15
-        startDatePicker.preferredDatePickerStyle = .inline
-        
-        startDatePicker.minimumDate = Date()
-        startDateField.inputView = startDatePicker
-            
-        startDatePicker.addTarget(self, action: #selector(startDateChanged), for: .valueChanged)
-        
-
-        startTimeField.attributedPlaceholder = NSAttributedString(string: "Time",
-                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        startTimeField.font = .zipBody
-        startTimeField.borderStyle = .roundedRect
-        startTimeField.tintColor = .white
-        startTimeField.backgroundColor = .zipLightGray
-        startTimeField.textColor = .white
-        startTimeField.adjustsFontSizeToFitWidth = true
-        startTimeField.minimumFontSize = 10.0
-        startTimeField.textAlignment = .center
-            
-        startTimePicker.datePickerMode = .time
-        startTimePicker.minuteInterval = 15
-        startTimePicker.preferredDatePickerStyle = .wheels
-        startTimeField.inputView = startTimePicker
-            
-        startTimePicker.addTarget(self, action: #selector(startTimeChanged), for: .valueChanged)
-        
-        
-        endTimeField.attributedPlaceholder = NSAttributedString(string: "Time",
-                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        endTimeField.font = .zipBody
-        endTimeField.borderStyle = .roundedRect
-        endTimeField.tintColor = .white
-        endTimeField.backgroundColor = .zipLightGray
-        endTimeField.textColor = .white
-        endTimeField.adjustsFontSizeToFitWidth = true
-        endTimeField.minimumFontSize = 10.0
-        endTimeField.textAlignment = .center
-        
-        
-        endDateField.attributedPlaceholder = NSAttributedString(string: "Date",
-                                                                attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        endDateField.font = .zipBody
-        endDateField.borderStyle = .roundedRect
-        endDateField.tintColor = .white
-        endDateField.backgroundColor = .zipLightGray
-        endDateField.textColor = .white
-        endDateField.adjustsFontSizeToFitWidth = true
-        endDateField.minimumFontSize = 10.0
-        endDateField.textAlignment = .center
-        
-        locationField.attributedPlaceholder = NSAttributedString(string: "Enter Your Event Location",
-                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
         locationField.font = .zipBody
         locationField.borderStyle = .roundedRect
         locationField.tintColor = .white
@@ -226,87 +124,11 @@ class CreateEventViewController: UIViewController {
         
     
     }
-    
-    private func checkStartBeforeEnd() {
-        if event.startTime > event.endTime {
-            endTimeField.text = ""
-            endDateField.text = ""
-        }
-        
-        endTimePicker.minimumDate = Date(timeInterval: TimeInterval(3600), since: event.startTime)
-        endDatePicker.minimumDate = event.startTime
-    }
-    
-    @objc func startDateChanged(sender: UIDatePicker){
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        startDateField.text = formatter.string(from: sender.date)
-        
-        event.startTime = combineDateWithTime(date: sender.date, time: event.startTime) ?? event.startTime
-        
-        checkStartBeforeEnd()
-    }
 
-    @objc func startTimeChanged(sender: UIDatePicker){
-        let formatter = DateFormatter()
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        startTimeField.text = formatter.string(from: sender.date)
-        
-        event.startTime = combineDateWithTime(date: event.startTime, time: sender.date)!
-        
-        checkStartBeforeEnd()
-    }
-    
-    @objc func endDateChanged(sender: UIDatePicker){
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        endDateField.text = formatter.string(from: sender.date)
-
-        event.endTime = combineDateWithTime(date: sender.date, time: event.endTime) ?? event.endTime
-        
-        let diff = Calendar.current.dateComponents([.day], from: event.startTime, to: event.endTime)
-        if diff.day == 0 {
-            endTimePicker.minimumDate = Date(timeInterval: TimeInterval(3600), since: event.startTime)
-        } else {
-            endTimePicker.minimumDate = .none
-        }
-    }
-    
-    @objc func endTimeChanged(sender: UIDatePicker){
-        let formatter = DateFormatter()
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        endTimeField.text = formatter.string(from: sender.date)
-        
-        event.endTime = combineDateWithTime(date: event.startTime, time: sender.date)!
-    }
-    
-    func combineDateWithTime(date: Date, time: Date) -> Date? {
-        let calendar = Calendar.current
-        
-        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
-        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
-        
-        let mergedComponments = NSDateComponents()
-        mergedComponments.year = dateComponents.year ?? 2021
-        mergedComponments.month = dateComponents.month ?? 1
-        mergedComponments.day = dateComponents.day ?? 1
-        mergedComponments.hour = timeComponents.hour ?? 12
-        mergedComponments.minute = timeComponents.minute ?? 0
-        mergedComponments.second = timeComponents.second ?? 0
-        
-        return calendar.date(from: mergedComponments as DateComponents)
-    }
     
     @objc private func didTapContinueButton(){
         guard eventNameField.text != "",
-              startDateField.text != "",
-              startTimeField.text != "",
-              endTimeField.text != "",
-              endDateField.text != "",
+              datePicker.isSet,
               locationField.text != "",
               let eventTitle = eventNameField.text
         else {
@@ -331,10 +153,7 @@ class CreateEventViewController: UIViewController {
 
     
     @objc private func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        eventNameField.resignFirstResponder()
-        startDateField.resignFirstResponder()
-        startTimeField.resignFirstResponder()
-        endTimeField.resignFirstResponder()
+        view.endEditing(true)
     }
     
     @objc private func openSearch(){
@@ -398,12 +217,9 @@ class CreateEventViewController: UIViewController {
         view.addSubview(eventNameField)
         
         view.addSubview(startTimeLabel)
-        view.addSubview(startDateField)
-        view.addSubview(startTimeField)
-        
+        view.addSubview(datePicker)
         view.addSubview(endTimeLabel)
-        view.addSubview(endDateField)
-        view.addSubview(endTimeField)
+
         
         view.addSubview(locationLabel)
         
@@ -434,25 +250,14 @@ class CreateEventViewController: UIViewController {
         startTimeLabel.topAnchor.constraint(equalTo: eventNameField.bottomAnchor, constant: 40).isActive = true
         startTimeLabel.leftAnchor.constraint(equalTo: eventNameField.leftAnchor).isActive = true
         
-        startDateField.translatesAutoresizingMaskIntoConstraints = false
-        startDateField.leftAnchor.constraint(equalTo: startTimeLabel.rightAnchor, constant: 5).isActive = true
-        startDateField.centerYAnchor.constraint(equalTo: startTimeLabel.centerYAnchor).isActive = true
-        
-        startTimeField.translatesAutoresizingMaskIntoConstraints = false
-        startTimeField.leftAnchor.constraint(equalTo: startDateField.rightAnchor, constant: 10).isActive = true
-        startTimeField.centerYAnchor.constraint(equalTo: startTimeLabel.centerYAnchor).isActive = true
+        datePicker.translatesAutoresizingMaskIntoConstraints = false
+        datePicker.startDateField.centerYAnchor.constraint(equalTo: startTimeLabel.centerYAnchor).isActive = true
+        datePicker.leftAnchor.constraint(equalTo: startTimeLabel.rightAnchor).isActive = true
+        datePicker.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         
         endTimeLabel.translatesAutoresizingMaskIntoConstraints = false
-        endTimeLabel.topAnchor.constraint(equalTo: startDateField.bottomAnchor, constant: 20).isActive = true
+        endTimeLabel.centerYAnchor.constraint(equalTo: datePicker.endDateField.centerYAnchor).isActive = true
         endTimeLabel.leftAnchor.constraint(equalTo: startTimeLabel.leftAnchor).isActive = true
-        
-        endDateField.translatesAutoresizingMaskIntoConstraints = false
-        endDateField.leftAnchor.constraint(equalTo: startDateField.leftAnchor).isActive = true
-        endDateField.centerYAnchor.constraint(equalTo: endTimeLabel.centerYAnchor).isActive = true
-        
-        endTimeField.translatesAutoresizingMaskIntoConstraints = false
-        endTimeField.centerYAnchor.constraint(equalTo: endDateField.centerYAnchor).isActive = true
-        endTimeField.leftAnchor.constraint(equalTo: startTimeField.leftAnchor).isActive = true
         
         locationLabel.translatesAutoresizingMaskIntoConstraints = false
         locationLabel.topAnchor.constraint(equalTo: endTimeLabel.bottomAnchor, constant: 40).isActive = true
@@ -506,82 +311,6 @@ extension CreateEventViewController: UITextFieldDelegate {
             textField.resignFirstResponder()
             openSearch()
         }
-        else if textField.text == "" {
-            if textField == startDateField {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formatter.timeStyle = .none
-                textField.text = formatter.string(from: Date())
-                event.startTime = combineDateWithTime(date: Date(), time: event.startTime)!
-                startDatePicker.date = event.startTime
-
-            }
-            
-            else if textField == startTimeField {
-                
-                let formatter = DateFormatter()
-                formatter.dateStyle = .none
-                formatter.timeStyle = .short
-                
-                let now = Date()
-                let minuteGranuity = CGFloat(15)
-                let calendar = Calendar.current
-                var hour = calendar.component(.hour, from: now)
-                let minute = CGFloat(calendar.component(.minute, from: now))
-                
-                // Round down to nearest date:
-                let ceilingMinute = Int(ceil(minute / minuteGranuity) * minuteGranuity)%60
-                if minute == 0 && ceilingMinute == 0 { hour = (hour + 1)%24 }
-                let ceilingDate = calendar.date(bySettingHour: hour,
-                                                minute: ceilingMinute,
-                                                second: 0,
-                                                of: now)!
-                
-                textField.text = formatter.string(from: ceilingDate)
-                event.startTime = combineDateWithTime(date: event.startTime, time: ceilingDate)!
-                startTimePicker.date = event.startTime
-
-            }
-            
-            else if textField == endDateField {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formatter.timeStyle = .none
-                textField.text = formatter.string(from: Date(timeInterval: TimeInterval(3600), since: event.startTime))
-                event.endTime = combineDateWithTime(date: Date(timeInterval: TimeInterval(3600), since: event.startTime), time: event.endTime)!
-                endDatePicker.date = event.endTime
-
-            }
-            
-            else if textField == endTimeField {
-                let minEndTime = Date(timeInterval: 60*60, since: event.startTime)
-                
-                let minuteGranuity = CGFloat(15)
-                let calendar = Calendar.current
-                var hour = calendar.component(.hour, from: minEndTime)
-                let minute = CGFloat(calendar.component(.minute, from: minEndTime))
-                
-                // Round down to nearest date:
-                let ceilingMinute = Int(ceil(minute / minuteGranuity) * minuteGranuity)%60
-                if minute == 0 && ceilingMinute == 0 { hour = (hour + 1)%24 }
-                let ceilingDate = calendar.date(bySettingHour: hour,
-                                                minute: ceilingMinute,
-                                                second: 0,
-                                                of: minEndTime,
-                                                direction: .forward)!
-                
-                
-                let formatter = DateFormatter()
-                formatter.dateStyle = .none
-                formatter.timeStyle = .short
-                textField.text = formatter.string(from: ceilingDate)
-                event.endTime = combineDateWithTime(date: event.endTime, time: ceilingDate)!
-                endTimePicker.date = event.endTime
-
-            }
-        }
-        
-        
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {

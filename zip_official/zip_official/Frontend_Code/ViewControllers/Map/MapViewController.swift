@@ -45,6 +45,7 @@ class MapViewController: UIViewController {
     private let zoomToCurrentButton : UIButton
 
     private let DEFAULT_ZOOM_DISTANCE = CGFloat(2000)
+    private let DOT_ZOOM_DISTANCE: Double = 12
 
     
     var guardingGeoFireCalls: Bool
@@ -131,7 +132,7 @@ class MapViewController: UIViewController {
         let userLoc = CLLocationCoordinate2D(latitude: loc[0], longitude: loc[1])
         let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: DEFAULT_ZOOM_DISTANCE,longitudinalMeters: DEFAULT_ZOOM_DISTANCE)
         mapView.setRegion(zoomRegion, animated: true)
-        correctAnnotationSizes()
+        updateAnnotation()
     }
 
     private func hideZoomButton() {
@@ -502,6 +503,7 @@ extension MapViewController: MKMapViewDelegate {
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
+        if mapView.zoomLevel < DOT_ZOOM_DISTANCE { return }
         if let annotation = view.annotation as? EventAnnotation {
             var eventVC: UIViewController
             let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
@@ -521,7 +523,7 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        correctAnnotationSizes()
+        updateAnnotation()
         if mapDidMove {
             showZoomButton()
         } else {
@@ -529,30 +531,26 @@ extension MapViewController: MKMapViewDelegate {
             mapDidMove = true
         }
     }
-    
 }
 
 extension MapViewController: UIGestureRecognizerDelegate {
     @objc func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
         if sender.state == .ended {
-//            correctAnnotationSizes()
+//            updateAnnotation()
         }
     }
     
-    private func correctAnnotationSizes(){
+    private func updateAnnotation(){
         for annotation in mapView.annotations {
             if annotation is MKUserLocation {
                 continue
             }
             guard let annotationView = self.mapView.view(for: annotation) as? EventAnnotationView else { continue }
-//            let scale = -1 * sqrt(1 - pow(mapView.zoomLevel / 20, 2.0)) + 1.4
-            print(mapView.zoomLevel)
-            let scale = mapView.zoomLevel/13
-            annotationView.updateSize(scale: scale)
-//            annotationView.transform = CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale))
-            
-//            annotationView.set
-//            annotationView.centerOffset =
+            if mapView.zoomLevel <= DOT_ZOOM_DISTANCE {
+                annotationView.makeDot()
+            } else {
+                annotationView.makeEvent()
+            }
         }
     }
 
