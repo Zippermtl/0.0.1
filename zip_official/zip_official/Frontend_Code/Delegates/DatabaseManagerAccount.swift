@@ -74,7 +74,7 @@ extension DatabaseManager {
 //                guard let data = image.pngData() else {
 //                    return
 //                }
-                DatabaseManager.shared.updateImages(key: user.userId, images: [image], forKey: "profileIndex", completion: { res in
+                DatabaseManager.shared.updateImages(key: user.userId, images: [image], imageType: DatabaseManager.ImageType.profileIndex, completion: { res in
                     switch res{
                     case .success(let urls):
 //                        guard let urls = url else {
@@ -164,7 +164,7 @@ extension DatabaseManager {
             } else {
                 let image = PictureHolder(image: user.pictures[0])
                 image.isEdited = true
-                DatabaseManager.shared.updateImages(key: user.userId, images: [image], forKey: "profileIndex", completion: { res in
+                DatabaseManager.shared.updateImages(key: user.userId, images: [image], imageType: DatabaseManager.ImageType.profileIndex, completion: { res in
                     switch res{
                     case .success(let urls):
 //                        guard let urls = url else {

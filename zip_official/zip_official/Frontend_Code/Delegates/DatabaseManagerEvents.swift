@@ -494,7 +494,7 @@ extension DatabaseManager {
             return
         }
         let pic = PictureHolder(image: image)
-        DatabaseManager.shared.updateEventImage(event: event, images: [pic], forKey: "eventCoverIndex", completion: { res in
+        DatabaseManager.shared.updateEventImage(event: event, images: [pic], imageType: DatabaseManager.ImageType.eventCoverIndex, completion: { res in
             switch res {
             case .success(let url):
                 completion(.success(url[0].url!.absoluteString))

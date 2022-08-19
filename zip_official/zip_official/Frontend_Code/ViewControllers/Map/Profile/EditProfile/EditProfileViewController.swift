@@ -49,7 +49,7 @@ class EditProfileViewController: UIViewController {
                 let pp = PictureHolder(image: strongSelf.profilePic.image!)
                 pp.isEdited = true
                 let key = "profileIndex"
-                DatabaseManager.shared.updateImages(key: id, images: [pp], forKey: key, completion: { [weak self] res in
+                DatabaseManager.shared.updateImages(key: id, images: [pp], imageType: DatabaseManager.ImageType.profileIndex, completion: { [weak self] res in
                     switch res{
                     case .success(let urls):
                         self?.user.profilePicUrl = urls[0].url

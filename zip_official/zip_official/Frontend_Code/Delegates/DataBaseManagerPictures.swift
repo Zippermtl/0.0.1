@@ -21,40 +21,145 @@ import simd
 
 extension DatabaseManager{
     
-    private func updateImagesSave(forKey: String, key: String, indices: [Int], picNum: Int, completion: @escaping (Error?) -> Void){
-        let localRef = firestore.collection("UserProfiles").document("\(key)")
-        if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int == picNum) {
-            localRef.updateData([forKey : indices]) { err in
-                AppDelegate.userDefaults.set(indices , forKey: forKey)
-                if let err = err {
-                    completion(err)
-                } else {
-                    completion(nil)
+    public enum ImageType: String {
+        case picIndices = "picIndices"
+        case profileIndex = "profileIndex"
+        case eventCoverIndex = "eventCoverIndex"
+        case eventPicIndices = "eventPicIndices"
+    }
+//    public func updateImages(key: String,
+//                             images: [PictureHolder],
+//                             forKey: ImageType,
+//                             completion: @escaping (Result<[PictureHolder], Error>) -> Void,
+//                             completionProfileUrl: @escaping (Result<[PictureHolder],Error>) -> Void){
+////        var save : (String,String,[Int],Int) = updateImagesSave { error in
+////
+////        }
+//        switch forKey {
+//        case .picIndices:
+//            imagesLogic(key: key, images: images, forKey: forKey.rawValue, event: false, completion: { res in
+//                switch res{
+//                case .success(let im):
+//                    completion(.success(im))
+//                case .failure(let err):
+//                    completion(.failure(err))
+//                }
+//            }, completionProfileUrl: { res in
+//                switch res{
+//                case .success(let im):
+//                    completionProfileUrl(.success(im))
+//                case .failure(let err):
+//                    completionProfileUrl(.failure(err))
+//                }
+//            })
+//        case .profileIndex:
+//            imagesLogic(key: key, images: images, forKey: forKey.rawValue, event: false, completion: { res in
+//                switch res{
+//                case .success(let im):
+//                    completion(.success(im))
+//                case .failure(let err):
+//                    completion(.failure(err))
+//                }
+//            }, completionProfileUrl: { res in
+//                switch res{
+//                case .success(let im):
+//                    completionProfileUrl(.success(im))
+//                case .failure(let err):
+//                    completionProfileUrl(.failure(err))
+//                }
+//            })
+//        case .eventCoverIndex:
+//            imagesLogic(key: key, images: images, forKey: forKey.rawValue, event: true, completion: { res in
+//                switch res{
+//                case .success(let im):
+//                    completion(.success(im))
+//                case .failure(let err):
+//                    completion(.failure(err))
+//                }
+//            }, completionProfileUrl: { res in
+//                switch res{
+//                case .success(let im):
+//                    completionProfileUrl(.success(im))
+//                case .failure(let err):
+//                    completionProfileUrl(.failure(err))
+//                }
+//            })
+//        case .eventPicIndices:
+//            imagesLogic(key: key, images: images, forKey: forKey.rawValue, event: true, imagePath: completion: { res in
+//                switch res{
+//                case .success(let im):
+//                    completion(.success(im))
+//                case .failure(let err):
+//                    completion(.failure(err))
+//                }
+//            }, completionProfileUrl: { res in
+//                switch res{
+//                case .success(let im):
+//                    completionProfileUrl(.success(im))
+//                case .failure(let err):
+//                    completionProfileUrl(.failure(err))
+//                }
+//            })
+//        }
+//    }
+    
+    private func updateImagesSave(forKey: String, key: String, indices: [Int], picNum: Int, event: Bool, stash: Int = -2, completion: @escaping (Error?) -> Void){
+        if (!event){
+            let localRef = firestore.collection("UserProfiles").document("\(key)")
+            if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int == picNum) {
+                localRef.updateData([forKey : indices]) { err in
+                    AppDelegate.userDefaults.set(indices , forKey: forKey)
+                    if let err = err {
+                        completion(err)
+                    } else {
+                        completion(nil)
+                    }
+                }
+            } else {
+                localRef.updateData([forKey : indices, "picNum" : picNum]) { err in
+                    AppDelegate.userDefaults.set(indices , forKey: forKey)
+                    AppDelegate.userDefaults.set(picNum , forKey: "picNum")
+                    if let err = err {
+                        completion(err)
+                    } else {
+                        completion(nil)
+                    }
                 }
             }
         } else {
-            localRef.updateData([forKey : indices, "picNum" : picNum]) { err in
-                AppDelegate.userDefaults.set(indices , forKey: forKey)
-                AppDelegate.userDefaults.set(picNum , forKey: "picNum")
-                if let err = err {
-                    completion(err)
-                } else {
-                    completion(nil)
+            let localRef = firestore.collection("EventProfiles").document("\(key)")
+            if(stash != picNum){
+                localRef.updateData([forKey : indices, "picNum" : picNum]) { err in
+                    if let err = err {
+                        completion(err)
+                    } else {
+                        completion(nil)
+                    }
+                }
+            } else {
+                localRef.updateData([forKey : indices]) { err in
+                    if let err = err {
+                        completion(err)
+                    } else {
+                        completion(nil)
+                    }
                 }
             }
+            
         }
         
     }
     
     //MARK: forkey is either picIndices or profileIndex
-    public func updateImages(key: String, images: [PictureHolder], forKey: String, completion: @escaping (Result<[PictureHolder], Error>) -> Void, completionProfileUrl: @escaping (Result<[PictureHolder],Error>) -> Void){
+    public func updateImages(key: String, images: [PictureHolder], imageType: ImageType, event: Bool = false, completion: @escaping (Result<[PictureHolder], Error>) -> Void, completionProfileUrl: @escaping (Result<[PictureHolder],Error>) -> Void){
+        let forKey = imageType.rawValue
         let localRef = firestore.collection("UserProfiles").document("\(key)")
         let imageKey = "images/" + key
         var altered: [PictureHolder] = []
         var indices: [Int] = []
         var pres = AppDelegate.userDefaults.value(forKey: "picNum") as! Int
         if(images.count == 0){
-            updateImagesSave(forKey: forKey, key: key, indices: [], picNum: pres) { err in
+            updateImagesSave(forKey: forKey, key: key, indices: [], picNum: pres, event: event) { err in
                 if let err = err {
                     completion(.failure(err))
                 } else {
@@ -126,7 +231,7 @@ extension DatabaseManager{
                                                     completionProfileUrl(.success(images))
                                                 }
                                             } else {
-                                                DatabaseManager.shared.updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, completion: { err in
+                                                DatabaseManager.shared.updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, event: event, completion: { err in
                                                     guard err == nil else {
                                                         completion(.failure(err!))
                                                         return
@@ -154,7 +259,7 @@ extension DatabaseManager{
                                     }
                                     if(checkadded && (indicesCopy.count == 0)){
 //                                        if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
-                                        strongself.updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, completion: { [weak self] err in
+                                        strongself.updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, event: event, completion: { [weak self] err in
                                             guard err == nil,
                                                   let strongself = self
                                                  else {
@@ -174,7 +279,7 @@ extension DatabaseManager{
                     })
                 }
             } else {
-                updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, completion: { [weak self] err in
+                updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, event: event,completion: { [weak self] err in
                     guard err == nil,
                           let strongself = self
                          else {
@@ -187,15 +292,16 @@ extension DatabaseManager{
         }
     }
     //MARK: forKey is either eventCoverIndex or eventPicIndices
-    public func updateEventImage(event: Event, images: [PictureHolder], picNumOverride: Int = -1, forKey: String, completion: @escaping (Result<[PictureHolder], Error>) -> Void){
+    public func updateEventImage(event: Event, images: [PictureHolder], picNumOverride: Int = -1, imageType: ImageType, completion: @escaping (Result<[PictureHolder], Error>) -> Void){
+        let forKey = imageType.rawValue
         var picNum = 0
+        let localRef = firestore.collection("EventProfiles").document("\(event.eventId)")
         if(picNumOverride != -1) {
             picNum = event.picNum
         } else {
             picNum = picNumOverride
         }
         let key = event.eventId
-        let localRef = firestore.collection("EventProfiles").document("\(key)")
         let imageKey = "Event/" + key
         var altered: [PictureHolder] = []
         var indices: [Int] = []
@@ -256,7 +362,7 @@ extension DatabaseManager{
                                                 checkadded = true
                                             }
                                         }
-                                        if(checkadded){
+                                        if checkadded {
                                             if (picNum != pres){
                                                 localRef.updateData([forKey : indices, "picNum" : pres]) { [weak self] err in
                                                     guard err == nil,

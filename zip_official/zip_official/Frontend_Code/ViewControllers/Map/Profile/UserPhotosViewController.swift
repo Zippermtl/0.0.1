@@ -125,7 +125,7 @@ class UserPhotosViewController: UIViewController {
                       return
                   }
 //            print(userPictures)
-            DatabaseManager.shared.updateImages(key: id, images: userPictures, forKey: "picIndices", completion: { [weak self] res in
+            DatabaseManager.shared.updateImages(key: id, images: userPictures, imageType: DatabaseManager.ImageType.picIndices, completion: { [weak self] res in
                 guard let strongSelf = self else {
                     print("Big error on line 124 of UserPhotos...wController")
                     return

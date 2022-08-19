@@ -38,7 +38,7 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
                 return
             }
            
-            DatabaseManager.shared.updateImages(key: strongSelf.user.userId, images: strongSelf.userPictures, forKey: "picIndices", completion: { [weak self] res in
+            DatabaseManager.shared.updateImages(key: strongSelf.user.userId, images: strongSelf.userPictures, imageType: DatabaseManager.ImageType.picIndices, completion: { [weak self] res in
                 guard let strongSelf = self else {
                     print("Big error on line 124 of UserPhotos...wController")
                     return
