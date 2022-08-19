@@ -328,7 +328,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         // Send Message
         if isNewConversation {
             //create convo in database
-            DatabaseManager.shared.createNewConversation(with: otherUserId, name: title ?? "User", firstMessage: message, completion: { [weak self] success in
+            DatabaseManager.shared.createNewConversation(with: otherUserId, name: otherUser.displayName, firstMessage: message, completion: { [weak self] success in
                 if success {
                     print("message sent")
                     self?.isNewConversation = false

@@ -117,6 +117,7 @@ class LoadingViewController: UIViewController {
                 AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
                 AppDelegate.userDefaults.set(user.profilePicIndex, forKey: "profileIndex")
                 AppDelegate.userDefaults.set(user.picIndices, forKey: "picIndices")
+                
                 if let pfpUrl = user.profilePicUrl {
                     AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
                 } else {

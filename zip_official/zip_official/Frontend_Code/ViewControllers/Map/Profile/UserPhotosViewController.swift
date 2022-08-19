@@ -103,7 +103,7 @@ class UserPhotosViewController: UIViewController {
 //                pics.append(img)
 //            }
             var idx = 0
-            for i in 0...userPictures.count {
+            for i in 0..<userPictures.count {
                 if userPictures[i].isEdited {
                     guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
                           let image = cell.picture.image else {

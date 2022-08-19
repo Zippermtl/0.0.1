@@ -503,8 +503,9 @@ extension DatabaseManager {
                 DatabaseManager.shared.getImages(Id: key, indices: index, event: false, completion: { res in
                     switch res{
                     case .success(let url):
-                        user.profilePicUrl = url[0]
-                    case .failure(let error):
+                        if (url.count > 0){
+                            user.profilePicUrl = url[0]
+                        }                     case .failure(let error):
                         print("error loading event in tableview: \(error)")
                     }
                     guard let cell = user.tableViewCell else {
