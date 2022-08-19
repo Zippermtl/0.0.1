@@ -59,6 +59,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardBackView.configure(user: user)
         cardFrontView.backView = cardBackView
         cardBackView.frontView = cardFrontView
+        cardBackView.delegate = delegate
     }
     
     
@@ -98,7 +99,6 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
 //        cardBackView.configureSubviewLayout()
         
         cardBackView.isHidden = true
-        cardBackView.delegate = delegate
         
         cardBackView.translatesAutoresizingMaskIntoConstraints = false
         cardBackView.topAnchor.constraint(equalTo: cardView.topAnchor).isActive = true

@@ -285,6 +285,7 @@ class LoginViewController: UIViewController {
         countryCodeDD = DropDown()
         
         super.init(nibName: nil, bundle: nil)
+        phoneField.keyboardType = .namePhonePad
         navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
         let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))

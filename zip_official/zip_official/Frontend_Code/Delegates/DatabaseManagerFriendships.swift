@@ -67,9 +67,12 @@ extension DatabaseManager {
     public func sendRequest(user: User, completion: @escaping (Error?) -> Void) {
         let otherId = user.userId
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        let name = AppDelegate.userDefaults.value(forKey: "name")  as? String ?? ""
+        let username = AppDelegate.userDefaults.value(forKey: "username")
+        
         database.child("userFriendships/\(otherId)").updateChildValues([selfId: ["status" : FriendshipStatus.REQUESTED_INCOMING.rawValue,
-                                                                                 "name" : user.fullName,
-                                                                                 "username" : user.username]
+                                                                                 "name" : name,
+                                                                                 "username" : username]
                                                                        ]) { [weak self] error, _ in
             guard let strongSelf = self,
                   error == nil else {
@@ -78,11 +81,10 @@ extension DatabaseManager {
                   }
             
             
-            let name = AppDelegate.userDefaults.value(forKey: "name")  as? String ?? ""
-            let username = AppDelegate.userDefaults.value(forKey: "username")
+            
             strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([user.userId: ["status" : FriendshipStatus.REQUESTED_OUTGOING.rawValue,
-                                                                                               "name" : name,
-                                                                                               "username" : username]
+                                                                                                    "name" : user.fullName,
+                                                                                                    "username" : user.username]
                                                                                      ]) { error, _ in
                 guard error == nil else {
                     completion(error!)
@@ -97,9 +99,11 @@ extension DatabaseManager {
     public func acceptRequest(user: User, completion: @escaping (Error?) -> Void) {
         let otherId = user.userId
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        let name = AppDelegate.userDefaults.value(forKey: "name")  as? String ?? ""
+        let username = AppDelegate.userDefaults.value(forKey: "username")
         database.child("userFriendships/\(otherId)").updateChildValues([selfId: ["status" : FriendshipStatus.ACCEPTED.rawValue,
-                                                                                 "name" : user.fullName,
-                                                                                 "username" : user.username]
+                                                                                 "name" : name,
+                                                                                 "username" : username]
                                                                        ]) { [weak self] error, _ in
             guard let strongSelf = self,
                   error == nil else {
@@ -108,11 +112,10 @@ extension DatabaseManager {
                   }
             
             
-            let name = AppDelegate.userDefaults.value(forKey: "name")  as? String ?? ""
-            let username = AppDelegate.userDefaults.value(forKey: "username")
+            
             strongSelf.database.child("userFriendships/\(selfId)").updateChildValues([user.userId: ["status" : FriendshipStatus.ACCEPTED.rawValue,
-                                                                                               "name" : name,
-                                                                                               "username" : username]
+                                                                                                    "name" : user.fullName,
+                                                                                                    "username" :  user.username]
                                                                                      ]) { error, _ in
                 guard error == nil else {
                     completion(error!)
@@ -133,6 +136,7 @@ extension DatabaseManager {
                         completion(error!)
                 return
             }
+            
             strongSelf.database.child("userFriendships/\(selfId)/\(otherId)").removeValue() { error, _ in
                 guard error == nil else {
                     completion(error!)

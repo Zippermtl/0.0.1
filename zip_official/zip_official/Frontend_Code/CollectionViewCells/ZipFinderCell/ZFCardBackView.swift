@@ -92,6 +92,10 @@ class ZFCardBackView: UIView {
         messageButton.setIconDimension(width: 60)
         inviteButton.setIconDimension(width: 60)
         
+        zipsButton.iconAddTarget(self, action: #selector(didTapZipsButton), for: .touchUpInside)
+        messageButton.iconAddTarget(self, action: #selector(didTapMessageButton), for: .touchUpInside)
+        inviteButton.iconAddTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+        
         let reportConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         reportButton.setImage(UIImage(systemName: "ellipsis",withConfiguration: reportConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
@@ -115,14 +119,24 @@ class ZFCardBackView: UIView {
         lastNameLabel.isUserInteractionEnabled = true
         lastNameLabel.addGestureRecognizer(lastNameTap)
         
+        let photoTap = UITapGestureRecognizer(target: self, action: #selector(openProfile))
+        profilePicture.isUserInteractionEnabled = true
+        profilePicture.addGestureRecognizer(photoTap)
+        
        
         schoolLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         schoolImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        schoolLabel.numberOfLines = 0
+        schoolLabel.lineBreakMode = .byWordWrapping
+        
         interestsLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         interestsImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        interestsLabel.numberOfLines = 2
+        interestsLabel.numberOfLines = 0
         interestsLabel.lineBreakMode = .byWordWrapping
         
+        bioLabel.numberOfLines = 0
+        bioLabel.lineBreakMode = .byWordWrapping
+
         tapToFlipLabel.text = "tap to flip"
         
         addSubviews()
@@ -137,15 +151,26 @@ class ZFCardBackView: UIView {
     }
     
     @objc private func didTapZipsButton(){
-        
+        guard let user = user else {
+            return
+        }
+        delegate?.openZips(user)
     }
     
     @objc private func didTapMessageButton() {
+
+        guard let user = user else {
+            return
+        }
         
+        delegate?.messageUser(user)
     }
     
     @objc private func didTapInviteButton(){
-        
+        guard let user = user else {
+            return
+        }
+        delegate?.inviteUser(user)
     }
     
     //MARK: - Button Actions
@@ -179,9 +204,9 @@ class ZFCardBackView: UIView {
         backgroundColor = .clear
         self.user = user
         if user.hasSchool  {
-            interestsImage.isHidden = false
+            schoolImage.isHidden = false
         } else {
-            interestsImage.isHidden = true
+            schoolImage.isHidden = true
         }
         
         if user.hasInterests  {
@@ -384,11 +409,10 @@ class ZFCardBackView: UIView {
         // Interest Label
         interestsImage.translatesAutoresizingMaskIntoConstraints = false
         interestsImage.centerXAnchor.constraint(equalTo: schoolImage.centerXAnchor).isActive = true
-        interestsImage.topAnchor.constraint(equalTo: schoolImage.bottomAnchor, constant: 30).isActive = true
-        
+        interestsImage.centerYAnchor.constraint(equalTo: interestsLabel.centerYAnchor).isActive = true
         
         interestsLabel.translatesAutoresizingMaskIntoConstraints = false
-        interestsLabel.centerYAnchor.constraint(equalTo: interestsImage.centerYAnchor).isActive = true
+        interestsLabel.topAnchor.constraint(equalTo: schoolLabel.bottomAnchor, constant: 10).isActive = true
         interestsLabel.leftAnchor.constraint(equalTo: schoolLabel.leftAnchor).isActive = true
         interestsLabel.rightAnchor.constraint(equalTo: zipsButton.leftAnchor, constant: -10).isActive = true
 
@@ -403,6 +427,7 @@ class ZFCardBackView: UIView {
         bioLabel.topAnchor.constraint(equalTo: inviteButton.bottomAnchor, constant: 20).isActive = true
         bioLabel.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
         bioLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
+        bioLabel.bottomAnchor.constraint(lessThanOrEqualTo: slideView.topAnchor).isActive = true
         
         
         // SlideView

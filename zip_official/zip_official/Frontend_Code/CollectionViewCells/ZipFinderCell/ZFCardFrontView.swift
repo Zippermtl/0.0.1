@@ -352,10 +352,9 @@ extension ZFCardFrontView: UICollectionViewDataSource {
         }
         print("getting here at least")
         
-        var model: URL
+        var model: URL?
         if user.otherPictureUrls.count == 0 {
-            model = URL(string:
-                            "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6501111111%2Fprofile_picture.png?alt=media&token=3d0b4726-fd1e-41a2-a26d-24b7a932065e")!
+            model = nil
         } else {
             model = user.otherPictureUrls[indexPath.row]
         }

@@ -161,7 +161,55 @@ class OtherProfileViewController: AbstractProfileViewController  {
     }
     
     override func didTapB2Button() {
-        
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result {
+            case .success(let conversations):
+                if let targetConversation = conversations.first(where: {
+                    $0.otherUser.userId == strongSelf.user.userId
+                }) {
+                    let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
+                    vc.isNewConversation = false
+                    vc.title = targetConversation.otherUser.firstName
+                    vc.modalPresentationStyle = .overCurrentContext
+                    strongSelf.navigationController?.pushViewController(vc, animated: true)
+                } else {
+                    strongSelf.createNewConversation(result: strongSelf.user)
+                }
+            case .failure(_):
+                strongSelf.createNewConversation(result: strongSelf.user)
+            }
+        })
+    }
+    
+    private func createNewConversation(result otherUser: User){
+        // check in database if conversation with these two uses exists
+        // if it does, reuse conversation id
+        // otherwise use existing code
+        DatabaseManager.shared.conversationExists(with: otherUser.userId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result{
+            case.success(let conversationId):
+                let vc = ChatViewController(toUser: otherUser, id: conversationId)
+                vc.isNewConversation = false
+                vc.title = otherUser.firstName
+                vc.navigationItem.largeTitleDisplayMode = .never
+                vc.modalPresentationStyle = .overCurrentContext
+                strongSelf.navigationController?.pushViewController(vc, animated: true)
+            case .failure(_):
+                let vc = ChatViewController(toUser: otherUser, id: nil)
+                vc.isNewConversation = true
+                vc.title = otherUser.firstName
+                vc.navigationItem.largeTitleDisplayMode = .never
+                vc.modalPresentationStyle = .overCurrentContext
+                strongSelf.navigationController?.pushViewController(vc, animated: true)
+            }
+        })
     }
     
     override func didTapB3Button() {
@@ -188,7 +236,5 @@ class OtherProfileViewController: AbstractProfileViewController  {
         present(vc, animated: true)
     }
     
-    override func didTapDismiss(){
-        navigationController?.popViewController(animated: true)
-    }
+
 }

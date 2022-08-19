@@ -27,9 +27,15 @@ class PictureCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func configure(with url: URL) {
+    public func configure(with url: URL?) {
+        guard let url = url else {
+            picture.image = UIImage(named: "defaultProfilePicLong")
+            return
+        }
         picture.sd_setImage(with: url, completed: nil)
     }
+    
+    
 }
 
 

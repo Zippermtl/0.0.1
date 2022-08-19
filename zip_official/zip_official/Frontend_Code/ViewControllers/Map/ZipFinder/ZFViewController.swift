@@ -36,7 +36,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     private var hasMore = false
     
-    private var maxRangeFilter = AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as! Double
+    private var maxRangeFilter = (AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as? Double) ?? 50
         
     private var rangeMultiplier = Double(1)
     
@@ -247,6 +247,8 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
             completion(GeoManager.shared.loadedUsers[index])
         }
     }
+    
+   
 }
 
 // MARK: UICollectionViewDataSource
@@ -347,35 +349,92 @@ extension ZipFinderViewController: UICollectionViewDataSource {
 
 // MARK: UICollectionViewDelegate
 extension ZipFinderViewController: ZFCardBackDelegate {
+    
     func openProfile(_ user: User) {        
-        let userProfileView = OtherProfileViewController(id: user.userId)
-        userProfileView.modalPresentationStyle = .overCurrentContext
-
-        let transition: CATransition = CATransition()
-        transition.duration = 0.3
-        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeIn)
-        transition.type = CATransitionType.reveal
-        transition.subtype = CATransitionSubtype.fromRight
-        view.window!.layer.add(transition, forKey: nil)
-
-//        presentingViewController?.navigationController?.navigationBar.isHidden = false
-//        presentingViewController?.navigationController?.pushViewController(userProfileView, animated: true)
-
-        navigationController?.navigationBar.isHidden = false
-        navigationController?.pushViewController(userProfileView, animated: true)
-//        present(userProfileView, animated: false, completion: nil)
+        let vc = OtherProfileViewController(id: user.userId)
+        let navVC = UINavigationController(rootViewController: vc)
+        navVC.modalPresentationStyle = .overFullScreen
+        present(navVC, animated: true)
     }
     
     func openZips(_ user: User) {
-        //TODO: Implement
+        let vc = UsersTableViewController(users: [])
+
+        DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
+            switch result {
+            case .success(let users):
+                print("loading ezras friends \(users)")
+                vc.reload(users: users)
+            case .failure(let error):
+                print("failure loading other users ids, Error: \(error)")
+            }
+        })
+        vc.title = "\(user.firstName)'s Zips"
+        let navVC = UINavigationController(rootViewController: vc)
+        navVC.modalPresentationStyle = .overFullScreen
+        navVC.title = "\(user.firstName)'s Zips"
+        present(navVC, animated: true)
     }
     
     func inviteUser(_ user: User) {
-        //TODO: Implement
+        let vc = InviteUserToEventViewController()
+        let navVC = UINavigationController(rootViewController: vc)
+        navVC.modalPresentationStyle = .overFullScreen
+        present(navVC, animated: true)
     }
     
     func messageUser(_ user: User) {
-        //TODO: Implement
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result {
+            case .success(let conversations):
+                if let targetConversation = conversations.first(where: {
+                    $0.otherUser.userId == user.userId
+                }) {
+                    let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
+                    vc.isNewConversation = false
+                    vc.title = targetConversation.otherUser.firstName
+                    let navVC = UINavigationController(rootViewController: vc)
+                    strongSelf.present(navVC, animated: true)
+                } else {
+                    strongSelf.createNewConversation(result: user)
+                }
+            case .failure(_):
+                strongSelf.createNewConversation(result: user)
+            }
+        })
+    }
+    
+    private func createNewConversation(result otherUser: User){        
+        // check in database if conversation with these two uses exists
+        // if it does, reuse conversation id
+        // otherwise use existing code
+        DatabaseManager.shared.conversationExists(with: otherUser.userId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result{
+            case.success(let conversationId):
+                let vc = ChatViewController(toUser: otherUser, id: conversationId)
+                vc.isNewConversation = false
+                vc.title = otherUser.firstName
+                vc.navigationItem.largeTitleDisplayMode = .never
+                let navVC = UINavigationController(rootViewController: vc)
+                strongSelf.present(navVC, animated: true)
+            case .failure(_):
+                let vc = ChatViewController(toUser: otherUser, id: nil)
+                vc.isNewConversation = true
+                vc.title = otherUser.firstName
+                vc.navigationItem.largeTitleDisplayMode = .never
+                let navVC = UINavigationController(rootViewController: vc)
+                strongSelf.present(navVC, animated: true)
+            }
+        })
+        
+        
     }
 }
 

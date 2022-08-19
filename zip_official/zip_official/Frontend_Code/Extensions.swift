@@ -130,7 +130,26 @@ extension Date {
          let delta = TimeInterval(timeZone.secondsFromGMT(for: self) - initTimeZone.secondsFromGMT(for: self))
          return addingTimeInterval(delta)
     }
+    
+    public func round(precision: TimeInterval) -> Date {
+        return round(precision: precision, rule: .toNearestOrAwayFromZero)
+    }
+    
+    public func ceil(precision: TimeInterval) -> Date {
+        return round(precision: precision, rule: .up)
+    }
+    
+    public func floor(precision: TimeInterval) -> Date {
+        return round(precision: precision, rule: .down)
+    }
+    
+    private func round(precision: TimeInterval, rule: FloatingPointRoundingRule) -> Date {
+        let seconds = (self.timeIntervalSinceReferenceDate / precision).rounded(rule) *  precision;
+        return Date(timeIntervalSinceReferenceDate: seconds)
+    }
+    
 }
+
 
 extension JSONDecoder {
     func decode<T>(_ type: T.Type, fromJSONObject object: Any) throws -> T where T: Decodable {
@@ -148,3 +167,4 @@ extension JSONDecoder {
 //    }
 //
 //}
+

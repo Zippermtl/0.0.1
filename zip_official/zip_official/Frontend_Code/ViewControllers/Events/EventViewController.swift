@@ -358,7 +358,8 @@ class EventViewController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: reportButton)
         
         let dismissButton = UIButton(type: .system)
-        dismissButton.setImage(UIImage(systemName: "chevron.left")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        let config = UIImage.SymbolConfiguration(weight: .semibold)
+        dismissButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
         dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)

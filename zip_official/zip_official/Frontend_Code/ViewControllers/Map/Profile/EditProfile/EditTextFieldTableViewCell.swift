@@ -26,6 +26,12 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
         textView.text = placeHolder
         textView.textColor = .zipVeryLightGray
     }}
+    
+    var keyboardType : UIKeyboardType = .default {
+        didSet {
+            textView.keyboardType = keyboardType
+        }
+    }
 
     var saveFunc: ((String) -> Void)?
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
