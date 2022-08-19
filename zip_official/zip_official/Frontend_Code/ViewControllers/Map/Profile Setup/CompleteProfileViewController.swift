@@ -9,7 +9,7 @@ import UIKit
 import UIImageCropper
 
 class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelegate {
-    weak var delegate: UpdateUserFromEditProtocol?
+    weak var delegate: UpdateFromEditProtocol?
     
     private var user: User
     private var tableView: UITableView
