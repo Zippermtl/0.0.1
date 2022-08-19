@@ -21,7 +21,7 @@ class SearchManager{
     }
     
     public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result <[SearchObject], Error>) -> Void){
-        var queryText = searchString.lowercased()
+        let queryText = searchString.lowercased()
         var index = -1
         var newq = true
         for i in 0..<searchVal.count {
