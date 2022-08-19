@@ -43,6 +43,11 @@ class SearchManager{
                     for i in prints {
                         print(i)
                     }
+                    if let testing = data.user?.profilePicUrl {
+                        print(testing)
+                    } else {
+                        print("lost url")
+                    }
                     if let ind = self?.loadedData.firstIndex(of: data){
                         if (self?.loadedData[ind].isEvent() as! Bool) {
                             self?.loadedData[ind].event!.imageUrl = data.event?.imageUrl

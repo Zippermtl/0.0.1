@@ -40,9 +40,12 @@ final class StorageManager {
     public func getPicture(key: String, index: Int, completion: @escaping (Result<PictureHolder,Error>) -> Void) {
         let filename = key + "/" + "img\(index).jpeg"
         self.downloadURL(for: filename, completion: { result in
-            print("got here in getPicture")
+//            print("got here in getPicture")
             switch result {
             case .success(let url):
+                print("url sample")
+                print(key)
+                print(url)
                 completion(.success(PictureHolder(url: url, index: index)))
             case .failure(let error):
                 print("failed to get image URL: \(error)")

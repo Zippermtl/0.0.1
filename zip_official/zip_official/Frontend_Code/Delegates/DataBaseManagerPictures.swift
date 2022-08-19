@@ -45,11 +45,14 @@ extension DatabaseManager{
                     indices.append(images[i].idx)
                     continue
                 }
-                images[i].idx = pres + 1
-                pres += 1
-                altered.append(images[i])
-                indices.append(images[i].idx)
-                indicesCopy.append(images[i].idx)
+                if (!images[i].isUrl()){
+                    images[i].idx = pres + 1
+                    pres += 1
+                    altered.append(images[i])
+                    indices.append(images[i].idx)
+                    indicesCopy.append(images[i].idx)
+                }
+                
             }
             
             if(altered.count > 0){

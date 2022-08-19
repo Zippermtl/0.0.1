@@ -28,6 +28,12 @@ extension DatabaseManager {
             searchFullNameWithUpdates(queryText: queryText, indivCompletion: { res in
                 switch res{
                 case .success(let uInd1):
+                    print(uInd1.user!.username + " is present")
+                    if let testing = uInd1.user?.profilePicUrl {
+                        print(testing)
+                    } else {
+                        print("lost url")
+                    }
                     finishedLoadingCompletion(.success(uInd1))
                 case .failure(let err1):
                     finishedLoadingCompletion(.failure(err1))
@@ -147,6 +153,7 @@ extension DatabaseManager {
             }
 //            let decoder = JSONDecoder()
             for doc in querySnapshot!.documents {
+                print("Doc in query snapshot")
                 let dataAr = doc.data()
                 let id = doc.documentID
                 let fullName = dataAr["fullName"] as? String ?? ""
@@ -155,10 +162,16 @@ extension DatabaseManager {
                 let lastName: String = fullNameArr[1]
                 let user = User(userId: id, firstName: firstName, lastName: lastName)
                 users.append(user)
+                print(user)
                 DatabaseManager.shared.loadUserProfile(given: user, completion: { res in
                     switch res {
                     case .success(let pres):
                         print(pres.username + " is present in 149")
+                        if let testing = pres.profilePicUrl {
+                            print(testing)
+                        } else {
+                            print("lost url")
+                        }
                         indivCompletion(.success(SearchObject(pres)))
                     case .failure(let err):
                         indivCompletion(.failure(err))
@@ -198,10 +211,12 @@ extension DatabaseManager {
 //                    if(friends.contains(user)){
 //
 //                    }
-                    
+                    print("203 user:")
+                    print( user)
                     StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { res in
                         switch res {
                         case .success(let url):
+                            print(user.userId + " profile found")
                             user.profilePicUrl = url
                             indivCompletion(.success(SearchObject(user)))
                         case .failure(let err):
