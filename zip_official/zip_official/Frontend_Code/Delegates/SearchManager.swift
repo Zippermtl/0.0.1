@@ -50,15 +50,21 @@ class SearchManager{
                     }
                     if let ind = self?.loadedData.firstIndex(of: data){
                         if (self?.loadedData[ind].isEvent() as! Bool) {
-                            self?.loadedData[ind].event!.imageUrl = data.event?.imageUrl
-                            if let cell = self?.loadedData[ind].event!.tableViewCell {
-                                cell.configureImage((self?.loadedData[ind].event!)!)
+                            let event = (self?.loadedData[ind].event!)!
+                            event.imageUrl = data.event?.imageUrl
+                            if let cell = event.tableViewCell,
+                                event.imageUrl != nil {
+                                
+                                cell.configureImage(event)
                             }
                         } else if (self?.loadedData[ind].isUser() as! Bool) {
-                            self?.loadedData[ind].user!.profilePicUrl = data.user!.profilePicUrl
-                            self?.loadedData[ind].user!.pictureURLs = data.user!.pictureURLs
-                            if let cell = self?.loadedData[ind].user!.tableViewCell {
-                                cell.configureImage((self?.loadedData[ind].user!)!)
+                            let user = (self?.loadedData[ind].user!)!
+                            user.profilePicUrl = data.user!.profilePicUrl
+                            user.pictureURLs = data.user!.pictureURLs
+                            if let cell = user.tableViewCell,
+                                user.profilePicUrl != nil {
+                                
+                                cell.configureImage(user)
                             }
                         }
                     } else {

@@ -21,6 +21,31 @@ import simd
 
 extension DatabaseManager{
     
+    private func updateImagesSave(forKey: String, key: String, indices: [Int], picNum: Int, completion: @escaping (Error?) -> Void){
+        let localRef = firestore.collection("UserProfiles").document("\(key)")
+        if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int == picNum) {
+            localRef.updateData([forKey : indices]) { err in
+                AppDelegate.userDefaults.set(indices , forKey: forKey)
+                if let err = err {
+                    completion(err)
+                } else {
+                    completion(nil)
+                }
+            }
+        } else {
+            localRef.updateData([forKey : indices, "picNum" : picNum]) { err in
+                AppDelegate.userDefaults.set(indices , forKey: forKey)
+                AppDelegate.userDefaults.set(picNum , forKey: "picNum")
+                if let err = err {
+                    completion(err)
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+        
+    }
+    
     //MARK: forkey is either picIndices or profileIndex
     public func updateImages(key: String, images: [PictureHolder], forKey: String, completion: @escaping (Result<[PictureHolder], Error>) -> Void, completionProfileUrl: @escaping (Result<[PictureHolder],Error>) -> Void){
         let localRef = firestore.collection("UserProfiles").document("\(key)")
@@ -29,9 +54,8 @@ extension DatabaseManager{
         var indices: [Int] = []
         var pres = AppDelegate.userDefaults.value(forKey: "picNum") as! Int
         if(images.count == 0){
-            localRef.updateData([forKey : []]) { err in
+            updateImagesSave(forKey: forKey, key: key, indices: [], picNum: pres) { err in
                 if let err = err {
-                    AppDelegate.userDefaults.set([] , forKey: forKey)
                     completion(.failure(err))
                 } else {
                     completion(.success([]))
@@ -40,19 +64,22 @@ extension DatabaseManager{
         } else {
             var indicesCopy : [Int] = []
             for i in 0..<images.count {
-                
-                guard let image = images[i].image else {
+                if(images[i].isEdited){
+                    guard let image = images[i].image else {
+                        indices.append(images[i].idx)
+                        continue
+                    }
+                    
+                    if (!images[i].isUrl()){
+                        images[i].idx = pres + 1
+                        pres += 1
+                        altered.append(images[i])
+                        indices.append(images[i].idx)
+                        indicesCopy.append(images[i].idx)
+                    }
+                } else {
                     indices.append(images[i].idx)
-                    continue
                 }
-                if (!images[i].isUrl()){
-                    images[i].idx = pres + 1
-                    pres += 1
-                    altered.append(images[i])
-                    indices.append(images[i].idx)
-                    indicesCopy.append(images[i].idx)
-                }
-                
             }
             
             if(altered.count > 0){
@@ -99,17 +126,14 @@ extension DatabaseManager{
                                                     completionProfileUrl(.success(images))
                                                 }
                                             } else {
-                                                localRef.updateData([forKey : indices]) { [weak self] err in
-                                                    guard err == nil,
-                                                          let strongself = self
-                                                         else {
+                                                DatabaseManager.shared.updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, completion: { err in
+                                                    guard err == nil else {
                                                         completion(.failure(err!))
-                                                       return
+                                                        return
                                                     }
-                                                    AppDelegate.userDefaults.set(indices , forKey: forKey)
                                                     completion(.success(images))
                                                     completionProfileUrl(.success(images))
-                                                }
+                                                })
                                             }
                                         }
                                     case .failure(let error):
@@ -117,6 +141,7 @@ extension DatabaseManager{
                                         completionProfileUrl(.failure(error))
                                     }
                                 })
+                                //MARK:
                             } else {
                                 if let indexofItem = indicesCopy.firstIndex(of: holder.idx){
                                     indicesCopy.remove(at: indexofItem)
@@ -127,32 +152,18 @@ extension DatabaseManager{
                                             checkadded = true
                                         }
                                     }
-                                    if(checkadded && (indicesCopy.count == 1)){
-                                        if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
-                                            localRef.updateData([forKey : indices, "picNum" : pres]) { [weak self] err in
-                                                guard err == nil,
-                                                      let strongself = self
-                                                     else {
-                                                    AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                                                    completion(.failure(err!))
-                                                   return
-                                                }
-                                                AppDelegate.userDefaults.set(indices , forKey: forKey)
-                                                AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                                                completion(.success(images))
+                                    if(checkadded && (indicesCopy.count == 0)){
+//                                        if (AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
+                                        strongself.updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, completion: { [weak self] err in
+                                            guard err == nil,
+                                                  let strongself = self
+                                                 else {
+                                                completion(.failure(err!))
+                                               return
                                             }
-                                        } else {
-                                            localRef.updateData([forKey : indices]) { [weak self] err in
-                                                guard err == nil,
-                                                      let strongself = self
-                                                     else {
-                                                    completion(.failure(err!))
-                                                   return
-                                                }
-                                                AppDelegate.userDefaults.set(indices , forKey: forKey)
-                                                completion(.success(images))
-                                            }
-                                        }
+                                            completion(.success(images))
+                                        })
+//                                        }
                                         
                                     }
                                 }
@@ -163,21 +174,15 @@ extension DatabaseManager{
                     })
                 }
             } else {
-                localRef.updateData([forKey : indices]) { [weak self] err in
-                    guard let strongself = self else {
-                        completion(.failure(StorageManager.StorageErrors.failedToUpload))
-                        return
+                updateImagesSave(forKey: forKey, key: key, indices: indices, picNum: pres, completion: { [weak self] err in
+                    guard err == nil,
+                          let strongself = self
+                         else {
+                        completion(.failure(err!))
+                       return
                     }
-                    if let err = err {
-                        completion(.failure(err))
-                    } else {
-                        if(AppDelegate.userDefaults.value(forKey: "picNum") as! Int != pres){
-                            AppDelegate.userDefaults.set(pres, forKey: "picNum")
-                        }
-                        AppDelegate.userDefaults.set([] , forKey: forKey)
-                        completion(.success([]))
-                    }
-                }
+                    completion(.success(images))
+                })
             }
         }
     }

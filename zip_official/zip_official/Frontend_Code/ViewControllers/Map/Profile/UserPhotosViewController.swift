@@ -102,16 +102,16 @@ class UserPhotosViewController: UIViewController {
 //            for img in userPictures {
 //                pics.append(img)
 //            }
-            var idx = 0
-            for i in 0..<userPictures.count {
-                if userPictures[i].isEdited {
-                    guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
-                          let image = cell.picture.image else {
-                              return
-                          }
-                    userPictures[i].image = image
-                }
-            }
+//            var idx = 0
+//            for i in 0..<userPictures.count {
+//                if userPictures[i].isEdited {
+//                    guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
+//                          let image = cell.picture.image else {
+//                              return
+//                          }
+//                    userPictures[i].image = image
+//                }
+//            }
             let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
             let indices = AppDelegate.userDefaults.value(forKey: "picIndices") as? [Int]
 //            guard let id = userId,
@@ -123,23 +123,28 @@ class UserPhotosViewController: UIViewController {
                       print("ERROR SOMEWHERE IN USERDEFAULTS")
                       return
                   }
+//            print(userPictures)
             DatabaseManager.shared.updateImages(key: id, images: userPictures, forKey: "picIndices", completion: { [weak self] res in
-                guard let strongself = self else {
+                guard let strongSelf = self else {
                     print("Big error on line 124 of UserPhotos...wController")
                     return
                 }
                 switch res {
                 case .success(let pics):
-                    print("editButtonPressed and pics recieved")
-                    //trusting no issues
-                    var tempUrls: [URL] = []
-                    for i in pics{
-                        guard let url = i.url else {
-                            print("something wrong with url in obj at line 134 of UserPhotos...wController")
-                            continue
-                        }
-                        tempUrls.append(url)
+                    strongSelf.userPictures = pics
+                    strongSelf.originalPicUrls = pics.map({$0.url!})
+                    
+                    let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+                                                                     .foregroundColor: UIColor.zipBlue]
+                    strongSelf.editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
+                    
+                    for i in 0..<strongSelf.userPictures.count {
+                        let cell = strongSelf.collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as! EditPicturesCollectionViewCell
+                        cell.xButton.isHidden = true
                     }
+                    
+                    strongSelf.collectionView?.reloadData()
+                    
                 case .failure(let error):
                     print("error: \(error)")
                 }
@@ -168,16 +173,7 @@ class UserPhotosViewController: UIViewController {
 //                idx += 1
 //            }
             
-            let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
-                                                             .foregroundColor: UIColor.zipBlue]
-            editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
             
-            for i in 0..<userPictures.count {
-                let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as! EditPicturesCollectionViewCell
-                cell.xButton.isHidden = true
-            }
-            
-            collectionView?.reloadData()
         }
     }
     
@@ -208,8 +204,10 @@ class UserPhotosViewController: UIViewController {
         collectionView?.reloadData()
         originalPicUrls = user.otherPictureUrls
         
+        var idx = 0
         for url in user.otherPictureUrls {
-            userPictures.append(PictureHolder(url: url))
+            userPictures.append(PictureHolder(url: url, index: user.picIndices[idx]))
+            idx+=1
         }
         
         configureCollectionView()
