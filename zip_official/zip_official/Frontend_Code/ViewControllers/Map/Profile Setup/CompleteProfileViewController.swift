@@ -8,7 +8,7 @@
 import UIKit
 import UIImageCropper
 
-class CompleteProfileViewController: UIViewController {
+class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelegate {
     weak var delegate: UpdateUserFromEditProtocol?
     
     private var user: User
@@ -100,6 +100,10 @@ class CompleteProfileViewController: UIViewController {
         imageCropper.picker = imagePicker
         imageCropper.delegate = self
         
+        let dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
+        dismissTap.delegate = self
+        tableView.addGestureRecognizer(dismissTap)
+        
         configureNavBar()
         configureCollectionView()
         configureTable()
@@ -120,6 +124,11 @@ class CompleteProfileViewController: UIViewController {
         view.backgroundColor = .zipGray
     }
     
+    @objc private func dismissKeyboardTouchOutside(){
+        print("dismissing")
+        view.endEditing(true)
+        
+    }
     
     
     //MARK: - Nav Bar Config
@@ -389,5 +398,12 @@ extension CompleteProfileViewController: UIImageCropperProtocol {
         }
         userPictures.append(PictureHolder(image: croppedImage, edited: true))
         collectionView?.reloadData()
+    }
+}
+
+
+extension CompleteEventViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        return !(touch.view is UIControl) && !(touch.view is UITextView)
     }
 }

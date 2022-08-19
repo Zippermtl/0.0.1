@@ -84,7 +84,7 @@ class NewAccountPopupViewController: UIViewController {
         user.firstName = AppDelegate.userDefaults.value(forKey: "firstName") as! String
         user.lastName = AppDelegate.userDefaults.value(forKey: "lastName") as! String
         user.birthday = AppDelegate.userDefaults.value(forKey: "birthday") as! Date
-        user.pictureURLs = [URL(string: AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as! String)!]
+//        user.pictureURLs = [URL(string: AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as! String)!]
         let vc = CompleteProfileViewController(user: user)
 
         

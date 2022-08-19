@@ -208,8 +208,10 @@ class UserPhotosViewController: UIViewController {
         collectionView?.reloadData()
         originalPicUrls = user.otherPictureUrls
         
+        var idx = 0
         for url in user.otherPictureUrls {
-            userPictures.append(PictureHolder(url: url))
+            userPictures.append(PictureHolder(url: url, index: user.picIndices[idx]))
+            idx+=1
         }
         
         configureCollectionView()

@@ -19,7 +19,7 @@ class IconLabel: UILabel {
         didSet {
             update(string: labelText)
             var spaces = ""
-            for _ in 0...spacing {
+            for _ in 0..<spacing {
                 spaces += " "
             }
             labelText = spaces + labelText
@@ -70,7 +70,7 @@ class IconLabel: UILabel {
     
     public func update(string s: String){
         labelText = ""
-        for _ in 0...spacing {
+        for _ in 0..<spacing {
             labelText += " "
         }
         labelText += s

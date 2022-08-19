@@ -186,7 +186,7 @@ class MapViewController: UIViewController {
        } else {
            profileButton.setImage(UIImage(named: "defaultProfilePic"), for: .normal)
        }
-        
+        isNewAccount = true
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()

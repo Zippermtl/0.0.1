@@ -115,7 +115,9 @@ extension EditTextFieldTableViewCell: UITextViewDelegate {
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.textColor == .zipVeryLightGray {
+        print("begin edit")
+        print("text color = ", textView.textColor)
+        if textView.textColor != .white {
             textView.text = nil
             textView.textColor = .white
         }
