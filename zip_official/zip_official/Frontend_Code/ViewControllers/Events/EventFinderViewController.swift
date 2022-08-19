@@ -77,10 +77,7 @@ class EventFinderViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
-        generateTestData()
-        eventData.append(launchEvent)
-        eventData.append(fakeFroshEvent)
-        eventData.append(spikeBallEvent)
+        fetchEvents()
 
         configureNavBar()
         configureEventLists()
@@ -105,15 +102,47 @@ class EventFinderViewController: UIViewController {
     //MARK: - Event Data Config
     private func configureEventLists() {
         let userCalendar = Calendar.current
-        publicTableData[0] = eventData.filter { $0.isPublic() &&
+        publicTableData[0] = eventData.filter { ($0.getType() == .Public || $0.getType() == .Promoter) &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day == 0 }
-        publicTableData[1] = eventData.filter { $0.isPublic() &&
+        publicTableData[1] = eventData.filter { ($0.getType() == .Public || $0.getType() == .Promoter) &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day != 0 }
-        privateTableData[0] = eventData.filter { !$0.isPublic() &&
+        privateTableData[0] = eventData.filter { $0.getType() == .Private &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day == 0 }
-        privateTableData[1] = eventData.filter { !$0.isPublic() &&
+        privateTableData[1] = eventData.filter { $0.getType() == .Private  &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day != 0 }
         tableData = publicTableData
+    }
+    
+    private func fetchEvents(){
+        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.eventData.append(event)
+        }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
+//            strongSelf.tableView.reloadData()
+            strongSelf.configureEventLists()
+        })
+        
+        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.eventData.append(event)
+            strongSelf.configureEventLists()
+
+        }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
+            strongSelf.configureEventLists()
+            strongSelf.tableView.reloadData()
+        })
+        
+        DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.eventData.append(event)
+        }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
+            strongSelf.configureEventLists()
+            strongSelf.tableView.reloadData()
+        })
+
     }
 
     //MARK: - Table Config
@@ -239,77 +268,6 @@ extension EventFinderViewController :  UITableViewDataSource {
 }
 
 
-//MARK: Generate Data
-extension EventFinderViewController {
-    func generateTestData(){
-        var yiannipics = [UIImage]()
-        var interests = [Interests]()
-        
-        interests.append(.skiing)
-        interests.append(.coding)
-        interests.append(.chess)
-        interests.append(.wine)
-        interests.append(.workingOut)
-
-
-        yiannipics.append(UIImage(named: "yianni1")!)
-        yiannipics.append(UIImage(named: "yianni2")!)
-        yiannipics.append(UIImage(named: "yianni3")!)
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd"
-        let yianniBirthday = formatter.date(from: "2001/12/06")!
-        
-        let yianni = User(email: "zavalyia@gmail.com",
-                          username: "yianni_zav",
-                          firstName: "Yianni",
-                          lastName: "Zavaliagkos",
-//                          name: "Yianni Zavaliagkos",
-                          birthday: yianniBirthday,
-                          location: CLLocation(latitude: 51.5013, longitude: -0.2070),
-                          pictures: yiannipics,
-                          bio: "Yianni Zavaliagkos. Second Year at Mcgill. Add my snap and follow my insta @Yianni_Zav. I run this shit. Remember my name when I pass Zuckerberg on Forbes",
-                          school: "McGill University",
-                          interests: interests)
-        
-        
-        launchEvent = PromoterEvent(title: "Zipper Launch Party",
-                            hosts: [yianni],
-                            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [yianni],
-                            usersInterested: [yianni],
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "launchevent")!)
-        
-        fakeFroshEvent = PublicEvent(title: "Fake Ass Frosh",
-                            hosts: [yianni],
-                            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [yianni],
-                            usersInterested: [yianni],
-                            startTime: Date(timeIntervalSinceNow: 1000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "muzique")!)
-        
-        spikeBallEvent = PublicEvent(title: "Zipper Spikeball Tournament",
-                            hosts: [yianni],
-                            description: "Zipper Spikeball Tournament",
-                            address: "3781 St. Lauremt Blvd.",
-                            maxGuests: 250,
-                            usersGoing: [yianni],
-                            usersInterested: [yianni],
-                            startTime: Date(timeIntervalSinceNow: 100000),
-                            duration: TimeInterval(1000),
-                            image: UIImage(named: "spikeball"))
-    }
-    
-    
-    
-}
 
 
 class BackBarButtonItem: UIBarButtonItem {

@@ -287,7 +287,9 @@ class MapViewController: UIViewController {
     func configureAnnotations(){
         mapView.delegate = self
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
-        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)        
+        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
+        mapView.register(PublicEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PublicEventAnnotationView.identifier)
+
         
         DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
@@ -306,37 +308,23 @@ class MapViewController: UIViewController {
             case .failure(let error):
                 print("failure loading all events: \(error)")
             }
-
+        })
+        
+        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+        }, allCompletion: { result in
             
         })
-        //Events
-        // MARK: London
         
-        /*
-        let e1Url = URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6503333333%2Fprofile_picture.png?alt=media&token=1b83e75e-6147-4da6-bd52-1eee539bbc61")!
+        DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+        }, allCompletion: { result in
+            
+            
+        })
         
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd h:m a"
-        let startTime = formatter.date(from: "2022/07/08 12:30 PM")!
-        let endTime = formatter.date(from: "2022/07/08 1:30 PM")!
-        
-        let e1 = PromoterEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
-                               coordinates: CLLocation(latitude: 51.5014, longitude: -0.1419),
-                               startTime: startTime,
-                               endTime: endTime,
-                               imageURL: e1Url)
-
-        let e2 = PrivateEvent(eventId: "u6501111111_Test12345_Jul 20, 2022 at 2:19:40 PM EDT",
-                              coordinates: CLLocation(latitude: 51.5313, longitude: -0.1570),
-                              imageURL: e1Url)
-        let event1 = EventAnnotation(event: e1)
-        let event2 = EventAnnotation(event: e2)
-        
-        
-        mapView.addAnnotation(event1)
-        mapView.addAnnotation(event2)
-         */
     }
 
 }
@@ -469,11 +457,8 @@ extension MapViewController: MKMapViewDelegate {
         guard let eventAnnotation = annotation as? EventAnnotation else {
             return nil
         }
-        
-        
-        
         switch eventAnnotation.event.getType() {
-        case .Private, .Public, .Friends:
+        case .Private, .Friends:
             guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PrivateEventAnnotationView.identifier) as? PrivateEventAnnotationView else {
                 return MKAnnotationView()
             }
@@ -481,6 +466,15 @@ extension MapViewController: MKMapViewDelegate {
             
             annotationView.canShowCallout = false
             
+            eventAnnotation.event.annotationView = annotationView
+            return annotationView
+            
+        case .Public:
+            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PublicEventAnnotationView.identifier) as? PublicEventAnnotationView else {
+                return MKAnnotationView()
+            }
+            annotationView.configure(event: eventAnnotation.event)
+            annotationView.canShowCallout = false
             eventAnnotation.event.annotationView = annotationView
             return annotationView
             

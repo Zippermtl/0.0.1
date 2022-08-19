@@ -106,7 +106,7 @@ extension EventTypeSelectViewController: UITableViewDataSource {
                            color: .zipYellow,
                            icon: UIImage(systemName: "globe")!.withRenderingMode(.alwaysOriginal).withTintColor(.white))
             let comingSoonView = UIView()
-            comingSoonView.backgroundColor = .zipGray.withAlphaComponent(0.85)
+//            comingSoonView.backgroundColor = .zipGray.withAlphaComponent(0.85)
             
             let view = cell.contentView
             
@@ -141,9 +141,10 @@ extension EventTypeSelectViewController: UITableViewDataSource {
             let vc = CreateEventViewController(event: event)
             navigationController?.pushViewController(vc, animated: true)
         case 2:
-            break
-//            let vc = CreateEventViewController(event: PromoterEvent())
-//            navigationController?.pushViewController(vc, animated: true)
+            let event = PromoterEvent()
+            event.mapView = mapView
+            let vc = CreateEventViewController(event: event)
+            navigationController?.pushViewController(vc, animated: true)
         default: break
         }
     }
