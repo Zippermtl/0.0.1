@@ -34,17 +34,34 @@ class SearchManager{
         
         if(index != -1 || newq){
             updateSearch(ss: queryText)
+            print(presQuery + " in index -1")
             DatabaseManager.shared.getSearchBarData(queryText: presQuery, event: event, user: user, finishedLoadingCompletion: { [weak self] res in
                 switch res{
                 case .success(let data):
+                    print("here in ln 41")
+                    let prints = data.getSearch()
+                    for i in prints {
+                        print(i)
+                    }
                     if let ind = self?.loadedData.firstIndex(of: data){
                         if (self?.loadedData[ind].isEvent() as! Bool) {
                             self?.loadedData[ind].event!.imageUrl = data.event?.imageUrl
+                            if let cell = self?.loadedData[ind].event!.tableViewCell {
+                                cell.configureImage((self?.loadedData[ind].event!)!)
+                            }
                         } else if (self?.loadedData[ind].isUser() as! Bool) {
                             self?.loadedData[ind].user!.profilePicUrl = data.user!.profilePicUrl
                             self?.loadedData[ind].user!.pictureURLs = data.user!.pictureURLs
+                            if let cell = self?.loadedData[ind].user!.tableViewCell {
+                                cell.configureImage((self?.loadedData[ind].user!)!)
+                            }
                         }
+                    } else {
+                        self?.loadedData.append(data)
+                        self?.returnData.append(data)
+                        print(data.getId() + " is the Ids of data " + data.getSearch()[0] )
                     }
+                    
                     finishedLoadingCompletion(.success(data))
                 case .failure(let err):
                     finishedLoadingCompletion(.failure(err))
@@ -52,18 +69,22 @@ class SearchManager{
             }, allCompletion: { [weak self] res in
                 switch res{
                 case .success(let data):
+                    print("here in ln 64")
                     self?.loadedData.append(contentsOf: data)
                     let finalData = self?.sortSearch(returns: data)
+                    print("FINAL DATA = \n\(finalData)")
                     allCompletion(.success(finalData ?? []))
                 case .failure(let err):
                     allCompletion(.failure(err))
                 }
             })
         } else if (searchVal[index] == presQuery){
+            print("here in ln 73")
             updateSearch(ss: queryText)
             allCompletion(.success(returnData))
             finishedLoadingCompletion(.success(SearchObject(User(userId: "0"))))
         } else {
+            print("here in ln 78")
             updateSearch(ss: queryText)
             returnData = sortSearch(empty: true)
             allCompletion(.success(returnData))
@@ -82,6 +103,7 @@ class SearchManager{
     private func sortSearch(returns: [SearchObject] = [], empty: Bool = false) -> [SearchObject] {
         var local: [SearchObject] = []
         var front: [SearchObject] = []
+        print("sorting search")
         let friends = User.getMyZips().map({SearchObject($0)})
         let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
         

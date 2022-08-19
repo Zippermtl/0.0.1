@@ -65,7 +65,7 @@ class FPCViewController: UIViewController {
         self.searchBg = UIView()
         self.zipRequestsTable = ZipRequestTableView()
         self.eventsTable = EventInvitesTableView(events: events)
-        self.searchTable = SearchBarTableView(eventData: events)
+        self.searchTable = SearchBarTableView()
         
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         self.findEventsIcon = IconButton(text: "Find\nEvents", icon: UIImage(systemName: "calendar"), config: iconConfig )
@@ -158,6 +158,7 @@ class FPCViewController: UIViewController {
     }
     
     @objc func dismissKeyboardTouchOutside(){
+        print("forced end editing")
         view.endEditing(true)
     }
 
@@ -395,10 +396,39 @@ extension FPCViewController: UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
+        print("ending edit")
         if textField.text == "" {
             searchTable.isHidden = true
             searchBg.isHidden = true
         }
+    }
+    
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        guard let text = textField.text else{
+            return
+        }
+        searchTable.searchData = []
+        SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: { result in
+            switch result {
+            case .success(let searchObject):
+                print(searchObject)
+                break
+            case .failure(let error):
+                print("Error loading object in search Error: \(error)")
+            }
+        }, allCompletion: { [weak self] result in
+            print("completing")
+            guard let strongSelf = self else { return }
+            switch result {
+            case .success(let searchResults):
+                strongSelf.searchTable.searchData.append(contentsOf: searchResults)
+                strongSelf.searchTable.configureTableData()
+                print("SEARCH TABLE DATA = ", strongSelf.searchTable.searchData)
+                strongSelf.searchTable.reloadData()
+            case .failure(let error):
+                print("Error searching with querytext \(text) and Error: \(error)")
+            }
+        })
     }
     
     func textFieldShouldClear(_ textField: UITextField) -> Bool {

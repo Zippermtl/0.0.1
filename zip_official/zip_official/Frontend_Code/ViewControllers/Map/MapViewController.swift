@@ -431,7 +431,9 @@ extension MapViewController: FPCMapDelegate {
     }
     
     func openFPC() {
-        fpc.move(to: .full, animated: true, completion: nil)
+        if fpc.state != .full {
+            fpc.move(to: .full, animated: true, completion: nil)
+        }
     }
     
     func openZipRequests() {

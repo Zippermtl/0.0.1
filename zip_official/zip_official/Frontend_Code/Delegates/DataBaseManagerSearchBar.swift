@@ -24,6 +24,7 @@ extension DatabaseManager {
         var finishedName = false
         var dataholder: [SearchObject] = []
         if(user){
+            print("got here in search fullname ln 27")
             searchFullNameWithUpdates(queryText: queryText, indivCompletion: { res in
                 switch res{
                 case .success(let uInd1):
@@ -34,10 +35,13 @@ extension DatabaseManager {
             }, allCompletion: { res in
                 switch res{
                 case .success(let uInd2):
+                    print("gggggg")
                     dataholder.append(contentsOf: uInd2)
                     finishedName = true
+                    print("finishing 1 = \(finishedName) + \(finishedUsername) + \(finishedEvent)" )
                     if (event){
                         if(finishedEvent && finishedUsername){
+                            print("mmmmmm")
                             allCompletion(.success(dataholder))
                         }
                     } else if (finishedUsername){
@@ -48,7 +52,7 @@ extension DatabaseManager {
                 }
             })
             
-            
+            print("got here in search username ln 54")
             searchUsernameWithUpdates(queryText: queryText, indivCompletion: { res in
                 switch res{
                 case .success(let uInd1):
@@ -57,12 +61,16 @@ extension DatabaseManager {
                     finishedLoadingCompletion(.failure(err1))
                 }
             }, allCompletion: { res in
+                print("gggggg")
                 switch res{
                 case .success(let uInd2):
                     dataholder.append(contentsOf: uInd2)
                     finishedUsername = true
+                    print("finishing 2 = \(finishedName) + \(finishedUsername) + \(finishedEvent)" )
+
                     if (event){
                         if(finishedEvent && finishedName){
+                            print("mmmmmm")
                             allCompletion(.success(dataholder))
                         }
                     } else if (finishedName){
@@ -75,6 +83,7 @@ extension DatabaseManager {
             
             
             if(event){
+                print("got here in search user ln 79")
                 searchEvent(queryText: queryText, indivCompletion: { res in
                     switch res{
                     case .success(let Ind1):
@@ -85,9 +94,13 @@ extension DatabaseManager {
                 }, allCompletion:{ res in
                     switch res{
                     case .success(let uInd2):
+                        print("gggggg")
                         dataholder.append(contentsOf: uInd2)
-                        finishedUsername = true
+                        finishedEvent = true
+                        print("finishing 3 = \(finishedName) + \(finishedUsername) + \(finishedEvent)" )
+
                         if(finishedUsername && finishedName){
+                            print("mmmmmm")
                             allCompletion(.success(dataholder))
                         }
                     case .failure(let err1):
@@ -98,6 +111,7 @@ extension DatabaseManager {
             
             
         } else if(event){
+            print("got here in search event ln 103")
             searchEvent(queryText: queryText, indivCompletion: { res in
                 switch res{
                 case .success(let Ind1):
@@ -108,6 +122,7 @@ extension DatabaseManager {
             }, allCompletion: { res in
                 switch res{
                 case .success(let uInd2):
+                    print("gggggg")
                     dataholder.append(contentsOf: uInd2)
                     finishedEvent = true
                     allCompletion(.success(dataholder))
@@ -143,6 +158,7 @@ extension DatabaseManager {
                 DatabaseManager.shared.loadUserProfile(given: user, completion: { res in
                     switch res {
                     case .success(let pres):
+                        print(pres.username + " is present in 149")
                         indivCompletion(.success(SearchObject(pres)))
                     case .failure(let err):
                         indivCompletion(.failure(err))
@@ -153,6 +169,8 @@ extension DatabaseManager {
             for i in users {
                 returns.append(SearchObject(i))
             }
+            print("got here FFFFF")
+            print(returns.count)
             allCompletion(.success(returns))
 //            allCompletion(.success(users))
         }

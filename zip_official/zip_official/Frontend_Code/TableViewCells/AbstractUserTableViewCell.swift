@@ -39,6 +39,7 @@ class AbstractUserTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        pictureView.layer.masksToBounds = true
         pictureView.layer.cornerRadius = pictureView.frame.width/2
     }
     

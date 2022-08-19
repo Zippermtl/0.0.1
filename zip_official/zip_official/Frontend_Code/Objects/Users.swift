@@ -88,6 +88,10 @@ class UserCoder: Codable {
     
     
     public func createUser() -> User{
+        var nt = ""
+        if notificationToken.count != 0 {
+            nt = notificationToken[0]
+        }
         return User(
             userId: userId,
             username: username,
@@ -99,7 +103,7 @@ class UserCoder: Codable {
             bio: bio,
             school: school,
             interests: interests,
-            notificationToken: notificationToken[0],
+            notificationToken: nt,
             joinDate: joinDate.dateValue(),
             profilePicIndex: profilePicIndex,
             picIndices: picIndices
