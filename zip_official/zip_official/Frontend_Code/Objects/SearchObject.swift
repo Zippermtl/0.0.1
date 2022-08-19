@@ -13,6 +13,10 @@ class SearchObject : Equatable{
         return lhs.getId() == rhs.getId()
     }
     
+    enum SearchObjectError: Error {
+        case SearchObjectInvalidIndexing
+    }
+    
     var user: User? = nil
     var event: Event? = nil
     //type -1 is error 0 is user 1 is event
@@ -58,6 +62,25 @@ class SearchObject : Equatable{
         return ""
     }
     
-    
+    public func getSearch() -> [String] {
+        var hold: [String] = []
+        if self.isEvent() {
+            guard let id = self.event?.title.lowercased() else {
+                return []
+            }
+            hold.append(id)
+        }
+        if self.isUser() {
+            guard let username = self.user?.username else {
+                return []
+            }
+            guard let fullname = self.user?.fullName else {
+                return []
+            }
+            hold.append(username)
+            hold.append(fullname)
+        }
+        return hold
+    }
     
 }

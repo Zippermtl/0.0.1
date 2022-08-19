@@ -34,6 +34,8 @@ class DatabaseManager {
         case failedWithIndices
     }
     
+    
+    
 }
 
 extension DatabaseManager {

@@ -34,9 +34,17 @@ class SearchManager{
         
         if(index != -1 || newq){
             updateSearch(ss: queryText)
-            DatabaseManager.shared.getSearchBarData(queryText: presQuery, event: event, user: user, finishedLoadingCompletion: { res in
+            DatabaseManager.shared.getSearchBarData(queryText: presQuery, event: event, user: user, finishedLoadingCompletion: { [weak self] res in
                 switch res{
                 case .success(let data):
+                    if let ind = self?.loadedData.firstIndex(of: data){
+                        if (self?.loadedData[ind].isEvent() as! Bool) {
+                            self?.loadedData[ind].event!.imageUrl = data.event?.imageUrl
+                        } else if (self?.loadedData[ind].isUser() as! Bool) {
+                            self?.loadedData[ind].user!.profilePicUrl = data.user!.profilePicUrl
+                            self?.loadedData[ind].user!.pictureURLs = data.user!.pictureURLs
+                        }
+                    }
                     finishedLoadingCompletion(.success(data))
                 case .failure(let err):
                     finishedLoadingCompletion(.failure(err))
@@ -52,9 +60,14 @@ class SearchManager{
                 }
             })
         } else if (searchVal[index] == presQuery){
-            
+            updateSearch(ss: queryText)
+            allCompletion(.success(returnData))
+            finishedLoadingCompletion(.success(SearchObject(User(userId: "0"))))
         } else {
-            
+            updateSearch(ss: queryText)
+            returnData = sortSearch(empty: true)
+            allCompletion(.success(returnData))
+            finishedLoadingCompletion(.success(SearchObject(User(userId: "0"))))
         }
         
     }
@@ -76,41 +89,36 @@ class SearchManager{
 //        var
         if(returns.count == 0 || empty){
             for i in loadedData{
-                for i in loadedData{
-                    if (i.isEvent()) {
-                        if invitedEvents.contains(i){
-                            front.append(i)
-                        } else {
-                            local.append(i)
-                        }
-                    } else if (i.isUser()) {
-                        if friends.contains(i){
-                            front.append(i)
-                        } else {
-                            local.append(i)
+                for j in i.getSearch() {
+                    if (j.contains(presQuery)){
+                        if (i.isEvent()) {
+                            if invitedEvents.contains(i){
+                                front.append(i)
+                            } else {
+                                local.append(i)
+                            }
+                        } else if (i.isUser()) {
+                            if friends.contains(i){
+                                front.append(i)
+                            } else {
+                                local.append(i)
+                            }
                         }
                     }
                 }
             }
         } else {
             for i in returns{
-                if (i.isEvent()) {
-                    if invitedEvents.contains(i){
-                        front.append(i)
-                    } else {
-                        local.append(i)
-                    }
-                } else if (i.isUser()) {
-                    if friends.contains(i){
-                        front.append(i)
-                    } else {
-                        local.append(i)
-                    }
+                if (Priority.contains(i)){
+                    front.append(i)
+                } else {
+                    local.append(i)
                 }
             }
         }
         front.append(contentsOf: local)
-        return front
+        returnData = front
+        return returnData
     }
     
 }
