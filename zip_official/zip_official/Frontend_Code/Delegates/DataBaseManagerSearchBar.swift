@@ -212,12 +212,13 @@ extension DatabaseManager {
 //
 //                    }
                     print("203 user:")
-                    print( user)
+                    print(user.description)
                     StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { res in
                         switch res {
                         case .success(let url):
                             print(user.userId + " profile found")
                             user.profilePicUrl = url
+                            print(user.profilePicUrl)
                             indivCompletion(.success(SearchObject(user)))
                         case .failure(let err):
                             indivCompletion(.failure(err))

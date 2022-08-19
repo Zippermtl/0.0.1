@@ -61,10 +61,12 @@ final class StorageManager {
         storage.child(filename).putData(data, metadata: nil, completion: { [weak self] metaData, error in
             guard error == nil else {
                 //failed
+                print("failed")
+                print(error)
                 completion(.failure(StorageErrors.failedToUpload))
                 return
             }
-            
+            print("succeeded")
             self?.storage.child(filename).downloadURL(completion: { url, error in
                 guard let url = url else {
                     print("Failed to get download url")

@@ -112,7 +112,6 @@ class ProfilePicSetupViewController: UIViewController {
             picErrorLabel.isHidden = false
             return
         }
-        
         picErrorLabel.isHidden = true
         // push to final setup page
         user.pictures.append(pic)

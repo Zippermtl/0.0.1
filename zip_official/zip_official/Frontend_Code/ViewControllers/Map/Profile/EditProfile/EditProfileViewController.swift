@@ -46,9 +46,10 @@ class EditProfileViewController: UIViewController {
             
             if strongSelf.changedPFP {
                 let id = strongSelf.user.userId
-                let pp = [PictureHolder(image: strongSelf.profilePic.image!)]
+                let pp = PictureHolder(image: strongSelf.profilePic.image!)
+                pp.isEdited = true
                 let key = "profileIndex"
-                DatabaseManager.shared.updateImages(key: id, images: pp, forKey: key, completion: { [weak self] res in
+                DatabaseManager.shared.updateImages(key: id, images: [pp], forKey: key, completion: { [weak self] res in
                     switch res{
                     case .success(let urls):
                         AppDelegate.userDefaults.setValue(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
