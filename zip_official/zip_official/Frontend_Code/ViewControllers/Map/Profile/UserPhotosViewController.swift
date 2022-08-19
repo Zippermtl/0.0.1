@@ -14,6 +14,7 @@ class UserPhotosViewController: UIViewController {
     
     var originalPicUrls = [URL]()
     var userPictures = [PictureHolder]()
+    weak var delegate: UpdateFromEditProtocol?
     
     private let spinner = JGProgressHUD(style: .light)
 
@@ -134,16 +135,19 @@ class UserPhotosViewController: UIViewController {
                     strongSelf.userPictures = pics
                     strongSelf.originalPicUrls = pics.map({$0.url!})
                     
-                    let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
-                                                                     .foregroundColor: UIColor.zipBlue]
-                    strongSelf.editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
-                    
-                    for i in 0..<strongSelf.userPictures.count {
-                        let cell = strongSelf.collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as! EditPicturesCollectionViewCell
-                        cell.xButton.isHidden = true
+                    DispatchQueue.main.async {
+                        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+                                                                         .foregroundColor: UIColor.zipBlue]
+                        strongSelf.editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
+                        
+                        for i in 0..<strongSelf.userPictures.count {
+                            let cell = strongSelf.collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as! EditPicturesCollectionViewCell
+                            cell.xButton.isHidden = true
+                        }
+                        
+                        strongSelf.collectionView?.reloadData()
+                        strongSelf.delegate?.update()
                     }
-                    
-                    strongSelf.collectionView?.reloadData()
                     
                 case .failure(let error):
                     print("error: \(error)")

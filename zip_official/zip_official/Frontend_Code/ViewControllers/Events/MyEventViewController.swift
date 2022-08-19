@@ -56,6 +56,7 @@ class MyEventViewController: EventViewController {
 extension MyEventViewController: UpdateFromEditProtocol {
     func update() {
         tableView.reloadData()
+        title = event.title
         configureCells()
     }
 }

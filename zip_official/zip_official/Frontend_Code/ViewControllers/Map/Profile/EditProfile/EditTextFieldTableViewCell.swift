@@ -23,8 +23,10 @@ class EditTextFieldTableViewCell: EditProfileTableViewCell {
     var acceptableCharacters: String?
     var charLimit: Int?
     var placeHolder: String? { didSet {
-        textView.text = placeHolder
-        textView.textColor = .zipVeryLightGray
+        if textView.text == nil || textView.text == "" {
+            textView.text = placeHolder
+            textView.textColor = .zipVeryLightGray
+        }
     }}
     
     var keyboardType : UIKeyboardType = .default {

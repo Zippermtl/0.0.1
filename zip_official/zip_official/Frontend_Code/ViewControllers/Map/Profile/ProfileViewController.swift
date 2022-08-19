@@ -101,6 +101,7 @@ class ProfileViewController: AbstractProfileViewController {
     
     override func didTapPhotos() {
         let vc = UserPhotosViewController()
+        vc.delegate = self
         vc.configure(user: user)
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: true)
@@ -111,9 +112,7 @@ class ProfileViewController: AbstractProfileViewController {
 
 extension ProfileViewController: UpdateFromEditProtocol {
     func update() {
-        print("updating")
         tableView.reloadData()
-        title = user.username
         configureCells()
     }
 }

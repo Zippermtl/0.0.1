@@ -7,9 +7,10 @@
 
 import UIKit
 import UIImageCropper
-
+import JGProgressHUD
 class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelegate {
     weak var delegate: UpdateFromEditProtocol?
+    let spinner = JGProgressHUD(style: .light)
     
     private var user: User
     private var tableView: UITableView
@@ -24,9 +25,13 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
 
     
     @objc private func didTapDoneButton(){
+        spinner.show(in: view)
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
             guard let strongSelf = self,
                   err == nil else {
+                DispatchQueue.main.async {
+                    self?.spinner.dismiss(animated: true)
+                }
                 let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
                 self?.present(alert, animated: true)
@@ -50,16 +55,19 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
                         }
                         tempUrls.append(url)
                     }
+                    DispatchQueue.main.async {
+                        strongSelf.spinner.dismiss(animated: true)
+                    }
                     strongSelf.dismiss(animated: true, completion: nil)
                     
                 case .failure(let error):
-                    guard let strongSelf = self,
-                          err == nil else {
-                        let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
-                        alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
-                        self?.present(alert, animated: true)
-                        return
+                    print("error completing profile Error: \(error)")
+                    DispatchQueue.main.async {
+                        self?.spinner.dismiss(animated: true)
                     }
+                    let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
+                    self?.present(alert, animated: true)
                 }
             }, completionProfileUrl: {_ in})
             
