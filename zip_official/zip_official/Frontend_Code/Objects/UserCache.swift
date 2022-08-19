@@ -35,33 +35,33 @@ public class UserCache {
         // Create object and store it in the cache
         let u = User(userId: id)
         if (loadFriends) {
-            u.loadFriendships(completion: {result in u.load(status: loadLevel, completion: { [weak self] result in
+            u.loadFriendships(completion: {result in u.load(status: loadLevel, dataCompletion: { [weak self] result in
                 switch result {
-                    case true:
-                        self?.cache[id] = u
-                        self?.increaseSize()
-                        self?.checkBounds()
-                        completion(.success(u))
-                        return
-                    default:
-                        completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
-                        return
+                case .success(let user):
+                    self?.cache[id] = u
+                    self?.increaseSize()
+                    self?.checkBounds()
+                    completion(.success(u))
+                    return
+                case.failure(let err):
+                    completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
+                    return
                 }
-            })})
+            }, completionUpdates: { res in })})
         } else {
-            u.load(status: loadLevel, completion: { [weak self] result in
+            u.load(status: loadLevel, dataCompletion: { [weak self] result in
                 switch result {
-                    case true:
+                case .success(let user):
                         self?.cache[id] = u
                         self?.increaseSize()
                         self?.checkBounds()
                         completion(.success(u))
                         return
-                    default:
+                case .failure(let err):
                         completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
                         return
                 }
-            })
+            }, completionUpdates: { _ in})
         }
     }
     

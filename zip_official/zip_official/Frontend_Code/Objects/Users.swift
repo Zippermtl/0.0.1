@@ -663,49 +663,79 @@ public class User : CustomStringConvertible, Equatable {
 
     //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
     public enum UserLoadType: Int {
-        case zipFinder = 0
-        case SubWithLoc = 1
-        case SubNoLoc = 2
-        
+        case UserProfile = 0
+        case UserProfileUpdates = 1
+        case UserProfileNoPic = 2
+        case SubView = 3
+        case ProfilePicUrl = 4
+        case PicUrls = 5
     }
     
     //load someone's profile
-    func load(status: UserLoadType, completion: @escaping (Bool) -> Void) {
+    public func load(status: UserLoadType, dataCompletion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL],Error>) -> Void) {
         switch status{
-        case .zipFinder:
+        case .UserProfile:
             DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
                 switch results {
                 case .success(let user):
-                    print("completed user profile copy for: ")
-                    print("copied \(user.username)")
-                    completion(true)
+                    dataCompletion(.success(user))
                 case .failure(let error):
                     print("error load in LoadUser -> LoadUserProfile \(error)")
-                    completion(false)
+                    dataCompletion(.failure(error))
                 }
             })
-        case .SubNoLoc:
+        case .UserProfileUpdates:
+            DatabaseManager.shared.loadUserProfile(given: self, dataCompletion: { res in
+                switch res{
+                case .success(let user):
+                    dataCompletion(.success(user))
+                case .failure(let error):
+                    dataCompletion(.failure(error))
+                }
+            }, pictureCompletion: { res in
+                switch res{
+                case .success(let url):
+                    completionUpdates(.success(url))
+                case .failure(let error):
+                    completionUpdates(.failure(error))
+                }
+            })
+        case .UserProfileNoPic:
+            DatabaseManager.shared.loadUserProfileNoPic(given: self, completion: { res in
+                switch res{
+                case .success(let user):
+                    dataCompletion(.success(user))
+                case .failure(let err):
+                    dataCompletion(.failure(err))
+                }
+            })
+        case .SubView:
             DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
                 switch results {
                 case .success(let user):
-                    print("completed user profile copy for: ")
-                    print("copied \(user.username)")
-                    completion(true)
-                case .failure(let error):
-                    print("error load in LoadUser -> LoadUserProfile \(error)")
-                    completion(false)
+                    dataCompletion(.success(user))
+                case .failure(let err):
+                    dataCompletion(.failure(err))
                 }
             })
-        case .SubWithLoc:
-            DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
-                switch results {
-                case .success(let user):
-                    print("completed user profile copy for: ")
-                    print("copied \(user.username)")
-                    completion(true)
-                case .failure(let error):
-                    print("error load in LoadUser -> LoadUserProfile \(error)")
-                    completion(false)
+        case .ProfilePicUrl:
+            if (self.profilePicIndex) != [] {
+                DatabaseManager.shared.getImages(Id: self.userId, indices: self.profilePicIndex, event: false, completion: { res in
+                    switch res {
+                    case .success(let urls):
+                        completionUpdates(.success(urls))
+                    case .failure(let err):
+                        completionUpdates(.failure(err))
+                    }
+                })
+            }
+        case .PicUrls:
+            DatabaseManager.shared.getImages(Id: self.userId, indices: self.picIndices, event: false, completion: { res in
+                switch res {
+                case .success(let urls):
+                    completionUpdates(.success(urls))
+                case .failure(let err):
+                    completionUpdates(.failure(err))
                 }
             })
 //        case 4:
@@ -723,12 +753,6 @@ public class User : CustomStringConvertible, Equatable {
 //                }
 //            })
         }
-    }
-
-    // Load your own profile
-    //MARK: case 1: zipFinder, case 2: Subview With Location, case 3: Subview without Location
-    static func load(status: UserLoadType, completion: @escaping (Bool) -> Void) {
-        User.getCurrentUser().load(status: status, completion: {result in completion(result)})
     }
     
     
