@@ -43,13 +43,19 @@ class MyEventViewController: EventViewController {
     
     override func didTapGoingButton() {
         let vc = EditEventProfileViewController(event: event)
+        vc.delegate = self
         navigationController?.pushViewController(vc, animated: true)
     }
     
     override func didTapSaveButton() {
-        
+            // uhhh what we doing here?
     }
     
-    
-    
+}
+
+extension MyEventViewController: UpdateFromEditProtocol {
+    func update() {
+        tableView.reloadData()
+        configureCells()
+    }
 }

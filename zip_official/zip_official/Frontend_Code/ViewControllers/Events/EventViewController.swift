@@ -28,7 +28,7 @@ class EventViewController: UIViewController {
     // MARK: - SubViews
 
     //    private var pictureCollectionView: UICollectionView!
-    private let tableView: UITableView
+    let tableView: UITableView
     private let tableHeader: UIView
     private let tableFooter: UIView
     

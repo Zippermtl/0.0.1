@@ -12,8 +12,8 @@ protocol PresentEditInterestsProtocol: AnyObject {
     func presentInterestSelect()
 }
 
-protocol UpdateUserFromEditProtocol: AnyObject {
-    func updateUser()
+protocol UpdateFromEditProtocol: AnyObject {
+    func update()
 }
 
 class EditProfileViewController: UIViewController {
@@ -23,7 +23,7 @@ class EditProfileViewController: UIViewController {
     static let schoolIdentifier = "schoolIdentifier"
     static let interestsIdentifier = "interestsIdentifier"
 
-    weak var delegate: UpdateUserFromEditProtocol?
+    weak var delegate: UpdateFromEditProtocol?
     
     private var user: User
     private var tableView: UITableView
@@ -52,10 +52,11 @@ class EditProfileViewController: UIViewController {
                 DatabaseManager.shared.updateImages(key: id, images: [pp], forKey: key, completion: { [weak self] res in
                     switch res{
                     case .success(let urls):
+                        self?.user.profilePicUrl = urls[0].url
                         AppDelegate.userDefaults.setValue(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
                         self?.navigationController?.popViewController(animated: true)
                         print("success changing profile 56 in editprofileviewcontroller")
-                        self?.delegate?.updateUser()
+                        self?.delegate?.update()
                     case .failure(let error):
                         print("error uploading profile pic: \(error)")
                         let actionSheet = UIAlertController(title: "Failed to upload profile picture",
@@ -72,7 +73,7 @@ class EditProfileViewController: UIViewController {
                     }
                 }, completionProfileUrl: {_ in})
             } else {
-                self?.delegate?.updateUser()
+                self?.delegate?.update()
                 strongSelf.navigationController?.popViewController(animated: true)
             }
         })
@@ -304,8 +305,6 @@ extension EditProfileViewController :  UITableViewDataSource {
 extension EditProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func presentCamera(){
         let vc = UIImagePickerController()
-//        let cropper = UIImageCropper(cropRatio: 2/3)
-//        cropper.picker = vc
         vc.sourceType = .camera
         vc.delegate = self
         vc.allowsEditing = true

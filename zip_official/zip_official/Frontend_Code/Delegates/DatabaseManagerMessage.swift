@@ -371,7 +371,7 @@ extension DatabaseManager {
                     let updatedValue: [String: Any] = [
                         "date": dateString,
                         "message": messageContent,
-                        "isRead": false
+                        "isRead": true
                     ]
                     
                     if var currentUserConversations = snapshot.value as? [[String: Any]]  {

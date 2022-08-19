@@ -363,8 +363,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             return ""
         }
         
-
-        
         let dateString = Self.dateFormatter.string(from: Date())
  
         let newIdentifier = "\(otherUserId)_\(currentUserId)_\(dateString)"

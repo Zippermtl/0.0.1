@@ -9,9 +9,9 @@ import UIKit
 
 class EditEventProfileViewController: UIViewController {
     private var dismissTap: UITapGestureRecognizer?
-
+    weak var delegate : UpdateFromEditProtocol?
     var event: Event
-    
+    var changedPFP = false
     var tableView: UITableView
     private var changeProfilePicBtn: UIButton
     private var profilePic: UIImageView
@@ -61,7 +61,45 @@ class EditEventProfileViewController: UIViewController {
     }
     
     @objc private func didTapSave(){
-        
+        DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+
+            if strongSelf.changedPFP {
+                let id = strongSelf.event.eventId
+                let pp = PictureHolder(image: strongSelf.profilePic.image!)
+                pp.isEdited = true
+                let key = "eventCoverIndex"
+                DatabaseManager.shared.updateImages(key: id, images: [pp], forKey: key, completion: { [weak self] res in
+                    switch res{
+                    case .success(let urls):
+                        self?.event.imageUrl = urls[0].url
+                        self?.navigationController?.popViewController(animated: true)
+                        print("success changing profile 56 in editprofileviewcontroller")
+                        self?.delegate?.update()
+                    case .failure(let error):
+                        print("error uploading profile pic: \(error)")
+                        let actionSheet = UIAlertController(title: "Failed to upload profile picture",
+                                                            message: "Try again later",
+                                                            preferredStyle: .actionSheet)
+                        
+                        actionSheet.addAction(UIAlertAction(title: "Ok",
+                                                            style: .cancel,
+                                                            handler: { [weak self] _ in
+                            
+                            self?.dismiss(animated: true, completion: nil)
+                        }))
+                        self?.present(actionSheet, animated: true)
+                    }
+                }, completionProfileUrl: {_ in})
+            } else {
+                self?.delegate?.update()
+                strongSelf.navigationController?.popViewController(animated: true)
+            }
+            
+        })
     }
     
     @objc private func didTapChangeProfilePic() {
@@ -153,15 +191,15 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
     }
     
     func saveTitleFunc(_ s: String) {
-        
+        event.title = s
     }
     
     func saveDescriptionFunc(_ s: String) {
-        
+        event.description = s
     }
     
     func saveLocationFunc(_ s: String) {
-        
+        event.address = s
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -232,32 +270,12 @@ extension EditEventProfileViewController: GrowingCellProtocol {
 extension EditEventProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.editedImage] as? UIImage {
-            let pic = PictureHolder(image: image)
-            DatabaseManager.shared.updateEventImage(event: event, images: [pic], forKey: "eventCoverIndex", completion: { [weak self] res in
-                switch res {
-                case .success(let url):
-                    self?.event.imageUrl = url[0].url!
-                    self?.dismiss(animated: true, completion: nil)
-                    self?.profilePic.image = image
-                case .failure(let error):
-                    print("error uploading profile pic: \(error)")
-                    let actionSheet = UIAlertController(title: "Failed to upload profile picture",
-                                                        message: "Try again later",
-                                                        preferredStyle: .actionSheet)
-                    
-                    actionSheet.addAction(UIAlertAction(title: "Ok",
-                                                        style: .cancel,
-                                                        handler: { [weak self] _ in
-                        
-                        self?.dismiss(animated: true, completion: nil)
-
-                        
-                    }))
-                    self?.present(actionSheet, animated: true)
-                }
-            })
+            if let image = info[.editedImage] as? UIImage {
+                dismiss(animated: true, completion: nil)
+                profilePic.image = image
+                changedPFP = true
+            }
         }
-        
     }
 }
 

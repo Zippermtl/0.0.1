@@ -111,6 +111,7 @@ class AbstractEventTableViewCell: UITableViewCell {
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         let tap2 = UITapGestureRecognizer(target: self, action: #selector(openEvent))
+        eventImage.isUserInteractionEnabled = true
         eventImage.addGestureRecognizer(tap2)
     }
     

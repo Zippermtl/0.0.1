@@ -109,8 +109,8 @@ class ProfileViewController: AbstractProfileViewController {
 
 }
 
-extension ProfileViewController: UpdateUserFromEditProtocol {
-    func updateUser() {
+extension ProfileViewController: UpdateFromEditProtocol {
+    func update() {
         print("updating")
         tableView.reloadData()
         title = user.username
