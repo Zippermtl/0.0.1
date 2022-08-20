@@ -10,6 +10,9 @@ import UIKit
 import DropDown
 import RSKImageCropper
 import CoreLocation
+import FirebaseFirestore
+import FirebaseFirestoreSwift
+import CodableFirebase
 
 extension UIScrollView {
     func updateContentView(_ buffer: CGFloat = 0) {
@@ -168,3 +171,15 @@ extension JSONDecoder {
 //
 //}
 
+
+extension DocumentReference {
+    func updateData<T: Encodable>(for object: T, completion: @escaping (Error?) -> Void) {
+        do {
+            try self.setData(from: object, merge: true) { err in
+                completion(err)
+            }
+        } catch {
+            completion(error)
+        }
+    }
+}

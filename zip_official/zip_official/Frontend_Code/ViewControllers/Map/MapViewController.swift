@@ -111,13 +111,10 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
-    
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
         else { return }
         let vc = ProfileViewController(id: userId)
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .overCurrentContext
-        present(nav, animated: true, completion: nil)
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func didTapZoom(){
@@ -171,24 +168,26 @@ class MapViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        if presentedViewController != nil {
-//            presentedViewController?.dismiss(animated: false, completion: nil)
-//        }
-    }
-    
-
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         if let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
            let url = URL(string: urlString)
            profileButton.sd_setImage(with: url, for: .normal, completed: nil)
        } else {
            profileButton.setImage(UIImage(named: "defaultProfilePic"), for: .normal)
        }
-
-
         
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+
+    }
+    
+
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -200,13 +199,6 @@ class MapViewController: UIViewController {
     }
 
     private func configureProfilePicture(){
-         if let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
-            let url = URL(string: urlString)
-            profileButton.sd_setImage(with: url, for: .normal, completed: nil)
-        } else {
-            profileButton.setImage(UIImage(named: "defaultProfilePic"), for: .normal)
-        }
-        
         profileButton.addTarget(self, action: #selector(didTapProfileButton), for: .touchUpInside)
 
         profileButton.layer.masksToBounds = true
@@ -388,6 +380,10 @@ extension MapViewController: CLLocationManagerDelegate {
 }
 
 extension MapViewController: FPCMapDelegate {
+    func openVC(_ vc: UIViewController) {
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     func openZipFinder() {
         let zipFinder = ZipFinderViewController()
         zipFinder.delegate = self
@@ -397,59 +393,20 @@ extension MapViewController: FPCMapDelegate {
         
         let vc = UINavigationController(rootViewController: zipFinder)
         vc.modalPresentationStyle = .overCurrentContext
+        
         present(vc, animated: true, completion: { [weak self] in
             self?.fpc.move(to: .tip, animated: true, completion: nil)
         })
     }
     
-    func findEvents() {
-        let vc = EventFinderViewController()
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
-    }
-    
     func createEvent() {
-        let vc = EventTypeSelectViewController(map: mapView)
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
-    }
-    
-    func openMessages() {
-        let vc = ZipMessagesViewController()
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
-    }
-    
-    func openNotifications() {
-        fpc.move(to: .tip, animated: true, completion: nil)
-        let vc = NotificationsViewController()
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
-        
+        openVC(EventTypeSelectViewController(map: mapView))
     }
     
     func openFPC() {
         if fpc.state != .full {
             fpc.move(to: .full, animated: true, completion: nil)
         }
-    }
-    
-    func openZipRequests() {
-        let vc = ZipRequestsViewController()
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
-    }
-    
-    func openEventInvites(events: [Event]) {
-        let vc = EventInvitesViewController(events: events)
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
     }
 }
 
@@ -511,10 +468,7 @@ extension MapViewController: MKMapViewDelegate {
                 eventVC = EventViewController(event: annotation.event)
             }
             
-            let nav = UINavigationController(rootViewController: eventVC)
-            nav.modalPresentationStyle = .fullScreen
-            nav.modalTransitionStyle = .coverVertical
-            present(nav, animated: true, completion: nil)
+            navigationController?.pushViewController(eventVC, animated: true)
             
             mapView.deselectAnnotation(view.annotation, animated: false)
         }
@@ -616,9 +570,7 @@ extension MapViewController: NewAccountDelegate {
         user.pictureURLs = [URL(string: AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as! String)!]
         let vc = CompleteProfileViewController(user: user)
 
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

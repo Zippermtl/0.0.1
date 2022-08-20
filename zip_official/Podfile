@@ -30,6 +30,7 @@ pod 'Firebase/Storage'
 pod 'Firebase/Crashlytics'
 pod 'FirebaseFirestoreSwift', '> 7.0-beta'
 pod 'CodableFirebase' 
+pod 'Firebase/Messaging'
 
 
 pod 'GeoFire', '~> 4.0'

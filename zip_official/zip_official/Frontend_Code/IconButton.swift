@@ -101,7 +101,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "Message",
             icon:  UIImage(systemName: "message")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
         )
     }
     

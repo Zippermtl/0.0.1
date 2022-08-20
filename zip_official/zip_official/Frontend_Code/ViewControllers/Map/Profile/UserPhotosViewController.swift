@@ -99,33 +99,11 @@ class UserPhotosViewController: UIViewController {
             collectionView?.reloadData()
             
         } else { // save
-//            var pics: [PictureHolder] = []
-//            for img in userPictures {
-//                pics.append(img)
-//            }
-//            var idx = 0
-//            for i in 0..<userPictures.count {
-//                if userPictures[i].isEdited {
-//                    guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
-//                          let image = cell.picture.image else {
-//                              return
-//                          }
-//                    userPictures[i].image = image
-//                }
-//            }
-            let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
-            let indices = AppDelegate.userDefaults.value(forKey: "picIndices") as? [Int]
-//            guard let id = userId,
-//                  let ind = indices else {
-//                      print("ERROR SOMEWHERE IN USERDEFAULTS")
-//                      return
-//                  }
-            guard let id = userId else {
-                      print("ERROR SOMEWHERE IN USERDEFAULTS")
-                      return
-                  }
+            let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+
 //            print(userPictures)
-            DatabaseManager.shared.updateImages(key: id, images: userPictures, imageType: DatabaseManager.ImageType.picIndices, completion: { [weak self] res in
+            spinner.show(in: view)
+            DatabaseManager.shared.updateImages(key: userId, images: userPictures, imageType: DatabaseManager.ImageType.picIndices, completion: { [weak self] res in
                 guard let strongSelf = self else {
                     print("Big error on line 124 of UserPhotos...wController")
                     return
@@ -148,38 +126,30 @@ class UserPhotosViewController: UIViewController {
                         
                         strongSelf.collectionView?.reloadData()
                         strongSelf.delegate?.update()
+                        strongSelf.spinner.dismiss(animated: true)
                     }
                     
                 case .failure(let error):
+                    self?.alert(error)
                     print("error: \(error)")
                 }
             }, completionProfileUrl: {_ in})
-//            user.picNum = userPictures.count + 1
-//            AppDelegate.userDefaults.set(userPictures.count + 1, forKey: "picNum")
-//            var idx = 0
-//            for img in userPictures {
-//                if img.isEdited {
-//                    guard let cell = collectionView?.cellForItem(at: IndexPath(row: idx, section: 0)) as?  EditPicturesCollectionViewCell,
-//                          let image = cell.picture.image else {
-//                              return
-//                          }
-//
-//                    StorageManager.shared.updateIndividualImage(with: image, path: "images/\(userId)/", index: idx, completion: { [weak self] result in
-//                        switch result {
-//                        case .success(let url):
-//                            // TODO: potential error with order of photos
-//                            img.url = URL(string: url)
-//                            self?.user.pictureURLs.append(URL(string: url)!)
-//                        case .failure(let error):
-//                            print("error: \(error)")
-//                        }
-//                    })
-//                }
-//                idx += 1
-//            }
-            
             
         }
+    }
+    
+    private func alert(_ error: Error) {
+        let alert = UIAlertController(title: "Error Saving Profile",
+                                      message: "\(error.localizedDescription)",
+                                      preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Ok",
+                                      style: .cancel,
+                                      handler: { _ in
+        }))
+        
+        present(alert, animated: true)
+        spinner.dismiss()
     }
     
     override func viewDidLoad() {
@@ -196,7 +166,7 @@ class UserPhotosViewController: UIViewController {
         focusedImage.addGestureRecognizer(tap)
         xButton.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
         editButton.addTarget(self, action: #selector(didTapEditButton), for: .touchUpInside)
-//        imagePicker.delegate = self
+
         imagePicker.sourceType = .photoLibrary
         imagePicker.modalPresentationStyle = .overCurrentContext
         

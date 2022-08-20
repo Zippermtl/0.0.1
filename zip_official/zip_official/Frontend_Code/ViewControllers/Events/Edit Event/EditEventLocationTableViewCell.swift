@@ -76,19 +76,26 @@ extension EditEventProfileViewController: GMSAutocompleteViewControllerDelegate 
               let address = place.formattedAddress else {
                   return
               }
+        guard let name = place.name,
+              let address = place.formattedAddress else {
+                  return
+              }
+
+        event.coordinates = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
+        event.locationName = name
         
         guard let cell = tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as? EditEventLocationTableViewCell else {
             return
         }
         
-        if name.range(of: address) != nil { // if name is included in address
+        if address.contains(name) {
+            event.address = name
             cell.textView.text = name
         } else {
-            cell.textView.text = name + ", " + address.split(separator: ",")[0]
+            event.address = address
+            cell.textView.text = address
         }
-        event.coordinates = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-        event.address = address
-        event.locationName = name
+        
         navigationController?.popViewController(animated: true)
     }
     

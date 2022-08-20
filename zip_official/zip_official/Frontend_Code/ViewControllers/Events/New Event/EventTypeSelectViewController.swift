@@ -35,13 +35,8 @@ class EventTypeSelectViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         view.backgroundColor = .zipGray
         title = "Select an Event Type"
-        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: self, action: #selector(didTapDismiss))
-        let dismissButton = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(weight: .semibold)
-        dismissButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
-        dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: self, action: nil)
+       
         
         tableView.delegate = self
         tableView.dataSource = self
@@ -55,10 +50,6 @@ class EventTypeSelectViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    @objc private func didTapDismiss(){
-        dismiss(animated: true, completion : nil)
     }
     
     override func viewDidLoad() {

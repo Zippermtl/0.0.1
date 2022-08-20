@@ -7,11 +7,14 @@
 
 import Foundation
 import FirebaseDatabase
+import FirebaseFirestore
+import FirebaseFirestoreSwift
+import CodableFirebase
 import MessageKit
 import FirebaseAuth
 import CoreLocation
-import FirebaseFirestore
-import FirebaseFirestoreSwift
+import GeoFire
+import CoreData
 
 //MARK: - Account Management
 extension DatabaseManager {
@@ -35,6 +38,12 @@ extension DatabaseManager {
                 completion(.success(false))
             }
            
+        }
+    }
+    
+    public func checkUsernameExists(username: String){
+        firestore.collection("EventProfiles").whereField("username", isEqualTo: username).getDocuments() { [weak self] (querySnapshot, err) in
+            
         }
     }
     
@@ -71,34 +80,20 @@ extension DatabaseManager {
             
             if user.pictures.count != 0 {
                 let image = PictureHolder(image: user.pictures[0])
-//                guard let data = image.pngData() else {
-//                    return
-//                }
+                
                 DatabaseManager.shared.updateImages(key: user.userId, images: [image], imageType: DatabaseManager.ImageType.profileIndex, completion: { res in
                     switch res{
                     case .success(let urls):
-//                        guard let urls = url else {
-//                            completion(nil)
-//                            return
-//                        }
                         AppDelegate.userDefaults.set(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
                         completion(nil)
+                        
                     case .failure(let error):
                         print("storage manager error \(error)")
                         completion(error)
                     }
                     
                 }, completionProfileUrl: {_ in})
-//                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
-//                    switch results {
-//                    case .success(let downloadUrl):
-//                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
-//                        completion(nil)
-//                    case .failure(let error):
-//                        print("Storage Manager Error: \(error)")
-//                        completion(error)
-//                    }
-//                })
+
             }
         }
     }
@@ -167,10 +162,6 @@ extension DatabaseManager {
                 DatabaseManager.shared.updateImages(key: user.userId, images: [image], imageType: DatabaseManager.ImageType.profileIndex, completion: { res in
                     switch res{
                     case .success(let urls):
-//                        guard let urls = url else {
-//                            completion(nil)
-//                            return
-//                        }
                         AppDelegate.userDefaults.set(urls[0].url?.absoluteString, forKey: "profilePictureUrl")
                         completion(nil)
                     case .failure(let error):
@@ -179,16 +170,7 @@ extension DatabaseManager {
                     }
                     
                 }, completionProfileUrl: {_ in})
-//                StorageManager.shared.uploadProfilePicture(with: data, fileName: user.profilePictureFileName, completion: {results in
-//                    switch results {
-//                    case .success(let downloadUrl):
-//                        AppDelegate.userDefaults.set(downloadUrl.description, forKey: "profilePictureUrl")
-//                        completion(nil)
-//                    case .failure(let error):
-//                        print("Storage Manager Error: \(error)")
-//                        completion(error)
-//                    }
-//                })
+
             }
         }
     }
@@ -231,20 +213,7 @@ extension DatabaseManager {
     }
     /// Updates the full user profile
     public func updateUser(with user: User, completion: @escaping (Error?) -> Void) {
-        
-        let userData: [String:Any] = [
-            "id": user.userId,
-            "username": user.username,
-            "firstName": user.firstName,
-            "lastName": user.lastName,
-            "bio": user.bio,
-            "school": user.school ?? "",
-            "picNum": user.picNum,
-            "interests": user.interests.map{ $0.rawValue },
-            "notifications": EncodePreferences(user.notificationPreferences),
-        ]
-        
-        firestore.collection("UserProfiles").document(user.userId).updateData(userData) { error in
+        firestore.collection("UserProfiles").document(user.userId).updateData(for: user.getEncoder()) { error in
             guard error == nil else{
                 print("failed to write to database")
                 completion(error)

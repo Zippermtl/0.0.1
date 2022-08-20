@@ -15,25 +15,30 @@ import JGProgressHUD
 
 class OtherProfileViewController: AbstractProfileViewController  {
     private var distanceLabel: DistanceLabel
+    private var messageButton: IconButton
     
     init(id: String) {
+        self.messageButton = IconButton.messageIcon()
         let actionButtonInfo = ("Zipped", UIColor.zipBlue)
         let reportIcon = UIImage(systemName: "ellipsis")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
 
         distanceLabel = DistanceLabel()
         
         super.init(id: id,
-                   B1: IconButton.inviteIcon(),
-                   B2: IconButton.messageIcon(),
-                   B3: IconButton.zipsIcon(),
+                   B1: IconButton.eventsIcon(),
+                   B2: IconButton.zipsIcon(),
+                   B3: IconButton.inviteIcon(),
                    rightBarButtonIcon: reportIcon,
                    centerActionInfo: actionButtonInfo
         )
+        
         
         tableHeader.addSubview(distanceLabel)
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
         distanceLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
         distanceLabel.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 10).isActive = true
+        
+        configureMessageButton()
     }
     
     required init?(coder: NSCoder) {
@@ -47,12 +52,8 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-               
-  
         distanceLabel.update(distance: user.getDistance())
         centerActionButton.layer.borderColor = UIColor.zipBlue.cgColor
-    
-
     }
 
     override func initUser() {
@@ -76,7 +77,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
     override func didTapCenterActionButton() {
         switch user.friendshipStatus {
         case .ACCEPTED:
-            let actionSheet = UIAlertController(title: "Are you sure you would like to unfollow \(user.fullName)",
+            let actionSheet = UIAlertController(title: "Are you sure you would like to unzip \(user.fullName)",
                                                 message: "",
                                                 preferredStyle: .actionSheet)
             
@@ -117,15 +118,10 @@ class OtherProfileViewController: AbstractProfileViewController  {
                 guard err == nil else {
                     return
                 }
-                self?.request()
                 self?.setRequestedState()
             })
             
         }
-    }
-    
-    private func request() {
-        
     }
     
     private func setRequestedState(){
@@ -155,12 +151,58 @@ class OtherProfileViewController: AbstractProfileViewController  {
 
     
     override func didTapB1Button() {
-        let vc = InviteUserToEventViewController()
+      
+    }
+    
+    override func didTapB2Button() {
+        let myZipsView = UsersTableViewController(users: [])
+
+        DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
+            switch result {
+            case .success(let users):
+                print("loading ezras friends \(users)")
+                myZipsView.reload(users: users)
+            case .failure(let error):
+                print("failure loading other users ids, Error: \(error)")
+            }
+        })
+        myZipsView.title = "\(user.firstName)'s Zips"
+        myZipsView.modalPresentationStyle = .overCurrentContext
+        navigationController?.pushViewController(myZipsView, animated: true)
+    }
+    
+
+    
+    override func didTapB3Button() {
+        let vc = InviteUserToEventViewController(user: user)
         vc.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    override func didTapB2Button() {
+    override func didTapPhotos() {
+        let vc = UserPhotosViewController()
+        vc.configure(user: user)
+        vc.modalPresentationStyle = .overFullScreen
+        present(vc, animated: true)
+    }
+    
+    private func configureMessageButton(){
+        messageButton.iconAddTarget(self, action: #selector(didTapMessage), for: .touchUpInside)
+        messageButton.setIconDimension(width: 60)
+        messageButton.iconLabel.isHidden = true
+        messageButton.iconButton.backgroundColor = .zipBlue
+        messageButton.iconButton.layer.shadowColor = UIColor.black.cgColor
+        messageButton.iconButton.layer.shadowOpacity = 0.5
+        messageButton.iconButton.layer.shadowOffset = CGSize(width: 1, height: 4)
+        messageButton.iconButton.layer.shadowRadius = 2
+        messageButton.iconButton.layer.masksToBounds = false
+        view.addSubview(messageButton)
+        messageButton.translatesAutoresizingMaskIntoConstraints = false
+        messageButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        messageButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20).isActive = true
+    }
+    
+    @objc private func didTapMessage(){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
             guard let strongSelf = self else {
@@ -212,29 +254,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
         })
     }
     
-    override func didTapB3Button() {
-        let myZipsView = UsersTableViewController(users: [])
-
-        DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
-            switch result {
-            case .success(let users):
-                print("loading ezras friends \(users)")
-                myZipsView.reload(users: users)
-            case .failure(let error):
-                print("failure loading other users ids, Error: \(error)")
-            }
-        })
-        myZipsView.title = "\(user.firstName)'s Zips"
-        myZipsView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(myZipsView, animated: true)
-    }
-    
-    override func didTapPhotos() {
-        let vc = UserPhotosViewController()
-        vc.configure(user: user)
-        vc.modalPresentationStyle = .overFullScreen
-        present(vc, animated: true)
-    }
+   
     
 
 }

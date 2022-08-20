@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import SwiftUI
+import JGProgressHUD
 
 protocol PresentEditInterestsProtocol: AnyObject {
     func presentInterestSelect()
@@ -22,6 +22,8 @@ class EditProfileViewController: UIViewController {
     static let nameIdentifier = "nameIdentifier"
     static let schoolIdentifier = "schoolIdentifier"
     static let interestsIdentifier = "interestsIdentifier"
+    
+    private let spinner = JGProgressHUD(style: .light)
 
     weak var delegate: UpdateFromEditProtocol?
     
@@ -33,14 +35,28 @@ class EditProfileViewController: UIViewController {
     private var profilePic: UIImageView
     private var tableHeader: UIView
     private var imagePicker: UIImagePickerController
-    
     private var changedPFP = false
     
     @objc private func didTapDoneButton(){
         view.endEditing(true)
-        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
+        spinner.show(in: view)
+        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] error in
             guard let strongSelf = self,
-                  err == nil else {
+                  error == nil else {
+                let alert = UIAlertController(title: "Error Saving Event",
+                                              message: "\(error!.localizedDescription)",
+                                              preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Ok",
+                                              style: .cancel,
+                                              handler: { _ in
+                }))
+                
+                DispatchQueue.main.async {
+                    self?.present(alert, animated: true)
+                    self?.spinner.dismiss()
+                }
+                
                 return
             }
             
@@ -48,7 +64,6 @@ class EditProfileViewController: UIViewController {
                 let id = strongSelf.user.userId
                 let pp = PictureHolder(image: strongSelf.profilePic.image!)
                 pp.isEdited = true
-                let key = "profileIndex"
                 DatabaseManager.shared.updateImages(key: id, images: [pp], imageType: DatabaseManager.ImageType.profileIndex, completion: { [weak self] res in
                     switch res{
                     case .success(let urls):
@@ -69,16 +84,23 @@ class EditProfileViewController: UIViewController {
                             
                             self?.dismiss(animated: true, completion: nil)
                         }))
-                        self?.present(actionSheet, animated: true)
+                        DispatchQueue.main.async {
+                            self?.present(actionSheet, animated: true)
+                        }
                     }
                 }, completionProfileUrl: {_ in})
             } else {
                 self?.delegate?.update()
+                DispatchQueue.main.async {
+                    self?.spinner.dismiss(animated: true)
+                }
                 strongSelf.navigationController?.popViewController(animated: true)
+                
             }
         })
     }
     
+
     @objc private func didTapChangeProfilePic() {
         let actionSheet = UIAlertController(title: "Profile Picture",
                                             message: "How would you like to select a picture?",
@@ -116,7 +138,7 @@ class EditProfileViewController: UIViewController {
         self.imagePicker = UIImagePickerController()
 
         super.init(nibName: nil, bundle: nil)
-        
+        profilePic.backgroundColor = .zipLightGray
 
         changeProfilePicBtn.addTarget(self, action: #selector(didTapChangeProfilePic), for: .touchUpInside)
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapChangeProfilePic))

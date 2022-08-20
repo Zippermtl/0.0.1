@@ -85,7 +85,10 @@ class LoadingViewController: UIViewController {
         presentMap()
     }
 
-
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -212,9 +215,10 @@ class LoadingViewController: UIViewController {
     
     private func presentMap(){
         let vc = MapViewController(isNewAccount: false)
-        vc.modalPresentationStyle = .overFullScreen
-        vc.modalTransitionStyle = .crossDissolve
-        present(vc, animated: true, completion: nil)
+        let navVC = UINavigationController(rootViewController: vc)
+        navVC.modalPresentationStyle = .overFullScreen
+        navVC.modalTransitionStyle = .crossDissolve
+        present(navVC, animated: true, completion: nil)
     }
     
     private func configureLayout(){

@@ -29,6 +29,24 @@ class UserCoder: Codable {
     var picIndices: [Int]
     var profilePicIndex: [Int]
     
+    init(user: User) {
+        self.userId = user.userId
+        self.username = user.username
+        self.firstName = user.firstName
+        self.lastName = user.lastName
+        self.birthday = Timestamp(date: user.birthday)
+        self.picNum = user.picNum
+        self.bio = user.bio
+        self.interests = user.interests
+        self.deviceId = [user.deviceId]
+        self.notificationToken = [user.notificationToken]
+        self.school = user.school
+        self.gender = user.gender
+        self.joinDate = Timestamp(date: user.joinDate)
+        self.picIndices = user.picIndices
+        self.profilePicIndex = user.profilePicIndex
+    }
+    
     enum CodingKeys: String, CodingKey {
         case userId = "id"
         case username = "username"
@@ -127,6 +145,11 @@ class UserCoder: Codable {
 }
 
 public class User : CustomStringConvertible, Equatable {
+    func getEncoder() -> UserCoder {
+        let encoder = UserCoder(user: self)
+        return encoder
+    }
+    
     public static func == (lhs: User, rhs: User) -> Bool {
         return lhs.userId == rhs.userId
     }
@@ -379,36 +402,36 @@ public class User : CustomStringConvertible, Equatable {
     }
     
     func report(reason: String) {
-//        let smtpSession = MCOSMTPSession()
-//        smtpSession.hostname = "smtp.gmail.com"
-//        smtpSession.username = "contact.zippermtl@gmail.com"
-//        smtpSession.password = "PASSWORD_INSERT_HERE"
-//        smtpSession.port = 465
-//        smtpSession.authType = MCOAuthType.saslPlain
-//        smtpSession.connectionType = MCOConnectionType.TLS
-//        smtpSession.connectionLogger = {(connectionID, type, data) in
-//            if data != nil {
-//                if let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue){
-//                    NSLog("Connectionlogger: \(string)")
-//                }
-//            }
-//        }
-//
-//        let builder = MCOMessageBuilder()
-//        builder.header.to = [MCOAddress(displayName: "Zipper MTL", mailbox: "contact.zippermtl@gmail.com")!]
-//        builder.header.from = MCOAddress(displayName: "Zipper App", mailbox: "contact.zippermtl@gmail.com")
-//        builder.header.subject = "User Report"
-//        builder.htmlBody = "<p><b>\(userId)</b> was reported!</p><p>Reason: \(reason).</p>"
-//
-//        let rfc822Data = builder.data()
-//        let sendOperation = smtpSession.sendOperation(with: rfc822Data)
-//        sendOperation!.start {(error) -> Void in
-//            if (error != nil) {
-//                NSLog("Error sending email: \(String(describing: error))")
-//            } else {
-//                NSLog("Successfully sent email!")
-//            }
-//        }
+        let smtpSession = MCOSMTPSession()
+        smtpSession.hostname = "smtp.gmail.com"
+        smtpSession.username = "zipper.reports@gmail.com"
+        smtpSession.password = "sher900W!"
+        smtpSession.port = 465
+        smtpSession.authType = MCOAuthType.saslPlain
+        smtpSession.connectionType = MCOConnectionType.TLS
+        smtpSession.connectionLogger = {(connectionID, type, data) in
+            if data != nil {
+                if let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue){
+                    NSLog("Connectionlogger: \(string)")
+                }
+            }
+        }
+
+        let builder = MCOMessageBuilder()
+        builder.header.to = [MCOAddress(displayName: "Zipper MTL", mailbox: "zipper.reports@gmail.com")!]
+        builder.header.from = MCOAddress(displayName: "Zipper App", mailbox: "zipper.reports@gmail.com")
+        builder.header.subject = "User Report"
+        builder.htmlBody = "<p><b>\(userId)</b> was reported!</p><p>Reason: \(reason).</p>"
+
+        let rfc822Data = builder.data()
+        let sendOperation = smtpSession.sendOperation(with: rfc822Data)
+        sendOperation!.start {(error) -> Void in
+            if (error != nil) {
+                NSLog("Error sending email: \(String(describing: error))")
+            } else {
+                NSLog("Successfully sent email!")
+            }
+        }
     }
 
     // Load your own friendships

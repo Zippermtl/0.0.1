@@ -38,7 +38,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else {
 
             if checkUserDefaults() {
-                window?.rootViewController = LoadingViewController()
+                window?.rootViewController = UINavigationController(rootViewController: LoadingViewController())
+                
             } else {
                 do {
                     try FirebaseAuth.Auth.auth().signOut()

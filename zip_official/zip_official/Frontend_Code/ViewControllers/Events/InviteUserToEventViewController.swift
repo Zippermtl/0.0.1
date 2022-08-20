@@ -18,9 +18,11 @@ class InviteUserToEventViewController: UIViewController {
     
     private let tableView: UITableView
     
+    var user: User
    
     
-    init() {
+    init(user: User) {
+        self.user = user
         let hostedIds = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
         self.events = hostedIds.map({ Event(eventId: $0) })
         eventsToInvite = []
@@ -32,26 +34,12 @@ class InviteUserToEventViewController: UIViewController {
                                                             target: self,
                                                             action: #selector(didTapInvite))
         
-        let dismissButton = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(weight: .semibold)
-        dismissButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
-        dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
-        
         view.backgroundColor = .zipGray
         configureTable()
         
     }
     
-    @objc func didTapDismiss(){
-        let vc = self.navigationController?.viewControllers.first
-        if vc == self.navigationController?.visibleViewController {
-            dismiss(animated: true)
-        } else {
-            navigationController?.popViewController(animated: true)
-        }
-    }
+  
     
     
     private func configureTable(){
@@ -70,7 +58,22 @@ class InviteUserToEventViewController: UIViewController {
     }
     
     @objc private func didTapInvite(){
-        navigationController?.popViewController(animated: true)
+        var idx = 0
+        for event in eventsToInvite {
+            DatabaseManager.shared.inviteUsers(event: event, users: [user], completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    idx+=1
+                    return
+                }
+                idx+=1
+                if idx == strongSelf.eventsToInvite.count {
+                    DispatchQueue.main.async {
+                        strongSelf.navigationController?.popViewController(animated: true)
+                    }
+                }
+            })
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -79,7 +82,6 @@ class InviteUserToEventViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
     }
 }
 

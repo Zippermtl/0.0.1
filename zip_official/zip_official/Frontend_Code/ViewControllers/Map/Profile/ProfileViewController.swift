@@ -40,8 +40,8 @@ class ProfileViewController: AbstractProfileViewController {
         let settingsIcon = UIImage(systemName: "gearshape.fill")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         super.init(id: id,
                    B1: IconButton.eventsIcon(),
-                   B2: IconButton.myCardIcon(),
-                   B3: IconButton.zipsIcon(),
+                   B2: IconButton.zipsIcon(),
+                   B3: IconButton.myCardIcon(),
                    rightBarButtonIcon: settingsIcon,
                    centerActionInfo: actionButtonInfo
         )
@@ -86,17 +86,17 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB2Button() {
-        let cardPreview = ZFSingleCardViewController()
-        cardPreview.configure(user: user)
-        cardPreview.modalPresentationStyle = .overCurrentContext
-        present(cardPreview, animated: true)
-    }
-    
-    override func didTapB3Button() {
         let myZipsView = UsersTableViewController(users: User.getMyZips())
         myZipsView.title = "My Zips"
         myZipsView.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(myZipsView, animated: true)
+    }
+    
+    override func didTapB3Button() {
+        let cardPreview = ZFSingleCardViewController()
+        cardPreview.configure(user: user)
+        cardPreview.modalPresentationStyle = .overCurrentContext
+        present(cardPreview, animated: true)
     }
     
     override func didTapPhotos() {
@@ -113,6 +113,8 @@ class ProfileViewController: AbstractProfileViewController {
 extension ProfileViewController: UpdateFromEditProtocol {
     func update() {
         tableView.reloadData()
+        photoCountLabel.text = "\(user.pictureURLs.count)"
+        profilePictureView.sd_setImage(with: user.profilePicUrl)
         configureCells()
     }
 }

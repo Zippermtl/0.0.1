@@ -10,6 +10,7 @@ import UIKit
 
 protocol ReportMessageDelegate: AnyObject {
     func dismissVC()
+    func sendReport(reason: String)
 }
 
 
@@ -166,7 +167,6 @@ class ReportViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         reportOptionsMenu.frame = CGRect(x: 0, y: 0, width: reportTableContainer.frame.width, height: reportOptionsMenu.contentSize.height)
-
     }
     
 
@@ -398,12 +398,12 @@ class ReportViewController: UIViewController {
             textView.text = "Tell us a little about your report..."
             textView.textColor = .zipVeryLightGray
         
-
             addSubviews()
             configureSubviewLayout()
         }
         
         @objc private func didTapSend() {
+            delegate?.sendReport(reason: context.description + ": " + textView.text)
             delegate?.dismissVC()
         }
         
@@ -558,6 +558,10 @@ class ReportViewController: UIViewController {
 
 
 extension ReportViewController: ReportMessageDelegate {
+    func sendReport(reason: String) {
+        user.report(reason: reason)
+    }
+    
     func dismissVC() {
         slideDownAndDismiss(view: sendReportView)
     }

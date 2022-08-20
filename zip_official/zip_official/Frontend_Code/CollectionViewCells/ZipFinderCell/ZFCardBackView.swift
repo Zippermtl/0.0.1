@@ -11,10 +11,7 @@ import MapKit
 import DropDown
 
 protocol ZFCardBackDelegate: AnyObject {
-    func openProfile(_ user: User)
-    func openZips(_ user: User)
-    func messageUser(_ user: User)
-    func inviteUser(_ user: User)
+    func openVC(_ vc: UIViewController)
 }
 
 class ZFCardBackView: UIView {
@@ -126,12 +123,12 @@ class ZFCardBackView: UIView {
        
         schoolLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         schoolImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        schoolLabel.numberOfLines = 0
+        schoolLabel.numberOfLines = 2
         schoolLabel.lineBreakMode = .byWordWrapping
         
         interestsLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         interestsImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        interestsLabel.numberOfLines = 0
+        interestsLabel.numberOfLines = 2
         interestsLabel.lineBreakMode = .byWordWrapping
         
         bioLabel.numberOfLines = 0
@@ -154,7 +151,20 @@ class ZFCardBackView: UIView {
         guard let user = user else {
             return
         }
-        delegate?.openZips(user)
+        let vc = UsersTableViewController(users: [])
+
+        DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
+            switch result {
+            case .success(let users):
+                print("loading ezras friends \(users)")
+                vc.reload(users: users)
+            case .failure(let error):
+                print("failure loading other users ids, Error: \(error)")
+            }
+        })
+        vc.title = "\(user.firstName)'s Zips"
+        
+        delegate?.openVC(vc)
     }
     
     @objc private func didTapMessageButton() {
@@ -163,14 +173,59 @@ class ZFCardBackView: UIView {
             return
         }
         
-        delegate?.messageUser(user)
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result {
+            case .success(let conversations):
+                if let targetConversation = conversations.first(where: {
+                    $0.otherUser.userId == user.userId
+                }) {
+                    let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
+                    vc.isNewConversation = false
+                    vc.title = targetConversation.otherUser.firstName
+                    strongSelf.delegate?.openVC(vc)
+                } else {
+                    strongSelf.createNewConversation(result: user)
+                }
+            case .failure(_):
+                strongSelf.createNewConversation(result: user)
+            }
+        })
+    }
+    
+    private func createNewConversation(result otherUser: User){
+        // check in database if conversation with these two uses exists
+        // if it does, reuse conversation id
+        // otherwise use existing code
+        DatabaseManager.shared.conversationExists(with: otherUser.userId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result{
+            case.success(let conversationId):
+                let vc = ChatViewController(toUser: otherUser, id: conversationId)
+                vc.isNewConversation = false
+                vc.title = otherUser.firstName
+                strongSelf.delegate?.openVC(vc)
+            case .failure(_):
+                let vc = ChatViewController(toUser: otherUser, id: nil)
+                vc.isNewConversation = true
+                vc.title = otherUser.firstName
+                strongSelf.delegate?.openVC(vc)
+            }
+        })
+        
+        
     }
     
     @objc private func didTapInviteButton(){
         guard let user = user else {
             return
         }
-        delegate?.inviteUser(user)
+        delegate?.openVC(InviteUserToEventViewController(user: user))
     }
     
     //MARK: - Button Actions
@@ -180,10 +235,11 @@ class ZFCardBackView: UIView {
     }
     
     @objc private func openProfile(){
+        print("OPEN PROFILE")
         guard let user = user else {
             return
         }
-        delegate?.openProfile(user)
+        delegate?.openVC(OtherProfileViewController(id: user.userId))
     }
     
     @objc private func unrequestUser(){

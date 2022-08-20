@@ -158,10 +158,6 @@ class EventViewController: UIViewController {
         print("Report tapped")
     }
     
-    @objc private func didTapDismiss(){
-        dismiss(animated: true)
-    }
-    
     @objc func didTapGoingButton(){
         if !isGoing {
             DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
@@ -358,12 +354,7 @@ class EventViewController: UIViewController {
         reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: reportButton)
         
-        let dismissButton = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(weight: .semibold)
-        dismissButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
-        dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
+    
     }
     
     //MARK: - Table Config

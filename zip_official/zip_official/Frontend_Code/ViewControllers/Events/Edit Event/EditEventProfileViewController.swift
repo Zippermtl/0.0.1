@@ -42,6 +42,11 @@ class EditEventProfileViewController: UIViewController {
                                                             action: #selector(didTapSave))
         navigationItem.rightBarButtonItem?.tintColor = .zipBlue
         
+        changeProfilePicBtn.addTarget(self, action: #selector(didTapChangeProfilePic), for: .touchUpInside)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapChangeProfilePic))
+        profilePic.isUserInteractionEnabled = true
+        profilePic.addGestureRecognizer(tap)
+        
         eventBorder.layer.borderColor = event.getType().color.cgColor
         eventBorder.layer.borderWidth = 4
         
@@ -103,7 +108,29 @@ class EditEventProfileViewController: UIViewController {
     }
     
     @objc private func didTapChangeProfilePic() {
-        present(imagePicker, animated: true)
+        let actionSheet = UIAlertController(title: "Profile Picture",
+                                            message: "How would you like to select a picture?",
+                                            preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel",
+                                            style: .cancel,
+                                            handler: nil))
+        
+        actionSheet.addAction(UIAlertAction(title: "Take a Photo with Camera",
+                                            style: .default,
+                                            handler: { [weak self] _ in
+                                                
+                                                self?.presentCamera()
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Chose a Photo From Photo Library",
+                                            style: .default,
+                                            handler: { [weak self] _ in
+                                                
+                                                self?.presentPhotoPicker()
+        }))
+        
+        present(actionSheet, animated: true)
     }
     
     override func viewDidLoad() {
@@ -162,7 +189,7 @@ class EditEventProfileViewController: UIViewController {
         profilePic.sd_setImage(with: event.imageUrl, completed: nil)
         profilePic.layer.masksToBounds = true
 
-        changeProfilePicBtn.setTitle("Change Profile Picture", for: .normal)
+        changeProfilePicBtn.setTitle("Change Event Cover Photo", for: .normal)
         changeProfilePicBtn.setTitleColor(.zipBlue, for: .normal)
         changeProfilePicBtn.titleLabel?.font = .zipTextFill
 
@@ -268,13 +295,27 @@ extension EditEventProfileViewController: GrowingCellProtocol {
 
 
 extension EditEventProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func presentCamera(){
+        let vc = UIImagePickerController()
+        vc.sourceType = .camera
+        vc.delegate = self
+        vc.allowsEditing = true
+        present(vc, animated: true)
+    }
+    
+    func presentPhotoPicker(){
+        let vc = UIImagePickerController()
+        vc.sourceType = .photoLibrary
+        vc.delegate = self
+        vc.allowsEditing = true
+        present(vc, animated: true)
+    }
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.editedImage] as? UIImage {
-            if let image = info[.editedImage] as? UIImage {
-                dismiss(animated: true, completion: nil)
-                profilePic.image = image
-                changedPFP = true
-            }
+            dismiss(animated: true, completion: nil)
+            profilePic.image = image
+            changedPFP = true
         }
     }
 }

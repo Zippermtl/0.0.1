@@ -72,7 +72,9 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
         GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100, completion: {
             GeoManager.shared.LoadNextUsers(size: 10, completion: { [weak self] in
-                self?.collectionView?.reloadData()
+                DispatchQueue.main.async {
+                    self?.collectionView?.reloadData()
+                }
                 print("RELOADING DATA")
             })
         })
@@ -118,6 +120,11 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = true
 
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.isHidden = false
     }
     
 
@@ -293,7 +300,9 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                 if (!GeoManager.shared.queryRunning){
                     let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
                     GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: maxRangeFilter, max: 100, completion: { [weak self] in
-                        self?.collectionView?.reloadData()
+                        DispatchQueue.main.async {
+                            self?.collectionView?.reloadData()
+                        }
                     })
                 }
             }
@@ -331,7 +340,8 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
 
-        cell.delegate = self
+        cell.frontDelegate = self
+        cell.backDelegate = self
         cell.configure(user: model, loc: userLoc, idPath: indexPath.row)
 //        print(model.location)
         return cell
@@ -349,92 +359,16 @@ extension ZipFinderViewController: UICollectionViewDataSource {
 
 // MARK: UICollectionViewDelegate
 extension ZipFinderViewController: ZFCardBackDelegate {
-    
-    func openProfile(_ user: User) {        
-        let vc = OtherProfileViewController(id: user.userId)
-        let navVC = UINavigationController(rootViewController: vc)
-        navVC.modalPresentationStyle = .overFullScreen
-        present(navVC, animated: true)
+    func openVC(_ vc: UIViewController) {
+        navigationController?.pushViewController(vc, animated: true)
     }
-    
-    func openZips(_ user: User) {
-        let vc = UsersTableViewController(users: [])
+}
 
-        DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
-            switch result {
-            case .success(let users):
-                print("loading ezras friends \(users)")
-                vc.reload(users: users)
-            case .failure(let error):
-                print("failure loading other users ids, Error: \(error)")
-            }
-        })
-        vc.title = "\(user.firstName)'s Zips"
-        let navVC = UINavigationController(rootViewController: vc)
-        navVC.modalPresentationStyle = .overFullScreen
-        navVC.title = "\(user.firstName)'s Zips"
-        present(navVC, animated: true)
-    }
-    
-    func inviteUser(_ user: User) {
-        let vc = InviteUserToEventViewController()
-        let navVC = UINavigationController(rootViewController: vc)
-        navVC.modalPresentationStyle = .overFullScreen
-        present(navVC, animated: true)
-    }
-    
-    func messageUser(_ user: User) {
-        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
-            guard let strongSelf = self else {
-                return
-            }
-            switch result {
-            case .success(let conversations):
-                if let targetConversation = conversations.first(where: {
-                    $0.otherUser.userId == user.userId
-                }) {
-                    let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
-                    vc.isNewConversation = false
-                    vc.title = targetConversation.otherUser.firstName
-                    let navVC = UINavigationController(rootViewController: vc)
-                    strongSelf.present(navVC, animated: true)
-                } else {
-                    strongSelf.createNewConversation(result: user)
-                }
-            case .failure(_):
-                strongSelf.createNewConversation(result: user)
-            }
-        })
-    }
-    
-    private func createNewConversation(result otherUser: User){        
-        // check in database if conversation with these two uses exists
-        // if it does, reuse conversation id
-        // otherwise use existing code
-        DatabaseManager.shared.conversationExists(with: otherUser.userId, completion: { [weak self] result in
-            guard let strongSelf = self else {
-                return
-            }
-            switch result{
-            case.success(let conversationId):
-                let vc = ChatViewController(toUser: otherUser, id: conversationId)
-                vc.isNewConversation = false
-                vc.title = otherUser.firstName
-                vc.navigationItem.largeTitleDisplayMode = .never
-                let navVC = UINavigationController(rootViewController: vc)
-                strongSelf.present(navVC, animated: true)
-            case .failure(_):
-                let vc = ChatViewController(toUser: otherUser, id: nil)
-                vc.isNewConversation = true
-                vc.title = otherUser.firstName
-                vc.navigationItem.largeTitleDisplayMode = .never
-                let navVC = UINavigationController(rootViewController: vc)
-                strongSelf.present(navVC, animated: true)
-            }
-        })
-        
-        
+extension ZipFinderViewController: ZFCardFrontDelegate {
+    func presentReport(user: User) {
+        let vc = ReportViewController(user: user)
+        vc.modalPresentationStyle = .overCurrentContext
+        present(vc, animated: false, completion: nil)
     }
 }
 
@@ -444,3 +378,4 @@ extension ZipFinderViewController : UIScrollViewDelegate {
         adjustScaleAndAlpha()
     }
 }
+

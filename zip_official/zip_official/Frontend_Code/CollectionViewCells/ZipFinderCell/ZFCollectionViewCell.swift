@@ -17,7 +17,8 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Cell Data
     var idPath: Int = 0
-    var delegate: ZFCardBackDelegate?
+    var backDelegate: ZFCardBackDelegate?
+    var frontDelegate: ZFCardFrontDelegate?
     // Color
     
     //User
@@ -59,7 +60,9 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardBackView.configure(user: user)
         cardFrontView.backView = cardBackView
         cardBackView.frontView = cardFrontView
-        cardBackView.delegate = delegate
+    
+        cardBackView.delegate = backDelegate
+        cardFrontView.delegate = frontDelegate
     }
     
     

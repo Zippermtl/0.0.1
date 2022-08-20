@@ -10,13 +10,9 @@ import CoreLocation
 
 protocol FPCMapDelegate: AnyObject {
     func openZipFinder()
-    func findEvents()
-    func createEvent()
-    func openNotifications()
-    func openMessages()
+    func openVC(_ vc: UIViewController)
     func openFPC()
-    func openZipRequests()
-    func openEventInvites(events: [Event])
+    func createEvent()
 }
 
 class FPCViewController: UIViewController {
@@ -168,15 +164,15 @@ class FPCViewController: UIViewController {
     }
     
     @objc func findEvents() {
-        delegate?.findEvents()
+        delegate?.openVC(EventFinderViewController())
     }
     
     @objc private func didTapZipRequests(){
-        delegate?.openZipRequests()
+        delegate?.openVC(ZipRequestsViewController())
     }
     
     @objc private func didTapEventInvites(){
-        delegate?.openEventInvites(events: events)
+        delegate?.openVC(EventInvitesViewController(events: events))
     }
     
     @objc func createEvent() {
@@ -184,12 +180,11 @@ class FPCViewController: UIViewController {
     }
     
     @objc func openNotifications(){
-        delegate?.openNotifications()
+        delegate?.openVC(NotificationsViewController())
     }
     
     @objc func openMessages(){
-        print("OPEN MESSAGES")
-        delegate?.openMessages()
+        delegate?.openVC(ZipMessagesViewController())
     }
 
     

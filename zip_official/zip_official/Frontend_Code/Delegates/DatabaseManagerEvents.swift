@@ -460,25 +460,7 @@ extension DatabaseManager {
     }
 
     public func updateEvent(event: Event, completion: @escaping (Error?) -> Void) {
-        var hostsData : [String : String] = [:]
-        for host in event.hosts {
-            hostsData[host.userId] = host.fullName
-        }
-        let eventDataDict: [String:Any] = [
-            "title" : event.title,
-            "coordinates" : ["lat" : event.coordinates.coordinate.latitude, "long" : event.coordinates.coordinate.longitude],
-            "description" : event.description,
-            "address" : event.address,
-            "type" : event.getType().rawValue,
-            "startTime" : Timestamp(date: event.startTime),
-            "endTime" : Timestamp(date: event.endTime),
-            "max" : event.maxGuests,
-            "hosts" : hostsData,
-            "usersInvite": event.usersInvite.map { $0.userId },
-            "usersGoing": [event.hosts[0].userId]
-        ]
-        
-        firestore.collection("EventProfiles").document(event.eventId).updateData(eventDataDict) { error in
+        firestore.collection("EventProfiles").document(event.eventId).updateData(for: event.getEncoder()) { error in
             guard error == nil else{
                 print("failed to write to database")
                 completion(error)

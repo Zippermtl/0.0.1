@@ -9,18 +9,21 @@ import Foundation
 import UIKit
 import MapKit
 import MTSlideToOpen
-import DropDown
 import UIImageCropper
+
+protocol ZFCardFrontDelegate: AnyObject {
+    func presentReport(user: User)
+}
 
 class ZFCardFrontView: UIView {
     //User
     private var user: User?
     var backView: ZFCardBackView?
+    var delegate: ZFCardFrontDelegate?
+
     //MARK: - Subviews
     private var pictureCollectionLayout: SnappingFlowLayout
     var pictureCollectionView: UICollectionView
-    private var reportPopUp: DropDown
-    private var dropDownTitles: [String]
     
     private var fadedBG: UIView
     //MARK: - Labels
@@ -36,8 +39,10 @@ class ZFCardFrontView: UIView {
     
     //MARK: - Button Actions
     @objc private func didTapReportButton(){
-        reportPopUp.show()
-        print("report tapped")
+        guard let user = user else {
+            return
+        }
+        delegate?.presentReport(user: user)
     }
     
     @objc private func didTapRequestButton(){
@@ -116,9 +121,7 @@ class ZFCardFrontView: UIView {
         distanceLabel = DistanceLabel()
         tapToFlipLabel = UILabel.zipTextPrompt()
         swipeToViewLabel = UILabel.zipTextPrompt()
-        dropDownTitles = []
         reportButton = UIButton()
-        reportPopUp = DropDown()
         requestButton = UIButton()
         pictureCollectionView = UICollectionView(frame: .zero, collectionViewLayout: SnappingFlowLayout())
         pictureCollectionLayout = SnappingFlowLayout()
@@ -137,13 +140,12 @@ class ZFCardFrontView: UIView {
         reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
         
         configurePictures()
-        configureDropDown()
         addSubviews()
         configureSubviewLayout()
     
         
         pictureCollectionView.backgroundColor = .clear
-        
+        pictureCollectionView.alwaysBounceHorizontal = true
 
         
         requestButton.addTarget(self, action: #selector(didTapRequestButton), for: .touchUpInside)
@@ -229,31 +231,7 @@ class ZFCardFrontView: UIView {
 
     }
     
-    private func configureDropDown(){
-//        let name = user.name.components(separatedBy: " ")
-//        dropDownTitles = ["Report \(name[0])",
-//                          "Block \(name[0])",
-//                          "Don't show me \(name[0])"]
-        guard let user = user else {
-            return
-        }
-        
-        dropDownTitles = ["Report \(user.firstName)",
-                          "Block \(user.firstName)",
-                          "Don't show me \(user.firstName)"]
-        
-        reportPopUp.dataSource = dropDownTitles
-        reportPopUp.anchorView = reportButton
-        
-        reportPopUp.selectionAction = { index, title in
-            print("index \(index) and \(title)")
-        }
-        reportPopUp.setEdgeInsets()
-        reportPopUp.direction = .bottom
-        
-        
-
-    }
+  
     
     //MARK: - PictureCofig
     private func configurePictures(){

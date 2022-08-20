@@ -16,7 +16,7 @@ class AbstractProfileViewController: UIViewController {
     var user: User
     var tableView: UITableView
     var tableHeader: UIView
-    private var profilePictureView: UIImageView
+    var profilePictureView: UIImageView
     private var spinner: JGProgressHUD
     private var refreshControl: UIRefreshControl
     
@@ -24,7 +24,7 @@ class AbstractProfileViewController: UIViewController {
     private var firstnameLabel: UILabel
     private var lastnameLabel: UILabel
     private var ageLabel: UILabel
-    private var photoCountLabel: UILabel
+    var photoCountLabel: UILabel
 
     // MARK: - Buttons
     var centerActionButton: UIButton
@@ -244,12 +244,7 @@ class AbstractProfileViewController: UIViewController {
         
         //removes the text section of the back button from pushed VCs
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        let dismissButton = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(weight: .semibold)
-        dismissButton.setImage(UIImage(systemName: "chevron.left", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        dismissButton.frame = CGRect(x: 0, y: 0, width: 1, height: 34)
-        dismissButton.addTarget(self, action: #selector(didTapDismiss), for: .touchUpInside)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: dismissButton)
+       
         
     }
     
@@ -357,17 +352,6 @@ class AbstractProfileViewController: UIViewController {
         super.viewDidLayoutSubviews()
         tableHeader.setNeedsLayout()
         tableHeader.layoutIfNeeded()
-    }
-    
-
-    
-    @objc func didTapDismiss(){
-        let vc = self.navigationController?.viewControllers.first
-        if vc == self.navigationController?.visibleViewController {
-            dismiss(animated: true)
-        } else {
-            navigationController?.popViewController(animated: true)
-        }
     }
 }
 

@@ -23,8 +23,8 @@ class EventAnnotation: NSObject, MKAnnotation {
 
 
 class EventAnnotationView: MKAnnotationView {
-    static let VIEW_LENGTH: CGFloat = 40
-    static let DOT_LENGTH: CGFloat = 12
+    var view_length: CGFloat = 40
+    var dot_length: CGFloat = 12
     
     private var eventImage: UIImageView
     private var dotView: UIView
@@ -42,8 +42,10 @@ class EventAnnotationView: MKAnnotationView {
         configureSubviewLayout()
     }
     
-    init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor: UIColor) {
+    init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor: UIColor, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
         self.ringColor = ringColor
+        self.view_length = v
+        self.dot_length = d
         self.eventImage = UIImageView()
         self.dotView = UIView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -59,20 +61,20 @@ class EventAnnotationView: MKAnnotationView {
     }
     
     private func configureSubviews() {
-        frame = CGRect(x: 0, y: 0, width: EventAnnotationView.VIEW_LENGTH, height: EventAnnotationView.VIEW_LENGTH)
+        frame = CGRect(x: 0, y: 0, width: view_length, height: view_length)
         layer.anchorPoint = CGPoint(x:0 , y: 0)
         
-        centerOffset = CGPoint(x: -EventAnnotationView.VIEW_LENGTH/2, y: -EventAnnotationView.VIEW_LENGTH/2)
+        centerOffset = CGPoint(x: -view_length/2, y: -view_length/2)
         dotView.backgroundColor = ringColor
         
         dotView.layer.masksToBounds = true
-        dotView.layer.cornerRadius = EventAnnotationView.DOT_LENGTH/2
+        dotView.layer.cornerRadius = dot_length/2
         dotView.layer.borderWidth = 1
         dotView.layer.borderColor = UIColor.white.cgColor
 
     
         eventImage.layer.masksToBounds = true
-        eventImage.layer.cornerRadius = EventAnnotationView.VIEW_LENGTH/2
+        eventImage.layer.cornerRadius = view_length/2
         eventImage.layer.borderColor = ringColor.cgColor
         eventImage.layer.borderWidth = 1
         
@@ -94,7 +96,7 @@ class EventAnnotationView: MKAnnotationView {
         dotView.translatesAutoresizingMaskIntoConstraints = false
         dotView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         dotView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        dotView.widthAnchor.constraint(equalToConstant: EventAnnotationView.DOT_LENGTH).isActive = true
+        dotView.widthAnchor.constraint(equalToConstant: dot_length).isActive = true
         dotView.heightAnchor.constraint(equalTo: dotView.widthAnchor).isActive = true
     }
     
@@ -115,14 +117,14 @@ class EventAnnotationView: MKAnnotationView {
         eventImage.isHidden = false
         dotView.isHidden = true
         transform = CGAffineTransform(scaleX: scale, y: scale)
-        centerOffset = CGPoint(x: -(EventAnnotationView.VIEW_LENGTH/2)*scale, y: -(EventAnnotationView.VIEW_LENGTH/2)*scale)
+        centerOffset = CGPoint(x: -(view_length)*scale, y: -(view_length/2)*scale)
     }
     
     public func makeDot(){
         eventImage.isHidden = true
         dotView.isHidden = false
         transform = CGAffineTransform(scaleX: 1, y: 1)
-        centerOffset = CGPoint(x: -EventAnnotationView.VIEW_LENGTH/2, y: -EventAnnotationView.VIEW_LENGTH/2)
+        centerOffset = CGPoint(x: -view_length/2, y: -view_length/2)
         layer.shadowColor = UIColor.clear.cgColor
     }
     
@@ -142,7 +144,7 @@ class PromoterEventAnnotationView: EventAnnotationView {
     static let identifier = "promoter"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipGreen)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipGreen, view_length: 80, dot_length: 16)
     }
     
     required init?(coder aDecoder: NSCoder) {
