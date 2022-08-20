@@ -546,9 +546,13 @@ extension DatabaseManager {
                     completion(error!)
                     return
                 }
-                var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
-                events[event.eventId] = EventSaveStatus.GOING.rawValue
+                var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
+
+                events.removeAll(where: { event.eventId == $0 })
                 AppDelegate.userDefaults.set(events, forKey: "savedEvents")
+                var tmpGoing = AppDelegate.userDefaults.value(forKey: "goingEvents") as? [String] ?? []
+                tmpGoing.append(event.eventId)
+                AppDelegate.userDefaults.set(tmpGoing, forKey: "goingEvents")
                 completion(nil)
             }
         }
@@ -568,8 +572,9 @@ extension DatabaseManager {
                     completion(error!)
                     return
                 }
-                var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
-                events.removeValue(forKey: event.eventId)
+                var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
+//                events.removeValue(forKey: event.eventId)
+                events.removeAll(where: { event.eventId == $0 })
                 AppDelegate.userDefaults.set(events, forKey: "savedEvents")
                 completion(nil)
             }
@@ -583,8 +588,9 @@ extension DatabaseManager {
                 completion(error!)
                 return
             }
-            var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
-            events[event.eventId] = EventSaveStatus.SAVED.rawValue
+            var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
+//            events[event.eventId] = EventSaveStatus.SAVED.rawValue
+            events.append(event.eventId)
             AppDelegate.userDefaults.set(events, forKey: "savedEvents")
             completion(nil)
         }
@@ -597,8 +603,8 @@ extension DatabaseManager {
                 completion(error!)
                 return
             }
-            var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
-            events.removeValue(forKey: event.eventId)
+            var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
+            events.removeAll(where: { event.eventId == $0 })
             AppDelegate.userDefaults.set(events, forKey: "savedEvents")
             completion(nil)
         }

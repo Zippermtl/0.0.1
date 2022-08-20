@@ -21,6 +21,59 @@ class SearchObject : Equatable{
     var event: Event? = nil
     //type -1 is error 0 is user 1 is event
     var type: Int = -1
+//    var ss: String = ""
+    
+    public func getUrl() -> URL?{
+        guard self.type != -1 else {
+            return nil
+        }
+        if(isEvent()){
+            guard let url = self.event?.imageUrl  else {
+                return nil
+            }
+            return url
+        } else if (isUser()){
+            guard let url = self.user?.profilePicUrl  else {
+                return nil
+            }
+            return url
+        } else {
+            return nil
+        }
+    }
+    
+    public func setUrl(url: URL) -> Error? {
+        guard self.type != -1 else {
+            return nil
+        }
+//        let abcdurl = url
+        if(isEvent()){
+//            print("isEvent")
+//            guard let local = self.event else {
+//                return SearchObjectError.SearchObjectInvalidIndexing
+//            }
+                event?.imageUrl = url
+                return nil
+        } else if (isUser()){
+//            print("isUser")
+//            guard let local = self.user else {
+//                return SearchObjectError.SearchObjectInvalidIndexing
+//            }
+//            print(url.absoluteString)
+            user?.profilePicUrl = url
+            return nil
+        } else {
+            return nil
+        }
+    }
+    
+//    var pictureUrls : [URL] = {
+//        if (self.isUser()){
+//            return user?.pictureURLs
+//        } else if (self.isEvent()){
+//            
+//        }
+//    }
     
     init(_ user: User?){
         self.user = user

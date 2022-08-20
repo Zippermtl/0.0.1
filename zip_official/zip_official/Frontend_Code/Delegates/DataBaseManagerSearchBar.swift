@@ -22,18 +22,17 @@ extension DatabaseManager {
         var finishedEvent = false
         var finishedUsername = false
         var finishedName = false
-        var dataholder: [SearchObject] = []
+        var dataholder: [String:SearchObject] = [:]
         if(user){
             print("got here in search fullname ln 27")
             searchFullNameWithUpdates(queryText: queryText, indivCompletion: { res in
                 switch res{
                 case .success(let uInd1):
-                    print(uInd1.user!.username + " is present")
-                    if let testing = uInd1.user?.profilePicUrl {
-                        print(testing)
-                    } else {
-                        print("lost url")
-                    }
+                    let tempkey = uInd1.getId()
+//                    if (SearchManager.shared.loadedData[tempkey]!.getUrl() == nil as! Bool){
+//                        
+//                    }
+                    print(uInd1.user!)
                     finishedLoadingCompletion(.success(uInd1))
                 case .failure(let err1):
                     finishedLoadingCompletion(.failure(err1))
@@ -42,16 +41,21 @@ extension DatabaseManager {
                 switch res{
                 case .success(let uInd2):
                     print("gggggg")
-                    dataholder.append(contentsOf: uInd2)
+                    for i in uInd2 {
+                        let id = i.getId()
+                        if (dataholder[id] == nil) {
+                            dataholder[id] = i
+                        }
+                    }
                     finishedName = true
                     print("finishing 1 = \(finishedName) + \(finishedUsername) + \(finishedEvent)" )
                     if (event){
                         if(finishedEvent && finishedUsername){
                             print("mmmmmm")
-                            allCompletion(.success(dataholder))
+                            allCompletion(.success(Array(dataholder.map({_,value in value}))))
                         }
                     } else if (finishedUsername){
-                        allCompletion(.success(dataholder))
+                        allCompletion(.success(Array(dataholder.map({_,value in value}))))
                     }
                 case .failure(let err1):
                     allCompletion(.failure(err1))
@@ -70,17 +74,22 @@ extension DatabaseManager {
                 print("gggggg")
                 switch res{
                 case .success(let uInd2):
-                    dataholder.append(contentsOf: uInd2)
+                    for i in uInd2 {
+                        let id = i.getId()
+                        if (dataholder[id] == nil) {
+                            dataholder[id] = i
+                        }
+                    }
                     finishedUsername = true
                     print("finishing 2 = \(finishedName) + \(finishedUsername) + \(finishedEvent)" )
 
                     if (event){
                         if(finishedEvent && finishedName){
                             print("mmmmmm")
-                            allCompletion(.success(dataholder))
+                            allCompletion(.success(Array(dataholder.map({_,value in value}))))
                         }
                     } else if (finishedName){
-                        allCompletion(.success(dataholder))
+                        allCompletion(.success(Array(dataholder.map({_,value in value}))))
                     }
                 case .failure(let err1):
                     allCompletion(.failure(err1))
@@ -101,13 +110,18 @@ extension DatabaseManager {
                     switch res{
                     case .success(let uInd2):
                         print("gggggg")
-                        dataholder.append(contentsOf: uInd2)
+                        for i in uInd2 {
+                            let id = i.getId()
+                            if (dataholder[id] == nil) {
+                                dataholder[id] = i
+                            }
+                        }
                         finishedEvent = true
                         print("finishing 3 = \(finishedName) + \(finishedUsername) + \(finishedEvent)" )
 
                         if(finishedUsername && finishedName){
                             print("mmmmmm")
-                            allCompletion(.success(dataholder))
+                            allCompletion(.success(Array(dataholder.map({_,value in value}))))
                         }
                     case .failure(let err1):
                         allCompletion(.failure(err1))
@@ -129,9 +143,14 @@ extension DatabaseManager {
                 switch res{
                 case .success(let uInd2):
                     print("gggggg")
-                    dataholder.append(contentsOf: uInd2)
+                    for i in uInd2 {
+                        let id = i.getId()
+                        if (dataholder[id] == nil) {
+                            dataholder[id] = i
+                        }
+                    }
                     finishedEvent = true
-                    allCompletion(.success(dataholder))
+                    allCompletion(.success(Array(dataholder.map({_,value in value}))))
                 case .failure(let err1):
                     allCompletion(.failure(err1))
                 }
@@ -163,6 +182,16 @@ extension DatabaseManager {
                 let user = User(userId: id, firstName: firstName, lastName: lastName)
                 users.append(user)
                 print(user)
+//                DatabaseManager.shared.loadUserProfileNoPic(given: user, completion: { res in
+//                    switch res {
+//                    case .success(let pres):
+//                        user = pres
+//                        indivCompletion(.success(SearchObject(pres)))
+//                        DatabaseManager.shared.
+//                    case .failure(let err):
+//                        indivCompletion(.failure(err))
+//                    }
+//                })
                 DatabaseManager.shared.loadUserProfile(given: user, completion: { res in
                     switch res {
                     case .success(let pres):
@@ -172,6 +201,8 @@ extension DatabaseManager {
                         } else {
                             print("lost url")
                         }
+                        let forval = SearchObject(pres)
+                        print(forval.getUrl() as! URL)
                         indivCompletion(.success(SearchObject(pres)))
                     case .failure(let err):
                         indivCompletion(.failure(err))
@@ -217,9 +248,10 @@ extension DatabaseManager {
                         switch res {
                         case .success(let url):
                             print(user.userId + " profile found")
-                            user.profilePicUrl = url
-                            print(user.profilePicUrl)
-                            indivCompletion(.success(SearchObject(user)))
+//                            user.profilePicUrl = url
+//                            print(user.profilePicUrl as! URL)
+                            let tmp = SearchObject(user)
+                            indivCompletion(.success(tmp))
                         case .failure(let err):
                             indivCompletion(.failure(err))
                         }

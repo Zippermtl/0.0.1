@@ -96,8 +96,9 @@ class EventViewController: UIViewController {
         if event.usersGoing.contains(User(userId: userId)) {
             goingUI()
         }
-        let events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
-        if events[event.eventId] != nil {
+        
+        let events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
+        if events.contains(event.eventId) {
             savedUI()
         }
         

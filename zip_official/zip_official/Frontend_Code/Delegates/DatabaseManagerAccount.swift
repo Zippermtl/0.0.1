@@ -150,8 +150,8 @@ extension DatabaseManager {
             
             let emptyFriendships: [String: [String:String]]  = [:]
             AppDelegate.userDefaults.set(emptyFriendships, forKey:  "friendships")
-            let emptyEvents: [String : Int] = [:]
-            AppDelegate.userDefaults.set(emptyEvents, forKey:  "savedEvents")
+            AppDelegate.userDefaults.set([], forKey:  "savedEvents")
+            AppDelegate.userDefaults.set([], forKey:  "goingEvents")
 
             AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
 

@@ -86,18 +86,10 @@ class MyEventsViewController: UIViewController {
     init() {
         let hostedIds = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
         self.hostEvents = hostedIds.map({ Event(eventId: $0) })
-        let eventDict = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String: Int] ?? [:]
-        var s: [Event] = []
-        var g: [Event] = []
-        for (key,val) in eventDict {
-            if val == EventSaveStatus.GOING.rawValue {
-                g.append(Event(eventId: key))
-            } else {
-                s.append(Event(eventId: key))
-            }
-        }
-        self.saveEvents = s
-        self.goingEvents = g
+        let savedEventsIds = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
+        let goingEventsIds = AppDelegate.userDefaults.value(forKey: "goingEvents") as? [String] ?? []
+        self.saveEvents = savedEventsIds.map({Event(eventId: $0)})
+        self.goingEvents = goingEventsIds.map({Event(eventId: $0)})
         super.init(nibName: nil, bundle: nil)
         loadEvents()
     }

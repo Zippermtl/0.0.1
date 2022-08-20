@@ -787,6 +787,14 @@ public class User : CustomStringConvertible, Equatable {
         return events
     }
     
+    static func getSavedEvents() -> [Event]{
+        guard let raw_events = AppDelegate.userDefaults.value(forKey: "mySavedEvents") as? [String] else {
+            return []
+        }
+        let events = raw_events.map({ Event(eventId: $0)})
+        return events
+    }
+    
     static func getMyRequests() -> [User]{
         guard let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]] else {
             return []
