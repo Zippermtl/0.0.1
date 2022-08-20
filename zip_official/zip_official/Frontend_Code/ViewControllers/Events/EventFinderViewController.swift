@@ -121,17 +121,23 @@ class EventFinderViewController: UIViewController {
             guard let strongSelf = self else { return }
 //            strongSelf.tableView.reloadData()
             strongSelf.configureEventLists()
+            DispatchQueue.main.async {
+                strongSelf.tableView.reloadData()
+            }
         })
         
         DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             strongSelf.eventData.append(event)
-            strongSelf.configureEventLists()
+//            strongSelf.configureEventLists()
 
         }, allCompletion: { [weak self] result in
             guard let strongSelf = self else { return }
             strongSelf.configureEventLists()
-            strongSelf.tableView.reloadData()
+            DispatchQueue.main.async {
+                strongSelf.tableView.reloadData()
+            }
+            
         })
         
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
@@ -140,7 +146,10 @@ class EventFinderViewController: UIViewController {
         }, allCompletion: { [weak self] result in
             guard let strongSelf = self else { return }
             strongSelf.configureEventLists()
-            strongSelf.tableView.reloadData()
+            DispatchQueue.main.async {
+                strongSelf.tableView.reloadData()
+            }
+            
         })
 
     }

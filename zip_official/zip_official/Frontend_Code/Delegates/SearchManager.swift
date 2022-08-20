@@ -29,7 +29,13 @@ class SearchManager{
     }
     
     public func updatePriority(event: Event, user: User){
-        
+//        lazy var priority: [SearchObject] = {
+            let friends = User.getMyZips().map({SearchObject($0)})
+            let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
+            let host = User.getHostedEvents()
+            let saved = User.getSavedEvents()
+            priority = friends+invitedEvents
+//        }()
     }
     
     public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result <[SearchObject], Error>) -> Void){
@@ -89,7 +95,7 @@ class SearchManager{
                             
                             //setUrl(url: data.getUrl()!)
                         }
-                        print(data.user?.profilePicUrl as! URL)
+//                        print(data.user?.profilePicUrl as! URL)
                         if (self?.loadedData[key] != nil) {
     //                        guard let s
                             if (self?.loadedData[key]!.isEvent() as! Bool){
