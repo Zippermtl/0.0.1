@@ -270,6 +270,7 @@ extension EventFinderViewController :  UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: EventFinderTableViewCell.identifier, for: indexPath) as! EventFinderTableViewCell
         cell.selectionStyle = .none
         cell.clipsToBounds = true
+        cellEvent.tableViewCell = cell
         cell.configure(cellEvent)
         return cell
     }

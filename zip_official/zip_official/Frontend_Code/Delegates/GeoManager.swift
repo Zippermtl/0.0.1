@@ -17,11 +17,14 @@ class GeoManager {
     var userIdList: [User] = []
     var loadedUsers: [User] = []
     var alreadyReadySeen: [String] = []
+    var userLocDict: [String:CLLocation] = [:]
 
     let noUsers = User(userId: "empty")
     var moreUsersInQuery = false
     var queryRunning = false
     var initialLaunch = true
+    var hasMaxRange = true
+    var blockFutureQueries = false
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
@@ -41,6 +44,8 @@ class GeoManager {
         geoFire = GeoFire(firebaseRef: geofireRef)
         geoFireEventPublic = GeoFire(firebaseRef: geoFireEventRefPublic)
         geoFireEventPromoter = GeoFire(firebaseRef: geoFireEventRefPromoter)
+        let blocked = (AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String]) ?? []
+        alreadyReadySeen.append(contentsOf: blocked)
         let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as! [String : [String: String]]
         let helper = DecodeFriendsUserDefaults(raw_friendships)
         for friendship in helper{
@@ -50,6 +55,8 @@ class GeoManager {
                 alreadyReadySeen.append(friendship.receiver.userId)
             }
         }
+        print("LOOK HERE FOR USERS")
+        print(alreadyReadySeen.count)
     }
     
 //    static func safeEmail(email: String) -> String {
@@ -178,8 +185,9 @@ class GeoManager {
     public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
        print("Entering GetUserByLoc, range = \(range) max = \(max)")
        let userID = AppDelegate.userDefaults.value(forKey: "userID")
-       let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
        let geoRange = Double(range)
+//        center =
        //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
 //        let circleQuery = self.geoFire.query(at: center, withRadius: geoRange)
 //        _ = circleQuery.observe(.keyEntered, with: { key, location in
@@ -200,6 +208,9 @@ class GeoManager {
             user.location = location
             if(strongSelf.userIsValid(checkUser: user)){
                 GeoManager.shared.userIdList.append(User(userId:key))
+                if(strongSelf.userLocDict[key] == nil){
+                    strongSelf.userLocDict[key] = location
+                }
                 print("userIdList appending \(key.description)")
             }
         })
@@ -260,6 +271,10 @@ class GeoManager {
             DatabaseManager.shared.loadUserProfile(given: userIdList[0], dataCompletion: { [weak self] result in
                 switch result {
                 case .success(let user):
+                    if let userlocation = self?.userLocDict[user.userId] {
+                        user.location = userlocation
+                    }
+                    
                     self?.loadedUsers.append(user)
                     print("completed user profile copy for: ")
                     print("copied \(user.username)")
