@@ -166,10 +166,14 @@ class EventViewController: UIViewController {
                     return
                 }
                 
-                strongSelf.goingUI()
                 guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
                 strongSelf.event.usersGoing.append(User(userId: userId))
-                strongSelf.configureUserCountLabel()
+                
+                DispatchQueue.main.async {
+                    strongSelf.goingUI()
+                    strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
+                }
+
             })
         } else {
             DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
@@ -178,11 +182,14 @@ class EventViewController: UIViewController {
                     return
                 }
                 
-                strongSelf.notGoingUI()
                 guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
                       let idx = strongSelf.event.usersGoing.firstIndex(of: User(userId: userId)) else { return }
                 strongSelf.event.usersGoing.remove(at: idx)
-                strongSelf.configureUserCountLabel()
+                DispatchQueue.main.async {
+                    strongSelf.notGoingUI()
+                    strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
+                }
+                
             })
         }
     }
@@ -483,7 +490,7 @@ class EventViewController: UIViewController {
     //MARK: - Label Config
     func configureLabels(){
     
-        configureUserCountLabel()
+        userCountLabel.text = String(event.usersGoing.count) + " participants"
         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
@@ -497,14 +504,7 @@ class EventViewController: UIViewController {
 
     }
     
-    func configureUserCountLabel(){
-        if event.maxGuests == -1 {
-            userCountLabel.text = String(event.usersGoing.count) + " participants"
-        } else {
-            userCountLabel.text = String(event.usersGoing.count) + "/" + String(event.maxGuests) + " participants"
-        }
-    }
-    
+
 
     @objc func updateTime() {
 //        print("start time = \(event.startTime)")

@@ -362,6 +362,7 @@ extension CreateEventViewController: MKMapViewDelegate {
         let annotation = MKPointAnnotation()
         annotation.coordinate = event.coordinates.coordinate
         mapView.addAnnotation(annotation)
+        print("adding annotation")
         let zoomRegion = MKCoordinateRegion(center: event.coordinates.coordinate, latitudinalMeters: 2000,longitudinalMeters: 2000)
         mapView.setRegion(zoomRegion, animated: true)
     }

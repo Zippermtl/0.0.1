@@ -6,11 +6,13 @@
 //
 
 import UIKit
-
+import JGProgressHUD
 class CompleteEventViewController: UIViewController {
     var event: Event
     var invitedUsers: [User]
     var zipList: [User]
+    
+    let spinner = JGProgressHUD(style: .light)
 
     
     init(event: Event) {
@@ -121,6 +123,8 @@ class CompleteEventViewController: UIViewController {
     }
     
     @objc private func didTapCompleteButton(){
+        completeButton.isEnabled = false
+        spinner.show(in: view)
         
         let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
                         firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
@@ -129,9 +133,8 @@ class CompleteEventViewController: UIViewController {
         event.hosts = [host]
         event.usersInvite = invitedUsers
         event.usersInvite.append(host)
-        event.usersGoing.append(host)
+        event.usersGoing = [host]
 
-                
         //MARK: Fuckmyass is the variable which contains the string of the url of the picture
         // the code below was written by Yianni and was originally if success a else b has been
         // rewritten to be switch: case success a case failure b
@@ -143,7 +146,8 @@ class CompleteEventViewController: UIViewController {
                 strongSelf.event.imageUrl = URL(string: url)
                 DispatchQueue.main.async {
                     strongSelf.event.addToMap()
-                    
+                    strongSelf.spinner.dismiss(animated: true)
+                    strongSelf.completeButton.isEnabled = true
                     strongSelf.navigationController?.popToRootViewController(animated: true)
                 }
 
@@ -158,6 +162,10 @@ class CompleteEventViewController: UIViewController {
                                                     handler: nil))
                 
                 self?.present(actionSheet, animated: true)
+                DispatchQueue.main.async {
+                    self?.spinner.dismiss(animated: true)
+                    self?.completeButton.isEnabled = true
+                }
             }
         })
         

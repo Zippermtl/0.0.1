@@ -377,6 +377,7 @@ extension CompleteProfileViewController: UICollectionViewDataSource {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath) as! EditPicturesCollectionViewCell
             cell.delegate = self
             cell.xButton.tag = indexPath.row
+            cell.xButton.isHidden = false
             cell.configure(pictureHolder: userPictures[indexPath.row])
             return cell
         } else {

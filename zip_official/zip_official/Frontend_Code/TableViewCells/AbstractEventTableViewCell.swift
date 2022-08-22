@@ -107,7 +107,7 @@ class AbstractEventTableViewCell: UITableViewCell {
         distanceLabel.update(location: eventLoc)
         
         
-        participantsLabel.text = String(event.usersGoing.count) + "/" + String(event.maxGuests) + "\ngoing"
+        participantsLabel.text = String(event.usersGoing.count) + "\nparticipants"
         
         participantsLabel.textAlignment = .right
         
