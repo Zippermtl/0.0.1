@@ -320,7 +320,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
             return cell
         }
         
-        if indexPath.row > maxIndex {
+        if indexPath.row >= maxIndex {
             maxIndex = indexPath.row
             checkNeedsNewUsers()
         }
@@ -355,6 +355,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("collection view count = \(GeoManager.shared.loadedUsers.count)")
 //        return .max
+        print(GeoManager.shared.loadedUsers)
         return GeoManager.shared.loadedUsers.count + 1
     }
     

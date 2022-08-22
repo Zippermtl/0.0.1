@@ -319,6 +319,9 @@ class LoginViewController: UIViewController {
         phoneField.layer.borderColor = UIColor.zipLightGray.cgColor
         phoneField.attributedPlaceholder = NSAttributedString(string: "Phone Number....",
                                                               attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
+        phoneField.rightViewMode = .always
+        let rightArrow = UIImage(systemName: "arrow.right.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipLightGray)
+        phoneField.rightView = UIImageView(image: rightArrow)
         
         phoneField.backgroundColor = .zipLightGray
         phoneField.tintColor = .white

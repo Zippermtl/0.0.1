@@ -11,6 +11,7 @@ class AbstractUserTableViewCell: UITableViewCell {
 
     static let identifier = "myZipUser"
     
+    var cellHeight = 90
     //MARK: - User Data
     var user: User
     
@@ -37,11 +38,7 @@ class AbstractUserTableViewCell: UITableViewCell {
     }
     
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        pictureView.layer.masksToBounds = true
-        pictureView.layer.cornerRadius = pictureView.frame.width/2
-    }
+
     
     //MARK: - Configure
     public func configure(_ user: User){
@@ -50,9 +47,10 @@ class AbstractUserTableViewCell: UITableViewCell {
         self.user = user
         nameLabel.text = user.fullName
         
-        if user.pictureURLs.count > 0 {
-            configureImage(user)
+        guard let pfp = user.profilePicUrl else {
+            return
         }
+        pictureView.sd_setImage(with: pfp)
     }
     
     public func configureImage(_ user: User) {
@@ -85,6 +83,7 @@ class AbstractUserTableViewCell: UITableViewCell {
         pictureView.topAnchor.constraint(equalTo: outlineView.topAnchor, constant: 5).isActive = true
         pictureView.bottomAnchor.constraint(equalTo: outlineView.bottomAnchor, constant: -5).isActive = true
         pictureView.widthAnchor.constraint(equalTo: pictureView.heightAnchor).isActive = true
+        pictureView.layer.cornerRadius = CGFloat((cellHeight - 10)/2)
 
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 10).isActive = true

@@ -80,10 +80,14 @@ class EditEventProfileViewController: UIViewController {
                 DatabaseManager.shared.updateImages(key: id, images: [pp], imageType: DatabaseManager.ImageType.eventCoverIndex, completion: { [weak self] res in
                     switch res{
                     case .success(let urls):
-                        self?.event.imageUrl = urls[0].url
-                        self?.navigationController?.popViewController(animated: true)
-                        print("success changing profile 56 in editprofileviewcontroller")
-                        self?.delegate?.update()
+                        if urls.count != 0 {
+                            self?.event.imageUrl = urls[0].url
+                        }
+                        DispatchQueue.main.async {
+                            self?.navigationController?.popViewController(animated: true)
+                            print("success changing profile 56 in editprofileviewcontroller")
+                            self?.delegate?.update()
+                        }
                     case .failure(let error):
                         print("error uploading profile pic: \(error)")
                         let actionSheet = UIAlertController(title: "Failed to upload profile picture",
@@ -96,14 +100,18 @@ class EditEventProfileViewController: UIViewController {
                             
                             self?.dismiss(animated: true, completion: nil)
                         }))
-                        self?.present(actionSheet, animated: true)
+                        
+                        DispatchQueue.main.async {
+                            self?.present(actionSheet, animated: true)
+                        }
                     }
                 }, completionProfileUrl: {_ in})
             } else {
-                self?.delegate?.update()
-                strongSelf.navigationController?.popViewController(animated: true)
+                DispatchQueue.main.async {
+                    self?.delegate?.update()
+                    strongSelf.navigationController?.popViewController(animated: true)
+                }
             }
-            
         })
     }
     
@@ -186,7 +194,12 @@ class EditEventProfileViewController: UIViewController {
         changeProfilePicBtn.topAnchor.constraint(equalTo: profilePic.bottomAnchor,constant: 10).isActive = true
         changeProfilePicBtn.centerXAnchor.constraint(equalTo: profilePic.centerXAnchor).isActive = true
         
-        profilePic.sd_setImage(with: event.imageUrl, completed: nil)
+        if let url = event.imageUrl {
+            profilePic.sd_setImage(with: event.imageUrl, completed: nil)
+        } else {
+            let imageName = event.getType() == .Promoter ? "defaultPromoterEventProfilePic" : "defaultEventProfilePic"
+            profilePic.image = UIImage(named: imageName)
+        }
         profilePic.layer.masksToBounds = true
 
         changeProfilePicBtn.setTitle("Change Event Cover Photo", for: .normal)
@@ -222,7 +235,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
     }
     
     func saveDescriptionFunc(_ s: String) {
-        event.description = s
+        event.bio = s
     }
     
     func saveLocationFunc(_ s: String) {
@@ -259,7 +272,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
             return cell
         case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Description", content: event.description, saveFunc: saveDescriptionFunc(_:))
+            cell.configure(label: "Description", content: event.bio, saveFunc: saveDescriptionFunc(_:))
             cell.charLimit = 300
             cell.selectionStyle = .none
             cell.cellDelegate = self

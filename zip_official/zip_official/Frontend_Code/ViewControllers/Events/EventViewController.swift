@@ -310,17 +310,19 @@ class EventViewController: UIViewController {
                     }
                     return
                 }
-                strongSelf.event = event
-                print("LOADED EVENT: " , event.startTime)
-                strongSelf.configureLabels()
-                strongSelf.eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
-                strongSelf.updateTime()
-                strongSelf.configureCells()
-                strongSelf.tableView.reloadData()
                 
-
-                strongSelf.eventTypeLabel.textColor = event.getType().color
-                strongSelf.eventBorder.layer.borderColor = event.getType().color.cgColor
+                DispatchQueue.main.async {
+                    strongSelf.event = event
+                    strongSelf.configureLabels()
+                    strongSelf.eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
+                    strongSelf.updateTime()
+                    strongSelf.configureCells()
+                    strongSelf.tableView.reloadData()
+                
+                    strongSelf.eventTypeLabel.textColor = event.getType().color
+                    strongSelf.eventBorder.layer.borderColor = event.getType().color.cgColor
+                }
+               
                 
                 if let complete = completion {
                     complete()
@@ -612,7 +614,7 @@ class EventViewController: UIViewController {
         var descContent = descriptionCell!.defaultContentConfiguration()
         descContent.textProperties.color = .white
         descContent.textProperties.font = .zipTextFill
-        descContent.text = event.description
+        descContent.text = event.bio
         descriptionCell?.contentConfiguration = descContent
         tableCells.append(descriptionCell!)
     }

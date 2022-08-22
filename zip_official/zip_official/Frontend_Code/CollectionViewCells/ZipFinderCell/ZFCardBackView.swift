@@ -266,8 +266,12 @@ class ZFCardBackView: UIView {
         }
         
         if user.hasInterests  {
+            print(user.fullName, "has interests")
+            print("interests = ", user.interests)
             interestsImage.isHidden = false
         } else {
+            print(user.fullName, "doesn't have interests")
+            print("interests = ", user.interests)
             interestsImage.isHidden = true
         }
         
@@ -288,12 +292,17 @@ class ZFCardBackView: UIView {
         dateFormatter.dateFormat = "MMMM d, yyyy"
         joinedDateLabel.text = "Join Zipper on " + dateFormatter.string(from: user.joinDate)
 
-        if user.school != nil {
+        if user.hasSchool {
             schoolLabel.text = user.school!
+        } else {
+            schoolLabel.text = ""
+
         }
         
-        if user.interests.count != 0 {
+        if user.hasInterests {
             interestsLabel.text = "Interests: " + user.interests.map{$0.description}.joined(separator: ", ")
+        } else {
+            interestsLabel.text = ""
         }
     }
     //MARK: - Configure Slider

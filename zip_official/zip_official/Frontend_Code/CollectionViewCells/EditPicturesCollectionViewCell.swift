@@ -19,7 +19,8 @@ class EditPicturesCollectionViewCell: UICollectionViewCell {
     
     let xButton: UIButton = {
         let btn = UIButton()
-        let img = UIImage(systemName: "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
+        let img = UIImage(systemName: "xmark.circle.fill", withConfiguration: largeConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         btn.setImage(img, for: .normal)
         
         btn.addTarget(self, action: #selector(didTapDeleteButton), for: .touchUpInside)

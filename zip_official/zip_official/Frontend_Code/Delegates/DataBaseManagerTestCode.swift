@@ -23,9 +23,9 @@ extension DatabaseManager {
                 invite = true
             }
             if(invite){
-                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], description: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [User(userId: "u6501111111")], startTime: Date(), endTime: Date()))
+                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], bio: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [User(userId: "u6501111111")], startTime: Date(), endTime: Date()))
             } else {
-                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], description: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [], startTime: Date(), endTime: Date()))
+                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], bio: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [], startTime: Date(), endTime: Date()))
             }
             eventIdStart += 1
             invite = false
@@ -70,7 +70,7 @@ extension DatabaseManager {
                             title: "sample",
                             coordinates: userLoc,
                             hosts: [User(userId: "test", firstName: "Gabe", lastName: "Denton")],
-                            description: "fuck",
+                            bio: "fuck",
                             address: "shit",
                             locationName: "yianni's butthole",
                             maxGuests: 1,
@@ -162,9 +162,9 @@ extension DatabaseManager {
                 invite = true
             }
             if(invite){
-                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], description: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [User(userId: "u6501111111")], startTime: Date(), endTime: Date()))
+                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], bio: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [User(userId: "u6501111111")], startTime: Date(), endTime: Date()))
             } else {
-                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], description: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [], startTime: Date(), endTime: Date()))
+                events.append(Event(eventId: String(eventIdStart), title: "test", coordinates: CLLocation(latitude: 0, longitude: 0), hosts: [User(userId: "u6502222222")], bio: "test", address: "fuck my butt", locationName: "fuck my ass", maxGuests: 69, usersGoing: [], usersInterested: [], usersInvite: [], startTime: Date(), endTime: Date()))
             }
             eventIdStart += 1
             invite = false

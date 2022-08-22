@@ -187,6 +187,7 @@ class ZFCardFrontView: UIView {
         self.user = user
         configureLabels()
         updateRequestButton()
+        pictureCollectionView.reloadData()
     }
     
     public func updateRequestButton() {

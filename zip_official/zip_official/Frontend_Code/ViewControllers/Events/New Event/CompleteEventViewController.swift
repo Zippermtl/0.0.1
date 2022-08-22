@@ -140,9 +140,13 @@ class CompleteEventViewController: UIViewController {
             guard let strongSelf = self else { return }
             switch success {
             case .success(let url):
-                strongSelf.event.imageUrl = URL(string: url)!
-                strongSelf.event.addToMap()
-                self?.dismiss(animated: true, completion: nil)
+                strongSelf.event.imageUrl = URL(string: url)
+                DispatchQueue.main.async {
+                    strongSelf.event.addToMap()
+                    
+                    strongSelf.navigationController?.popToRootViewController(animated: true)
+                }
+
             case .failure(let error):
                 print(error)
                 let actionSheet = UIAlertController(title: "Failed to Create Your Event",

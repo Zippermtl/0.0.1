@@ -142,8 +142,7 @@ class EventDatePickerView: UIView {
         endDateField.text = formatter.string(from: sender.date)
 
         event.endTime = combineDateWithTime(date: sender.date, time: event.endTime) ?? event.endTime
-        
-
+        setMinMax()
     }
     
     @objc func endTimeChanged(sender: UIDatePicker){
@@ -153,6 +152,7 @@ class EventDatePickerView: UIView {
         endTimeField.text = formatter.string(from: sender.date)
         
         event.endTime = combineDateWithTime(date: event.startTime, time: sender.date)!
+        setMinMax()
     }
     
     func combineDateWithTime(date: Date, time: Date) -> Date? {

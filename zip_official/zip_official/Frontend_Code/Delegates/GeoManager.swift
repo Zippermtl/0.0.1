@@ -186,6 +186,7 @@ class GeoManager {
        print("Entering GetUserByLoc, range = \(range) max = \(max)")
        let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+
        let geoRange = Double(range)
 //        center =
        //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double

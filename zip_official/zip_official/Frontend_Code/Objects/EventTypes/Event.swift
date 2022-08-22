@@ -33,7 +33,7 @@ extension EventType: CustomStringConvertible {
     public var color: UIColor {
         switch self {
         case .Event: return .zipYellow
-        case .Public: return .zipGreen
+        case .Public: return .zipBlue
         case .Private: return .zipBlue
         case .Friends: return .zipBlue
         case .Promoter: return .zipYellow
@@ -55,56 +55,26 @@ extension EventType: CustomStringConvertible {
         case .Promoter: return picUrl
         }
     }
+    
+    public var coderType: EventCoder.Type {
+        switch self {
+        case .Event: return EventCoder.self
+        case .Public: return PublicEventCoder.self
+        case .Private: return PrivateEventCoder.self
+        case .Friends: return EventCoder.self
+        case .Promoter: return PromoterEventCoder.self
+        }
+    }
 }
 
-public class PromoterEventCoder: EventCoder {
-    var price: Double?
-    var link: String?
-    init(event: PromoterEvent){
-        self.price = event.price
-        self.link = event.buyTicketsLink
-        super.init(event: event)
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case price = "price"
-        case link = "buyTicketsLink"
-    }
-    public required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        price = try container.decode(Double.self, forKey: .price)
-        link = try container.decode(String.self, forKey: .link)
-        let superDecoder = try container.superDecoder()
-        try super.init(from: superDecoder)
-    }
-    
-    public override func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(price, forKey: .price)
-        try container.encode(link, forKey: .link)
-        let superEncoder = container.superEncoder()
-        try super.encode(to: superEncoder)
-    }
-    
-    public func updateEvent(event: PromoterEvent) {
-        super.updateEvent(event: event)
-        event.price = price
-        event.buyTicketsLink = link
-    }
-    
-    override public func createEvent() -> Event {
-        let event = PromoterEvent()
-        updateEvent(event: event)
-        return event
-    }
-}
+
 
 //for future, enumerate event type
 public class EventCoder: Codable {
     var title: String
     var coordinates: [String: Double]
     var hosts: [String: String]
-    var description: String
+    var bio: String
     var address: String
     var maxGuests: Int
     var usersGoing: [String]
@@ -121,7 +91,7 @@ public class EventCoder: Codable {
         self.title = event.title
         self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
         self.hosts = Dictionary(uniqueKeysWithValues: event.hosts.map({($0.userId,$0.fullName)}))
-        self.description = event.description
+        self.bio = event.bio
         self.address = event.address
         self.maxGuests = event.maxGuests
         self.usersGoing = event.usersGoing.map({$0.userId})
@@ -139,7 +109,7 @@ public class EventCoder: Codable {
         case title = "title"
         case coordinates = "coordinates"
         case hosts = "hosts"
-        case description = "description"
+        case bio = "bio"
         case address = "address"
         case maxGuests = "max"
         case usersGoing = "usersGoing"
@@ -158,7 +128,7 @@ public class EventCoder: Codable {
         self.title = try container.decode(String.self, forKey: .title)
         self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
         self.hosts = try container.decode([String:String].self, forKey: .hosts)
-        self.description = try container.decode(String.self, forKey: .description)
+        self.bio = try container.decode(String.self, forKey: .bio)
         self.address = try container.decode(String.self, forKey: .address)
         self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
         self.usersGoing = try container.decode([String].self, forKey: .usersGoing)
@@ -177,7 +147,7 @@ public class EventCoder: Codable {
         try container.encode(title, forKey: .title)
         try container.encode(coordinates, forKey: .coordinates)
         try container.encode(hosts, forKey: .hosts)
-        try container.encode(description, forKey: .description)
+        try container.encode(bio, forKey: .bio)
         try container.encode(address, forKey: .address)
         try container.encode(maxGuests, forKey: .maxGuests)
         try container.encode(usersGoing, forKey: .usersGoing)
@@ -209,7 +179,7 @@ public class EventCoder: Codable {
         event.title = title
         event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
         event.hosts = hostUsers
-        event.description = description
+        event.bio = bio
         event.address = address
         event.maxGuests = maxGuests
         event.usersGoing = usersGoing.map( { User(userId: $0 )} )
@@ -219,17 +189,37 @@ public class EventCoder: Codable {
     }
 }
 
-public class Event : Equatable {
+public class Event : Equatable, CustomStringConvertible {
+    public var description: String {
+        var out = ""
+        out += "ID: \(self.eventId)\n"
+        out += "type: \(self.getType())\n"
+        out += "coordinates: \(self.coordinates)\n"
+        out += "address: \(self.address)\n"
+
+        out += "hosts: \(self.hosts)\n"
+        out += "bio: \(self.bio)\n"
+        out += "max guests: \(self.maxGuests)\n"
+        out += "startTime: \(self.startTime)\n"
+        out += "endTime: \(self.endTime)\n"
+        out += "usersInvite: \(self.usersInvite)\n"
+        out += "usersGoing: \(self.usersGoing)\n"
+        out += "picNum: \(self.picNum)\n"
+        return out
+    }
+    
     public static func == (lhs: Event, rhs: Event) -> Bool {
         return lhs.eventId == rhs.eventId
     }
+    
+    
     
     var eventId: String = ""
     var title: String = ""
     
     var coordinates: CLLocation = CLLocation()
     var hosts: [User] = []
-    var description: String = ""
+    var bio: String = ""
     var address: String = ""
     var locationName: String = ""
 //Mark: Will comment out once fixed Yianni's old code
@@ -251,6 +241,10 @@ public class Event : Equatable {
     func getEncoder() -> EventCoder {
         let encoder = EventCoder(event: self)
         return encoder
+    }
+    
+    func getEncoderType() -> EventCoder.Type {
+        return EventCoder.self
     }
     
     var imageUrl: URL? {
@@ -356,23 +350,21 @@ public class Event : Equatable {
         print("Title : ", title)
         print("Lat: ", coordinates.coordinate.latitude)
         print("Long : ", coordinates.coordinate.longitude)
-        print("Host :", hosts[0].userId)
-        print("Bio: ", description)
+        print("Hosts :", hosts)
+        print("Bio: ", bio)
         print("Max guests: ", maxGuests)
         print("Start Time: ", startTimeString)
         print("End Time: ", endTimeString)
         print("Img URL: ", imageUrl)
-        print("Users Invited")
-        for i in usersInvite{
-            print(i.userId)
-        }
+        print("Users invite", usersInvite)
+        print("Users going", usersGoing)
     }
     
     public func update(eventId Id: String = "",
                        title tit: String = "",
                        coordinates loc: CLLocation = CLLocation(),
                        hosts host: [User] = [],
-                       description desc: String = "",
+                       bio b: String = "",
                        address addy: String = "",
                        locationName locName: String = "",
                        maxGuests maxG: Int = -1,
@@ -395,8 +387,8 @@ public class Event : Equatable {
         if(host.count != 0){
             hosts = host
         }
-        if(desc != ""){
-            description = desc
+        if(b != ""){
+            bio = b
         }
         if(addy != ""){
             address = addy
@@ -449,7 +441,7 @@ public class Event : Equatable {
          title tit: String = "",
          coordinates loc: CLLocation = CLLocation(),
          hosts host: [User] = [],
-         description desc: String = "",
+         bio b: String = "",
          address addy: String = "",
          locationName locName: String = "",
          maxGuests maxG: Int = -1,
@@ -469,7 +461,7 @@ public class Event : Equatable {
         title = tit
         coordinates = loc
         hosts = host
-        description = desc
+        bio = b
         address = addy
         locationName = locName
         maxGuests = maxG
@@ -496,56 +488,10 @@ public class Event : Equatable {
     }
 }
 
-public class PublicEvent: Event {
-   
-    override public func dispatch(user:User) -> Bool {
-        if (usersGoing.count < maxGuests){
-            return true
-        }
-        return false
-    }
-    
-    public override func getType() -> EventType {
-        return .Public
-    }
-    
-    public override func isPublic() -> Bool {
-        return true
-    }
 
-    
-}
 
-public class PromoterEvent: PublicEvent {
-    var price: Double?
-    var buyTicketsLink: String?
-    override public func dispatch(user:User) -> Bool {
-        return true
-    }
-    override public func getType() -> EventType {
-        return .Promoter
-    }
-    override func getEncoder() -> EventCoder {
-        return PromoterEventCoder(event: self)
-    }
-}
 
-public class PrivateEvent: Event {
 
-    override public func dispatch(user:User) -> Bool {
-        if(usersInvite.contains(where: { (id) in
-            return (user.userId == id.userId)
-        })) {
-            return true
-        } else {
-            return false
-        }
-
-    }
-    override public func getType() -> EventType {
-        return .Private
-    }
-}
 
 public class FriendsEvent: PrivateEvent {
     
@@ -561,13 +507,17 @@ public class FriendsEvent: PrivateEvent {
     override public func getType() -> EventType {
         return .Friends
     }
+    
+//    override func getEncoder() -> EventCoder {
+//        return PromoterEventCoder(event: self)
+//    }
 }
 
 public func createEvent(eventId Id: String = "",
                         title tit: String = "",
                         coordinates loc: CLLocation = CLLocation(),
                         hosts host: [User] = [],
-                        description desc: String = "",
+                        bio b: String = "",
                         address addy: String = "",
                         locationName locName: String = "",
                         maxGuests maxG: Int = -1,
@@ -586,14 +536,14 @@ public func createEvent(eventId Id: String = "",
                         eventPicIndices epI: [Int] = []) -> Event{
     switch t{
     case .Event:
-        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
+        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Public:
-        return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
+        return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Promoter:
-        return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
+        return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Private:
-        return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
+        return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     case .Friends:
-        return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
+        return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
     }
 }

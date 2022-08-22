@@ -28,9 +28,13 @@ class EventAnnotationView: MKAnnotationView {
     
     private var eventImage: UIImageView
     private var dotView: UIView
-    private var ringColor: UIColor
+    private var ringColor: UIColor = .black
     
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        if let eventAnnotation = annotation as? EventAnnotation {
+            self.ringColor = eventAnnotation.event.getType().color
+            print("event type = ", eventAnnotation.event.getType())
+        }
         self.ringColor = .white
         self.eventImage = UIImageView()
         self.dotView = UIView()
@@ -42,8 +46,11 @@ class EventAnnotationView: MKAnnotationView {
         configureSubviewLayout()
     }
     
-    init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor: UIColor, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
-        self.ringColor = ringColor
+    init(annotation: MKAnnotation?, reuseIdentifier: String?, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
+        if let eventAnnotation = annotation as? EventAnnotation {
+            self.ringColor = eventAnnotation.event.getType().color
+            print("event type = ", eventAnnotation.event.getType())
+        }
         self.view_length = v
         self.dot_length = d
         self.eventImage = UIImageView()
@@ -53,7 +60,6 @@ class EventAnnotationView: MKAnnotationView {
         configureSubviews()
         addSubviews()
         configureSubviewLayout()
-
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -61,6 +67,7 @@ class EventAnnotationView: MKAnnotationView {
     }
     
     private func configureSubviews() {
+        eventImage.backgroundColor = .zipLightGray
         frame = CGRect(x: 0, y: 0, width: view_length, height: view_length)
         layer.anchorPoint = CGPoint(x:0 , y: 0)
         
@@ -102,7 +109,12 @@ class EventAnnotationView: MKAnnotationView {
     
     
     public func configure(event: Event) {
-        eventImage.sd_setImage(with: event.imageUrl, completed: nil)
+        if let url = event.imageUrl {
+            eventImage.sd_setImage(with: url, completed: nil)
+        } else {
+            let imageName = event.getType() == .Promoter ? "defaultPromoterEventProfilePic" : "defaultEventProfilePic"
+            eventImage.image = UIImage(named: imageName)
+        }
         dotView.backgroundColor = ringColor
         dotView.isHidden = true
         eventImage.layer.borderColor = ringColor.cgColor
@@ -144,7 +156,7 @@ class PromoterEventAnnotationView: EventAnnotationView {
     static let identifier = "promoter"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipGreen, view_length: 80, dot_length: 16)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, view_length: 60, dot_length: 16)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -157,7 +169,7 @@ class PrivateEventAnnotationView: EventAnnotationView {
     static let identifier = "private"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -169,7 +181,7 @@ class PublicEventAnnotationView: EventAnnotationView {
     static let identifier = "pubic"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipGreen)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
     }
     
     required init?(coder aDecoder: NSCoder) {

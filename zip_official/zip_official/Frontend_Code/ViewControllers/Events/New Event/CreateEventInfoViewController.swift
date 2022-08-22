@@ -149,45 +149,11 @@ class CreateEventInfoViewController: UIViewController {
             return
         }
         
-        event.description = descriptionField.text
+        event.bio = descriptionField.text
         
         let vc = CompleteEventViewController(event: event)
         navigationController?.pushViewController(vc, animated: true)
-        
-//        if event.getType() == .Public {
-//            continueButton.isEnabled = false
-//            let host = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
-//                            firstName: AppDelegate.userDefaults.value(forKey: "firstName") as! String,
-//                            lastName: AppDelegate.userDefaults.value(forKey: "lastName") as! String)
-//
-//            event.hosts = [host]
-//
-//
-//            DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
-//                guard let strongSelf = self else { return }
-//                switch success {
-//                case .success(let url):
-//                    strongSelf.event.imageUrl = URL(string: url)!
-//                    strongSelf.event.addToMap()
-//                    strongSelf.dismiss(animated: true, completion: nil)
-//                    strongSelf.continueButton.isEnabled = true
-//                case .failure(let error):
-//                    print(error)
-//                    let actionSheet = UIAlertController(title: "Failed to Create Your Event",
-//                                                        message: "Make sure all the information you entered is correct or try again later.",
-//                                                        preferredStyle: .actionSheet)
-//
-//                    actionSheet.addAction(UIAlertAction(title: "Continue",
-//                                                        style: .cancel,
-//                                                        handler: nil))
-//
-//                    self?.present(actionSheet, animated: true)
-//                }
-//            })
 
-//        } else {
-       
-//        }
     }
     
     @objc private func hardCapSwitchTapped() {
@@ -209,8 +175,8 @@ class CreateEventInfoViewController: UIViewController {
         hardCapSwitch.addTarget(self, action: #selector(hardCapSwitchTapped), for: .valueChanged)
         
         
-        if event.description != "" {
-            descriptionField.text = event.description
+        if event.bio != "" {
+            descriptionField.text = event.bio
             descriptionField.textColor = .white
         }
         
@@ -440,7 +406,7 @@ extension CreateEventInfoViewController: UITextFieldDelegate {
 
 extension CreateEventInfoViewController: UITextViewDelegate {
     func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.textColor == .zipVeryLightGray {
+        if textView.textColor != .white {
             textView.text = nil
             textView.textColor = .white
         }
@@ -452,7 +418,7 @@ extension CreateEventInfoViewController: UITextViewDelegate {
             textView.textColor = .zipVeryLightGray
         }
         
-        event.description = textView.text
+        event.bio = textView.text
     }
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {

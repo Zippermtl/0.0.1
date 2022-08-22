@@ -53,8 +53,14 @@ class EventNotificationTableViewCell: UITableViewCell {
     
     //MARK: - Configure
     public func configure(event: Event){
-        pictureView.sd_setImage(with: event.imageUrl)
+        
         eventBorder.layer.borderColor = event.getType().color.cgColor
+        guard let url = event.imageUrl else {
+            let imageName = event.getType() == .Promoter ? "defaultPromoterEventProfilePic" : "defaultEventProfilePic"
+            pictureView.image = UIImage(named: imageName)
+            return
+        }
+        pictureView.sd_setImage(with: url)
     }
     
     //MARK: -Add Subviews

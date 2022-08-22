@@ -285,37 +285,37 @@ class MapViewController: UIViewController {
         mapView.register(PublicEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PublicEventAnnotationView.identifier)
 
         
-        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
-            guard let strongSelf = self else { return }
-            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-        }, allCompletion: { [weak self] result in
-            guard let strongSelf = self else { return }
-
-            switch result {
-            case .success(let events):
-                guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
-                    return
-                }
-                fpcVC.events = events
-                fpcVC.updateEventsLabel(events: events)
-                fpcVC.eventsTable.updateEvents(events: events)
-            case .failure(let error):
-                print("failure loading all events: \(error)")
-            }
-        })
-        
-        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
-            guard let strongSelf = self else { return }
-            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-        }, allCompletion: { result in
-            
-        })
+//        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
+//            guard let strongSelf = self else { return }
+//            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+//        }, allCompletion: { [weak self] result in
+//            guard let strongSelf = self else { return }
+//
+//            switch result {
+//            case .success(let events):
+//                guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
+//                    return
+//                }
+//                fpcVC.events = events
+//                fpcVC.updateEventsLabel(events: events)
+//                fpcVC.eventsTable.updateEvents(events: events)
+//            case .failure(let error):
+//                print("failure loading all events: \(error)")
+//            }
+//        })
+//
+//        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
+//            guard let strongSelf = self else { return }
+//            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+//        }, allCompletion: { result in
+//
+//        })
         
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
+            print("IN LOAD \(event.getType())")
             strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
         }, allCompletion: { result in
-            
             
         })
         
@@ -1157,7 +1157,7 @@ extension MapViewController {
             eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
             title: "Zipper Launch Party",
             hosts: [yianni],
-            description: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
+            bio: "Come experience the release and launch of Zipper! Open Bar! Zipper profiles and ID's will be checked at the door. Must be 18 years or older",
             address: "3781 St. Lauremt Blvd.",
             maxGuests: 250,
             usersGoing: [yianni],
@@ -1174,7 +1174,7 @@ extension MapViewController {
             eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
             title: "Fake Ass Frosh",
             hosts: [yianni],
-            description: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
+            bio: "The FitnessGram™ Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The 20 meter pacer test will begin in 30 seconds. Line up at the start. The running speed starts slowly, but gets faster each minute after you hear this signal. Ding  A single lap should be completed each time you hear this sound. Ding  Remember to run in a straight line, and run as long as possible. The second time you fail to complete a lap before the sound, your test is over. The test will begin on the word start. On your mark, get ready, ding",
             address: "3781 St. Lauremt Blvd.",
             maxGuests: 250,
             usersGoing: [yianni],
@@ -1190,7 +1190,7 @@ extension MapViewController {
             eventId: "u6501111111_Cartoon-Museum_Jun 22, 2022 at 12:41:18 PM EDT",
             title: "Zipper Spikeball Tournament",
                                    hosts: [yianni],
-                                   description: "Zipper Spikeball Tournament",
+                                   bio: "Zipper Spikeball Tournament",
                                    address: "3781 St. Lauremt Blvd.",
                                    maxGuests: 250,
                                    usersGoing: [yianni],

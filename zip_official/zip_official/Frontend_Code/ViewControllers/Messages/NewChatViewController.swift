@@ -21,6 +21,7 @@ class NewChatViewController: UIViewController {
 
     init() {
         self.allUsers = User.getMyZips()
+        print(allUsers)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -103,7 +104,12 @@ extension NewChatViewController: UISearchBarDelegate {
     func filterUsers(with term: String) {
         spinner.dismiss()
         
-        self.results = allUsers.filter({ $0.firstName.hasPrefix(term.lowercased()) || $0.lastName.hasPrefix(term.lowercased()) || $0.username.hasPrefix(term.lowercased()) })
+        self.results = allUsers.filter({
+            $0.firstName.lowercased().hasPrefix(term.lowercased()) ||
+            $0.lastName.lowercased().hasPrefix(term.lowercased()) ||
+            $0.username.lowercased().hasPrefix(term.lowercased())
+        })
+        
         loadUsers()
         updateUI()
     }

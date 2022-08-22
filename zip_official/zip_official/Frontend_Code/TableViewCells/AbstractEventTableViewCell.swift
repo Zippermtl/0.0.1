@@ -15,6 +15,7 @@ class AbstractEventTableViewCell: UITableViewCell {
     //MARK: - Subviews
     let bgView: UIView
     let eventImage: UIImageView
+    var cellHeight = 120
     
     
     var titleLabel: UILabel
@@ -54,7 +55,8 @@ class AbstractEventTableViewCell: UITableViewCell {
         
         bgView.layer.cornerRadius = 10
         bgView.backgroundColor = .zipLightGray
-
+        
+        eventImage.layer.cornerRadius = 30
         addSubviews()
         configureSubviewLayout()
     }
@@ -73,6 +75,8 @@ class AbstractEventTableViewCell: UITableViewCell {
     
     public func configureImage(_ event: Event) {
         guard let url = event.imageUrl else {
+            let imageName = event.getType() == .Promoter ? "defaultPromoterEventProfilePic" : "defaultEventProfilePic"
+            eventImage.image = UIImage(named: imageName)
             return
         }
         eventImage.sd_setImage(with: url, completed: nil)
@@ -173,7 +177,6 @@ class AbstractEventTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        eventImage.layer.cornerRadius = contentView.frame.height/4
     }
 }
 
