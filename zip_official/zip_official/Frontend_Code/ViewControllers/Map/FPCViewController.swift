@@ -46,7 +46,7 @@ class FPCViewController: UIViewController {
     private var dismissTap: UITapGestureRecognizer?
     private var dismissTapCV: UITapGestureRecognizer?
     
-    init(events: [Event]) {
+    init() {
         self.userLoc = CLLocation()
         self.scrollView = UIScrollView()
         self.zipFinderButton = UIButton()
@@ -56,7 +56,7 @@ class FPCViewController: UIViewController {
         self.eventsLabel = UILabel.zipTextFill()
         self.zipRequestsButton = UIButton()
         self.eventsButton = UIButton()
-        self.events = events
+        self.events = []
         
         self.searchBg = UIView()
         self.zipRequestsTable = ZipRequestTableView()

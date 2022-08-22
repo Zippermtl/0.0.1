@@ -83,7 +83,7 @@ class AbstractUserTableViewCell: UITableViewCell {
         pictureView.topAnchor.constraint(equalTo: outlineView.topAnchor, constant: 5).isActive = true
         pictureView.bottomAnchor.constraint(equalTo: outlineView.bottomAnchor, constant: -5).isActive = true
         pictureView.widthAnchor.constraint(equalTo: pictureView.heightAnchor).isActive = true
-        pictureView.layer.cornerRadius = CGFloat((cellHeight - 10)/2)
+        pictureView.layer.cornerRadius = CGFloat((cellHeight - 10 - 20)/2) // - 10 for top bottom of profile, -20 for t/b of outline
 
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.leftAnchor.constraint(equalTo: pictureView.rightAnchor, constant: 10).isActive = true

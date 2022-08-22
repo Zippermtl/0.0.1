@@ -195,26 +195,30 @@ extension DatabaseManager {
                 
             var events: [Event] = []
             for document in querySnapshot!.documents {
-                do {
-                    let currentEvent = try document.data(as: PrivateEventCoder.self).createEvent()
-                    currentEvent.eventId = document.documentID
+                let data = document.data()
+                if let type = data["type"] as? Int,
+                   let coderType = EventType(rawValue: type)?.coderType {
+                    do {
+                        let currentEvent = try document.data(as: coderType).createEvent()
+                        currentEvent.eventId = document.documentID
 
-                    events.append(currentEvent)
-                    eventCompletion(currentEvent)
-                    DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
-                        switch res {
-                        case .success(let urls):
-                            if urls.count != 0 {
-                                currentEvent.imageUrl = urls[0]
+                        events.append(currentEvent)
+                        eventCompletion(currentEvent)
+                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
+                            switch res {
+                            case .success(let urls):
+                                if urls.count != 0 {
+                                    currentEvent.imageUrl = urls[0]
+                                }
+                            case .failure(let error):
+                                print("error loading image in map load Error: \(error)")
                             }
-                        case .failure(let error):
-                            print("error loading image in map load Error: \(error)")
-                        }
-                    })
-                }
-                catch {
-                    // event wasn't same as promoter event type shouldn't be happening
-                    continue
+                        })
+                    }
+                    catch {
+                        // event wasn't same as promoter event type shouldn't be happening
+                        continue
+                    }
                 }
             }
                 

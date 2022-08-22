@@ -105,9 +105,40 @@ extension UIColor {
 }
 
 extension UIFont {
-    static var zipFontRegular: UIFont {  return UIFont(name: "HelveticaNeue", size: 12)!  }
-    static var zipFontMedium: UIFont {  return UIFont(name: "HelveticaNeue-Bold", size: 12)!  }
-    static var zipFontSemiBold: UIFont {  return UIFont(name: "HelveticaNeue-Medium", size: 12)!  }
+    static var zipFontRegular: UIFont {
+        guard let font = UIFont(name: "WorkSans-Regular", size: 12) else {
+            fatalError("""
+                    Failed to load the "WorkSans-Regular" font.
+                    Make sure the font file is included in the project and the font name is spelled correctly.
+                    """
+            )
+
+        }
+        return font
+    }
+    static var zipFontMedium: UIFont {
+        guard let font = UIFont(name: "WorkSans-Medium", size: 12) else {
+            fatalError("""
+                    Failed to load the "WorkSans-Regular" font.
+                    Make sure the font file is included in the project and the font name is spelled correctly.
+                    """
+            )
+
+        }
+        return font
+    }
+    
+    static var zipFontSemiBold: UIFont {
+        guard let font = UIFont(name: "WorkSans-SemiBold", size: 12) else {
+            fatalError("""
+                    Failed to load the "WorkSans-SemiBold" font.
+                    Make sure the font file is included in the project and the font name is spelled correctly.
+                    """
+            )
+
+        }
+        return font
+    }
 
     static var zipHeader: UIFont {  return UIFont.zipFontSemiBold.withSize(24)  }
     static var zipSubtitle: UIFont {  return UIFont.zipFontSemiBold.withSize(18)  }
