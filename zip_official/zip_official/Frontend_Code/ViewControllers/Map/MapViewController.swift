@@ -285,31 +285,31 @@ class MapViewController: UIViewController {
         mapView.register(PublicEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PublicEventAnnotationView.identifier)
 
         
-//        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
-//            guard let strongSelf = self else { return }
-//            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-//        }, allCompletion: { [weak self] result in
-//            guard let strongSelf = self else { return }
-//
-//            switch result {
-//            case .success(let events):
-//                guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
-//                    return
-//                }
-//                fpcVC.events = events
-//                fpcVC.updateEventsLabel(events: events)
-//                fpcVC.eventsTable.updateEvents(events: events)
-//            case .failure(let error):
-//                print("failure loading all events: \(error)")
-//            }
-//        })
-//
-//        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
-//            guard let strongSelf = self else { return }
-//            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-//        }, allCompletion: { result in
-//
-//        })
+        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+        }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
+
+            switch result {
+            case .success(let events):
+                guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
+                    return
+                }
+                fpcVC.events = events
+                fpcVC.updateEventsLabel(events: events)
+                fpcVC.eventsTable.updateEvents(events: events)
+            case .failure(let error):
+                print("failure loading all events: \(error)")
+            }
+        })
+
+        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+        }, allCompletion: { result in
+
+        })
         
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
