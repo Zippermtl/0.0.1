@@ -46,11 +46,8 @@ class EventAnnotationView: MKAnnotationView {
         configureSubviewLayout()
     }
     
-    init(annotation: MKAnnotation?, reuseIdentifier: String?, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
-        if let eventAnnotation = annotation as? EventAnnotation {
-            self.ringColor = eventAnnotation.event.getType().color
-            print("event type = ", eventAnnotation.event.getType())
-        }
+    init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor c: UIColor = .white, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
+        self.ringColor = c
         self.view_length = v
         self.dot_length = d
         self.eventImage = UIImageView()
@@ -109,6 +106,11 @@ class EventAnnotationView: MKAnnotationView {
     
     
     public func configure(event: Event) {
+        if let eventAnnotation = annotation as? EventAnnotation {
+            self.ringColor = eventAnnotation.event.getType().color
+            print("event type = ", eventAnnotation.event.getType())
+        }
+        
         if let url = event.imageUrl {
             eventImage.sd_setImage(with: url, completed: nil)
         } else {
@@ -156,7 +158,7 @@ class PromoterEventAnnotationView: EventAnnotationView {
     static let identifier = "promoter"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, view_length: 60, dot_length: 16)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipYellow, view_length: 60, dot_length: 16)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -169,7 +171,7 @@ class PrivateEventAnnotationView: EventAnnotationView {
     static let identifier = "private"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -181,7 +183,7 @@ class PublicEventAnnotationView: EventAnnotationView {
     static let identifier = "pubic"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue)
     }
     
     required init?(coder aDecoder: NSCoder) {
