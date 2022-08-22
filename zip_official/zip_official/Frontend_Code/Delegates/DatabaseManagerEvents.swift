@@ -386,7 +386,15 @@ extension DatabaseManager {
                     DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { res in
                         switch res {
                         case .success(let url):
-                            currentEvent.imageUrl = url[0]
+//                            try {
+                            if(eventCoverIndex.count != 0){
+                                currentEvent.imageUrl = url[0]
+                            } else {
+                                
+                            }
+//                            } catch {
+//
+//                            }
                         case .failure(let error):
                             print("error loading image in map load Error: \(error)")
                         }

@@ -9,6 +9,7 @@ import UIKit
 import MapKit
 import CoreLocation
 import CoreGraphics
+import GeoFire
 
 // ingnore this
 protocol ZipFinderVCDelegate: AnyObject {
@@ -36,7 +37,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     private var hasMore = false
     
-    private var maxRangeFilter = (AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as? Double) ?? 50
+    private var maxRangeFilter = (AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as? Double) ?? 500
         
     private var rangeMultiplier = Double(1)
     
@@ -59,10 +60,6 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
         view.isOpaque = false
-        
-        testUsers = MapViewController.getTestUsers()
-        testUsers += MapViewController.getTestUsers()
-        testUsers += MapViewController.getTestUsers()
 
         print("Entering View did load with userIdList size: \(GeoManager.shared.userIdList.count)")
         if NSLocale.current.regionCode == "US" {
@@ -167,6 +164,8 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     @objc func didTapCloseButton() {
         delegate?.updateHomeButton()
         delegate?.showFilterButtonFromZF()
+        GeoManager.shared.hasMaxRange = true
+        GeoManager.shared.blockFutureQueries = false
         dismiss(animated: true, completion: nil)
     }
     
@@ -263,14 +262,15 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     
     private func checkNeedsNewUsers() {
         print("got to the collection view with \(GeoManager.shared.userIdList.count) unloaded names and \(GeoManager.shared.loadedUsers.count) loaded on pass index: \(maxIndex)")
-        
-        if(maxIndex > GeoManager.shared.loadedUsers.count - 6){
+        if(!GeoManager.shared.hasMaxRange && GeoManager.shared.blockFutureQueries){
+            print("already queried the max distance")
+        } else if(maxIndex > GeoManager.shared.loadedUsers.count - 6){
             PullNextUser(index: maxIndex, completion: { _ in
        //                guard let user = user else {
        //                    return
        //                }
             })
-            if(GeoManager.shared.userIdList.count == 0 && maxRangeFilter >= 55*rangeMultiplier && !GeoManager.shared.moreUsersInQuery){
+            if(GeoManager.shared.userIdList.count == 0 && maxRangeFilter >= 55*rangeMultiplier && !GeoManager.shared.moreUsersInQuery && GeoManager.shared.hasMaxRange){
                 print("range is \(maxRangeFilter)")
                 print("amoung of loaded users is \(GeoManager.shared.loadedUsers.count)")
                 print("there are \(GeoManager.shared.userIdList.count) uncounted users and the query running is \(GeoManager.shared.queryRunning)")
@@ -304,14 +304,19 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                             self?.collectionView?.reloadData()
                         }
                     })
+
                 }
             }
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        
         if indexPath.row == GeoManager.shared.loadedUsers.count {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NoMoreUsersCollectionViewCell.identifier, for: indexPath) as! NoMoreUsersCollectionViewCell
+            cell.delegate = self
+            checkNeedsNewUsers()
             return cell
         }
         
@@ -379,3 +384,12 @@ extension ZipFinderViewController : UIScrollViewDelegate {
     }
 }
 
+
+extension ZipFinderViewController: DidTapGlobalProtocol {
+    func goGlobal() {
+        print("Touched Yianni's new button")
+        GeoManager.shared.blockFutureQueries = false
+        GeoManager.shared.hasMaxRange = false
+        checkNeedsNewUsers()
+    }
+}

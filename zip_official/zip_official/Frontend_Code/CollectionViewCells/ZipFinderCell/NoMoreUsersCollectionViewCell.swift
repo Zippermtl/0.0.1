@@ -6,6 +6,9 @@
 //
 
 import UIKit
+protocol DidTapGlobalProtocol: AnyObject {
+    func goGlobal()
+}
 
 class NoMoreUsersCollectionViewCell: UICollectionViewCell {
     static let identifier = "lastCell"
@@ -15,6 +18,7 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
     private let goToSettingsLabel: UILabel
     private let changeSettingsButton: UIButton
     
+    weak var delegate: DidTapGlobalProtocol?
     
     override init(frame: CGRect) {
         cardView = UIView()
@@ -23,6 +27,7 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
         changeSettingsButton = UIButton()
         
         super.init(frame: frame)
+        changeSettingsButton.addTarget(self, action: #selector(didTapGlobal), for: .touchUpInside)
         contentView.addSubview(cardView)
         cardView.translatesAutoresizingMaskIntoConstraints = false
         cardView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
@@ -71,6 +76,9 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
 
     }
     
+    @objc private func didTapGlobal() {
+        delegate?.goGlobal()
+    }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
