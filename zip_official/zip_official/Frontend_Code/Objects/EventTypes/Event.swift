@@ -55,6 +55,7 @@ public class EventCoder: Codable {
     var title: String
     var coordinates: [String: Double]
     var hosts: [String: String]
+    var hostIds: [String]
     var bio: String
     var address: String
     var maxGuests: Int
@@ -72,6 +73,7 @@ public class EventCoder: Codable {
         self.title = event.title
         self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
         self.hosts = Dictionary(uniqueKeysWithValues: event.hosts.map({($0.userId,$0.fullName)}))
+        self.hostIds = event.hosts.map({ $0.userId })
         self.bio = event.bio
         self.address = event.address
         self.maxGuests = event.maxGuests
@@ -102,6 +104,7 @@ public class EventCoder: Codable {
         case eventPicIndices = "eventPicIndices"
         case picNum = "picNum"
         case LCTitle = "LCTitle"
+        case hostIds = "hostIds"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -121,6 +124,7 @@ public class EventCoder: Codable {
         self.eventPicIndices = try container.decode([Int].self, forKey: .eventPicIndices)
         self.picNum = try container.decode(Int.self, forKey: .picNum)
         self.LCTitle = try container.decode(String.self, forKey: .LCTitle)
+        self.hostIds = try container.decode([String].self, forKey: .hostIds)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -140,6 +144,7 @@ public class EventCoder: Codable {
         try container.encode(eventPicIndices, forKey: .eventPicIndices)
         try container.encode(picNum, forKey: .picNum)
         try container.encode(LCTitle, forKey: .LCTitle)
+        try container.encode(hostIds, forKey: .hostIds)
     }
     
     public func createEvent() -> Event {

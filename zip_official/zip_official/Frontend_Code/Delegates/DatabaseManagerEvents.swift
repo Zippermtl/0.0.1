@@ -127,7 +127,7 @@ extension DatabaseManager {
            return
        }
        
-       firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
+       firestore.collection("EventProfiles").whereField("hostIds", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
            print("getting hosts")
            guard let strongSelf = self,
                  err == nil else {
@@ -141,6 +141,7 @@ extension DatabaseManager {
            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
            
            for document in querySnapshot!.documents {
+               print("FOUND DOCS")
                let data = document.data()
                if let type = data["type"] as? Int,
                   let coderType = EventType(rawValue: type)?.coderType {
@@ -173,8 +174,10 @@ extension DatabaseManager {
                
                
            }
-           let invitedEvents: [String] = events.map({ $0.eventId })
-           AppDelegate.userDefaults.set(invitedEvents, forKey: "hostedEvents")
+           
+           print("HOSTED EVENTS", events)
+           let hostedEvents: [String] = events.map({ $0.eventId })
+           AppDelegate.userDefaults.set(hostedEvents, forKey: "hostedEvents")
            allCompletion(.success(events))
        }
    }

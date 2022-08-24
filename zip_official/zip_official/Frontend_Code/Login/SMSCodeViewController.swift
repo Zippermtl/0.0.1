@@ -54,6 +54,7 @@ class SMSCodeViewController: UIViewController {
         code5 = SMSCodeField()
         code6 = SMSCodeField()
         super.init(nibName: nil, bundle: nil)
+        code1.textContentType = .oneTimeCode
         let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(dismissKeyboardTap)
         
@@ -102,12 +103,12 @@ class SMSCodeViewController: UIViewController {
         code5.delegate = self
         code6.delegate = self
         
-        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
+        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
+        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
+        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
+        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
+        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
 
         confirmButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         
@@ -365,12 +366,24 @@ class SMSCodeViewController: UIViewController {
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         switch textField {
-        case code1: code2.becomeFirstResponder()
-        case code2: code3.becomeFirstResponder()
-        case code3: code4.becomeFirstResponder()
-        case code4: code5.becomeFirstResponder()
-        case code5: code6.becomeFirstResponder()
-        default: textField.resignFirstResponder()
+        case code1:
+            print("1")
+            code2.becomeFirstResponder()
+        case code2:
+            print("2")
+            code3.becomeFirstResponder()
+        case code3:
+            print("3")
+            code4.becomeFirstResponder()
+        case code4:
+            print("4")
+            code5.becomeFirstResponder()
+        case code5:
+            print("5")
+            code6.becomeFirstResponder()
+        default:
+            print("6")
+            textField.resignFirstResponder()
         }
     }
     

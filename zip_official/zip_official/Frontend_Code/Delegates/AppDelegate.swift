@@ -59,8 +59,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         
         
         //Apearance Changes
+        UITableView.appearance().backgroundColor = .clear
         applyDropDownAppearanceChanges()
-        applyTableViewAppearanceChanges()
         applyNavControllerAppearanceChanges()
         applyTabBarAppearanceChanges()
         applyGooglePlacesSearchAppearanceChanges()
@@ -96,19 +96,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         DropDown.appearance().cornerRadius = 15
         DropDown.appearance().direction = .bottom
     }
-    
-    func applyTableViewAppearanceChanges(){
-        UITableView.appearance().backgroundColor = .clear
-        UITableView.appearance().separatorColor = .zipSeparator
-        UITableView.appearance().separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        UITableView.appearance().tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 1))
-        UITableView.appearance().tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 1))
-        UITableView.appearance().bounces = true
-        
-//        if #available(iOS 15.0, *) {
-//            UITableView.appearance().sectionHeaderTopPadding = 0
-//        }
-    }
+  
     
     func applyNavControllerAppearanceChanges() {
         if #available(iOS 15.0, *) {
