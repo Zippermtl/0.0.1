@@ -51,12 +51,15 @@ class EventViewController: UIViewController {
     private let inviteButton: IconButton
     private let participantsButton: IconButton
     
-    var tableCells : [UITableViewCell]
+    var cellConfigureations : [(NSMutableAttributedString, UIImage?)]
     var locationCell : UITableViewCell?
     var distanceCell : UITableViewCell?
     var dateCell : UITableViewCell?
     var timeCell : UITableViewCell?
     var descriptionCell : UITableViewCell?
+    var priceCell: UITableViewCell?
+    var linkCell: UITableViewCell?
+
 
     init(event: Event) {
         self.event = event
@@ -90,7 +93,7 @@ class EventViewController: UIViewController {
 
         self.liveView = UIView()
         
-        self.tableCells = []
+        self.cellConfigureations = []
         super.init(nibName: nil, bundle: nil)
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         if event.usersGoing.contains(User(userId: userId)) {
@@ -232,7 +235,9 @@ class EventViewController: UIViewController {
                       error == nil else {
                     return
                 }
-                strongSelf.savedUI()
+                DispatchQueue.main.async {
+                    strongSelf.savedUI()
+                }
             })
         } else {
             DatabaseManager.shared.markUnsaved(event: event, completion: { [weak self] error in
@@ -240,7 +245,9 @@ class EventViewController: UIViewController {
                       error == nil else {
                     return
                 }
-                strongSelf.notSavedUI()
+                DispatchQueue.main.async {
+                    strongSelf.notSavedUI()
+                }
             })
         }
     }
@@ -371,7 +378,7 @@ class EventViewController: UIViewController {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
         
@@ -379,6 +386,8 @@ class EventViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 150, right: 0)
+        tableView.contentInsetAdjustmentBehavior = .never
         
         configureTableHeaderLayout()
     }
@@ -555,68 +564,58 @@ class EventViewController: UIViewController {
     }
     
     func configureCells() {
-        tableCells.removeAll()
-        locationCell = UITableViewCell()
-        locationCell?.backgroundColor = .zipGray
-        locationCell?.selectionStyle = .none
-        var locationContent = locationCell!.defaultContentConfiguration()
-        locationContent.textProperties.color = .white
-        locationContent.textProperties.font = .zipTextFill
-        locationContent.image = UIImage(systemName: "map.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        locationContent.text = event.address
-        locationCell?.contentConfiguration = locationContent
-        tableCells.append(locationCell!)
+        cellConfigureations.removeAll()
+        let addressString = NSMutableAttributedString(string: event.address)
+        let distanceString = NSMutableAttributedString(string: event.getDistanceString())
         
-        distanceCell = UITableViewCell()
-        distanceCell?.backgroundColor = .zipGray
-        distanceCell?.selectionStyle = .none
-        var distanceContent = distanceCell!.defaultContentConfiguration()
-        distanceContent.textProperties.color = .white
-        distanceContent.textProperties.font = .zipTextFill
-        distanceContent.image = UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        distanceContent.text = event.getDistanceString()
-        distanceCell?.contentConfiguration = distanceContent
-        tableCells.append(distanceCell!)
-        
-        dateCell = UITableViewCell()
-        dateCell?.backgroundColor = .zipGray
-        dateCell?.selectionStyle = .none
-        var dateContent = dateCell!.defaultContentConfiguration()
-        dateContent.textProperties.color = .white
-        dateContent.textProperties.font = .zipTextFill
-        dateContent.image = UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        let df = DateFormatter()
-        df.dateFormat = "EEEE, MMMM d"
-        dateContent.text = df.string(from: event.startTime)
-        dateCell?.contentConfiguration = dateContent
-        tableCells.append(dateCell!)
-        
-        timeCell = UITableViewCell()
-        timeCell?.backgroundColor = .zipGray
-        timeCell?.selectionStyle = .none
-        var timeContent = timeCell!.defaultContentConfiguration()
-        timeContent.textProperties.color = .white
-        timeContent.textProperties.font = .zipTextFill
-        timeContent.image = UIImage(systemName: "clock.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         let startTimeFormatter = DateFormatter()
         startTimeFormatter.dateStyle = .none
         startTimeFormatter.timeStyle = .short
         let endTimeFormatter = DateFormatter()
         endTimeFormatter.dateStyle = .none
         endTimeFormatter.timeStyle = .short
-        timeContent.text = startTimeFormatter.string(from: event.startTime) + " - " + endTimeFormatter.string(from: Date(timeInterval: event.duration, since: event.startTime))
-        timeCell?.contentConfiguration = timeContent
-        tableCells.append(timeCell!)
+        let df = DateFormatter()
+        df.dateFormat = "EEEE, MMMM d"
+        let dateString = NSMutableAttributedString(string: (df.string(from: event.startTime)))
+        let timeString = NSMutableAttributedString(string: (startTimeFormatter.string(from: event.startTime) + " - " + startTimeFormatter.string(from: event.endTime)))
         
-        descriptionCell = UITableViewCell()
-        descriptionCell?.backgroundColor = .zipGray
-        descriptionCell?.selectionStyle = .none
-        var descContent = descriptionCell!.defaultContentConfiguration()
-        descContent.textProperties.color = .white
-        descContent.textProperties.font = .zipTextFill
-        descContent.text = event.bio
-        descriptionCell?.contentConfiguration = descContent
-        tableCells.append(descriptionCell!)
+        cellConfigureations.append((addressString,
+                                    UIImage(systemName: "map.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+        cellConfigureations.append((distanceString,
+                                    UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+       
+        cellConfigureations.append((dateString,
+                                    UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+        
+        cellConfigureations.append((timeString,
+                                    UIImage(systemName: "clock.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+
+        
+        if let event = event as? PromoterEvent {
+            guard let price = event.price,
+                  let link = event.buyTicketsLink else {
+                return
+            }
+            let priceString = NSMutableAttributedString(string:("$\(String(format: "%.2f", price))"))
+            let linkString = NSMutableAttributedString(string:("Buy Tickets Here"))
+            print("link = ", link)
+            linkString.setAttributes([.foregroundColor : UIColor.zipBlue,
+                                      .strikethroughColor: UIColor.zipBlue,
+                                      .underlineColor : UIColor.zipBlue,
+                                      .strokeColor : UIColor.zipBlue,
+                                      .underlineStyle: 1
+
+            ], range: NSMakeRange(0, "Buy Tickets Here".count))
+            
+            cellConfigureations.append((priceString,
+                                        UIImage(systemName: "dollarsign.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+            
+            cellConfigureations.append((linkString,
+                                        UIImage(systemName: "ticket.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+        }
+        
+        cellConfigureations.append((NSMutableAttributedString(string: event.bio), nil))
+        
     }
 }
 
@@ -628,17 +627,45 @@ extension EventViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+        if indexPath.row == cellConfigureations.count - 1 {
+            return UITableView.automaticDimension
+        } else {
+            return 52
+        }
     }
 }
 
 
 extension EventViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tableCells.count
+        return cellConfigureations.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return tableCells[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        var config = cell.defaultContentConfiguration()
+        config.textProperties.color = .white
+        config.textProperties.font = .zipTextFill
+        config.attributedText = cellConfigureations[indexPath.row].0
+        config.image = cellConfigureations[indexPath.row].1
+        
+        
+        cell.contentConfiguration = config
+        cell.contentView.backgroundColor = .zipGray
+        cell.isUserInteractionEnabled = true
+        cell.contentView.isUserInteractionEnabled = true
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if indexPath.row == 5 {
+            guard let event = event as? PromoterEvent,
+                  let url = event.buyTicketsLink else {
+                return
+            }
+            print("OPEN URL")
+                UIApplication.shared.open(url)
+            
+        }
     }
 }

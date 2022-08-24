@@ -166,20 +166,7 @@ class PromoterEventAnnotationView: EventAnnotationView {
     }
 }
 
-
-class PrivateEventAnnotationView: EventAnnotationView {
-    static let identifier = "private"
-
-    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue)
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-class PublicEventAnnotationView: EventAnnotationView {
+class UserEventAnnotationView: EventAnnotationView {
     static let identifier = "pubic"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {

@@ -280,14 +280,15 @@ class MapViewController: UIViewController {
     func configureAnnotations(){
         mapView.delegate = self
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
-        mapView.register(PrivateEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PrivateEventAnnotationView.identifier)
-        mapView.register(PublicEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PublicEventAnnotationView.identifier)
+        mapView.register(UserEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: UserEventAnnotationView.identifier)
 
         
         DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
-                strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+                DispatchQueue.main.async {
+                    strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+                }
                 strongSelf.mappedEvents[event.eventId] = event
             }
         }, allCompletion: { [weak self] result in
@@ -298,9 +299,12 @@ class MapViewController: UIViewController {
                 guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
                     return
                 }
-                fpcVC.events = events
-                fpcVC.updateEventsLabel(events: events)
-                fpcVC.eventsTable.updateEvents(events: events)
+                DispatchQueue.main.async {
+                    fpcVC.events = events
+                    fpcVC.updateEventsLabel(events: events)
+                    fpcVC.eventsTable.updateEvents(events: events)
+                }
+               
             case .failure(let error):
                 print("failure loading all events: \(error)")
             }
@@ -309,8 +313,10 @@ class MapViewController: UIViewController {
         DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
-                strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-                strongSelf.mappedEvents[event.eventId] = event
+                DispatchQueue.main.async {
+                    strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+                    strongSelf.mappedEvents[event.eventId] = event
+                }
             }
         }, allCompletion: { result in
 
@@ -319,8 +325,10 @@ class MapViewController: UIViewController {
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
-                strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-                strongSelf.mappedEvents[event.eventId] = event
+                DispatchQueue.main.async {
+                    strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+                    strongSelf.mappedEvents[event.eventId] = event
+                }
             }
         }, allCompletion: { result in
             
@@ -407,7 +415,39 @@ extension MapViewController: FPCMapDelegate {
     }
     
     func createEvent() {
-        openVC(EventTypeSelectViewController(map: mapView))
+        let alert = UIAlertController(title: "Select Event Type",
+                                      message: "",
+                                      preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Normal",
+                                      style: .default,
+                                      handler: { [weak self] _ in
+            DispatchQueue.main.async {
+                let event = ClosedEvent()
+                let vc = CreateEventViewController(event: event)
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+            
+        }))
+        alert.addAction(UIAlertAction(title: "Promoter",
+                                      style: .default,
+                                      handler: { [weak self] _ in
+            DispatchQueue.main.async {
+                let event = PromoterEvent()
+                let vc = CreateEventViewController(event: event)
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel",
+                                      style: .cancel,
+                                      handler: { _ in
+
+            
+        }))
+        
+        present(alert, animated: true)
     }
     
     func openFPC() {
@@ -426,8 +466,8 @@ extension MapViewController: MKMapViewDelegate {
             return nil
         }
         switch eventAnnotation.event.getType() {
-        case .Private, .Friends:
-            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PrivateEventAnnotationView.identifier) as? PrivateEventAnnotationView else {
+        case .Open, .Closed:
+            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: UserEventAnnotationView.identifier) as? UserEventAnnotationView else {
                 return MKAnnotationView()
             }
             annotationView.configure(event: eventAnnotation.event)
@@ -436,16 +476,7 @@ extension MapViewController: MKMapViewDelegate {
             
             eventAnnotation.event.annotationView = annotationView
             return annotationView
-            
-        case .Public:
-            guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PublicEventAnnotationView.identifier) as? PublicEventAnnotationView else {
-                return MKAnnotationView()
-            }
-            annotationView.configure(event: eventAnnotation.event)
-            annotationView.canShowCallout = false
-            eventAnnotation.event.annotationView = annotationView
-            return annotationView
-            
+
         case .Promoter:
             guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: PromoterEventAnnotationView.identifier) as? PromoterEventAnnotationView else {
                 return MKAnnotationView()

@@ -11,44 +11,43 @@ extension EditEventProfileViewController {
     internal class EditEventTypeTableViewCell: EditProfileTableViewCell {
         static let identifier = "eventType"
         
-        private var privateButton: UIButton
-        private var publicButton: UIButton
+        private var closedButton: UIButton
+        private var openButton: UIButton
   
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-            self.privateButton = UIButton()
-            self.publicButton = UIButton()
+            self.closedButton = UIButton()
+            self.openButton = UIButton()
             
             
             super.init(style: style, reuseIdentifier: reuseIdentifier)
             contentView.backgroundColor = .zipGray
             
+            closedButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+            openButton.addTarget(self, action: #selector(didTapOpen), for: .touchUpInside)
+            
+            closedButton.backgroundColor = .zipLightGray
+
+            closedButton.layer.borderWidth = 3
+            closedButton.layer.borderColor = UIColor.zipBlue.cgColor
+            closedButton.layer.masksToBounds = true
+            closedButton.layer.cornerRadius = 10
             
             
-            privateButton.addTarget(self, action: #selector(didTapPrivateButton), for: .touchUpInside)
-            publicButton.addTarget(self, action: #selector(didTapPublicButton), for: .touchUpInside)
+            closedButton.setTitle("Closed", for: .normal)
+            closedButton.titleLabel?.textColor = .white
+            closedButton.titleLabel?.font = .zipSubtitle2
+            closedButton.titleLabel?.textAlignment = .center
+            closedButton.contentVerticalAlignment = .center
             
-            privateButton.layer.borderWidth = 3
-            privateButton.layer.borderColor = UIColor.zipBlue.cgColor
-            privateButton.layer.masksToBounds = true
-            privateButton.layer.cornerRadius = 10
+            openButton.backgroundColor = .zipLightGray
+            openButton.layer.masksToBounds = true
+            openButton.layer.cornerRadius = 10
             
-            
-            privateButton.setTitle("Private", for: .normal)
-            privateButton.titleLabel?.textColor = .white
-            privateButton.titleLabel?.font = .zipSubtitle2
-            privateButton.titleLabel?.textAlignment = .center
-            privateButton.contentVerticalAlignment = .center
-            
-            publicButton.layer.borderWidth = 3
-            publicButton.layer.borderColor = UIColor.zipGreen.cgColor
-            publicButton.layer.masksToBounds = true
-            publicButton.layer.cornerRadius = 10
-            
-            publicButton.setTitle("Public", for: .normal)
-            publicButton.titleLabel?.textColor = .white
-            publicButton.titleLabel?.font = .zipSubtitle2
-            publicButton.titleLabel?.textAlignment = .center
-            publicButton.contentVerticalAlignment = .center
+            openButton.setTitle("Open", for: .normal)
+            openButton.titleLabel?.textColor = .white
+            openButton.titleLabel?.font = .zipSubtitle2
+            openButton.titleLabel?.textAlignment = .center
+            openButton.contentVerticalAlignment = .center
             
             addSubviews()
             configureSubviewLayout()
@@ -60,39 +59,43 @@ extension EditEventProfileViewController {
     
         public func configure(event: Event) {
             switch event.getType() {
-            case .Public: publicButton.backgroundColor = .zipGreen
-            case .Private: privateButton.backgroundColor = .zipBlue
+            case .Open: openButton.backgroundColor = .zipGreen
+            case .Closed: closedButton.backgroundColor = .zipBlue
             default: break
             }
             super.configure(label: "Type")
         }
         
-        @objc private func didTapPrivateButton(){
-            privateButton.backgroundColor = .zipBlue
-            publicButton.backgroundColor = .zipGray
+        @objc private func didTapOpen(){
+            closedButton.backgroundColor = .zipLightGray
+            openButton.backgroundColor = .zipBlue
+            closedButton.isSelected = false
+            openButton.isSelected = true
         }
         
-        @objc private func didTapPublicButton(){
-            privateButton.backgroundColor = .zipGray
-            publicButton.backgroundColor = .zipGreen
+        @objc private func didTapClose(){
+            closedButton.backgroundColor = .zipBlue
+            openButton.backgroundColor = .zipLightGray
+            closedButton.isSelected = true
+            openButton.isSelected = false
         }
       
         private func addSubviews(){
-            rightView.addSubview(privateButton)
-            rightView.addSubview(publicButton)
+            rightView.addSubview(closedButton)
+            rightView.addSubview(openButton)
         }
         
         private func configureSubviewLayout(){
-            privateButton.translatesAutoresizingMaskIntoConstraints = false
-            privateButton.heightAnchor.constraint(equalTo: rightView.heightAnchor, multiplier: 0.5).isActive = true
-            privateButton.centerYAnchor.constraint(equalTo: rightView.centerYAnchor).isActive = true
-            privateButton.leftAnchor.constraint(equalTo: rightView.leftAnchor).isActive = true
-            privateButton.widthAnchor.constraint(equalTo: publicButton.widthAnchor).isActive = true
+            closedButton.translatesAutoresizingMaskIntoConstraints = false
+            closedButton.heightAnchor.constraint(equalTo: rightView.heightAnchor, multiplier: 0.5).isActive = true
+            closedButton.centerYAnchor.constraint(equalTo: rightView.centerYAnchor).isActive = true
+            closedButton.leftAnchor.constraint(equalTo: rightView.leftAnchor).isActive = true
+            closedButton.widthAnchor.constraint(equalTo: openButton.widthAnchor).isActive = true
             
-            publicButton.translatesAutoresizingMaskIntoConstraints = false
-            publicButton.centerYAnchor.constraint(equalTo: privateButton.centerYAnchor).isActive = true
-            publicButton.leftAnchor.constraint(equalTo: privateButton.rightAnchor,constant: 15).isActive = true
-            publicButton.rightAnchor.constraint(equalTo: rightView.rightAnchor,constant: -15).isActive = true
+            openButton.translatesAutoresizingMaskIntoConstraints = false
+            openButton.centerYAnchor.constraint(equalTo: closedButton.centerYAnchor).isActive = true
+            openButton.leftAnchor.constraint(equalTo: closedButton.rightAnchor,constant: 15).isActive = true
+            openButton.rightAnchor.constraint(equalTo: rightView.rightAnchor,constant: -15).isActive = true
         }
     }
 }

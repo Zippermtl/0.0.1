@@ -19,10 +19,9 @@ extension Timestamp: TimestampType {}
 
 public enum EventType: Int {
     case Event = 0
-    case Public = 1
-    case Promoter = 2
-    case Private = 3
-    case Friends = 4
+    case Open = 1
+    case Closed = 2
+    case Promoter = 3
 }
 
 extension DatabaseManager {
@@ -33,7 +32,7 @@ extension DatabaseManager {
            return
        }
        
-        firestore.collection("EventProfiles").whereField("type", arrayContains: EventType.Public.rawValue).getDocuments() { [weak self] (querySnapshot, err) in
+        firestore.collection("EventProfiles").whereField("type", arrayContains: EventType.Open.rawValue).getDocuments() { [weak self] (querySnapshot, err) in
            guard let strongSelf = self,
                  err == nil else {
                print("Error getting documents: \(err!)")
@@ -45,7 +44,7 @@ extension DatabaseManager {
             for document in querySnapshot!.documents {
                 print("there are docs")
                 do {
-                    let currentEvent = try document.data(as: PublicEventCoder.self).createEvent()
+                    let currentEvent = try document.data(as: OpenEventCoder.self).createEvent()
                     currentEvent.eventId = document.documentID
                     events.append(currentEvent)
                     print("CURRENT EVENT \n\(currentEvent)")
@@ -129,6 +128,7 @@ extension DatabaseManager {
        }
        
        firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
+           print("getting hosts")
            guard let strongSelf = self,
                  err == nil else {
                print("Error getting documents: \(err!)")
@@ -149,8 +149,8 @@ extension DatabaseManager {
                        currentEvent.eventId = document.documentID
 
                        events.append(currentEvent)
-                       print("CURRENT EVENT \n\(currentEvent)")
                        eventCompletion(currentEvent)
+
                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
                            switch res {
                            case .success(let urls):
@@ -174,7 +174,7 @@ extension DatabaseManager {
                
            }
            let invitedEvents: [String] = events.map({ $0.eventId })
-           AppDelegate.userDefaults.set(invitedEvents, forKey: "myHostedEvents")
+           AppDelegate.userDefaults.set(invitedEvents, forKey: "hostedEvents")
            allCompletion(.success(events))
        }
    }
@@ -356,7 +356,7 @@ extension DatabaseManager {
                 return
             }
             
-            strongSelf.firestore.collection("UserStoredEvents").document(selfId).setData([event.eventId:EventSaveStatus.GOING.rawValue]) { error in
+            strongSelf.firestore.collection("UserStoredEvents").document(selfId).updateData([event.eventId:EventSaveStatus.GOING.rawValue]) { error in
                 guard error == nil else {
                     completion(error!)
                     return
@@ -468,19 +468,12 @@ extension DatabaseManager {
                                  type t: EventType = .Event,
                                  eventCoverIndex ecI: [Int] = [],
                                  eventPicIndices epI: [Int] = []) -> Event{
+        let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
         switch t{
-        case .Event:
-            return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
-        case .Public:
-            return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
-        case .Promoter:
-            return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
-        case .Private:
-            return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
-        case .Friends:
-            return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
-//        default:
-//            return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, description: desc, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts)
+        case .Event: return baseEvent
+        case .Closed: return ClosedEvent(event: baseEvent)
+        case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
+        case .Open: return OpenEvent(event: baseEvent)
         }
         
     }

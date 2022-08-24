@@ -92,13 +92,13 @@ class EventFinderViewController: UIViewController {
     //MARK: - Event Data Config
     private func configureEventLists() {
         let userCalendar = Calendar.current
-        publicTableData[0] = eventData.filter { ($0.getType() == .Public || $0.getType() == .Promoter) &&
+        publicTableData[0] = eventData.filter { ($0.getType() == .Open || $0.getType() == .Promoter) &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day == 0 }
-        publicTableData[1] = eventData.filter { ($0.getType() == .Public || $0.getType() == .Promoter) &&
+        publicTableData[1] = eventData.filter { ($0.getType() == .Open || $0.getType() == .Promoter) &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day != 0 }
-        privateTableData[0] = eventData.filter { $0.getType() == .Private &&
+        privateTableData[0] = eventData.filter { $0.getType() == .Closed &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day == 0 }
-        privateTableData[1] = eventData.filter { $0.getType() == .Private  &&
+        privateTableData[1] = eventData.filter { $0.getType() == .Closed  &&
                                                 userCalendar.dateComponents([.day], from: Date(), to: $0.startTime).day != 0 }
         tableData = publicTableData
     }

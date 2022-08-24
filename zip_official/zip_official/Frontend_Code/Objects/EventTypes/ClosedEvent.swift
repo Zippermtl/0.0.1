@@ -13,8 +13,19 @@ import CoreLocation
 import FirebaseFirestoreSwift
 import MapKit
 
-public class PrivateEvent: Event {
-
+public class ClosedEvent: Event {
+    override init() {
+        super.init()
+    }
+    
+    override init(event: Event) {
+        super.init(event: event)
+    }
+    
+    init(openEvent: OpenEvent) {
+        super.init(event: openEvent)
+    }
+    
     override public func dispatch(user:User) -> Bool {
         if(usersInvite.contains(where: { (id) in
             return (user.userId == id.userId)
@@ -26,21 +37,21 @@ public class PrivateEvent: Event {
 
     }
     override func getEncoder() -> EventCoder {
-        return PrivateEventCoder(event: self)
+        return ClosedEventCoder(event: self)
     }
     
     override func getEncoderType() -> EventCoder.Type {
-        return PrivateEventCoder.self
+        return ClosedEventCoder.self
     }
     
     override public func getType() -> EventType {
-        return .Private
+        return .Closed
     }
 }
 
-public class PrivateEventCoder: EventCoder {
+public class ClosedEventCoder: EventCoder {
 
-    init(event: PrivateEvent){
+    init(event: ClosedEvent){
         super.init(event: event)
     }
     
@@ -53,7 +64,7 @@ public class PrivateEventCoder: EventCoder {
     }
     
     override public func createEvent() -> Event {
-        let event = PrivateEvent()
+        let event = ClosedEvent()
         updateEvent(event: event)
         return event
     }

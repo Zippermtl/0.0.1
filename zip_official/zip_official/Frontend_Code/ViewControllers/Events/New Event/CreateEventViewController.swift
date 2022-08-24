@@ -36,7 +36,6 @@ class CreateEventViewController: UIViewController {
     init(event: Event) {
         self.event = event
         event.eventId = event.createEventId
-        event.imageUrl = event.getType().defaultProfilePictureUrl
 
         self.datePicker = EventDatePickerView(event: event)
         
@@ -146,7 +145,7 @@ class CreateEventViewController: UIViewController {
         
         event.title = eventTitle
         
-        let vc = CreateEventInfoViewController(event: event)
+        let vc = CustomizeEventViewController(event: event)
         navigationController?.pushViewController(vc, animated: true)
     }
 
@@ -369,7 +368,7 @@ extension CreateEventViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "pin")
-        let imgView = UIImageView(image: UIImage(named: "locationPin"))
+        let imgView = UIImageView(image: UIImage(named: "locationpin"))
         imgView.contentMode = .scaleAspectFit
         annotationView?.addSubview(imgView)
         imgView.frame = CGRect(x: 0, y: 0, width: 30, height: 30)

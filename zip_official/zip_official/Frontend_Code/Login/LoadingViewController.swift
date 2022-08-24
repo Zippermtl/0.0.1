@@ -142,6 +142,11 @@ class LoadingViewController: UIViewController {
 
             }
         })
+        
+        
+        DatabaseManager.shared.getAllHostedEventsForMap(eventCompletion: { _ in }, allCompletion: { result in
+            
+        })
     }
     
     private func isLocationEnabled() -> Bool {

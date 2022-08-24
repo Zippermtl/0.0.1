@@ -46,7 +46,7 @@ class GeoManager {
         geoFireEventPromoter = GeoFire(firebaseRef: geoFireEventRefPromoter)
         let blocked = (AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String]) ?? []
         alreadyReadySeen.append(contentsOf: blocked)
-        let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as! [String : [String: String]]
+        let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String : [String: String]] ?? [:]
         let helper = DecodeFriendsUserDefaults(raw_friendships)
         for friendship in helper{
             if(friendship.status == .REQUESTED_OUTGOING){

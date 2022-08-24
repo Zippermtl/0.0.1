@@ -30,6 +30,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        let navVC = UINavigationController(rootViewController: vc)
 //        window?.rootViewController = navVC
         
+//        let vc = CustomizeEventViewController(event: PromoterEvent())
+//        let navVC = UINavigationController(rootViewController: vc)
+//        window?.rootViewController = navVC
         
         if Auth.auth().currentUser == nil {
             let vc = OpeningLoginViewController()

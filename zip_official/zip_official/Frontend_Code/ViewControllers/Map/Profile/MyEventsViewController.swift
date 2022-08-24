@@ -91,11 +91,29 @@ class MyEventsViewController: UIViewController {
         self.saveEvents = savedEventsIds.map({Event(eventId: $0)})
         self.goingEvents = goingEventsIds.map({Event(eventId: $0)})
         super.init(nibName: nil, bundle: nil)
+//        fetchEvents()
         loadEvents()
+
     }
+    
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func fetchEvents() {
+//        DatabaseManager.shared.getAllHostedEventsForMap(eventCompletion: { [weak self] event in
+//            guard let strongSelf = self else {
+//                return
+//            }
+//            strongSelf.hostEvents.append(even)
+//        }, allCompletion: { [weak self] result in
+//            guard let strongSelf = self else {
+//                return
+//            }
+//
+//            strongSelf.loadEvents()
+//        })
     }
     
     private func loadEvents() {

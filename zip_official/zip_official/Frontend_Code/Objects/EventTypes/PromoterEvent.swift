@@ -14,9 +14,20 @@ import FirebaseFirestoreSwift
 import MapKit
 
 
-public class PromoterEvent: PublicEvent {
+public class PromoterEvent: Event {
     var price: Double?
-    var buyTicketsLink: String?
+    var buyTicketsLink: URL?
+    
+    override init() {
+        super.init()
+    }
+    
+    init(event: Event, price: Double?, buyTicketsLink: URL?) {
+        self.price = price
+        self.buyTicketsLink = buyTicketsLink
+        super.init(event: event)
+    }
+    
     override public func dispatch(user:User) -> Bool {
         return true
     }
@@ -36,9 +47,10 @@ public class PromoterEvent: PublicEvent {
 public class PromoterEventCoder: EventCoder {
     var price: Double?
     var link: String?
+    
     init(event: PromoterEvent){
         self.price = event.price
-        self.link = event.buyTicketsLink
+        self.link = event.buyTicketsLink?.absoluteString
         super.init(event: event)
     }
     
@@ -63,12 +75,12 @@ public class PromoterEventCoder: EventCoder {
     public func updateEvent(event: PromoterEvent) {
         super.updateEvent(event: event)
         event.price = price
-        event.buyTicketsLink = link
+        event.buyTicketsLink = URL(string: link ?? "")
     }
     
     override public func createEvent() -> Event {
-        let event = PromoterEvent()
-        updateEvent(event: event)
+        let baseEvent = super.createEvent()
+        let event = PromoterEvent(event: baseEvent, price: price, buyTicketsLink: URL(string: link ?? "") )
         return event
     }
 }

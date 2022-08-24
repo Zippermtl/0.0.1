@@ -143,12 +143,12 @@ class AbstractEventTableViewCell: UITableViewCell {
         bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5).isActive = true
         
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.topAnchor.constraint(equalTo: bgView.topAnchor, constant: 10).isActive = true
+        titleLabel.centerYAnchor.constraint(equalTo: eventImage.topAnchor).isActive = true
         titleLabel.leftAnchor.constraint(equalTo: eventImage.rightAnchor, constant: 10).isActive = true
         titleLabel.rightAnchor.constraint(equalTo: participantsLabel.leftAnchor, constant: -5).isActive = true
 
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 5).isActive = true
+        distanceLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2).isActive = true
         distanceLabel.leftAnchor.constraint(equalTo: titleLabel.leftAnchor).isActive = true
 
         dateLabel.translatesAutoresizingMaskIntoConstraints = false

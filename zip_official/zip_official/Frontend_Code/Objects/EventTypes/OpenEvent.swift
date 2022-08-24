@@ -13,8 +13,19 @@ import CoreLocation
 import FirebaseFirestoreSwift
 import MapKit
 
-public class PublicEvent: Event {
-   
+public class OpenEvent: Event {
+    override init() {
+        super.init()
+    }
+    
+    override init(event: Event) {
+        super.init(event: event)
+    }
+    
+    init(closedEvent: ClosedEvent) {
+        super.init(event: closedEvent)
+    }
+    
     override public func dispatch(user:User) -> Bool {
         if (usersGoing.count < maxGuests){
             return true
@@ -23,7 +34,7 @@ public class PublicEvent: Event {
     }
     
     public override func getType() -> EventType {
-        return .Public
+        return .Open
     }
     
     public override func isPublic() -> Bool {
@@ -31,30 +42,38 @@ public class PublicEvent: Event {
     }
     
     override func getEncoder() -> EventCoder {
-        return PublicEventCoder(event: self)
+        return OpenEventCoder(event: self)
     }
     
     override func getEncoderType() -> EventCoder.Type {
-        return PrivateEventCoder.self
+        return OpenEventCoder.self
     }
 }
 
-public class PublicEventCoder: EventCoder {
-
-    init(event: PublicEvent){
+public class OpenEventCoder: EventCoder {
+    
+    init(event: OpenEvent){
         super.init(event: event)
     }
     
+    enum CodingKeys: String, CodingKey {
+        case discoverable = "discoverable"
+    }
+    
     public required init(from decoder: Decoder) throws {
+//        let container = try decoder.container(keyedBy: CodingKeys.self)
+//        discoverable = try container.decode(Bool.self, forKey: .discoverable)
         try super.init(from: decoder)
     }
     
     override public func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self)
+//        try container.encode(discoverable, forKey: .discoverable)
         try super.encode(to: encoder)
     }
     
     override public func createEvent() -> Event {
-        let event = PublicEvent()
+        let event = OpenEvent()
         updateEvent(event: event)
         return event
     }

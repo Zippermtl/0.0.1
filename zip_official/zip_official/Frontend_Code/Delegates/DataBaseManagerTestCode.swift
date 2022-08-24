@@ -66,20 +66,21 @@ extension DatabaseManager {
     public func makeSampleEvent(){
         let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
         let userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
-        let a = PublicEvent(eventId: "sample",
-                            title: "sample",
-                            coordinates: userLoc,
-                            hosts: [User(userId: "test", firstName: "Gabe", lastName: "Denton")],
-                            bio: "fuck",
-                            address: "shit",
-                            locationName: "yianni's butthole",
-                            maxGuests: 1,
-                            usersGoing: [User(userId: "VirIsGay", firstName: "Vir", lastName: "ShitOnMyDick")],
-                            usersInterested: [],
-                            usersInvite: [User(userId: "VirIsGay", firstName: "Vir", lastName: "ShitOnMyDick")],
-                            startTime: Date(),
-                            endTime: Date(),
-                            duration: TimeInterval(3))
+        let baseEvent = Event(eventId: "sample",
+                              title: "sample",
+                              coordinates: userLoc,
+                              hosts: [User(userId: "test", firstName: "Gabe", lastName: "Denton")],
+                              bio: "fuck",
+                              address: "shit",
+                              locationName: "yianni's butthole",
+                              maxGuests: 1,
+                              usersGoing: [User(userId: "VirIsGay", firstName: "Vir", lastName: "ShitOnMyDick")],
+                              usersInterested: [],
+                              usersInvite: [User(userId: "VirIsGay", firstName: "Vir", lastName: "ShitOnMyDick")],
+                              startTime: Date(),
+                              endTime: Date(),
+                              duration: TimeInterval(3))
+        let a = OpenEvent(event: baseEvent)
         createEvent(event: a) { [weak self] fuck in
             guard let strongSelf = self else {
                 return

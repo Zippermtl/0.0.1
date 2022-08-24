@@ -23,9 +23,8 @@ extension EventType: CustomStringConvertible {
     public var description: String {
         switch self {
         case .Event: return "Event"
-        case .Public: return "Public Event"
-        case .Private: return "Private Event"
-        case .Friends: return "Zips Event"
+        case .Open: return "Open Event"
+        case .Closed: return "Closed Event"
         case .Promoter: return "Promoter Event"
         }
     }
@@ -33,35 +32,17 @@ extension EventType: CustomStringConvertible {
     public var color: UIColor {
         switch self {
         case .Event: return .zipYellow
-        case .Public: return .zipBlue
-        case .Private: return .zipBlue
-        case .Friends: return .zipBlue
+        case .Open: return .zipBlue
+        case .Closed: return .zipBlue
         case .Promoter: return .zipYellow
-        }
-    }
-    
-    //TODO: Update with new default images
-    public var defaultProfilePictureUrl: URL {
-        guard let picString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String,
-              let picUrl = URL(string: picString) else {
-                  return URL(string: "https://firebasestorage.googleapis.com:443/v0/b/zipper-f64e0.appspot.com/o/images%2Fu6502222222%2Fprofile_picture.png?alt=media&token=a6e7800d-a34d-43b1-a179-a954d3486787)")!
-        }
-        
-        switch self {
-        case .Event: return picUrl
-        case .Public: return picUrl
-        case .Private: return picUrl
-        case .Friends: return picUrl
-        case .Promoter: return picUrl
         }
     }
     
     public var coderType: EventCoder.Type {
         switch self {
         case .Event: return EventCoder.self
-        case .Public: return PublicEventCoder.self
-        case .Private: return PrivateEventCoder.self
-        case .Friends: return EventCoder.self
+        case .Open: return OpenEventCoder.self
+        case .Closed: return ClosedEventCoder.self
         case .Promoter: return PromoterEventCoder.self
         }
     }
@@ -216,7 +197,6 @@ public class Event : Equatable, CustomStringConvertible {
     
     var eventId: String = ""
     var title: String = ""
-    
     var coordinates: CLLocation = CLLocation()
     var hosts: [User] = []
     var bio: String = ""
@@ -486,6 +466,34 @@ public class Event : Equatable, CustomStringConvertible {
             endTime = formatter.date(from: sts)!
         }
     }
+    
+    init(event: Event) {
+        self.eventId = event.eventId
+        self.title = event.title
+        self.coordinates = event.coordinates
+        self.hosts = event.hosts
+        self.bio = event.bio
+        self.address = event.address
+        self.locationName = event.locationName
+        self.maxGuests = event.maxGuests
+        self.usersGoing = event.usersGoing
+        self.usersInterested = event.usersInterested
+        self.usersInvite = event.usersInterested
+        self.startTime = event.startTime
+        self.endTime = event.endTime
+        self.duration = event.duration
+        self.image = event.image
+        self.imageUrl = event.imageUrl
+        self.eventCoverIndex = event.eventCoverIndex
+        self.eventPicIndices = event.eventPicIndices
+        self.startTime = event.startTime
+        self.endTime = event.endTime
+    }
+    
+    init(){
+        
+    }
+    
 }
 
 
@@ -493,57 +501,32 @@ public class Event : Equatable, CustomStringConvertible {
 
 
 
-public class FriendsEvent: PrivateEvent {
-    
-    override public func dispatch(user:User) -> Bool {
-        if(usersInvite.contains(where: { (id) in
-            return (user.userId == id.userId)
-        })) {
-            return true
-        } else {
-            return false
-        }
-    }
-    override public func getType() -> EventType {
-        return .Friends
-    }
-    
-//    override func getEncoder() -> EventCoder {
-//        return PromoterEventCoder(event: self)
-//    }
-}
-
-public func createEvent(eventId Id: String = "",
-                        title tit: String = "",
-                        coordinates loc: CLLocation = CLLocation(),
-                        hosts host: [User] = [],
-                        bio b: String = "",
-                        address addy: String = "",
-                        locationName locName: String = "",
-                        maxGuests maxG: Int = -1,
-                        usersGoing ugoing: [User] = [],
-                        usersInterested uinterested: [User] = [],
-                        usersInvite uinvite: [User] = [],
-                        startTime stime: Date = Date(),
-                        endTime etime: Date = Date(),
-                        duration dur: TimeInterval = TimeInterval(1),
-                        image im: UIImage? = UIImage(named: "launchevent"),
-                        imageURL url: URL = URL(string: "a")!,
-                        endTimeString ets: String = "",
-                        startTimeString sts: String = "",
-                        type t: EventType = .Event,
-                        eventCoverIndex ecI: [Int] = [],
-                        eventPicIndices epI: [Int] = []) -> Event{
+public func createEventLocal(eventId Id: String = "",
+                             title tit: String = "",
+                             coordinates loc: CLLocation = CLLocation(),
+                             hosts host: [User] = [],
+                             bio b: String = "",
+                             address addy: String = "",
+                             locationName locName: String = "",
+                             maxGuests maxG: Int = 0,
+                             usersGoing ugoing: [User] = [],
+                             usersInterested uinterested: [User] = [],
+                             usersInvite uinvite: [User] = [],
+                             startTime stime: Date = Date(),
+                             endTime etime: Date = Date(),
+                             duration dur: TimeInterval = TimeInterval(1),
+                             image im: UIImage? = UIImage(named: "launchevent"),
+                             imageURL url: URL = URL(string: "a")!,
+                             endTimeString ets: String = "",
+                             startTimeString sts: String = "",
+                             type t: EventType = .Event,
+                             eventCoverIndex ecI: [Int] = [],
+                             eventPicIndices epI: [Int] = []) -> Event{
+    let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
     switch t{
-    case .Event:
-        return Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
-    case .Public:
-        return PublicEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
-    case .Promoter:
-        return PromoterEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
-    case .Private:
-        return PrivateEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
-    case .Friends:
-        return FriendsEvent(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI, eventPicIndices: epI)
+    case .Event: return baseEvent
+    case .Closed: return ClosedEvent(event: baseEvent)
+    case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
+    case .Open: return OpenEvent(event: baseEvent)
     }
 }

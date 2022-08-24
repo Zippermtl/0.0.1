@@ -145,7 +145,7 @@ extension UIFont {
     static var zipSubtitle2: UIFont {  return UIFont.zipFontSemiBold.withSize(16)  }
     static var zipSubtitle3: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
     static var zipTitle: UIFont {  return UIFont.zipFontSemiBold.withSize(28)  }
-    static var zipTextDetail: UIFont {  return UIFont.zipFontRegular.withSize(12)  }
+    static var zipTextDetail: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
     static var zipTextDetail2: UIFont {  return UIFont.zipFontRegular.withSize(10)  }
     static var zipTextFill: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
     static var zipTextFillBold: UIFont {  return UIFont.zipFontSemiBold.withSize(16)  }
