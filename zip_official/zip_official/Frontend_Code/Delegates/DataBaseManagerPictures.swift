@@ -486,48 +486,58 @@ extension DatabaseManager{
         var key = Id
         if(event){
             key = "Event/" + key
-        } else {
-            key = "images/" + key
-        }
-        var urls: [Int : URL] = [:]
-        var returnUrls: [URL] = []
-        if (indices.count == 0){
-            completion(.success([]))
-        }
-        for i in indices {
-            StorageManager.shared.getPicture(key: key, index: i, completion: { [weak self] res in
-                guard let strongself = self else {
-                    completion(.failure(StorageManager.StorageErrors.failedToGetDownloadUrl))
-                    return
-                }
+            print("Entering hard coded get profilepicture")
+            StorageManager.shared.getProfilePicture(path: key, completion:  { res in
                 switch res{
-                case .success(let holder):
-                    if let indexofItem = indicesCopy.firstIndex(of: holder.idx){
-                        indicesCopy.remove(at: indexofItem)
-                        guard let url = holder.url else {
-                            completion(.failure(StorageManager.StorageErrors.failedToGetDownloadUrl))
-                            return
-                        }
-                        urls[holder.idx] = url
-                        if(indicesCopy.count == 0){
-                            for i in indices {
-                                returnUrls.append(urls[i] as! URL)
-                            }
-                            if(returnUrls.count == indices.count){
-                                completion(.success(returnUrls))
-                            } else {
-                                print(returnUrls)
-                                completion(.success(returnUrls))
-                            }
-                        }
-                    } else {
-                        completion(.failure(DatabaseError.failedWithIndices))
-                    }
-                case .failure(let error):
-                    completion(.failure(error))
-                    return
+                case .failure(let err):
+                    completion(.failure(err))
+                case .success(let url):
+                    completion(.success([url]))
                 }
             })
+        } else {
+            key = "images/" + key
+        
+            var urls: [Int : URL] = [:]
+            var returnUrls: [URL] = []
+            if (indices.count == 0){
+                completion(.success([]))
+            }
+            for i in indices {
+                StorageManager.shared.getPicture(key: key, index: i, completion: { [weak self] res in
+                    guard let strongself = self else {
+                        completion(.failure(StorageManager.StorageErrors.failedToGetDownloadUrl))
+                        return
+                    }
+                    switch res{
+                    case .success(let holder):
+                        if let indexofItem = indicesCopy.firstIndex(of: holder.idx){
+                            indicesCopy.remove(at: indexofItem)
+                            guard let url = holder.url else {
+                                completion(.failure(StorageManager.StorageErrors.failedToGetDownloadUrl))
+                                return
+                            }
+                            urls[holder.idx] = url
+                            if(indicesCopy.count == 0){
+                                for i in indices {
+                                    returnUrls.append(urls[i] as! URL)
+                                }
+                                if(returnUrls.count == indices.count){
+                                    completion(.success(returnUrls))
+                                } else {
+                                    print(returnUrls)
+                                    completion(.success(returnUrls))
+                                }
+                            }
+                        } else {
+                            completion(.failure(DatabaseError.failedWithIndices))
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                        return
+                    }
+                })
+            }
         }
     }
 //
