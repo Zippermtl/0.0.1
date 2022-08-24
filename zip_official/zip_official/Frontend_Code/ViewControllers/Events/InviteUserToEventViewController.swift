@@ -36,16 +36,53 @@ class InviteUserToEventViewController: UIViewController {
         
         view.backgroundColor = .zipGray
         configureTable()
+        loadEvents()
         
     }
     
-  
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func loadEvents() {
+        var doneCount = 0
+        let totalEventCount = events.count
+        for event in events {
+            DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
+                guard let strongSelf = self else { return }
+                switch result {
+                case .success(let event):
+                    doneCount+=1
+                    if event.usersInvite.contains(strongSelf.user) || event.endTime <= Date() {
+                        strongSelf.events.removeAll(where: { $0 == event })
+                    }
+                    
+                    if doneCount == totalEventCount {
+                        DispatchQueue.main.async {
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
+                case .failure(let error):
+                    doneCount+=1
+                    guard let strongSelf = self else { break }
+                    strongSelf.events.removeAll(where: { $0 == event })
+                    if doneCount == totalEventCount {
+                        DispatchQueue.main.async {
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
+                    
+                    print("error loading event with id: \(event.eventId) with Error: \(error)")
+                }
+                
+            })
+        }
+    }
     
     
     private func configureTable(){
         view.addSubview(tableView)
         tableView.frame = view.bounds
-        
         tableView.register(EventSelectTableViewCell.self, forCellReuseIdentifier: EventSelectTableViewCell.identifier)
         tableView.delegate = self
         tableView.dataSource = self
@@ -76,10 +113,6 @@ class InviteUserToEventViewController: UIViewController {
         }
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -96,7 +129,9 @@ extension InviteUserToEventViewController: UITableViewDelegate, UITableViewDataS
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: EventSelectTableViewCell.identifier, for: indexPath) as! EventSelectTableViewCell
-        cell.configure(events[indexPath.row])
+        let cellEvent = events[indexPath.row]
+        cell.configure(cellEvent)
+        cellEvent.tableViewCell = cell
         cell.delegate = self
         cell.selectionStyle = .none
         cell.clipsToBounds = true

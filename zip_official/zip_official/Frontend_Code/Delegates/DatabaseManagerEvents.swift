@@ -121,6 +121,33 @@ extension DatabaseManager {
        }
    }
     
+    public func getAllStoredEventsForUser(userId: String, savedCompletion: @escaping ([Event]) -> Void, goingCompletion: @escaping ([Event]) -> Void){
+        firestore.collection("UserStoredEvents").document(userId).getDocument() { (document, err) in
+            var savedEvents = [Event]()
+            var goingEvents = [Event]()
+            guard err == nil,
+                  let document = document,
+                  document.exists,
+                  let data = document.data() as? [String: Int]
+            else {
+                goingCompletion(goingEvents)
+                savedCompletion(savedEvents)
+                return
+            }
+            
+            for (id,status) in data {
+                if status == 1 {
+                    goingEvents.append(Event(eventId: id))
+                } else {
+                    savedEvents.append(Event(eventId: id))
+                }
+            }
+            
+            goingCompletion(goingEvents)
+            savedCompletion(savedEvents)
+        }
+    }
+    
     public func getAllHostedEventsForMap(eventCompletion: @escaping (Event) -> Void,
                                          allCompletion: @escaping (Result<[Event], Error>) -> Void){
        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
@@ -371,6 +398,7 @@ extension DatabaseManager {
                 var tmpGoing = AppDelegate.userDefaults.value(forKey: "goingEvents") as? [String] ?? []
                 tmpGoing.append(event.eventId)
                 AppDelegate.userDefaults.set(tmpGoing, forKey: "goingEvents")
+                print("GOING EVENTS", tmpGoing)
                 completion(nil)
             }
         }

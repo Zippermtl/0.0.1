@@ -42,6 +42,8 @@ class MyEventsViewController: UIViewController {
     var saveEvents: [Event]
     var goingEvents: [Event]
     
+    var tableState: String
+    
     // MARK: - Button Actions
     @objc private func didTapBackButton(){
         dismiss(animated: true, completion: nil)
@@ -52,6 +54,7 @@ class MyEventsViewController: UIViewController {
         savedButton.backgroundColor = .zipLightGray
         hostingButton.backgroundColor = .zipLightGray
         tableData = eventData["Going"]!
+        tableState = "Going"
         tableView.reloadData()
     }
     
@@ -59,7 +62,7 @@ class MyEventsViewController: UIViewController {
         savedButton.backgroundColor = .zipVeryLightGray
         goingButton.backgroundColor = .zipLightGray
         hostingButton.backgroundColor = .zipLightGray
-
+        tableState = "Saved"
         tableData = eventData["Saved"]!
         tableView.reloadData()
     }
@@ -69,6 +72,7 @@ class MyEventsViewController: UIViewController {
         goingButton.backgroundColor = .zipLightGray
         hostingButton.backgroundColor = .zipVeryLightGray
         tableData = eventData["Hosting"]!
+        tableState = "Host"
         tableView.reloadData()
     }
 
@@ -84,6 +88,7 @@ class MyEventsViewController: UIViewController {
     }
     
     init() {
+        tableState = "Going"
         let hostedIds = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
         self.hostEvents = hostedIds.map({ Event(eventId: $0) })
         let savedEventsIds = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
@@ -93,6 +98,9 @@ class MyEventsViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
 //        fetchEvents()
         loadEvents()
+        print("GOING EVENTS ", goingEvents)
+        print("SAVED EVENTS ", saveEvents)
+        print("HOST EVENTS ", hostEvents)
 
     }
     
@@ -117,52 +125,110 @@ class MyEventsViewController: UIViewController {
     }
     
     private func loadEvents() {
+        var hostCount = 0
+        let hostTotal = hostEvents.count
         for event in hostEvents {
             DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
                 guard let strongSelf = self else { return }
                 switch result {
                 case .success(let event):
-                    if Calendar.current.isDateInToday(event.startTime) {
-                        strongSelf.eventData["Hosting"]!["Today"]!.append(event)
-                    } else if event.startTime < Date() {
+                    if event.endTime < Date() {
                         strongSelf.eventData["Hosting"]!["Previous"]!.append(event)
+                    } else if Calendar.current.isDateInToday(event.startTime) {
+                        strongSelf.eventData["Hosting"]!["Today"]!.append(event)
                     } else {
                         strongSelf.eventData["Hosting"]!["Upcoming"]!.append(event)
                     }
+                    hostCount+=1
+                    if strongSelf.tableState == "Host" && hostCount == hostTotal {
+                        DispatchQueue.main.async {
+                            strongSelf.tableData = strongSelf.eventData["Hosting"]!
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
                 case .failure(let error):
-                    guard let strongSelf = self else { break }
                     strongSelf.hostEvents.removeAll(where: { $0 == event })
                     print("error loading event with id: \(event.eventId) with Error: \(error)")
+                    hostCount+=1
+                    if strongSelf.tableState == "Host" && hostCount == hostTotal {
+                        DispatchQueue.main.async {
+                            strongSelf.tableData = strongSelf.eventData["Hosting"]!
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
                 }
                 
             })
         }
         
+        var goingCount = 0
+        let goingTotal = goingEvents.count
         for event in goingEvents {
             DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
+                guard let strongSelf = self else { return }
                 switch result {
                 case .success(_):
-                    break
+                    if event.endTime < Date() {
+                        strongSelf.eventData["Going"]!["Previous"]!.append(event)
+                    } else if Calendar.current.isDateInToday(event.startTime) {
+                        strongSelf.eventData["Going"]!["Today"]!.append(event)
+                    } else {
+                        strongSelf.eventData["Going"]!["Upcoming"]!.append(event)
+                    }
+                    goingCount+=1
+                    if strongSelf.tableState == "Going" && goingCount == goingTotal {
+                        DispatchQueue.main.async {
+                            strongSelf.tableData = strongSelf.eventData["Going"]!
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
                 case .failure(let error):
-                    guard let strongSelf = self else { break }
                     strongSelf.goingEvents.removeAll(where: { $0 == event })
                     print("error loading event with id: \(event.eventId) with Error: \(error)")
+                    goingCount+=1
+                    if strongSelf.tableState == "Going" && goingCount == goingTotal {
+                        DispatchQueue.main.async {
+                            strongSelf.tableData = strongSelf.eventData["Going"]!
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
                 }
                 
             })
         }
         
+        var saveCount = 0
+        let saveTotal = saveEvents.count
         for event in saveEvents {
             DatabaseManager.shared.eventLoadTableView(event: event, completion: { [weak self] result in
+                guard let strongSelf = self else { return }
                 switch result {
                 case .success(_):
-                    break
+                    if event.endTime < Date() {
+                        strongSelf.eventData["Saved"]!["Previous"]!.append(event)
+                    } else if Calendar.current.isDateInToday(event.startTime) {
+                        strongSelf.eventData["Saved"]!["Today"]!.append(event)
+                    } else {
+                        strongSelf.eventData["Saved"]!["Upcoming"]!.append(event)
+                    }
+                    saveCount+=1
+                    if strongSelf.tableState == "Saved" && saveCount == saveTotal {
+                        DispatchQueue.main.async {
+                            strongSelf.tableData = strongSelf.eventData["Saved"]!
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
                 case .failure(let error):
-                    guard let strongSelf = self else { break }
                     strongSelf.saveEvents.removeAll(where: { $0 == event })
                     print("error loading event with id: \(event.eventId) with Error: \(error)")
+                    saveCount+=1
+                    if strongSelf.tableState == "Saved" && saveCount == saveTotal {
+                        DispatchQueue.main.async {
+                            strongSelf.tableData = strongSelf.eventData["Saved"]!
+                            strongSelf.tableView.reloadData()
+                        }
+                    }
                 }
-                
             })
         }
     }

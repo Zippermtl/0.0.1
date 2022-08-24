@@ -115,23 +115,26 @@ class CustomizeEventViewController: UIViewController {
             } else {
                 event = ClosedEvent(event: event)
             }
-        } else  if let promoterView = customizeView as? PromoterTicketsView,
-           let event = event as? PromoterEvent {
-            guard let price = promoterView.getPrice(),
-                  let link = promoterView.getLink() else {
-                let alert = UIAlertController(title: "Add both a price and a link to conitnue",
-                                              message: "",
-                                              preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: "Continue",
-                                              style: .cancel,
-                                              handler: nil))
-                
-                present(alert, animated: true)
-                return
+        } else if let promoterView = customizeView as? PromoterTicketsView {
+            if promoterView.sellTicketsSwitch.isOn {
+                if let event = event as? PromoterEvent  {
+                    guard let price = promoterView.getPrice(),
+                          let link = promoterView.getLink() else {
+                        let alert = UIAlertController(title: "Add both a price and a link to conitnue",
+                                                      message: "",
+                                                      preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "Continue",
+                                                      style: .cancel,
+                                                      handler: nil))
+                        
+                        present(alert, animated: true)
+                        return
+                    }
+                    event.price = price
+                    event.buyTicketsLink = link
+                }
             }
-            event.price = price
-            event.buyTicketsLink = link
         } else {
             print("NEVER SHOULD BE HERE")
         }

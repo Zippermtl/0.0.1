@@ -103,12 +103,12 @@ class SMSCodeViewController: UIViewController {
         code5.delegate = self
         code6.delegate = self
         
-        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
-        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
-        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
-        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
-        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
-        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .valueChanged)
+        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
 
         confirmButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         
