@@ -446,6 +446,17 @@ extension FPCViewController: FPCTableDelegate {
         eventsLabel.text = "Event Invites (\(events.count))"
         self.events = events
     }
+    
+    func openEvent(event: Event) {
+        if event.ownerId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
+            let vc = MyEventViewController(event: event)
+            delegate?.openVC(vc)
+        } else {
+            let vc = EventViewController(event: event)
+            delegate?.openVC(vc)
+        }
+    }
+    
 }
 
 

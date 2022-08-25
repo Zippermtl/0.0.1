@@ -145,10 +145,6 @@ class SearchBarTableView: UITableView {
         
         tableHeaderView = header
     }
-    
-    
-    
-    
 }
 
 

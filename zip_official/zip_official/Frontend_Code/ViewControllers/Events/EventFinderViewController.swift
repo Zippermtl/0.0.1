@@ -243,6 +243,7 @@ extension EventFinderViewController :  UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cellEvent = tableData[indexPath.section][indexPath.row]
         
+        
         let eventView = EventViewController(event: cellEvent)
         eventView.modalPresentationStyle = .overCurrentContext
         

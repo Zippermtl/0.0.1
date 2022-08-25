@@ -14,17 +14,28 @@ import JGProgressHUD
 class MyEventViewController: EventViewController {
     
     override init(event: Event) {
+        event.allowUserInvites = false
         super.init(event: event)
         
-        goingButton.backgroundColor = .zipGray
 //        goingButton.layer.borderWidth = 1
-        goingButton.layer.borderColor = UIColor.zipBlue.cgColor
            
         goingButton.setTitle("Edit", for: .normal)
         goingButton.titleLabel?.textColor = .white
         goingButton.titleLabel?.font = .zipSubtitle2
         goingButton.titleLabel?.textAlignment = .center
         goingButton.contentVerticalAlignment = .center
+        
+        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
+        let config2 = UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
+
+        let shareIcon =  UIImage(systemName: "square.and.arrow.up", withConfiguration: config)!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let inviteIcon =  UIImage(systemName: "paperplane", withConfiguration: config2)!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+
+        messageButton.setIcon(icon: inviteIcon)
+        messageButton.setTextLabel(s: "Invite")
+        saveButton.setIcon(icon: shareIcon)
+        saveButton.setTextLabel(s: "Share")
+
     }
     
     required init?(coder: NSCoder) {
@@ -37,8 +48,11 @@ class MyEventViewController: EventViewController {
         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
-        
-        hostLabel.attributedText = NSAttributedString(string: "Hosted by You", attributes: attributes)
+        if event.hosts.count > 1 {
+            hostLabel.attributedText = NSAttributedString(string: "Hosted by You + \(event.hosts.count-1) more", attributes: attributes)
+        } else {
+            hostLabel.attributedText = NSAttributedString(string: "Hosted by You", attributes: attributes)
+        }
     }
     
     override func didTapGoingButton() {
@@ -49,6 +63,28 @@ class MyEventViewController: EventViewController {
     
     override func didTapSaveButton() {
             // uhhh what we doing here?
+    }
+    
+    override func didTapMessageButton() {
+        let vc = InviteMoreViewController(event: event)
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    override func didTapHost() {
+        let vc = UsersTableViewController(users: event.hosts)
+        vc.title = "Hosts"
+        navigationController?.pushViewController(vc, animated: true)
+        
+        vc.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+                                                               style: UIBarButtonItem.Style.done,
+                                                               target: self,
+                                                               action: #selector(inviteHosts))
+        
+    }
+    
+    @objc private func inviteHosts(){
+        let vc = InviteHostsViewController(event: event)
+        navigationController?.pushViewController(vc, animated: true)
     }
     
 }

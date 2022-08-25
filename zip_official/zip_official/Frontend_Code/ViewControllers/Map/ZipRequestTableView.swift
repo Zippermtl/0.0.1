@@ -10,6 +10,7 @@ import UIKit
 protocol FPCTableDelegate: AnyObject {
     func updateRequestsLabel(requests: [User])
     func updateEventsLabel(events: [Event])
+    func openEvent(event: Event)
 }
 
 

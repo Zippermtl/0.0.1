@@ -209,7 +209,6 @@ class AbstractProfileViewController: UIViewController {
     private func configureLabels() {
         photoCountLabel.backgroundColor = .zipBlue
         photoCountLabel.layer.masksToBounds = true
-        photoCountLabel.text = "1"
         photoCountLabel.font = .zipSubtitle2
         photoCountLabel.textColor = .white
         photoCountLabel.textAlignment = .center

@@ -46,10 +46,11 @@ class EventViewController: UIViewController {
     
     // MARK: - Buttons
     let goingButton: UIButton
+    let inviteButton: UIButton?
     
     let saveButton: IconButton
-    private let inviteButton: IconButton
-    private let participantsButton: IconButton
+    let messageButton: IconButton
+    let participantsButton: IconButton
     
     var cellConfigureations : [(NSMutableAttributedString, UIImage?)]
     var locationCell : UITableViewCell?
@@ -80,10 +81,10 @@ class EventViewController: UIViewController {
         self.eventBorder = UIView()
         userCountLabel.textColor = .zipVeryLightGray
         self.goingButton = UIButton()
+        self.inviteButton = UIButton()
         
-        self.inviteButton = IconButton(text: "Invite",
-                                       icon: UIImage(systemName: "calendar.badge.plus")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-                                       config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
+        self.messageButton = IconButton.messageIcon()
+        self.messageButton.setTextLabel(s: "Contact")
         self.saveButton = IconButton(text: "Save",
                                      icon: UIImage(systemName: "bookmark.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
                                      config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
@@ -105,14 +106,25 @@ class EventViewController: UIViewController {
             savedUI()
         }
         
-        goingButton.layer.borderWidth = 3
-        goingButton.layer.borderColor = UIColor.zipBlue.cgColor
-           
-        goingButton.setTitle("Going", for: .normal)
+        goingButton.backgroundColor = .zipLightGray
+        
+        if event.usersGoing.contains(User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)) {
+            goingButton.setTitle("Going", for: .normal)
+        }
         goingButton.titleLabel?.textColor = .white
         goingButton.titleLabel?.font = .zipSubtitle2
         goingButton.titleLabel?.textAlignment = .center
         goingButton.contentVerticalAlignment = .center
+        
+        if let inviteButton = inviteButton {
+            inviteButton.backgroundColor = .zipLightGray
+            inviteButton.setTitle("Invite", for: .normal)
+            inviteButton.titleLabel?.textColor = .white
+            inviteButton.titleLabel?.font = .zipSubtitle2
+            inviteButton.titleLabel?.textAlignment = .center
+            inviteButton.contentVerticalAlignment = .center
+        }
+        
       
         
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
@@ -210,7 +222,10 @@ class EventViewController: UIViewController {
     @objc private func didTapParticipantsButton(){
         navigationController!.navigationBar.setTitleVerticalPositionAdjustment(0, for: .default)
 
-        let zipListView = UsersTableViewController(users: event.usersGoing)
+        
+       
+        
+        let zipListView = UsersTableViewController(sectionData: event.getParticipants())
         zipListView.title = "Participants"
         let transition = CATransition()
         transition.duration = 0.5
@@ -226,6 +241,11 @@ class EventViewController: UIViewController {
     @objc private func didTapInviteButton(){
         let vc = InviteMoreViewController(event: event)
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    
+    @objc func didTapMessageButton(){
+       
     }
     
     @objc func didTapSaveButton(){
@@ -262,7 +282,7 @@ class EventViewController: UIViewController {
         saveButton.iconButton.backgroundColor = .zipLightGray
     }
     
-    @objc private func didTapHost(){
+    @objc func didTapHost(){
         let vc = UsersTableViewController(users: event.hosts)
         vc.title = "Hosts"
         navigationController?.pushViewController(vc, animated: true)
@@ -439,12 +459,29 @@ class EventViewController: UIViewController {
         goingButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
         goingButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         goingButton.topAnchor.constraint(equalTo: hostLabel.bottomAnchor, constant: 15).isActive = true
-        goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        
+        
+        if let inviteButton = inviteButton {
+            tableHeader.addSubview(inviteButton)
+            inviteButton.translatesAutoresizingMaskIntoConstraints = false
+            inviteButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+            inviteButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            inviteButton.topAnchor.constraint(equalTo: goingButton.topAnchor).isActive = true
+            inviteButton.leftAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: 5).isActive = true
+            
+            goingButton.rightAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: -5).isActive = true
+            
+            inviteButton.layer.cornerRadius = 8
+            inviteButton.addTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+
+        } else {
+            goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        }
         
         tableHeader.addSubview(userCountLabel)
         userCountLabel.translatesAutoresizingMaskIntoConstraints = false
         userCountLabel.topAnchor.constraint(equalTo: goingButton.bottomAnchor, constant: 5).isActive = true
-        userCountLabel.centerXAnchor.constraint(equalTo: goingButton.centerXAnchor).isActive = true
+        userCountLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
         
         tableHeader.addSubview(participantsButton)
         participantsButton.translatesAutoresizingMaskIntoConstraints = false
@@ -459,11 +496,11 @@ class EventViewController: UIViewController {
         saveButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
         saveButton.setIconDimension(width: 60)
         
-        tableHeader.addSubview(inviteButton)
-        inviteButton.translatesAutoresizingMaskIntoConstraints = false
-        inviteButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
-        inviteButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
-        inviteButton.setIconDimension(width: 60)
+        tableHeader.addSubview(messageButton)
+        messageButton.translatesAutoresizingMaskIntoConstraints = false
+        messageButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
+        messageButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
+        messageButton.setIconDimension(width: 60)
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
 //        tableHeader.topAnchor.constraint(equalTo: eventPhotoView.topAnchor).isActive = true
@@ -473,12 +510,12 @@ class EventViewController: UIViewController {
         goingButton.layer.cornerRadius = 8
         participantsButton.layer.cornerRadius = 30
         saveButton.layer.cornerRadius = 30
-        inviteButton.layer.cornerRadius = 30
+        messageButton.layer.cornerRadius = 30
         
         goingButton.addTarget(self, action: #selector(didTapGoingButton), for: .touchUpInside)
         
         saveButton.iconAddTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
-        inviteButton.iconAddTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+        messageButton.iconAddTarget(self, action: #selector(didTapMessageButton), for: .touchUpInside)
         participantsButton.iconAddTarget(self, action: #selector(didTapParticipantsButton), for: .touchUpInside)
         
         tableView.tableHeaderView = tableHeader
@@ -503,8 +540,12 @@ class EventViewController: UIViewController {
         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
-        
-        hostLabel.attributedText = NSAttributedString(string: "Hosted by " + event.hosts[0].fullName, attributes: attributes)
+        if event.hosts.count > 1 {
+            hostLabel.attributedText = NSAttributedString(string: "Hosted by \(event.hosts[0].fullName) + \(event.hosts.count-1) more", attributes: attributes)
+        } else {
+            hostLabel.attributedText = NSAttributedString(string: "Hosted by " + event.hosts[0].fullName, attributes: attributes)
+
+        }
         
         eventTypeLabel.text = event.getType().description
         

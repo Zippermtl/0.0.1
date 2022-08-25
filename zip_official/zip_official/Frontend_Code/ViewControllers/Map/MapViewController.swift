@@ -323,6 +323,7 @@ class MapViewController: UIViewController {
         })
         
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
+            print("LOADING EVENT")
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
                 DispatchQueue.main.async {

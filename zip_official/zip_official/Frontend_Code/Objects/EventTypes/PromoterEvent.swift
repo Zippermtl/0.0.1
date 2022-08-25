@@ -26,6 +26,7 @@ public class PromoterEvent: Event {
         self.price = price
         self.buyTicketsLink = buyTicketsLink
         super.init(event: event)
+        self.allowUserInvites = true
     }
     
     override public func dispatch(user:User) -> Bool {
@@ -41,6 +42,16 @@ public class PromoterEvent: Event {
     
     override func getEncoder() -> EventCoder {
         return PromoterEventCoder(event: self)
+    }
+    
+    override func getParticipants() -> [UserCellSectionData] {
+        let going = UserCellSectionData(title: "Going",
+                                        users: usersGoing)
+        let invited = UserCellSectionData(title: "Invited",
+                                          users: usersInvite.filter({ !(usersGoing.contains($0) || usersNotGoing.contains($0)) }))
+        
+        let sections = [going, invited]
+        return sections
     }
 }
 

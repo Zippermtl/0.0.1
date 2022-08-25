@@ -8,7 +8,7 @@
 import UIKit
 
 
-class InviteMoreViewController: UIViewController {
+class InviteHostsViewController: UIViewController {
     var users: [User]
     var usersToInvite: [User]
     var event: Event
@@ -23,7 +23,7 @@ class InviteMoreViewController: UIViewController {
 
         super.init(nibName: nil, bundle: nil)
         
-        title = "Invite Guests"
+        title = "Invite Hosts"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite",
                                                             style: UIBarButtonItem.Style.done,
                                                             target: self,
@@ -31,7 +31,7 @@ class InviteMoreViewController: UIViewController {
         
  
         let zips = User.getMyZips()
-        users = zips.filter({ !(event.usersGoing.contains($0) || event.usersInvite.contains($0))})
+        users = zips.filter({ !event.hosts.contains($0) })
         
         view.backgroundColor = .zipGray
         configureTable()
@@ -70,8 +70,13 @@ class InviteMoreViewController: UIViewController {
     }
     
     @objc private func didTapInvite(){
-        event.usersInvite += usersToInvite
-        DatabaseManager.shared.inviteUsers(event: event, users: usersToInvite, completion: { [weak self] error in
+        for user in usersToInvite {
+            if !event.usersInvite.contains(user) {
+                event.usersInvite.append(user)
+            }
+        }
+        event.hosts += usersToInvite
+        DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
             guard error == nil else {
                 let alert = UIAlertController(title: "Error Inviting Users",
                                               message: "\(error!.localizedDescription)",
@@ -102,7 +107,7 @@ class InviteMoreViewController: UIViewController {
     }
 }
 
-extension InviteMoreViewController: UITableViewDelegate, UITableViewDataSource {
+extension InviteHostsViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 90
     }
@@ -126,7 +131,7 @@ extension InviteMoreViewController: UITableViewDelegate, UITableViewDataSource {
 }
 
 
-extension InviteMoreViewController: InviteTableViewCellDelegate {
+extension InviteHostsViewController: InviteTableViewCellDelegate {
     func inviteUser(user: User) {
         usersToInvite.append(user)
     }
@@ -135,6 +140,7 @@ extension InviteMoreViewController: InviteTableViewCellDelegate {
         guard let idx = usersToInvite.firstIndex(where: { $0.userId == user.userId }) else {
             return
         }
+        
         usersToInvite.remove(at: idx)
     }
 }

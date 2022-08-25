@@ -381,7 +381,14 @@ extension MyEventsViewController :  UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
- 
+//        let event
+//        if event.ownerId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
+//            let vc = MyEventViewController(event: event)
+//            navigationController?.pushViewController(vc, animated: true)
+//        } else {
+//            let vc = EventViewController(event: event)
+//            navigationController?.pushViewController(vc, animated: true)
+//        }
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {

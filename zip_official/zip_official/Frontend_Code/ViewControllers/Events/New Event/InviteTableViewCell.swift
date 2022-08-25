@@ -47,6 +47,7 @@ class InviteTableViewCell: AbstractUserTableViewCell {
         addButton.translatesAutoresizingMaskIntoConstraints = false
         addButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         addButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -30).isActive = true
+        
         addButton.addTarget(self, action: #selector(didTapAdd(_:)), for: .touchUpInside)
     }
     

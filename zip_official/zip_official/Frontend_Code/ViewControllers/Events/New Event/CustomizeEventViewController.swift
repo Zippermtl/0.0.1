@@ -98,6 +98,7 @@ class CustomizeEventViewController: UIViewController {
         }
         
         if let privacyView = customizeView as? PrivacyView {
+            event.allowUserInvites = privacyView.allowUserInvitesSwitch.isOn
             guard let isOpen = privacyView.isOpen() else {
                 let alert = UIAlertController(title: "Pick a privacy setting ot continue",
                                               message: "",
@@ -362,6 +363,9 @@ extension CustomizeEventViewController {
         private var closedButton: UIButton
         private var openClosedDescriptionLabel: UILabel
         
+        private var allowUserInvitesLabel: UILabel
+        var allowUserInvitesSwitch: UISwitch
+        
         private let OCDescriptionText: (String,String,String) = (
             "Open events are visible on the map by people who are invited or going. They are also visible on the event finder page and can be searched for." ,
             "Closed events are visibile on the map by people who are invited. They CANNOT be found on the event finder page or the search bar unless they are invited",
@@ -369,13 +373,15 @@ extension CustomizeEventViewController {
         )
         
         init(){
+            self.allowUserInvitesSwitch = UISwitch()
             self.privacyLabel = UILabel.zipTextFill()
+            self.allowUserInvitesLabel = UILabel.zipTextFill()
             self.openClosedLabel = UILabel.zipTextFill()
             self.openClosedDescriptionLabel = UILabel.zipTextDetail()
             self.openButton = UIButton()
             self.closedButton = UIButton()
             super.init(frame: .zero)
-            
+            allowUserInvitesLabel.text = "Guests can invite zips:"
             privacyLabel.text = "Privacy:"
             openClosedDescriptionLabel.text = OCDescriptionText.2
             
@@ -424,6 +430,8 @@ extension CustomizeEventViewController {
             addSubview(openButton)
             addSubview(closedButton)
             addSubview(openClosedDescriptionLabel)
+            addSubview(allowUserInvitesLabel)
+            addSubview(allowUserInvitesSwitch)
         }
         
         private func layout(){
@@ -446,6 +454,15 @@ extension CustomizeEventViewController {
             openClosedDescriptionLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
             openClosedDescriptionLabel.widthAnchor.constraint(equalTo: widthAnchor,multiplier: 0.9).isActive = true
             openClosedDescriptionLabel.topAnchor.constraint(equalTo: privacyLabel.bottomAnchor,constant: 10).isActive = true
+            
+            allowUserInvitesLabel.translatesAutoresizingMaskIntoConstraints = false
+            allowUserInvitesLabel.topAnchor.constraint(equalTo: openClosedDescriptionLabel.bottomAnchor,constant: 15).isActive = true
+            allowUserInvitesLabel.leftAnchor.constraint(equalTo: privacyLabel.leftAnchor).isActive = true
+            
+            
+            allowUserInvitesSwitch.translatesAutoresizingMaskIntoConstraints = false
+            allowUserInvitesSwitch.centerYAnchor.constraint(equalTo: openClosedDescriptionLabel.centerYAnchor).isActive = true
+            allowUserInvitesSwitch.rightAnchor.constraint(equalTo: openButton.rightAnchor).isActive = true
         }
         
         @objc private func didTapOpen(){
@@ -463,7 +480,7 @@ extension CustomizeEventViewController {
             closedButton.isSelected = true
             openButton.isSelected = false
         }
-         
+        
         public func isOpen() -> Bool? {
             if !openButton.isSelected && !closedButton.isSelected {
                 return nil

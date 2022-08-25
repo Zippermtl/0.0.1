@@ -93,7 +93,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "Invite",
             icon:  UIImage(systemName: "paperplane")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
         )
     }
     

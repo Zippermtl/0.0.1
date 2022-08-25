@@ -9,6 +9,10 @@ import UIKit
 import MapKit
 import CoreLocation
 
+//protocol OpenEventFromCellDelegate: AnyObject {
+//    func openEvent()
+//}
+
 class AbstractEventTableViewCell: UITableViewCell {
     var event: Event?
     
@@ -17,17 +21,12 @@ class AbstractEventTableViewCell: UITableViewCell {
     let eventImage: UIImageView
     var cellHeight = 120
     
-    
     var titleLabel: UILabel
     let participantsLabel: UILabel
     var distanceLabel: DistanceLabel
     var dateLabel: IconLabel
     var timeLabel: IconLabel
     
-    @objc private func openEvent(){
-//        let vc = EventViewController(event: event)
-//        navigationcon
-    }
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -90,9 +89,7 @@ class AbstractEventTableViewCell: UITableViewCell {
             return
         }
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(openEvent))
-        titleLabel.isUserInteractionEnabled = true
-        titleLabel.addGestureRecognizer(tap)
+       
         
         titleLabel.text = event.title
         
@@ -113,10 +110,6 @@ class AbstractEventTableViewCell: UITableViewCell {
         
         participantsLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
-        let tap2 = UITapGestureRecognizer(target: self, action: #selector(openEvent))
-        eventImage.isUserInteractionEnabled = true
-        eventImage.addGestureRecognizer(tap2)
     }
     
     //MARK: - Add Subviews

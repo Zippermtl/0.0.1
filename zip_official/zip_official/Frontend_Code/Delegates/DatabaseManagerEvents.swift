@@ -154,7 +154,7 @@ extension DatabaseManager {
            return
        }
        
-       firestore.collection("EventProfiles").whereField("hostIds", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
+       firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
            print("getting hosts")
            guard let strongSelf = self,
                  err == nil else {
@@ -356,7 +356,6 @@ extension DatabaseManager {
 //            }
 //        })
     }
-    
     
     public func inviteUsers(event: Event, users: [User], completion: @escaping (Error?) -> Void){
         var datadic: [String:Any] = [:]

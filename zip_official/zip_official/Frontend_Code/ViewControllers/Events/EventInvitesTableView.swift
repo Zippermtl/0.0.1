@@ -57,6 +57,10 @@ extension EventInvitesTableView: UITableViewDelegate, UITableViewDataSource {
         return 120
     }
 
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        FPCDelegate?.openEvent(event: events[indexPath.row])
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if events.count != 0 {
             let cellEvent = events[indexPath.row]

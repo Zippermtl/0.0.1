@@ -9,6 +9,8 @@ import UIKit
 import MapKit
 import CoreLocation
 
+
+
 class EventFinderTableViewCell: AbstractEventTableViewCell {
     static let identifier = "event finder"
 

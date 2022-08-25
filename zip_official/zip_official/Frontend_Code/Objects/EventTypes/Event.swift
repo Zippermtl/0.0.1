@@ -54,12 +54,12 @@ extension EventType: CustomStringConvertible {
 public class EventCoder: Codable {
     var title: String
     var coordinates: [String: Double]
-    var hosts: [String: String]
-    var hostIds: [String]
+    var hosts: [String]
     var bio: String
     var address: String
     var maxGuests: Int
     var usersGoing: [String]
+    var usersNotGoing: [String]
     var usersInvite: [String]
     var startTime: Timestamp
     var endTime: Timestamp
@@ -68,16 +68,20 @@ public class EventCoder: Codable {
     var eventPicIndices: [Int]
     var picNum: Int
     var LCTitle: String
+    var allowUserInvites: Bool
+    var ownerName: String
+    var ownerId: String
+
     
     init(event: Event) {
         self.title = event.title
         self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
-        self.hosts = Dictionary(uniqueKeysWithValues: event.hosts.map({($0.userId,$0.fullName)}))
-        self.hostIds = event.hosts.map({ $0.userId })
+        self.hosts = event.hosts.map({($0.userId)})
         self.bio = event.bio
         self.address = event.address
         self.maxGuests = event.maxGuests
         self.usersGoing = event.usersGoing.map({$0.userId})
+        self.usersNotGoing = event.usersNotGoing.map({$0.userId})
         self.usersInvite = event.usersInvite.map({$0.userId})
         self.startTime = Timestamp(date: event.startTime)
         self.endTime = Timestamp(date: event.endTime)
@@ -86,6 +90,9 @@ public class EventCoder: Codable {
         self.eventPicIndices = event.eventPicIndices
         self.picNum = event.picNum
         self.LCTitle = event.title.lowercased()
+        self.allowUserInvites = event.allowUserInvites
+        self.ownerId = event.ownerId
+        self.ownerName = event.ownerName
     }
     
     enum CodingKeys: String, CodingKey {
@@ -104,18 +111,22 @@ public class EventCoder: Codable {
         case eventPicIndices = "eventPicIndices"
         case picNum = "picNum"
         case LCTitle = "LCTitle"
-        case hostIds = "hostIds"
+        case usersNotGoing = "usersNotGoing"
+        case allowUserInvites = "allowUserInvites"
+        case ownerName = "ownerName"
+        case ownerId = "ownerId"
     }
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.title = try container.decode(String.self, forKey: .title)
         self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
-        self.hosts = try container.decode([String:String].self, forKey: .hosts)
+        self.hosts = try container.decode([String].self, forKey: .hosts)
         self.bio = try container.decode(String.self, forKey: .bio)
         self.address = try container.decode(String.self, forKey: .address)
         self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
         self.usersGoing = try container.decode([String].self, forKey: .usersGoing)
+        self.usersNotGoing = try container.decode([String].self, forKey: .usersNotGoing)
         self.usersInvite = try container.decode([String].self, forKey: .usersInvite)
         self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
         self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
@@ -124,7 +135,9 @@ public class EventCoder: Codable {
         self.eventPicIndices = try container.decode([Int].self, forKey: .eventPicIndices)
         self.picNum = try container.decode(Int.self, forKey: .picNum)
         self.LCTitle = try container.decode(String.self, forKey: .LCTitle)
-        self.hostIds = try container.decode([String].self, forKey: .hostIds)
+        self.allowUserInvites = try container.decode(Bool.self, forKey: .allowUserInvites)
+        self.ownerName = try container.decode(String.self, forKey: .ownerName)
+        self.ownerId = try container.decode(String.self, forKey: .ownerId)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -136,6 +149,7 @@ public class EventCoder: Codable {
         try container.encode(address, forKey: .address)
         try container.encode(maxGuests, forKey: .maxGuests)
         try container.encode(usersGoing, forKey: .usersGoing)
+        try container.encode(usersNotGoing, forKey: .usersNotGoing)
         try container.encode(usersInvite, forKey: .usersInvite)
         try container.encode(startTime, forKey: .startTime)
         try container.encode(endTime, forKey: .endTime)
@@ -144,7 +158,9 @@ public class EventCoder: Codable {
         try container.encode(eventPicIndices, forKey: .eventPicIndices)
         try container.encode(picNum, forKey: .picNum)
         try container.encode(LCTitle, forKey: .LCTitle)
-        try container.encode(hostIds, forKey: .hostIds)
+        try container.encode(allowUserInvites, forKey: .allowUserInvites)
+        try container.encode(ownerName, forKey: .ownerName)
+        try container.encode(ownerId, forKey: .ownerId)
     }
     
     public func createEvent() -> Event {
@@ -154,24 +170,20 @@ public class EventCoder: Codable {
     }
     
     public func updateEvent(event: Event) {
-        var hostUsers: [User] = []
-        for (id,fullName) in hosts {
-            let fullNameArr = fullName.components(separatedBy: " ")
-            let firstName: String = fullNameArr[0]
-            let lastName: String = fullNameArr[1]
-            hostUsers.append(User(userId: id, firstName: firstName, lastName: lastName))
-        }
-        
         event.title = title
         event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
-        event.hosts = hostUsers
+        event.hosts = hosts.map({ User(userId: $0 )})
         event.bio = bio
         event.address = address
         event.maxGuests = maxGuests
         event.usersGoing = usersGoing.map( { User(userId: $0 )} )
+        event.usersNotGoing = usersNotGoing.map( { User(userId: $0 )} )
         event.usersInvite = usersInvite.map( { User(userId: $0 )} )
         event.startTime = startTime.dateValue()
         event.endTime = endTime.dateValue()
+        event.allowUserInvites = allowUserInvites
+        event.ownerId = ownerId
+        event.ownerName = ownerName
     }
 }
 
@@ -210,6 +222,8 @@ public class Event : Equatable, CustomStringConvertible {
 //Mark: Will comment out once fixed Yianni's old code
     var maxGuests: Int = -1
     var usersGoing: [User] = []
+    var usersNotGoing: [User] = []
+
     var usersInterested: [User] = []
     var usersInvite: [User] = []
 //    var type: String = "promoter"
@@ -222,6 +236,9 @@ public class Event : Equatable, CustomStringConvertible {
     var eventPicIndices: [Int] = []
     var eventPicUrls: [URL] = []
     var picNum: Int = 0
+    var allowUserInvites: Bool = false
+    var ownerName: String = ""
+    var ownerId: String = ""
     
     func getEncoder() -> EventCoder {
         let encoder = EventCoder(event: self)
@@ -341,71 +358,24 @@ public class Event : Equatable, CustomStringConvertible {
         print("Start Time: ", startTimeString)
         print("End Time: ", endTimeString)
         print("Img URL: ", imageUrl)
-        print("Users invite", usersInvite)
-        print("Users going", usersGoing)
+        print("Users invite ", usersInvite)
+        print("Users going ", usersGoing)
+        print("Users Not Going ", usersNotGoing)
+        print("allowUserInvites ", allowUserInvites)
     }
     
-    public func update(eventId Id: String = "",
-                       title tit: String = "",
-                       coordinates loc: CLLocation = CLLocation(),
-                       hosts host: [User] = [],
-                       bio b: String = "",
-                       address addy: String = "",
-                       locationName locName: String = "",
-                       maxGuests maxG: Int = -1,
-                       usersGoing ugoing: [User] = [],
-                       usersInterested uinterested: [User] = [],
-                       usersInvite uinvite: [User] = [],
-                       startTime stime: Date = Date(),
-                       endTime etime: Date = Date(),
-                       duration dur: TimeInterval = TimeInterval(1),
-                       image im: UIImage? = UIImage(named: "launchevent")){
-        if(Id != self.eventId){
-            eventId = Id
-        }
-        if(tit != self.title){
-            title = tit
-        }
-        if(loc.coordinate.latitude != CLLocation().coordinate.latitude || loc.coordinate.longitude != CLLocation().coordinate.longitude){
-            coordinates = loc
-        }
-        if(host.count != 0){
-            hosts = host
-        }
-        if(b != ""){
-            bio = b
-        }
-        if(addy != ""){
-            address = addy
-        }
-        if(locName != ""){
-            locationName = locName
-        }
-        if(maxG != -1){
-            maxGuests = maxG
-        }
-        if(ugoing.count != 0){
-            usersGoing = ugoing
-        }
-        if(uinterested.count != 0){
-            usersInterested = uinterested
-        }
-        if(uinvite.count != 0){
-            usersInvite = uinvite
-        }
-        if(stime != Date()){
-            startTime = stime
-        }
-        if(etime != Date()){
-            endTime = etime
-        }
-        if(dur != TimeInterval(1)){
-            duration = dur
-        }
-        if(im != UIImage(named: "launchevent")){
-            image = im
-        }
+    func getParticipants() -> [UserCellSectionData] {
+        let going = UserCellSectionData(title: "Going",
+                                        users: usersGoing)
+        let invited = UserCellSectionData(title: "Invited",
+                                          users: usersInvite.filter({ !(usersGoing.contains($0) || usersNotGoing.contains($0)) }))
+        let notGoing = UserCellSectionData(title: "Not Going",
+                                           users: usersNotGoing)
+
+        let sections = [going, invited, notGoing]
+        return sections
     }
+    
     
     //MARK: accessory function for yianni to pull for visuals if needed:
     // ex sponsor events could return an even with the visual appened on
@@ -431,6 +401,7 @@ public class Event : Equatable, CustomStringConvertible {
          locationName locName: String = "",
          maxGuests maxG: Int = -1,
          usersGoing ugoing: [User] = [],
+         usersNotGoing uNotGoing: [User] = [],
          usersInterested uinterested: [User] = [],
          usersInvite uinvite: [User] = [],
          startTime stime: Date = Date(),
@@ -441,7 +412,12 @@ public class Event : Equatable, CustomStringConvertible {
          endTimeString ets: String = "",
          startTimeString sts: String = "",
          eventCoverIndex ecI: [Int] = [],
-         eventPicIndices epI: [Int] = []) {
+         eventPicIndices epI: [Int] = [],
+         allowUserInvites aui: Bool = false,
+         ownerName oN: String = "",
+         ownerId oId: String = ""
+
+    ) {
         eventId = Id
         title = tit
         coordinates = loc
@@ -451,6 +427,7 @@ public class Event : Equatable, CustomStringConvertible {
         locationName = locName
         maxGuests = maxG
         usersGoing = ugoing
+        usersNotGoing = uNotGoing
         usersInterested = uinterested
         usersInvite = uinvite
         startTime = stime
@@ -460,6 +437,9 @@ public class Event : Equatable, CustomStringConvertible {
         imageUrl = url
         eventCoverIndex = ecI
         eventPicIndices = epI
+        allowUserInvites = aui
+        ownerId = oId
+        ownerName = oN
         if(ets != ""){
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -482,6 +462,7 @@ public class Event : Equatable, CustomStringConvertible {
         self.locationName = event.locationName
         self.maxGuests = event.maxGuests
         self.usersGoing = event.usersGoing
+        self.usersNotGoing = event.usersNotGoing
         self.usersInterested = event.usersInterested
         self.usersInvite = event.usersInterested
         self.startTime = event.startTime
@@ -493,6 +474,9 @@ public class Event : Equatable, CustomStringConvertible {
         self.eventPicIndices = event.eventPicIndices
         self.startTime = event.startTime
         self.endTime = event.endTime
+        self.allowUserInvites = event.allowUserInvites
+        self.ownerId = event.ownerId
+        self.ownerName = event.ownerName
     }
     
     init(){
@@ -500,11 +484,6 @@ public class Event : Equatable, CustomStringConvertible {
     }
     
 }
-
-
-
-
-
 
 public func createEventLocal(eventId Id: String = "",
                              title tit: String = "",
@@ -515,6 +494,7 @@ public func createEventLocal(eventId Id: String = "",
                              locationName locName: String = "",
                              maxGuests maxG: Int = 0,
                              usersGoing ugoing: [User] = [],
+                             usersNotGoing uNotGoing: [User] = [],
                              usersInterested uinterested: [User] = [],
                              usersInvite uinvite: [User] = [],
                              startTime stime: Date = Date(),
@@ -526,8 +506,11 @@ public func createEventLocal(eventId Id: String = "",
                              startTimeString sts: String = "",
                              type t: EventType = .Event,
                              eventCoverIndex ecI: [Int] = [],
-                             eventPicIndices epI: [Int] = []) -> Event{
-    let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
+                             eventPicIndices epI: [Int] = [],
+                             allowUserInvites aui: Bool = false,
+                             ownerName oN: String = "",
+                             ownerId oId: String = "") -> Event {
+    let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersNotGoing: uNotGoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI,allowUserInvites: aui, ownerName: oN, ownerId: oId)
     switch t{
     case .Event: return baseEvent
     case .Closed: return ClosedEvent(event: baseEvent)
