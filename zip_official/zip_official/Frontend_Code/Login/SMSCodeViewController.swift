@@ -20,14 +20,16 @@ class SMSCodeViewController: UIViewController {
     private let titleLabel: UILabel
     private let explanationLabel: UILabel
     
-    private let SMSCodeStack: UIStackView
+//    private let SMSCodeStack: UIStackView
     
-    private let code1 : SMSCodeField
-    private let code2 : SMSCodeField
-    private let code3 : SMSCodeField
-    private let code4 : SMSCodeField
-    private let code5 : SMSCodeField
-    private let code6 : SMSCodeField
+//    private let code1 : SMSCodeField
+//    private let code2 : SMSCodeField
+//    private let code3 : SMSCodeField
+//    private let code4 : SMSCodeField
+//    private let code5 : SMSCodeField
+//    private let code6 : SMSCodeField
+    
+    private let smsField: UITextField
     
     private let confirmButton: UIButton
     
@@ -45,16 +47,17 @@ class SMSCodeViewController: UIViewController {
         titleLabel = UILabel.zipHeader()
         explanationLabel = UILabel.zipTextDetail()
         
-        SMSCodeStack = UIStackView()
+//        SMSCodeStack = UIStackView()
         confirmButton = UIButton()
-        code1 = SMSCodeField()
-        code2 = SMSCodeField()
-        code3 = SMSCodeField()
-        code4 = SMSCodeField()
-        code5 = SMSCodeField()
-        code6 = SMSCodeField()
+        smsField = UITextField()
+//        code1 = SMSCodeField()
+//        code2 = SMSCodeField()
+//        code3 = SMSCodeField()
+//        code4 = SMSCodeField()
+//        code5 = SMSCodeField()
+//        code6 = SMSCodeField()
         super.init(nibName: nil, bundle: nil)
-        code1.textContentType = .oneTimeCode
+        smsField.textContentType = .oneTimeCode
         let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(dismissKeyboardTap)
         
@@ -82,10 +85,10 @@ class SMSCodeViewController: UIViewController {
         let explanationTap = UITapGestureRecognizer(target: self, action: #selector(didTapResendVerificationCode))
         explanationLabel.addGestureRecognizer(explanationTap)
         
-        SMSCodeStack.axis = .horizontal
-        SMSCodeStack.distribution = .equalSpacing
-        SMSCodeStack.spacing = 15
-        SMSCodeStack.alignment = .center
+//        SMSCodeStack.axis = .horizontal
+//        SMSCodeStack.distribution = .equalSpacing
+//        SMSCodeStack.spacing = 15
+//        SMSCodeStack.alignment = .center
         
         
         confirmButton.setTitle("Confirm", for: .normal)
@@ -96,28 +99,34 @@ class SMSCodeViewController: UIViewController {
         confirmButton.titleLabel?.font = .zipSubtitle
         
         view.backgroundColor = .zipGray
-        code1.delegate = self
-        code2.delegate = self
-        code3.delegate = self
-        code4.delegate = self
-        code5.delegate = self
-        code6.delegate = self
+//        code1.delegate = self
+//        code2.delegate = self
+//        code3.delegate = self
+//        code4.delegate = self
+//        code5.delegate = self
+//        code6.delegate = self
         
-        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+//        code1.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+//        code2.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+//        code3.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+//        code4.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+//        code5.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+//        code6.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
 
         confirmButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
-        
-        code1.keyboardType = .numberPad
-        code2.keyboardType = .numberPad
-        code3.keyboardType = .numberPad
-        code4.keyboardType = .numberPad
-        code5.keyboardType = .numberPad
-        code6.keyboardType = .numberPad
+        smsField.keyboardType = .numberPad
+        smsField.borderStyle = .roundedRect
+        smsField.backgroundColor = .zipLightGray
+        smsField.tintColor = .white
+        smsField.textColor = .white
+        smsField.textAlignment = .center
+        smsField.delegate = self
+//        code1.keyboardType = .numberPad
+//        code2.keyboardType = .numberPad
+//        code3.keyboardType = .numberPad
+//        code4.keyboardType = .numberPad
+//        code5.keyboardType = .numberPad
+//        code6.keyboardType = .numberPad
         
         addSubviews()
         configureSubviewLayout()
@@ -141,12 +150,13 @@ class SMSCodeViewController: UIViewController {
     }
     
     @objc private func didTapLoginButton(){
-        code1.resignFirstResponder()
-        code2.resignFirstResponder()
-        code3.resignFirstResponder()
-        code4.resignFirstResponder()
-        code5.resignFirstResponder()
-        code6.resignFirstResponder()
+//        code1.resignFirstResponder()
+//        code2.resignFirstResponder()
+//        code3.resignFirstResponder()
+//        code4.resignFirstResponder()
+//        code5.resignFirstResponder()
+//        code6.resignFirstResponder()
+        smsField.resignFirstResponder()
 
         guard let smsCode = getSMSCode(),
                             !smsCode.isEmpty else {
@@ -165,13 +175,14 @@ class SMSCodeViewController: UIViewController {
     
     private func addSubviews(){
   
-        view.addSubview(SMSCodeStack)
-        SMSCodeStack.addArrangedSubview(code1)
-        SMSCodeStack.addArrangedSubview(code2)
-        SMSCodeStack.addArrangedSubview(code3)
-        SMSCodeStack.addArrangedSubview(code4)
-        SMSCodeStack.addArrangedSubview(code5)
-        SMSCodeStack.addArrangedSubview(code6)
+//        view.addSubview(SMSCodeStack)
+//        SMSCodeStack.addArrangedSubview(code1)
+//        SMSCodeStack.addArrangedSubview(code2)
+//        SMSCodeStack.addArrangedSubview(code3)
+//        SMSCodeStack.addArrangedSubview(code4)
+//        SMSCodeStack.addArrangedSubview(code5)
+//        SMSCodeStack.addArrangedSubview(code6)
+        view.addSubview(smsField)
         view.addSubview(confirmButton)
         view.addSubview(stepLabel)
         view.addSubview(titleLabel)
@@ -190,14 +201,20 @@ class SMSCodeViewController: UIViewController {
         titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 125).isActive = true
         titleLabel.widthAnchor.constraint(equalTo: view.widthAnchor,multiplier: 0.5).isActive = true
         
-        SMSCodeStack.translatesAutoresizingMaskIntoConstraints = false
-        SMSCodeStack.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        SMSCodeStack.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 30).isActive = true
-        SMSCodeStack.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -30).isActive = true
-        SMSCodeStack.heightAnchor.constraint(equalToConstant: 52).isActive = true
+//        SMSCodeStack.translatesAutoresizingMaskIntoConstraints = false
+//        SMSCodeStack.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+//        SMSCodeStack.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 30).isActive = true
+//        SMSCodeStack.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -30).isActive = true
+//        SMSCodeStack.heightAnchor.constraint(equalToConstant: 52).isActive = true
+        
+        smsField.translatesAutoresizingMaskIntoConstraints = false
+        smsField.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        smsField.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 30).isActive = true
+        smsField.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -30).isActive = true
+        smsField.heightAnchor.constraint(equalToConstant: 52).isActive = true
         
         explanationLabel.translatesAutoresizingMaskIntoConstraints = false
-        explanationLabel.topAnchor.constraint(equalTo: SMSCodeStack.bottomAnchor,constant: 20).isActive = true
+        explanationLabel.topAnchor.constraint(equalTo: smsField.bottomAnchor,constant: 20).isActive = true
         explanationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         explanationLabel.widthAnchor.constraint(equalTo: view.widthAnchor,multiplier: 0.7).isActive = true
         
@@ -222,12 +239,12 @@ class SMSCodeViewController: UIViewController {
         pageStatus1.layer.cornerRadius = 5
         pageStatus2.layer.cornerRadius = 5
         
-        code1.widthAnchor.constraint(equalToConstant: 30).isActive = true
-        code2.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
-        code3.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
-        code4.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
-        code5.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
-        code6.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+//        code1.widthAnchor.constraint(equalToConstant: 30).isActive = true
+//        code2.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+//        code3.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+//        code4.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+//        code5.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
+//        code6.widthAnchor.constraint(equalTo: code1.widthAnchor).isActive = true
     }
 
     
@@ -349,43 +366,43 @@ class SMSCodeViewController: UIViewController {
     
     
     private func getSMSCode() -> String? {
-        var out: String? = code1.text
-        for code in SMSCodeStack.arrangedSubviews {
-            
-            guard let c = code as? SMSCodeField,
-                  let text = c.text else {
-                return out
-            }
-            
-            if code == code1 { continue }
-
-            out! += text
-        }
-        return out
+//        var out: String? = code1.text
+//        for code in SMSCodeStack.arrangedSubviews {
+//
+//            guard let c = code as? SMSCodeField,
+//                  let text = c.text else {
+//                return out
+//            }
+//
+//            if code == code1 { continue }
+//
+//            out! += text
+//        }
+        return smsField.text
     }
     
-    @objc private func textFieldDidChange(_ textField: UITextField) {
-        switch textField {
-        case code1:
-            print("1")
-            code2.becomeFirstResponder()
-        case code2:
-            print("2")
-            code3.becomeFirstResponder()
-        case code3:
-            print("3")
-            code4.becomeFirstResponder()
-        case code4:
-            print("4")
-            code5.becomeFirstResponder()
-        case code5:
-            print("5")
-            code6.becomeFirstResponder()
-        default:
-            print("6")
-            textField.resignFirstResponder()
-        }
-    }
+//    @objc private func textFieldDidChange(_ textField: UITextField) {
+//        switch textField {
+//        case code1:
+//            print("1")
+//            code2.becomeFirstResponder()
+//        case code2:
+//            print("2")
+//            code3.becomeFirstResponder()
+//        case code3:
+//            print("3")
+//            code4.becomeFirstResponder()
+//        case code4:
+//            print("4")
+//            code5.becomeFirstResponder()
+//        case code5:
+//            print("5")
+//            code6.becomeFirstResponder()
+//        default:
+//            print("6")
+//            textField.resignFirstResponder()
+//        }
+//    }
     
 }
 
@@ -443,16 +460,17 @@ extension SMSCodeViewController: UITextFieldDelegate {
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let maxLength = 1
-        let currentString = (textField.text ?? "") as NSString
-        let newString = currentString.replacingCharacters(in: range, with: string)
-        if newString.count <= maxLength {
-            let allowedCharacters = CharacterSet.decimalDigits
-            let characterSet = CharacterSet(charactersIn: string)
-            return allowedCharacters.isSuperset(of: characterSet)
-        }
-        
-        return false
+//        let maxLength = 1
+//        let currentString = (textField.text ?? "") as NSString
+//        let newString = currentString.replacingCharacters(in: range, with: string)
+//        if newString.count <= maxLength {
+//            let allowedCharacters = CharacterSet.decimalDigits
+//            let characterSet = CharacterSet(charactersIn: string)
+//            return allowedCharacters.isSuperset(of: characterSet)
+//        }
+//
+//        return false
+        return true
     }
 
 }

@@ -396,25 +396,34 @@ class LoginViewController: UIViewController {
             phoneText = phoneText.replacingOccurrences(of: " ", with: "")
 
             let numsArr = Array(phoneText)
-            if phoneText.count < 3 {
-                phoneField.text = "(\(phoneText)"
-            } else if phoneText.count < 6 {
-                var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
-                for i in 3..<numsArr.count {
-                    text += String(numsArr[i])
+            if countryCode == "+1" {
+                if phoneText.count < 3 {
+                    phoneField.text = "(\(phoneText)"
+                } else if phoneText.count < 6 {
+                    var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
+                    for i in 3..<numsArr.count {
+                        text += String(numsArr[i])
+                    }
+                    phoneField.text = text
+                } else {
+                    var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
+                    for i in 3..<6 {
+                        text += String(numsArr[i])
+                    }
+                    text += " - "
+                    for i in 6..<numsArr.count {
+                        text += String(numsArr[i])
+                    }
+                    phoneField.text = text
                 }
-                phoneField.text = text
             } else {
-                var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
-                for i in 3..<6 {
-                    text += String(numsArr[i])
+                if phoneText.count == 1 {
+                    phoneField.text = phoneText + " "
+                } else if phoneText.count ==  3 {
+                    phoneField.text = "\(numsArr[0]) \(numsArr[1])\(numsArr[2])"
                 }
-                text += " - "
-                for i in 6..<numsArr.count {
-                    text += String(numsArr[i])
-                }
-                phoneField.text = text
             }
+            
                     
             
         }
@@ -566,11 +575,13 @@ extension LoginViewController: UITextFieldDelegate {
     
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        var max = 10
+        if countryCode == "+33" { max = 9}
         if var nums = textField.text?.replacingOccurrences(of: "-", with: "") {
             nums = nums.replacingOccurrences(of: "(", with: "")
             nums = nums.replacingOccurrences(of: ")", with: "")
             nums = nums.replacingOccurrences(of: " ", with: "")
-            if nums.count >= 10 { return false }
+            if nums.count >= max { return false }
         }
         
         let ACCEPTABLE_CHARACTERS = "0123456789"

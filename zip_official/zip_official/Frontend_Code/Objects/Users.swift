@@ -42,7 +42,7 @@ class UserCoder: UserUpdateCoder {
     }
     
     enum CodingKeys: String, CodingKey {
-        case picIndices = "picIndicies"
+        case picIndices = "picIndices"
         case profilePicIndex = "profilePicIndex"
         case picNum = "picNum"
         case userId = "id"
