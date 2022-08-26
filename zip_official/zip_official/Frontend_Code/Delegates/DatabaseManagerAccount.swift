@@ -213,7 +213,7 @@ extension DatabaseManager {
     }
     /// Updates the full user profile
     public func updateUser(with user: User, completion: @escaping (Error?) -> Void) {
-        firestore.collection("UserProfiles").document(user.userId).updateData(for: user.getEncoder()) { error in
+        firestore.collection("UserProfiles").document(user.userId).updateData(for: user.getUpdateEncoder()) { error in
             guard error == nil else{
                 print("failed to write to database")
                 completion(error)

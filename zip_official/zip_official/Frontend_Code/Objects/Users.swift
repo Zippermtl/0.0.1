@@ -11,141 +11,188 @@ import FirebaseFirestore
 
 public typealias NotificationPreference = [NotificationSubtype: Bool]
 
-class UserCoder: Codable {
+class UserCoder: UserUpdateCoder {
+    var picIndices: [Int]
+    var profilePicIndex: [Int]
+    var picNum: Int
     var userId: String
     var username: String
     var firstName: String
     var lastName: String
-    var birthday: Timestamp
-    var picNum: Int
-    var bio: String
-    var interests: [Interests]
+    var joinDate: Timestamp
     var deviceId: [String]
     var notificationToken: [String]
-    var school: String?
-    var gender: String
-    var joinDate: Timestamp
-    var picIndices: [Int]
-    var profilePicIndex: [Int]
+    var birthday: Timestamp
+
     
-    init(user: User) {
+    override init(user: User) {
         self.userId = user.userId
         self.username = user.username
         self.firstName = user.firstName
         self.lastName = user.lastName
         self.birthday = Timestamp(date: user.birthday)
-        self.picNum = user.picNum
-        self.bio = user.bio
-        self.interests = user.interests
-        self.deviceId = [user.deviceId]
-        self.notificationToken = [user.notificationToken]
-        self.school = user.school
-        self.gender = user.gender
-        self.joinDate = Timestamp(date: user.joinDate)
         self.picIndices = user.picIndices
         self.profilePicIndex = user.profilePicIndex
+        self.picNum = user.picNum
+        self.joinDate = Timestamp(date: user.joinDate)
+        self.notificationToken = [user.notificationToken]
+        self.deviceId = [user.deviceId]
+
+        super.init(user: user)
     }
     
     enum CodingKeys: String, CodingKey {
+        case picIndices = "picIndicies"
+        case profilePicIndex = "profilePicIndex"
+        case picNum = "picNum"
         case userId = "id"
         case username = "username"
         case firstName = "firstName"
         case lastName = "lastName"
         case birthday = "birthday"
-        case picNum = "picNum"
-        case bio = "bio"
-        case school = "school"
-        case interests = "interests"
-        case deviceId = "deviceId"
-        case gender = "gender"
-        case notificationToken = "notificationToken"
         case joinDate = "joinDate"
-        case picIndices = "picIndices"
-        case profilePicIndex = "profileIndex"
+        case notificationToken = "notificationToken"
+        case deviceId = "deviceId"
+
     }
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.userId = try container.decode(String.self, forKey: .userId)
-        self.username = try container.decode(String.self, forKey: .username)
-        self.firstName = try container.decode(String.self, forKey: .firstName)
-        self.lastName = try container.decode(String.self, forKey: .lastName)
-        self.picNum = try container.decode(Int.self, forKey: .picNum)
-        self.bio = try container.decode(String.self, forKey: .bio)
-        self.gender = try container.decode(String.self, forKey: .gender)
-        self.school = try container.decode(String.self, forKey: .school)
-        self.interests = try container.decode([Interests].self, forKey: .interests)
-        self.birthday = try container.decode(Timestamp.self, forKey: .birthday)
-        self.school = try container.decode(String.self, forKey: .school)
-        self.deviceId = try container.decode([String].self, forKey: .deviceId)
-        self.notificationToken = try container.decode([String].self, forKey: .notificationToken)
-        self.joinDate = try container.decode(Timestamp.self, forKey: .joinDate)
-        self.picIndices = try container.decode([Int].self, forKey: .picIndices)
-        self.profilePicIndex = try container.decode([Int].self, forKey: .profilePicIndex)
-    }
+        userId = try container.decode(String.self, forKey: .userId)
+        username = try container.decode(String.self, forKey: .username)
+        firstName = try container.decode(String.self, forKey: .firstName)
+        lastName = try container.decode(String.self, forKey: .lastName)
+        birthday = try container.decode(Timestamp.self, forKey: .birthday)
+        picIndices = try container.decode([Int].self, forKey: .picIndices)
+        profilePicIndex = try container.decode([Int].self, forKey: .profilePicIndex)
+        picNum = try container.decode(Int.self, forKey: .picNum)
+        deviceId = try container.decode([String].self, forKey: .deviceId)
+        notificationToken = try container.decode([String].self, forKey: .notificationToken)
+        joinDate = try container.decode(Timestamp.self, forKey: .joinDate)
 
-    public func encode(to encoder: Encoder) throws {
+        try super.init(from: decoder)
+    }
+    
+    public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(userId, forKey: .userId)
         try container.encode(username, forKey: .username)
         try container.encode(firstName, forKey: .firstName)
         try container.encode(lastName, forKey: .lastName)
         try container.encode(birthday, forKey: .birthday)
-        try container.encode(bio, forKey: .bio)
-        try container.encode(gender, forKey: .gender)
-        try container.encode(picNum, forKey: .picNum)
-        try container.encode(school, forKey: .school)
-        try container.encode(interests, forKey: .interests)
         try container.encode(deviceId, forKey: .deviceId)
         try container.encode(notificationToken, forKey: .notificationToken)
         try container.encode(joinDate, forKey: .joinDate)
         try container.encode(picIndices, forKey: .picIndices)
         try container.encode(profilePicIndex, forKey: .profilePicIndex)
+        try container.encode(picNum, forKey: .picNum)
+        try super.encode(to: encoder)
     }
     
-    
-    public func createUser() -> User{
-        var nt = ""
-        if notificationToken.count != 0 {
-            nt = notificationToken[0]
-        }
-        return User(
-            userId: userId,
-            username: username,
-            firstName: firstName,
-            lastName: lastName,
-            gender: gender,
-            birthday: birthday.dateValue(),
-            picNum: picNum,
-            bio: bio,
-            school: school,
-            interests: interests,
-            notificationToken: nt,
-            joinDate: joinDate.dateValue(),
-            profilePicIndex: profilePicIndex,
-            picIndices: picIndices
-        )
-    }
-    
-    public func updateUser(_ user: User) {
+    override func updateUser(_ user: User) {
+        super.updateUser(user)
+        user.picNum = picNum
+        user.profilePicIndex = profilePicIndex
+        user.picIndices = picIndices
         user.userId = userId
         user.username = username
         user.firstName = firstName
         user.lastName = lastName
         user.birthday = birthday.dateValue()
+        user.joinDate = joinDate.dateValue()
+        var nt = ""
+        if notificationToken.count != 0 {
+            nt = notificationToken[0]
+        }
+        user.notificationToken = nt
+    }
+    
+    override func createUser() -> User {
+        
+        let user = super.createUser()
         user.picNum = picNum
+        user.profilePicIndex = profilePicIndex
+        user.picIndices = picIndices
+        user.userId = userId
+        user.username = username
+        user.firstName = firstName
+        user.lastName = lastName
+        user.birthday = birthday.dateValue()
+        user.joinDate = joinDate.dateValue()
+        var nt = ""
+        if notificationToken.count != 0 {
+            nt = notificationToken[0]
+        }
+        user.notificationToken = nt
+
+        return user
+    }
+}
+ 
+class UserUpdateCoder: Codable {
+    
+    var bio: String
+    var interests: [Interests]
+    var school: String?
+    var gender: String
+
+    
+    init(user: User) {
+        self.bio = user.bio
+        self.interests = user.interests
+        self.school = user.school
+        self.gender = user.gender
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case school = "school"
+        case interests = "interests"
+        case gender = "gender"
+        case bio = "bio"
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.bio = try container.decode(String.self, forKey: .bio)
+        self.gender = try container.decode(String.self, forKey: .gender)
+        self.interests = try container.decode([Interests].self, forKey: .interests)
+        self.school = try container.decode(String.self, forKey: .school)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(bio, forKey: .bio)
+        try container.encode(gender, forKey: .gender)
+        try container.encode(school, forKey: .school)
+        try container.encode(interests, forKey: .interests)
+    }
+    
+    
+    public func createUser() -> User{
+        return User(
+            gender: gender,
+            bio: bio,
+            school: school,
+            interests: interests
+        )
+    }
+    
+    public func updateUser(_ user: User) {
         user.bio = bio
         user.school = school
         user.interests = interests
-        user.joinDate = joinDate.dateValue()
-        user.picIndices = picIndices
-        user.profilePicIndex = profilePicIndex
+        user.gender = gender
     }
 }
 
 public class User : CustomStringConvertible, Equatable {
     func getEncoder() -> UserCoder {
         let encoder = UserCoder(user: self)
+        return encoder
+    }
+    
+    func getUpdateEncoder() -> UserUpdateCoder {
+        let encoder = UserUpdateCoder(user: self)
         return encoder
     }
     
@@ -749,6 +796,8 @@ public class User : CustomStringConvertible, Equatable {
                 completionUpdates(.failure(err))
             }
         })
+        
+        
     }
 //        switch status{
 //        case .UserProfile:
