@@ -733,7 +733,8 @@ public class User : CustomStringConvertible, Equatable {
     
     //load someone's profile
     public func load(status: UserLoadType, dataCompletion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL],Error>) -> Void) {
-        UserCache.loadUser(us: self, loadLevel: status, loadFriends: false, completion: { res in
+        let a = UserCache.get()
+        a.loadUser(us: self, loadLevel: status, loadFriends: false, completion: { res in
             switch res {
             case .success(let user):
                 dataCompletion(.success(user))
