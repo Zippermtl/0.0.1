@@ -327,6 +327,7 @@ class LoginViewController: UIViewController {
         phoneField.tintColor = .white
         phoneField.textColor = .white
         phoneField.delegate = self
+        phoneField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
         
         let string              = "We will send a text with a verification code. Message and data rates may apply. Learn what happens when your number changes."
         let range               = (string as NSString).range(of: "Learn what happens when your number changes.")
@@ -345,7 +346,12 @@ class LoginViewController: UIViewController {
         let explanationTap = UITapGestureRecognizer(target: self, action: #selector(didTapLearnMore))
         explanationLabel.addGestureRecognizer(explanationTap)
         
-        countryCodeLabel.text = "CA +1"
+        if NSLocale.current.regionCode == "US" {
+            countryCodeLabel.text = "US +1"
+
+        } else {
+            countryCodeLabel.text = "CA +1"
+        }
         countryCodeLabel.backgroundColor = .zipLightGray
         countryCodeLabel.textAlignment = .center
         countryCodeLabel.isUserInteractionEnabled = true
@@ -380,6 +386,48 @@ class LoginViewController: UIViewController {
     @objc func dismissKeyboard() {
         view.endEditing(true)
         phoneField.resignFirstResponder()
+    }
+    
+    @objc private func textDidChange() {
+        if var phoneText = phoneField.text {
+            phoneText = phoneText.replacingOccurrences(of: "(", with: "")
+            phoneText = phoneText.replacingOccurrences(of: ")", with: "")
+            phoneText = phoneText.replacingOccurrences(of: "-", with: "")
+            phoneText = phoneText.replacingOccurrences(of: " ", with: "")
+
+            let numsArr = Array(phoneText)
+            if phoneText.count < 3 {
+                phoneField.text = "(\(phoneText)"
+            } else if phoneText.count < 6 {
+                var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
+                for i in 3..<numsArr.count {
+                    text += String(numsArr[i])
+                }
+                phoneField.text = text
+            } else {
+                var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
+                for i in 3..<6 {
+                    text += String(numsArr[i])
+                }
+                text += " - "
+                for i in 6..<numsArr.count {
+                    text += String(numsArr[i])
+                }
+                phoneField.text = text
+            }
+                    
+            
+        }
+            
+//            var nums = phoneField.text?.replacingOccurrences(of: "-", with: "")
+//        nums = nums.replacingOccurrences(of: "(", with: "")
+//        nums = nums.replacingOccurrences(of: ")", with: "")
+//        nums = nums.replacingOccurrences(of: " ", with: "")
+//        print("nums = \(nums)")
+//        let numsArr = Array(nums)
+//        print(numsArr)
+            
+        
     }
     
     @objc private func openDD() {
@@ -439,7 +487,6 @@ class LoginViewController: UIViewController {
 //        title = "Log In/Register"
         view.backgroundColor = .zipGray
         continueButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
-        
         
     }
     
@@ -516,8 +563,17 @@ extension LoginViewController: UITextFieldDelegate {
         return true
     }
     
+    
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let ACCEPTABLE_CHARACTERS = "0123456789-() "
+        if var nums = textField.text?.replacingOccurrences(of: "-", with: "") {
+            nums = nums.replacingOccurrences(of: "(", with: "")
+            nums = nums.replacingOccurrences(of: ")", with: "")
+            nums = nums.replacingOccurrences(of: " ", with: "")
+            if nums.count >= 10 { return false }
+        }
+        
+        let ACCEPTABLE_CHARACTERS = "0123456789"
         let cs = NSCharacterSet(charactersIn: ACCEPTABLE_CHARACTERS).inverted
         let filtered = string.components(separatedBy: cs).joined(separator: "")
         return (string == filtered)

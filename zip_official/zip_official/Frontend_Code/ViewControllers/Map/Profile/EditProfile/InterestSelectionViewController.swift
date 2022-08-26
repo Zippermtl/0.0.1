@@ -16,6 +16,7 @@ class InterestSelectionViewController: UIViewController {
     var interests: [Interests] = []
     var delegate: UpdateInterestsProtocol?
     var collectionView: UICollectionView
+    var interestCount: UIBarButtonItem!
 
     init(interests: [Interests]){
         self.interests = interests
@@ -45,10 +46,7 @@ class InterestSelectionViewController: UIViewController {
     
 
     
-    @objc private func didTapDoneButton(){
-        delegate?.updateInterests(interests)
-        navigationController?.popViewController(animated: true)
-    }
+
     
     
     override func viewDidLoad() {
@@ -57,10 +55,13 @@ class InterestSelectionViewController: UIViewController {
         navigationItem.title = "Edit Interests"
         navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
-                                                            style: UIBarButtonItem.Style.done,
+        interestCount = UIBarButtonItem(title: "\(interests.count)/5",
+                                                            style: .done,
                                                             target: self,
-                                                            action: #selector(didTapDoneButton))
+                                                            action: nil)
+        interestCount.setTitleTextAttributes([.font : UIFont.zipTextFill, .foregroundColor : UIColor.white], for: .normal)
+        
+        navigationItem.rightBarButtonItem = interestCount
         
     }
 }
@@ -111,6 +112,8 @@ extension InterestSelectionViewController: UICollectionViewDataSource {
             cell.select()
 
         }
+        interestCount.title =  "\(interests.count)/5"
+        delegate?.updateInterests(interests)
         interests.sort(by: {$0.rawValue < $1.rawValue})
     }
     

@@ -181,9 +181,10 @@ class EditProfileViewController: UIViewController {
     
     //MARK: - Nav Bar Config
     private func configureNavBar(){
+        navigationItem.backBarButtonItem = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.title = "Edit Profile"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
-                                                            style: UIBarButtonItem.Style.done,
+                                                            style: .done,
                                                             target: self,
                                                             action: #selector(didTapDoneButton))
     }
@@ -319,7 +320,6 @@ extension EditProfileViewController :  UITableViewDataSource {
             return cell
         default: return UITableViewCell()
         }
-        
     }
 }
 
