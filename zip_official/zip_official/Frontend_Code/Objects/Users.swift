@@ -750,6 +750,10 @@ public class User : CustomStringConvertible, Equatable {
             }
         })
     }
+    
+//    public func upload(completion: (Error?) -> Void){
+//        
+//    }
 //        switch status{
 //        case .UserProfile:
 //            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
