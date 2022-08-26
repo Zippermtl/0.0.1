@@ -389,55 +389,60 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func textDidChange() {
+        configureNumber(phoneText: getNumText())
+    }
+    
+    private func getNumText() -> String {
         if var phoneText = phoneField.text {
             phoneText = phoneText.replacingOccurrences(of: "(", with: "")
             phoneText = phoneText.replacingOccurrences(of: ")", with: "")
             phoneText = phoneText.replacingOccurrences(of: "-", with: "")
             phoneText = phoneText.replacingOccurrences(of: " ", with: "")
 
-            let numsArr = Array(phoneText)
-            if countryCode == "+1" {
-                if phoneText.count < 3 {
-                    phoneField.text = "(\(phoneText)"
-                } else if phoneText.count < 6 {
-                    var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
-                    for i in 3..<numsArr.count {
-                        text += String(numsArr[i])
-                    }
-                    phoneField.text = text
-                } else {
-                    var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
-                    for i in 3..<6 {
-                        text += String(numsArr[i])
-                    }
-                    text += " - "
-                    for i in 6..<numsArr.count {
-                        text += String(numsArr[i])
-                    }
-                    phoneField.text = text
-                }
-            } else {
-                if phoneText.count == 1 {
-                    phoneField.text = phoneText + " "
-                } else if phoneText.count ==  3 {
-                    phoneField.text = "\(numsArr[0]) \(numsArr[1])\(numsArr[2])"
-                }
-            }
             
                     
-            
+            return phoneText
         }
-            
-//            var nums = phoneField.text?.replacingOccurrences(of: "-", with: "")
-//        nums = nums.replacingOccurrences(of: "(", with: "")
-//        nums = nums.replacingOccurrences(of: ")", with: "")
-//        nums = nums.replacingOccurrences(of: " ", with: "")
-//        print("nums = \(nums)")
-//        let numsArr = Array(nums)
-//        print(numsArr)
-            
-        
+        return ""
     }
+    
+    private func configureNumber(phoneText: String) {
+        if phoneText.isEmpty {
+            phoneField.text = ""
+            return
+        }
+        
+        let numsArr = Array(phoneText)
+        if countryCode == "+1" {
+            if phoneText.count < 3 {
+                phoneField.text = "(\(phoneText)"
+            } else if phoneText.count < 6 {
+                var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
+                for i in 3..<numsArr.count {
+                    text += String(numsArr[i])
+                }
+                phoneField.text = text
+            } else {
+                var text = "(\(numsArr[0])\(numsArr[1])\(numsArr[2])) - "
+                for i in 3..<6 {
+                    text += String(numsArr[i])
+                }
+                text += " - "
+                for i in 6..<numsArr.count {
+                    text += String(numsArr[i])
+                }
+                phoneField.text = text
+            }
+        } else {
+            if phoneText.count == 1 {
+                phoneField.text = phoneText + " "
+            } else if phoneText.count ==  3 {
+                phoneField.text = "\(numsArr[0]) \(numsArr[1])\(numsArr[2])"
+            }
+        }
+    }
+    
+    
     
     @objc private func openDD() {
         countryCodeDD.show()
@@ -541,7 +546,7 @@ class LoginViewController: UIViewController {
         explanationLabel.widthAnchor.constraint(equalTo: view.widthAnchor,multiplier: 0.7).isActive = true
         
         continueButton.translatesAutoresizingMaskIntoConstraints = false
-        continueButton.bottomAnchor.constraint(equalTo: pageStatus1.topAnchor, constant: -10).isActive = true
+        continueButton.bottomAnchor.constraint(equalTo: pageStatus1.topAnchor, constant: -40).isActive = true
         continueButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         continueButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1/3).isActive = true
         continueButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
@@ -575,14 +580,22 @@ extension LoginViewController: UITextFieldDelegate {
     
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+
+        if string == "" {
+            var nums = getNumText()
+            if !nums.isEmpty {
+                nums.removeLast()
+            }
+            configureNumber(phoneText: nums)
+            return false
+        }
+
         var max = 10
         if countryCode == "+33" { max = 9}
-        if var nums = textField.text?.replacingOccurrences(of: "-", with: "") {
-            nums = nums.replacingOccurrences(of: "(", with: "")
-            nums = nums.replacingOccurrences(of: ")", with: "")
-            nums = nums.replacingOccurrences(of: " ", with: "")
-            if nums.count >= max { return false }
-        }
+        let nums = getNumText()
+
+        if nums.count + string.count > max { return false }
+        
         
         let ACCEPTABLE_CHARACTERS = "0123456789"
         let cs = NSCharacterSet(charactersIn: ACCEPTABLE_CHARACTERS).inverted

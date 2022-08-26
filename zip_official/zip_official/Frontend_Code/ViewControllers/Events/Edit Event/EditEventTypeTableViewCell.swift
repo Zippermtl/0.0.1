@@ -27,8 +27,7 @@ extension EditEventProfileViewController {
             
             closedButton.backgroundColor = .zipLightGray
 
-            closedButton.layer.borderWidth = 3
-            closedButton.layer.borderColor = UIColor.zipBlue.cgColor
+          
             closedButton.layer.masksToBounds = true
             closedButton.layer.cornerRadius = 10
             
@@ -59,7 +58,7 @@ extension EditEventProfileViewController {
     
         public func configure(event: Event) {
             switch event.getType() {
-            case .Open: openButton.backgroundColor = .zipGreen
+            case .Open: openButton.backgroundColor = .zipBlue
             case .Closed: closedButton.backgroundColor = .zipBlue
             default: break
             }

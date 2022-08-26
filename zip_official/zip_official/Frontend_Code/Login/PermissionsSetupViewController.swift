@@ -145,12 +145,17 @@ class PermissionsSetupViewController: UIViewController {
                 
 
         if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
-            print("location services not enabled")
-            let vc = LocationDeniedViewController()
-            navigationController?.pushViewController(vc, animated: true)
+            let vc = MapViewController(isNewAccount: false)
+            let navVC = UINavigationController(rootViewController: vc)
+            navVC.modalPresentationStyle = .overFullScreen
+            navVC.modalTransitionStyle = .crossDissolve
+            present(navVC, animated: true, completion: nil)
         } else {
-            let vc = MapViewController(isNewAccount: true)
-            navigationController?.pushViewController(vc, animated: true)
+            let vc = MapViewController(isNewAccount: false)
+            let navVC = UINavigationController(rootViewController: vc)
+            navVC.modalPresentationStyle = .overFullScreen
+            navVC.modalTransitionStyle = .crossDissolve
+            present(navVC, animated: true, completion: nil)
         }
         
 

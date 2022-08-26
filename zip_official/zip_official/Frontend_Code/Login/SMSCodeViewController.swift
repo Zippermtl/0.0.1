@@ -219,7 +219,7 @@ class SMSCodeViewController: UIViewController {
         explanationLabel.widthAnchor.constraint(equalTo: view.widthAnchor,multiplier: 0.7).isActive = true
         
         confirmButton.translatesAutoresizingMaskIntoConstraints = false
-        confirmButton.bottomAnchor.constraint(equalTo: pageStatus1.topAnchor, constant: -10).isActive = true
+        confirmButton.bottomAnchor.constraint(equalTo: pageStatus1.topAnchor, constant: -35).isActive = true
         confirmButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         confirmButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 1/3).isActive = true
         confirmButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
@@ -249,7 +249,7 @@ class SMSCodeViewController: UIViewController {
 
     
     private func continuteRegistration(){
-        let vc = GenderSelectViewController(user: user)
+        let vc = BasicProfileSetupViewController(user: user)
         navigationController?.pushViewController(vc, animated: true)
     }
     

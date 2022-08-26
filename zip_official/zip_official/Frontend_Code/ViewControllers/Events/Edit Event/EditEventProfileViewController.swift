@@ -76,7 +76,6 @@ class EditEventProfileViewController: UIViewController {
                 let id = strongSelf.event.eventId
                 let pp = PictureHolder(image: strongSelf.profilePic.image!)
                 pp.isEdited = true
-                let key = "eventCoverIndex"
                 DatabaseManager.shared.updateImages(key: id, images: [pp], imageType: DatabaseManager.ImageType.eventCoverIndex, completion: { [weak self] res in
                     switch res{
                     case .success(let urls):

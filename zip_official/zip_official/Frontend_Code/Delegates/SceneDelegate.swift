@@ -30,7 +30,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        let navVC = UINavigationController(rootViewController: vc)
 //        window?.rootViewController = navVC
         
-//        let vc = CustomizeEventViewController(event: PromoterEvent())
+//        let vc = BasicProfileSetupViewController(user: User())
 //        let navVC = UINavigationController(rootViewController: vc)
 //        window?.rootViewController = navVC
         
@@ -42,7 +42,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
             if checkUserDefaults() {
                 window?.rootViewController = UINavigationController(rootViewController: LoadingViewController())
-                
+
             } else {
                 do {
                     try FirebaseAuth.Auth.auth().signOut()

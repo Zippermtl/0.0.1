@@ -17,8 +17,11 @@ class StatusCheckView: UIView {
         case selected
     }
 
-    private let checkMark = UIImageView(image: UIImage(systemName: "checkmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue))
-    private let xMark = UIImageView(image: UIImage(systemName:  "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.red))
+    
+    private let checkMark = UIImage(systemName: "checkmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
+    private let xMark = UIImage(systemName:  "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.red)
+    private let clearMark = UIImage(systemName:  "circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+    private let imageView = UIImageView()
     
     public var status = StatusCheck(rawValue: 0)
     
@@ -33,51 +36,40 @@ class StatusCheckView: UIView {
     }
     
     private func configure(){
-        backgroundColor = .zipVeryLightGray
-        addSubview(checkMark)
-        addSubview(xMark)
-        
-        xMark.translatesAutoresizingMaskIntoConstraints = false
-        xMark.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        xMark.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-        xMark.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        xMark.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        
-        checkMark.translatesAutoresizingMaskIntoConstraints = false
-        checkMark.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        checkMark.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-        checkMark.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        checkMark.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        backgroundColor = .clear
+        addSubview(imageView)
+        imageView.image = clearMark
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        imageView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        imageView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        imageView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
 
-        checkMark.isHidden = true
-        xMark.isHidden = true
     }
     
     public func clear(){
         backgroundColor = .zipVeryLightGray
-        checkMark.isHidden = true
-        xMark.isHidden = true
+        imageView.image = clearMark
         status = .neutral
     }
     
     public func accept(){
         backgroundColor = .clear
-        checkMark.isHidden = false
-        xMark.isHidden = true
+        imageView.image = checkMark
         status = .accept
     }
     
     public func reject(){
         backgroundColor = .clear
-        checkMark.isHidden = true
-        xMark.isHidden = false
+        imageView.image = xMark
         status = .reject
     }
     
     public func select(){
         backgroundColor = .zipBlue
-        checkMark.isHidden = true
-        xMark.isHidden = true
+        imageView.image = clearMark
+//        checkMark.isHidden = true
+//        xMark.isHidden = true
         status = .selected
     }
     

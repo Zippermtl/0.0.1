@@ -368,6 +368,10 @@ extension AbstractProfileViewController: UITableViewDelegate {
 
 
 extension AbstractProfileViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.separatorInset = .zero
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tableCells.count
     }

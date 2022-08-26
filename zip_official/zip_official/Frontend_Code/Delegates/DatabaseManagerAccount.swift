@@ -41,9 +41,23 @@ extension DatabaseManager {
         }
     }
     
-    public func checkUsernameExists(username: String){
-        firestore.collection("EventProfiles").whereField("username", isEqualTo: username).getDocuments() { [weak self] (querySnapshot, err) in
-            
+    public func checkUsernameExists(username: String, completion: @escaping (Bool) -> Void){
+        firestore.collection("UserProfiles").whereField("username", isEqualTo: username).getDocuments() {(querySnapshot, err) in
+            guard err == nil else {
+                return
+            }
+        
+            guard let snapshot = querySnapshot else {
+                completion(true)
+                return
+            }
+        
+            print(snapshot.documents)
+            if !snapshot.documents.isEmpty {
+                completion(true)
+                return
+            }
+            completion(false)
         }
     }
     
