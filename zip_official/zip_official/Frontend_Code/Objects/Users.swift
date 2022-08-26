@@ -700,89 +700,135 @@ public class User : CustomStringConvertible, Equatable {
         case PicUrls = 5
     }
     
+    public func updateSelf(user: User){
+        if (user.userId == self.userId){
+            print("BIG ERROR")
+            return
+        } else {
+            self.username = user.username
+            self.firstName = user.firstName
+            self.lastName = user.lastName
+            self.birthday = user.birthday
+            self.picNum = user.picNum
+            self.bio = user.bio
+            self.school = user.school
+            self.interests = user.interests
+            self.friendships = user.friendships
+            self.notificationPreferences = user.notificationPreferences
+            self.deviceId = user.deviceId
+            self.notificationToken = user.notificationToken
+            self.gender = user.gender
+            self.email = user.email
+            self.friendshipStatus = user.friendshipStatus
+            self.location = user.location
+            self.pictures = user.pictures
+            self.pictureURLs = user.pictureURLs
+            self.profilePicIndex = user.profilePicIndex
+            self.profilePicUrl = user.profilePicUrl
+            self.picIndices = user.picIndices
+            self.previousEvents = user.previousEvents
+            self.goingEvents = user.goingEvents            
+        }
+    }
+    
     //load someone's profile
     public func load(status: UserLoadType, dataCompletion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL],Error>) -> Void) {
-        switch status{
-        case .UserProfile:
-            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
-                switch results {
-                case .success(let user):
-                    dataCompletion(.success(user))
-                case .failure(let error):
-                    print("error load in LoadUser -> LoadUserProfile \(error)")
-                    dataCompletion(.failure(error))
-                }
-            })
-        case .UserProfileUpdates:
-            DatabaseManager.shared.loadUserProfile(given: self, dataCompletion: { res in
-                switch res{
-                case .success(let user):
-                    dataCompletion(.success(user))
-                case .failure(let error):
-                    dataCompletion(.failure(error))
-                }
-            }, pictureCompletion: { res in
-                switch res{
-                case .success(let url):
-                    completionUpdates(.success(url))
-                case .failure(let error):
-                    completionUpdates(.failure(error))
-                }
-            })
-        case .UserProfileNoPic:
-            DatabaseManager.shared.loadUserProfileNoPic(given: self, completion: { res in
-                switch res{
-                case .success(let user):
-                    dataCompletion(.success(user))
-                case .failure(let err):
-                    dataCompletion(.failure(err))
-                }
-            })
-        case .SubView:
-            DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
-                switch results {
-                case .success(let user):
-                    dataCompletion(.success(user))
-                case .failure(let err):
-                    dataCompletion(.failure(err))
-                }
-            })
-        case .ProfilePicUrl:
-            if (self.profilePicIndex) != [] {
-                DatabaseManager.shared.getImages(Id: self.userId, indices: self.profilePicIndex, event: false, completion: { res in
-                    switch res {
-                    case .success(let urls):
-                        completionUpdates(.success(urls))
-                    case .failure(let err):
-                        completionUpdates(.failure(err))
-                    }
-                })
+        UserCache.loadUser(us: self, loadLevel: status, loadFriends: false, completion: { res in
+            switch res {
+            case .success(let user):
+                dataCompletion(.success(user))
+            case .failure(let err):
+                dataCompletion(.failure(err))
             }
-        case .PicUrls:
-            DatabaseManager.shared.getImages(Id: self.userId, indices: self.picIndices, event: false, completion: { res in
-                switch res {
-                case .success(let urls):
-                    completionUpdates(.success(urls))
-                case .failure(let err):
-                    completionUpdates(.failure(err))
-                }
-            })
-//        case 4:
-//            print("add this later for expansion")
-//        default:
+        }, completionUpdates: { res in
+            switch res {
+            case .success(let url):
+                completionUpdates(.success(url))
+            case .failure(let err):
+                completionUpdates(.failure(err))
+            }
+        })
+    }
+//        switch status{
+//        case .UserProfile:
 //            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
 //                switch results {
 //                case .success(let user):
-//                    print("completed user profile copy for: ")
-//                    print("copied \(user.username)")
-//                    completion(true)
+//                    dataCompletion(.success(user))
 //                case .failure(let error):
 //                    print("error load in LoadUser -> LoadUserProfile \(error)")
-//                    completion(false)
+//                    dataCompletion(.failure(error))
 //                }
 //            })
-        }
-    }
+//        case .UserProfileUpdates:
+//            DatabaseManager.shared.loadUserProfile(given: self, dataCompletion: { res in
+//                switch res{
+//                case .success(let user):
+//                    dataCompletion(.success(user))
+//                case .failure(let error):
+//                    dataCompletion(.failure(error))
+//                }
+//            }, pictureCompletion: { res in
+//                switch res{
+//                case .success(let url):
+//                    completionUpdates(.success(url))
+//                case .failure(let error):
+//                    completionUpdates(.failure(error))
+//                }
+//            })
+//        case .UserProfileNoPic:
+//            DatabaseManager.shared.loadUserProfileNoPic(given: self, completion: { res in
+//                switch res{
+//                case .success(let user):
+//                    dataCompletion(.success(user))
+//                case .failure(let err):
+//                    dataCompletion(.failure(err))
+//                }
+//            })
+//        case .SubView:
+//            DatabaseManager.shared.loadUserProfileSubView(given: userId, completion: { results in
+//                switch results {
+//                case .success(let user):
+//                    dataCompletion(.success(user))
+//                case .failure(let err):
+//                    dataCompletion(.failure(err))
+//                }
+//            })
+//        case .ProfilePicUrl:
+//            if (self.profilePicIndex) != [] {
+//                DatabaseManager.shared.getImages(Id: self.userId, indices: self.profilePicIndex, event: false, completion: { res in
+//                    switch res {
+//                    case .success(let urls):
+//                        completionUpdates(.success(urls))
+//                    case .failure(let err):
+//                        completionUpdates(.failure(err))
+//                    }
+//                })
+//            }
+//        case .PicUrls:
+//            DatabaseManager.shared.getImages(Id: self.userId, indices: self.picIndices, event: false, completion: { res in
+//                switch res {
+//                case .success(let urls):
+//                    completionUpdates(.success(urls))
+//                case .failure(let err):
+//                    completionUpdates(.failure(err))
+//                }
+//            })
+////        case 4:
+////            print("add this later for expansion")
+////        default:
+////            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
+////                switch results {
+////                case .success(let user):
+////                    print("completed user profile copy for: ")
+////                    print("copied \(user.username)")
+////                    completion(true)
+////                case .failure(let error):
+////                    print("error load in LoadUser -> LoadUserProfile \(error)")
+////                    completion(false)
+////                }
+////            })
+//        }
     
     
     

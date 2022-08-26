@@ -25,44 +25,173 @@ public class UserCache {
         return cache
     }
     
-    func loadUser(id: String, loadLevel: User.UserLoadType, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void) {
-        if let cachedUser = cache[id] {
+    public func load(user: User, status: User.UserLoadType, dataCompletion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL],Error>) -> Void) {
+        switch status{
+        case .UserProfile:
+            DatabaseManager.shared.loadUserProfile(given: user, completion: { results in
+                switch results {
+                case .success(let u):
+                    user.updateSelf(user: u)
+                    dataCompletion(.success(u))
+                case .failure(let error):
+                    print("error load in LoadUser -> LoadUserProfile \(error)")
+                    dataCompletion(.failure(error))
+                }
+            })
+        case .UserProfileUpdates:
+            DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { res in
+                switch res{
+                case .success(let u):
+                    user.updateSelf(user: u)
+                    dataCompletion(.success(u))
+                case .failure(let error):
+                    dataCompletion(.failure(error))
+                }
+            }, pictureCompletion: { res in
+                switch res{
+                case .success(let url):
+                    if(url.count > 0){
+                        user.profilePicUrl = url[0]
+                    }
+                    completionUpdates(.success(url))
+                case .failure(let error):
+                    completionUpdates(.failure(error))
+                }
+            })
+        case .UserProfileNoPic:
+            DatabaseManager.shared.loadUserProfileNoPic(given: user, completion: { res in
+                switch res{
+                case .success(let u):
+                    user.updateSelf(user: u)
+                    dataCompletion(.success(u))
+                case .failure(let err):
+                    dataCompletion(.failure(err))
+                }
+            })
+        case .SubView:
+            DatabaseManager.shared.loadUserProfileSubView(given: user.userId, completion: { results in
+                switch results {
+                case .success(let u):
+                    user.updateSelf(user: u)
+                    dataCompletion(.success(u))
+                case .failure(let err):
+                    dataCompletion(.failure(err))
+                }
+            })
+        case .ProfilePicUrl:
+            if (user.profilePicIndex) != [] {
+                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
+                    switch res {
+                    case .success(let urls):
+                        if(urls.count > 0){
+                            user.profilePicUrl = urls[0]
+                        }
+                        completionUpdates(.success(urls))
+                    case .failure(let err):
+                        completionUpdates(.failure(err))
+                    }
+                })
+            }
+        case .PicUrls:
+            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
+                switch res {
+                case .success(let urls):
+                    user.pictureURLs = urls
+                    completionUpdates(.success(urls))
+                case .failure(let err):
+                    completionUpdates(.failure(err))
+                }
+            })
+//        case 4:
+//            print("add this later for expansion")
+//        default:
+//            DatabaseManager.shared.loadUserProfile(given: self, completion: { results in
+//                switch results {
+//                case .success(let user):
+//                    print("completed user profile copy for: ")
+//                    print("copied \(user.username)")
+//                    completion(true)
+//                case .failure(let error):
+//                    print("error load in LoadUser -> LoadUserProfile \(error)")
+//                    completion(false)
+//                }
+//            })
+        }
+    }
+    func loadUser(us: User, loadLevel: User.UserLoadType, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL], Error>) -> Void) {
+        if let cachedUser = cache[us.userId] {
             // Use the cached version
+            us.updateSelf(user: cachedUser)
             completion(.success(cachedUser))
             return
         }
 
         // Create object and store it in the cache
-        let u = User(userId: id)
-        if (loadFriends) {
-            u.loadFriendships(completion: {result in u.load(status: loadLevel, dataCompletion: { [weak self] result in
-                switch result {
-                case .success(let user):
-                    self?.cache[id] = u
+//        let u = User(userId: us.userId)
+        //MARK: COME BACK TOO
+        // does .loadfriendships update user passed in
+        load(user: us, status: loadLevel) { [weak self] res in
+            switch res {
+            case .success(let user):
+                if (loadFriends){
+                    us.loadFriendships(completion: { [weak self] res in
+                        if let err = res {
+                            completion(.failure(err))
+                        } else {
+                            self?.cache[us.userId] = us
+                            self?.increaseSize()
+                            self?.checkBounds()
+                            completion(.success(us))
+                        }
+                    })
+                } else {
+                    self?.cache[us.userId] = us
                     self?.increaseSize()
                     self?.checkBounds()
-                    completion(.success(u))
-                    return
-                case.failure(let err):
-                    completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
-                    return
+                    completion(.success(user))
                 }
-            }, completionUpdates: { res in })})
-        } else {
-            u.load(status: loadLevel, dataCompletion: { [weak self] result in
-                switch result {
-                case .success(let user):
-                        self?.cache[id] = u
-                        self?.increaseSize()
-                        self?.checkBounds()
-                        completion(.success(u))
-                        return
-                case .failure(let err):
-                        completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
-                        return
-                }
-            }, completionUpdates: { _ in})
+//                us.updateSelf(user: user)
+            case .failure(let err):
+                completion(.failure(err))
+            }
+        } completionUpdates: { res2 in
+            switch res2{
+            case .success(let urls):
+                completionUpdates(.success(urls))
+            case .failure(let err):
+                completionUpdates(.failure(err))
+            }
         }
+
+//        if (loadFriends) {
+//            u.loadFriendships(completion: {result in u.load(status: loadLevel, dataCompletion: { [weak self] result in
+//                switch result {
+//                case .success(let user):
+//                    self?.cache[us.userId] = u
+//                    self?.increaseSize()
+//                    self?.checkBounds()
+//                    completion(.success(u))
+//                    return
+//                case.failure(let err):
+//                    completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
+//                    return
+//                }
+//            }, completionUpdates: { res in })})
+//        } else {
+//            u.load(status: loadLevel, dataCompletion: { [weak self] result in
+//                switch result {
+//                case .success(let user):
+//                    self?.cache[us.userI] = u
+//                        self?.increaseSize()
+//                        self?.checkBounds()
+//                        completion(.success(u))
+//                        return
+//                case .failure(let err):
+//                        completion(.failure(DatabaseManager.DatabaseError.failedToFetch))
+//                        return
+//                }
+//            }, completionUpdates: { _ in})
+//        }
     }
     
     func putInCache(newUser: User) {
