@@ -245,7 +245,7 @@ class BasicProfileSetupViewController: UIViewController {
         genderDD.dismissMode = .onTap
         genderDD.direction = .bottom
  
-        genderDD.dataSource = ["I am a Man", "I am a Woman", "Other","Prefer Not to Say"]
+        genderDD.dataSource = ["Man", "Woman", "Other","Prefer Not to Say"]
         genderDD.selectionAction = { [unowned self] (index: Int, item: String) in
             self.genderLabel.text = item
             self.genderLabel.textColor = .white

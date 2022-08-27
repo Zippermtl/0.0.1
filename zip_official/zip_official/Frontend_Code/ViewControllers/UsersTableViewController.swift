@@ -25,6 +25,8 @@ class UsersTableViewController: UIViewController {
     var tableData: [UserCellSectionData]
     var searchBar: UISearchBar
     
+    var noCellsLabel: String?
+    
  
     
     init(users: [User]) {

@@ -21,7 +21,7 @@ class GenderSelectViewController: UIViewController {
     init(user: User) {
         self.user = user
         tableView = UITableView()
-        cellLabels = ["I am a Man", "I am a Woman", "Other", "Prefer Not To Say"]
+        cellLabels = ["Man", "Woman", "Other", "Prefer Not To Say"]
 
         super.init(nibName: nil, bundle: nil)
         navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
