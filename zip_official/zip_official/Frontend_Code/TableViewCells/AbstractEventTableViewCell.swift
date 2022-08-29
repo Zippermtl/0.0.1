@@ -41,7 +41,7 @@ class AbstractEventTableViewCell: UITableViewCell {
         
         let smallConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold, scale: .small)
         self.distanceLabel = DistanceLabel(labelFont: .zipTextDetail, color: .zipVeryLightGray, config: smallConfig)
-        self.timeLabel = IconLabel(iconImage: UIImage(systemName: "clock.fill")?.withConfiguration(smallConfig), labelFont: .zipTextDetail, color: .zipVeryLightGray)
+        self.timeLabel = IconLabel(iconImage: UIImage(systemName: "clock")?.withConfiguration(smallConfig), labelFont: .zipTextDetail, color: .zipVeryLightGray)
         self.dateLabel = IconLabel(iconImage: UIImage(systemName: "calendar")?.withConfiguration(smallConfig), labelFont: .zipTextDetail, color: .zipVeryLightGray)
 
         super.init(style: style, reuseIdentifier: reuseIdentifier)

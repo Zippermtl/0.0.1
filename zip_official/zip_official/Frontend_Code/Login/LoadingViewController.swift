@@ -144,17 +144,12 @@ class LoadingViewController: UIViewController {
         })
         
         
-        DatabaseManager.shared.getAllHostedEventsForMap(eventCompletion: { _ in }, allCompletion: { result in
-            
-        })
+        DatabaseManager.shared.getAllHostedEventsForMap(eventCompletion: { _ in }, allCompletion: { result in })
         
         DatabaseManager.shared.getAllStoredEventsForUser(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
-                                                         savedCompletion: { events in
-            AppDelegate.userDefaults.set(events.map({ $0.eventId}), forKey: "savedEvents")
-        },
-                                                         goingCompletion: { events in
-            AppDelegate.userDefaults.set(events.map({ $0.eventId}), forKey: "goingEvents")
-        })
+                                                         completion: {})
+        
+        DatabaseManager.shared.getAllGoingEvents(eventCompletion: { event in }, allCompletion: { events in })
     }
     
     private func isLocationEnabled() -> Bool {

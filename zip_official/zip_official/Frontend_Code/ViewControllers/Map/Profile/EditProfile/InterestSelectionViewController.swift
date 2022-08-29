@@ -59,7 +59,7 @@ class InterestSelectionViewController: UIViewController {
                                                             style: .done,
                                                             target: self,
                                                             action: nil)
-        interestCount.setTitleTextAttributes([.font : UIFont.zipTextFill, .foregroundColor : UIColor.white], for: .normal)
+        interestCount.setTitleTextAttributes([.font : UIFont.zipSubtitle2, .foregroundColor : UIColor.white], for: .normal)
         
         navigationItem.rightBarButtonItem = interestCount
         
@@ -113,6 +113,11 @@ extension InterestSelectionViewController: UICollectionViewDataSource {
 
         }
         interestCount.title =  "\(interests.count)/5"
+        if interests.count == 5 {
+            interestCount.setTitleTextAttributes([.font : UIFont.zipSubtitle2, .foregroundColor : UIColor.red], for: .normal)
+        } else {
+            interestCount.setTitleTextAttributes([.font : UIFont.zipSubtitle2, .foregroundColor : UIColor.white], for: .normal)
+        }
         delegate?.updateInterests(interests)
         interests.sort(by: {$0.rawValue < $1.rawValue})
     }

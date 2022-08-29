@@ -47,8 +47,8 @@ public class PromoterEvent: Event {
     override func getParticipants() -> [UserCellSectionData] {
         let going = UserCellSectionData(title: "Going",
                                         users: usersGoing)
-        let invited = UserCellSectionData(title: "Invited",
-                                          users: usersInvite.filter({ !(usersGoing.contains($0) || usersNotGoing.contains($0)) }))
+        let invited = UserCellSectionData(title: "Not Going",
+                                          users: usersNotGoing)
         
         let sections = [going, invited]
         return sections

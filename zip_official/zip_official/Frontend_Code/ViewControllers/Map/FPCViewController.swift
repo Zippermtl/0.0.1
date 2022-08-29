@@ -66,8 +66,8 @@ class FPCViewController: UIViewController {
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         self.findEventsIcon = IconButton(text: "Find\nEvents", icon: UIImage(systemName: "calendar"), config: iconConfig )
         self.createEventIcon = IconButton(text: "Create\nEvent", icon: UIImage(systemName: "calendar.badge.plus"), config: iconConfig )
-        self.notificationIcon = IconButton(text: "Notifications", icon: UIImage(systemName: "bell.fill"), config: iconConfig )
-        self.messagesIcon = IconButton(text:  "Messages", icon: UIImage(systemName: "message.fill"), config: iconConfig )
+        self.notificationIcon = IconButton(text: "Notifications", icon: UIImage(systemName: "bell"), config: iconConfig )
+        self.messagesIcon = IconButton.messageIcon()
         
         self.icons = [findEventsIcon, createEventIcon, notificationIcon, messagesIcon]
         

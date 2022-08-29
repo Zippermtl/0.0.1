@@ -246,6 +246,7 @@ class BasicProfileSetupViewController: UIViewController {
         genderDD.direction = .bottom
  
         genderDD.dataSource = ["Man", "Woman", "Other","Prefer Not to Say"]
+        genderDD.textFont = .zipSubtitle2
         genderDD.selectionAction = { [unowned self] (index: Int, item: String) in
             self.genderLabel.text = item
             self.genderLabel.textColor = .white

@@ -36,11 +36,6 @@ class ReportViewController: UIViewController {
             case .Danger: return "Someone is in Danger"
             }
         }
-        
-        func report(message: String) {
-            
-
-        }
     }
     
     private class ReportCaster {
@@ -375,7 +370,7 @@ class ReportViewController: UIViewController {
             cancelButton = UIButton()
             
             super.init(frame: .zero)
-            backgroundColor = .zipGray
+            backgroundColor = .zipLightGray
             layer.masksToBounds = true
             layer.cornerRadius = 15
             
@@ -397,6 +392,8 @@ class ReportViewController: UIViewController {
             textView.delegate = self
             textView.text = "Tell us a little about your report..."
             textView.textColor = .zipVeryLightGray
+            textView.backgroundColor = .zipGray
+
         
             addSubviews()
             configureSubviewLayout()

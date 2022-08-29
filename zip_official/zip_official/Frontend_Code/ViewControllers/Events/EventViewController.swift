@@ -9,6 +9,7 @@ import UIKit
 import MapKit
 import CoreLocation
 import JGProgressHUD
+import DropDown
 
 
 class EventViewController: UIViewController {
@@ -46,6 +47,7 @@ class EventViewController: UIViewController {
     
     // MARK: - Buttons
     let goingButton: UIButton
+    var goingDD: DropDown
     let inviteButton: UIButton?
     
     let saveButton: IconButton
@@ -60,6 +62,8 @@ class EventViewController: UIViewController {
     var descriptionCell : UITableViewCell?
     var priceCell: UITableViewCell?
     var linkCell: UITableViewCell?
+    
+    private var reportView : ReportMessageView
 
 
     init(event: Event) {
@@ -82,12 +86,18 @@ class EventViewController: UIViewController {
         userCountLabel.textColor = .zipVeryLightGray
         self.goingButton = UIButton()
         self.inviteButton = UIButton()
-        
+        self.goingDD = DropDown()
         self.messageButton = IconButton.messageIcon()
         self.messageButton.setTextLabel(s: "Contact")
+        let saveConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
         self.saveButton = IconButton(text: "Save",
-                                     icon: UIImage(systemName: "bookmark.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-                                     config: UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large))
+                                     icon: UIImage(systemName: "bookmark")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+                                     config: saveConfig)
+        
+        
+        saveButton.iconButton.setImage(UIImage(systemName: "bookmark.fill")?.withRenderingMode(.alwaysOriginal)
+            .withTintColor(.white)
+            .withConfiguration(saveConfig), for: .selected)
         
         self.participantsButton = IconButton.zipsIcon()
         participantsButton.setTextLabel(s: "Participants")
@@ -95,6 +105,9 @@ class EventViewController: UIViewController {
         self.liveView = UIView()
         
         self.cellConfigureations = []
+        
+        reportView = ReportMessageView()
+        reportView.isHidden = true
         super.init(nibName: nil, bundle: nil)
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         if event.usersGoing.contains(User(userId: userId)) {
@@ -107,9 +120,12 @@ class EventViewController: UIViewController {
         }
         
         goingButton.backgroundColor = .zipLightGray
-        
-        if event.usersGoing.contains(User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)) {
-            goingButton.setTitle("Going", for: .normal)
+        goingButton.setTitle("RSVP", for: .normal)
+        if event.usersGoing.contains(User(userId: userId)) {
+            goingUI()
+        }
+        if event.usersNotGoing.contains(User(userId: userId)) {
+           notGoingUI()
         }
         goingButton.titleLabel?.textColor = .white
         goingButton.titleLabel?.font = .zipSubtitle2
@@ -125,7 +141,18 @@ class EventViewController: UIViewController {
             inviteButton.contentVerticalAlignment = .center
         }
         
-      
+        goingDD.anchorView = goingButton
+        goingDD.dismissMode = .onTap
+        goingDD.direction = .bottom
+        goingDD.textFont = .zipSubtitle2
+        goingDD.dataSource = ["Going", "Not Going"]
+        goingDD.selectionAction = { [unowned self] (index: Int, item: String) in
+            if item == "Going" {
+                self.markGoing()
+            } else {
+                self.markNotGoing()
+            }
+        }
         
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
         let img = UIImage(systemName: "chevron.compact.up", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
@@ -149,7 +176,11 @@ class EventViewController: UIViewController {
         liveView.isHidden = true
         liveView.layer.masksToBounds = true
         
-
+        let dismissReportTap = UITapGestureRecognizer(target: self, action: #selector(dismissReport))
+        tableView.addGestureRecognizer(dismissReportTap)
+        
+        countDownLabel.textAlignment = .center
+        
         configureNavBar()
         configureTable()
     }
@@ -158,6 +189,9 @@ class EventViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    @objc private func dismissReport(){
+        slideDown(view: reportView, completion: { b in })
+    }
 
     @objc private func refresh(){        
         fetchEvent(completion: { [weak self] in
@@ -170,53 +204,96 @@ class EventViewController: UIViewController {
     
     //MARK: - Button Actions
     @objc func didTapReportButton(){
-        print("Report tapped")
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Report", style: .default, handler: { [weak self] _ in
+            
+            let reportAlert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+            
+            for context in ReportContext.allCases {
+                reportAlert.addAction(UIAlertAction(title: context.description, style: .default, handler: { [weak self] _ in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    strongSelf.reportView.update(context: context)
+                    strongSelf.slideUp(view: strongSelf.reportView, completion: { b in })
+                }))
+            }
+            
+            
+            reportAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                
+            }))
+            
+            self?.present(reportAlert, animated: true)
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            
+        }))
+        
+        present(alert, animated: true)
+    }
+    
+
+    
+    private func markGoing(){
+        DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+            
+            guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+            
+            if let idx = strongSelf.event.usersNotGoing.firstIndex(of: User(userId: userId)) {
+                strongSelf.event.usersNotGoing.remove(at: idx)
+            }
+            strongSelf.event.usersGoing.append(User(userId: userId))
+            
+            DispatchQueue.main.async {
+                strongSelf.goingUI()
+                strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
+            }
+
+        })
+    }
+    
+    private func markNotGoing() {
+        DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+            
+            guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+            
+            if let idx = strongSelf.event.usersGoing.firstIndex(of: User(userId: userId)) {
+                strongSelf.event.usersGoing.remove(at: idx)
+            }
+            strongSelf.event.usersNotGoing.append(User(userId: userId))
+            
+            DispatchQueue.main.async {
+                strongSelf.notGoingUI()
+                strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
+            }
+        })
     }
     
     @objc func didTapGoingButton(){
-        if !isGoing {
-            DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
-                guard let strongSelf = self,
-                      error == nil else {
-                    return
-                }
-                
-                guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
-                strongSelf.event.usersGoing.append(User(userId: userId))
-                
-                DispatchQueue.main.async {
-                    strongSelf.goingUI()
-                    strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
-                }
-
-            })
-        } else {
-            DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
-                guard let strongSelf = self,
-                      error == nil else {
-                    return
-                }
-                
-                guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String,
-                      let idx = strongSelf.event.usersGoing.firstIndex(of: User(userId: userId)) else { return }
-                strongSelf.event.usersGoing.remove(at: idx)
-                DispatchQueue.main.async {
-                    strongSelf.notGoingUI()
-                    strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
-                }
-                
-            })
-        }
+        goingDD.show()
     }
     
     private func goingUI(){
+        goingButton.setTitle("Going", for: .normal)
         isGoing = true
-        goingButton.backgroundColor = .zipBlue
+        goingButton.backgroundColor = .zipGreen
     }
     
     private func notGoingUI() {
+        goingButton.setTitle("NotGoing", for: .normal)
         isGoing = false
-        goingButton.backgroundColor = .zipGray
+        goingButton.backgroundColor = .zipRed
     }
     
     @objc private func didTapParticipantsButton(){
@@ -245,7 +322,59 @@ class EventViewController: UIViewController {
     
     
     @objc func didTapMessageButton(){
-       
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            let components = strongSelf.event.ownerName.split(separator: " ")
+            let ownerFirst = String(components[0])
+            let ownerLast = String(components[1])
+            let owner = User(userId: strongSelf.event.ownerId,firstName: ownerFirst, lastName: ownerLast)
+            switch result {
+            case .success(let conversations):
+                if let targetConversation = conversations.first(where: {
+                    $0.otherUser.userId == strongSelf.event.ownerId
+                }) {
+                    let vc = ChatViewController(toUser: targetConversation.otherUser, id: targetConversation.id)
+                    vc.isNewConversation = false
+                    vc.title = targetConversation.otherUser.firstName
+                    vc.modalPresentationStyle = .overCurrentContext
+                    strongSelf.navigationController?.pushViewController(vc, animated: true)
+                } else {
+                    strongSelf.createNewConversation(result: owner)
+                }
+            case .failure(_):
+                strongSelf.createNewConversation(result: owner)
+            }
+        })
+    }
+    
+    private func createNewConversation(result otherUser: User){
+        // check in database if conversation with these two uses exists
+        // if it does, reuse conversation id
+        // otherwise use existing code
+        DatabaseManager.shared.conversationExists(with: otherUser.userId, completion: { [weak self] result in
+            guard let strongSelf = self else {
+                return
+            }
+            switch result{
+            case.success(let conversationId):
+                let vc = ChatViewController(toUser: otherUser, id: conversationId)
+                vc.isNewConversation = false
+                vc.title = otherUser.firstName
+                vc.navigationItem.largeTitleDisplayMode = .never
+                vc.modalPresentationStyle = .overCurrentContext
+                strongSelf.navigationController?.pushViewController(vc, animated: true)
+            case .failure(_):
+                let vc = ChatViewController(toUser: otherUser, id: nil)
+                vc.isNewConversation = true
+                vc.title = otherUser.firstName
+                vc.navigationItem.largeTitleDisplayMode = .never
+                vc.modalPresentationStyle = .overCurrentContext
+                strongSelf.navigationController?.pushViewController(vc, animated: true)
+            }
+        })
     }
     
     @objc func didTapSaveButton(){
@@ -274,12 +403,12 @@ class EventViewController: UIViewController {
     
     private func savedUI() {
         isSaved = true
-        saveButton.iconButton.backgroundColor = .zipBlue
+        saveButton.iconButton.isSelected = !saveButton.iconButton.isSelected
     }
     
     private func notSavedUI() {
         isSaved = false
-        saveButton.iconButton.backgroundColor = .zipLightGray
+        saveButton.iconButton.isSelected = !saveButton.iconButton.isSelected
     }
     
     @objc func didTapHost(){
@@ -303,32 +432,42 @@ class EventViewController: UIViewController {
         frame.size.height = height
         tableHeader.frame = frame
         tableView.tableHeaderView = tableHeader
+        
+        view.addSubview(reportView)
+        reportView.delegate = self
+        reportView.isHidden = true
+        reportView.translatesAutoresizingMaskIntoConstraints = false
+        reportView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -40).isActive = true
+        reportView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        reportView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        reportView.heightAnchor.constraint(equalToConstant: 300).isActive = true
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableHeader.setNeedsLayout()
         tableHeader.layoutIfNeeded()
-        
         liveView.layer.cornerRadius = liveView.frame.height/2
+        view.bringSubviewToFront(reportView)
     }
     
 
     override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        print("VIEW DISAPPEARING")
+        super.viewDidDisappear(animated)
         isReapearing = true
         guard timer != nil else { return }
         timer.invalidate()
         timer = nil
-
     }
     
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        print("VIEW APPEARING \(Date() < event.startTime)")
         if Date() < event.startTime {
             timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
+        } else {
+            updateTime()
         }
     }
     
@@ -535,15 +674,14 @@ class EventViewController: UIViewController {
 
     //MARK: - Label Config
     func configureLabels(){
-    
         userCountLabel.text = String(event.usersGoing.count) + " participants"
         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         if event.hosts.count > 1 {
-            hostLabel.attributedText = NSAttributedString(string: "Hosted by \(event.hosts[0].fullName) + \(event.hosts.count-1) more", attributes: attributes)
+            hostLabel.attributedText = NSAttributedString(string: "Hosted by \(event.ownerName) + \(event.hosts.count-1) more", attributes: attributes)
         } else {
-            hostLabel.attributedText = NSAttributedString(string: "Hosted by " + event.hosts[0].fullName, attributes: attributes)
+            hostLabel.attributedText = NSAttributedString(string: "Hosted by " + event.ownerName, attributes: attributes)
 
         }
         
@@ -557,36 +695,29 @@ class EventViewController: UIViewController {
 
 
     @objc func updateTime() {
-//        print("start time = \(event.startTime)")
-//        print("currentdate = \(Date())")
         let currentDate = Date()
 
-        if currentDate >= event.startTime {
-            if currentDate >= event.endTime {
-                countDownLabel.text = "Sorry! This event has ended."
-            } else {
-                animateLiveView()
-                guard timer != nil else { return }
-                timer.invalidate()
-                timer = nil
-                
-                return
+        if currentDate >= event.endTime {
+            countDownLabel.text = "This event has ended."
+        } else if currentDate >= event.startTime {
+            animateLiveView()
+            guard timer != nil else { return }
+            timer.invalidate()
+            timer = nil
+        } else {
+            let userCalendar = Calendar.current
+            let timeLeft = userCalendar.dateComponents([.day, .hour, .minute, .second], from: currentDate, to: event.startTime)
+            
+            // Display Countdown
+            countDownLabel.text = "\(timeLeft.day!)d \(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
+            
+            if timeLeft.minute == 0 {
+                countDownLabel.text = "\(timeLeft.second!)s"
+            } else if timeLeft.hour == 0 {
+                countDownLabel.text = "\(timeLeft.minute!)m \(timeLeft.second!)s"
+            } else if timeLeft.day == 0{
+                countDownLabel.text = "\(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
             }
-           
-        }
-        
-        let userCalendar = Calendar.current
-        let timeLeft = userCalendar.dateComponents([.day, .hour, .minute, .second], from: currentDate, to: event.startTime)
-        
-        // Display Countdown
-        countDownLabel.text = "\(timeLeft.day!)d \(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
-        
-        if timeLeft.minute == 0 {
-            countDownLabel.text = "\(timeLeft.second!)s"
-        } else if timeLeft.hour == 0 {
-            countDownLabel.text = "\(timeLeft.minute!)m \(timeLeft.second!)s"
-        } else if timeLeft.day == 0{
-            countDownLabel.text = "\(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
         }
     }
     
@@ -621,15 +752,17 @@ class EventViewController: UIViewController {
         let timeString = NSMutableAttributedString(string: (startTimeFormatter.string(from: event.startTime) + " - " + startTimeFormatter.string(from: event.endTime)))
         
         cellConfigureations.append((addressString,
-                                    UIImage(systemName: "map.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+                                    UIImage(systemName: "map")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+        
+        let pinConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
         cellConfigureations.append((distanceString,
-                                    UIImage(systemName: "mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+                                    UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(pinConfig)))
        
         cellConfigureations.append((dateString,
                                     UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
         
         cellConfigureations.append((timeString,
-                                    UIImage(systemName: "clock.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+                                    UIImage(systemName: "clock")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
 
         
         if let event = event as? PromoterEvent {
@@ -649,10 +782,12 @@ class EventViewController: UIViewController {
             ], range: NSMakeRange(0, "Buy Tickets Here".count))
             
             cellConfigureations.append((priceString,
-                                        UIImage(systemName: "dollarsign.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+                                        UIImage(systemName: "dollarsign.square")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
             
+            let ticketConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .light, scale: .large)
             cellConfigureations.append((linkString,
-                                        UIImage(systemName: "ticket.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
+                                        UIImage(named: "zip.ticket")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(ticketConfig)
+                                       ))
         }
         
         cellConfigureations.append((NSMutableAttributedString(string: event.bio), nil))
@@ -711,6 +846,184 @@ extension EventViewController: UITableViewDataSource {
             print("OPEN URL")
                 UIApplication.shared.open(url)
             
+        }
+    }
+}
+
+
+extension EventViewController : ReportMessageDelegate {
+    func dismissVC() {
+        slideDown(view: reportView, completion: { b in
+
+        })
+    }
+    
+    private func slideDown(view: UIView, completion: ((Bool) -> Void)?)  {
+        UIView.animate(withDuration: 0.5,
+                       delay: 0, usingSpringWithDamping: 1.0,
+                       initialSpringVelocity: 1.0,
+                       options: .curveEaseInOut, animations: { [weak self] in
+            guard let strongSelf = self else { return }
+            view.isHidden = true
+            view.frame = CGRect(x: 0,
+                                y: strongSelf.view.frame.height,
+                                width: strongSelf.view.frame.width,
+                                height: strongSelf.view.frame.height)
+        }, completion: completion)
+    }
+    
+    func sendReport(reason: String) {
+        slideDown(view: reportView, completion: { b in
+//            event.report(reason: reson)
+        })
+    }
+    
+    private func slideUp(view: UIView, completion: ((Bool) -> Void)?) {
+        UIView.animate(withDuration: 0.5,
+                       delay: 0, usingSpringWithDamping: 1.0,
+                       initialSpringVelocity: 1.0,
+                       options: .curveEaseInOut, animations: { [weak self] in
+            guard let strongSelf = self else { return }
+            view.isHidden = false
+            view.frame = CGRect(x: 0,
+                                y: strongSelf.view.frame.height - view.frame.width,
+                                width: strongSelf.view.frame.width,
+                                height: view.frame.height)
+        }, completion: completion)
+    }
+    
+ 
+    
+    
+    internal enum ReportContext: CustomStringConvertible, CaseIterable {
+        case Spam
+        case FakeEvent
+        case InappropriatePic
+        case InappropriateBio
+        case Danger
+
+
+        var description: String {
+            switch self {
+            case .Spam: return "Spam"
+            case .FakeEvent: return "Fake Event/Spam"
+            case .InappropriatePic: return "Inappropriate Photo"
+            case .InappropriateBio: return "Inappropriate Description"
+            case .Danger: return "Someone is in Danger"
+            }
+        }
+    }
+    
+    private class ReportMessageView : UIView, UITextViewDelegate{
+        let textView: UITextView
+        var context: ReportContext!
+        let sendButton: UIButton
+        let cancelButton: UIButton
+        let contextLabel: UILabel
+        
+        weak var delegate: ReportMessageDelegate?
+        
+        
+        init() {
+            textView = UITextView()
+            sendButton = UIButton()
+            contextLabel = UILabel.zipSubtitle()
+            cancelButton = UIButton()
+            
+            super.init(frame: .zero)
+            backgroundColor = .zipLightGray
+            layer.masksToBounds = true
+            layer.cornerRadius = 15
+            
+            sendButton.setTitle("Report", for: .normal)
+            sendButton.backgroundColor = .zipVeryLightGray
+            sendButton.setTitleColor(.white, for: .normal)
+            sendButton.titleLabel?.font = .zipSubtitle2
+            
+            cancelButton.setTitle("Cancel", for: .normal)
+            cancelButton.setTitleColor(.white, for: .normal)
+            cancelButton.titleLabel?.font = .zipSubtitle2
+            
+            sendButton.addTarget(self, action: #selector(didTapSend), for: .touchUpInside)
+            cancelButton.addTarget(self, action: #selector(didTapCancel), for: .touchUpInside)
+
+            textView.font = .zipTextFill
+            textView.layer.cornerRadius = 8
+            textView.layer.masksToBounds = true
+            textView.delegate = self
+            textView.text = "Tell us a little about your report..."
+            textView.textColor = .zipVeryLightGray
+            textView.backgroundColor = .zipGray
+        
+            addSubviews()
+            configureSubviewLayout()
+        }
+        
+        @objc private func didTapSend() {
+            delegate?.sendReport(reason: context.description + ": " + textView.text)
+            delegate?.dismissVC()
+        }
+        
+        @objc private func didTapCancel() {
+            delegate?.dismissVC()
+        }
+        
+        public func update(context: ReportContext) {
+            self.context = context
+            contextLabel.text = "Report: " + context.description
+        }
+        
+        private func addSubviews() {
+            addSubview(textView)
+            addSubview(sendButton)
+            addSubview(contextLabel)
+            addSubview(cancelButton)
+        }
+        
+        private func configureSubviewLayout() {
+            contextLabel.translatesAutoresizingMaskIntoConstraints = false
+            contextLabel.topAnchor.constraint(equalTo: topAnchor, constant: 5).isActive = true
+            contextLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+            
+            textView.translatesAutoresizingMaskIntoConstraints = false
+            textView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+            textView.widthAnchor.constraint(equalTo: widthAnchor, constant: -10).isActive = true
+            textView.topAnchor.constraint(equalTo: contextLabel.bottomAnchor, constant: 10).isActive = true
+            textView.bottomAnchor.constraint(equalTo: sendButton.topAnchor, constant: -10).isActive = true
+
+
+            sendButton.translatesAutoresizingMaskIntoConstraints = false
+            sendButton.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -5).isActive = true
+            sendButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+            sendButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            sendButton.widthAnchor.constraint(equalToConstant: 120).isActive = true
+            
+            cancelButton.translatesAutoresizingMaskIntoConstraints = false
+            cancelButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -5).isActive = true
+            cancelButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+            cancelButton.heightAnchor.constraint(equalTo: sendButton.heightAnchor).isActive = true
+            cancelButton.widthAnchor.constraint(equalTo: sendButton.widthAnchor).isActive = true
+            
+            sendButton.layer.masksToBounds = true
+            sendButton.layer.cornerRadius = 15
+        }
+        
+        func textViewDidBeginEditing(_ textView: UITextView) {
+            if textView.textColor == .zipVeryLightGray {
+                textView.textColor = .white
+                textView.text = ""
+            }
+        }
+        
+        func textViewDidEndEditing(_ textView: UITextView) {
+            if textView.text.isEmpty {
+                textView.text = "Tell us a little about your report..."
+                textView.textColor = .zipVeryLightGray
+            }
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
         }
     }
 }

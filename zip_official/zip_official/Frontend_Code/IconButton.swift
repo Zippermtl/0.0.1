@@ -77,15 +77,15 @@ class IconButton: UIButton {
         return IconButton(
             text: "Events",
             icon:  UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
         )
     }
     
     static func zipsIcon() -> IconButton {
         return IconButton(
             text: "Zips",
-            icon:  UIImage(systemName: "person.3.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .large)
+            icon:  UIImage(systemName: "person.3")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+            config: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium, scale: .large)
         )
     }
     
@@ -101,15 +101,15 @@ class IconButton: UIButton {
         return IconButton(
             text: "Message",
             icon:  UIImage(systemName: "message")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
         )
     }
     
     static func myCardIcon() -> IconButton {
         return IconButton(
             text: "My Card",
-            icon:  UIImage(systemName: "lanyardcard.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold, scale: .large)
+            icon:  UIImage(systemName: "lanyardcard")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
         )
     }
         

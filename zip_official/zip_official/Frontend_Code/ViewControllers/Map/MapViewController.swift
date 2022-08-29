@@ -159,6 +159,7 @@ class MapViewController: UIViewController {
         if #available(iOS 13.0, *){
             overrideUserInterfaceStyle = .dark
         }
+        navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
 
         configureAnnotations()
         

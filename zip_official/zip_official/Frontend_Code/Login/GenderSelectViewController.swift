@@ -54,7 +54,7 @@ class GenderSelectViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         // Do any additional setup after loading the view.
     }
     
@@ -117,6 +117,7 @@ extension GenderSelectViewController {
             typeLabel = UILabel.zipTextFill()
             selectionButton = UIButton()
             super.init(style: style, reuseIdentifier: reuseIdentifier)
+
             backgroundColor = .clear
             contentView.backgroundColor = .zipLightGray
             contentView.layer.masksToBounds = true

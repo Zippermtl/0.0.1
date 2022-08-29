@@ -70,8 +70,8 @@ class ZFCardBackView: UIView {
         
         let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold, scale: .large)
 
-        schoolImage = UIImageView(image: UIImage(systemName: "graduationcap.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
-        interestsImage = UIImageView(image: UIImage(systemName: "star.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
+        schoolImage = UIImageView(image: UIImage(systemName: "graduationcap", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
+        interestsImage = UIImageView(image: UIImage(systemName: "star", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
         profilePicture = UIImageView()
         
         slideView = MTSlideToOpenViewCopy(frame: CGRect(x: 0, y: 0, width: 317, height: 56))

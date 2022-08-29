@@ -87,6 +87,19 @@ class MyEventViewController: EventViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
+    override func didTapReportButton() {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Delete Event", style: .cancel, handler: { _ in
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            
+        }))
+        
+        present(alert, animated: true)
+        
+    }
 }
 
 extension MyEventViewController: UpdateFromEditProtocol {

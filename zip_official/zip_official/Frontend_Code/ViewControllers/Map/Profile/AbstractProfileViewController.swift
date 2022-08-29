@@ -80,6 +80,8 @@ class AbstractProfileViewController: UIViewController {
 
         super.init(nibName: nil, bundle: nil)
         profilePictureView.backgroundColor = .zipLightGray
+        navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+
         self.rightNavBarButton = UIBarButtonItem(image: rightBarButtonIcon,
                                                  landscapeImagePhone: nil,
                                                  style: .plain,
@@ -403,7 +405,7 @@ extension AbstractProfileViewController: UITableViewDataSource {
             content.textProperties.color = .white
             content.textProperties.font = .zipTextFill
             content.text = user.school
-            content.image = UIImage(systemName: "graduationcap.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+            content.image = UIImage(systemName: "graduationcap")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
             schoolCell!.contentConfiguration = content
             
             tableCells.append(schoolCell!)
@@ -417,7 +419,7 @@ extension AbstractProfileViewController: UITableViewDataSource {
             content.textProperties.color = .white
             content.textProperties.font = .zipTextFill
             content.text = user.interestsString
-            content.image = UIImage(systemName: "star.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+            content.image = UIImage(systemName: "star")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
             interestCell!.contentConfiguration = content
             
             tableCells.append(interestCell!)
@@ -434,7 +436,7 @@ extension AbstractProfileViewController: UITableViewDataSource {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
         content.text = dateFormatter.string(from: user.birthday)
-        content.image = UIImage(systemName: "gift.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        content.image = UIImage(systemName: "gift")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         
         birthdayCell!.contentConfiguration = content
         tableCells.append(birthdayCell!)

@@ -261,7 +261,7 @@ extension DatabaseManager {
                     kind = .photo(media)
                 } else if type == "video" {
                     guard let videoUrl = URL(string: content),
-                          let placeHolder = UIImage(systemName: "play.fill") else {
+                          let placeHolder = UIImage(systemName: "play") else {
                         return nil
                     }
                     let media = Media(url: videoUrl,

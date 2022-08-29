@@ -364,6 +364,7 @@ class LoginViewController: UIViewController {
         countryCodeDD.anchorView = countryCodeLabel
         countryCodeDD.dismissMode = .onTap
         countryCodeDD.direction = .bottom
+        countryCodeDD.textFont = .zipSubtitle2
         var DDStrings = [String]()
         for (key,value) in countryDictionary {
             DDStrings.append("\(key) +\(value)")

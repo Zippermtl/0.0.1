@@ -20,17 +20,21 @@ class DistanceLabel: IconLabel {
     var distance: Double = 0.0
     
     init(){
-        super.init(iconImage: UIImage(systemName: "mappin"))
+        let pinConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
+        let pin = UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(pinConfig)
+        super.init(iconImage: pin)
     }
     
     init(labelFont: UIFont, color: UIColor, config: UIImage.Configuration){
-        super.init(iconImage: UIImage(systemName: "mappin")?.withConfiguration(config), labelFont: labelFont, color: color)
+        let pin = UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        super.init(iconImage: pin?.withConfiguration(config), labelFont: labelFont, color: color)
         textColor = color
     }
     
     init(distance: Double, labelFont: UIFont = .zipTextFillBold, color: UIColor = .zipBlue) {
-  
-        super.init(iconImage: UIImage(systemName: "mappin"), labelFont: labelFont, color: color)
+        let pinConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
+        let pin = UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(pinConfig)
+        super.init(iconImage: pin, labelFont: labelFont, color: color)
         textColor = color
         update(distance: distance)
     }

@@ -37,7 +37,7 @@ class ProfileViewController: AbstractProfileViewController {
     
     init(id: String) {
         let actionButtonInfo = ("EDIT", UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1))
-        let settingsIcon = UIImage(systemName: "gearshape.fill")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let settingsIcon = UIImage(systemName: "gearshape")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         super.init(id: id,
                    B1: IconButton.eventsIcon(),
                    B2: IconButton.zipsIcon(),
@@ -112,9 +112,9 @@ class ProfileViewController: AbstractProfileViewController {
 
 extension ProfileViewController: UpdateFromEditProtocol {
     func update() {
-        tableView.reloadData()
         photoCountLabel.text = "\(user.pictureURLs.count)"
         profilePictureView.sd_setImage(with: user.profilePicUrl)
         configureCells()
+        tableView.reloadData()
     }
 }
