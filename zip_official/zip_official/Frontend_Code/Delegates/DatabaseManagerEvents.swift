@@ -159,9 +159,9 @@ extension DatabaseManager {
            for document in querySnapshot!.documents {
                let data = document.data()
                if let type = data["type"] as? Int,
-                  let coderType = EventType(rawValue: type)?.coderType {
+                  let coderType = EventType(rawValue: type) {
                    do {
-                       let currentEvent = try document.data(as: coderType.self).createEvent()
+                       let currentEvent = try coderType.getData(document: document)
                        currentEvent.eventId = document.documentID
 
                        events.append(currentEvent)
@@ -218,9 +218,9 @@ extension DatabaseManager {
            for document in querySnapshot!.documents {
                let data = document.data()
                if let type = data["type"] as? Int,
-                  let coderType = EventType(rawValue: type)?.coderType {
+                  let coderType = EventType(rawValue: type) {
                    do {
-                       let currentEvent = try document.data(as: coderType.self).createEvent()
+                       let currentEvent = try coderType.getData(document: document)
                        currentEvent.eventId = document.documentID
 
                        events.append(currentEvent)
@@ -272,12 +272,13 @@ extension DatabaseManager {
             var events: [Event] = []
             for document in querySnapshot!.documents {
                 let data = document.data()
-                if let type = data["type"] as? Int,
-                   let coderType = EventType(rawValue: type)?.coderType {
+                if let eventType = data["type"] as? Int,
+                   let coderType = EventType(rawValue: eventType) {
                     do {
-                        let currentEvent = try document.data(as: coderType).createEvent()
-                        currentEvent.eventId = document.documentID
 
+                        let currentEvent = try coderType.getData(document: document)
+                        currentEvent.eventId = document.documentID
+                        
                         events.append(currentEvent)
                         eventCompletion(currentEvent)
                         DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
@@ -305,13 +306,6 @@ extension DatabaseManager {
     }
     
     public func loadEvent(event: Event, completion: @escaping (Result<Event, Error>) -> Void){
-        print("HERE123456")
-        print("eventId = ", event.eventId)
-        print("event type = ", event.getType())
-        print("expected type = \(PromoterEventCoder.self)")
-
-        print("encoder = \(event.getEncoderType())")
-        print("encoder.self = \(event.getEncoderType().self)")
         firestore.collection("EventProfiles").document(event.eventId).getDocument(as: event.getEncoderType().self)  { result in
             switch result {
             case .success(let eventCoder):

@@ -15,6 +15,7 @@ import MapKit
 
 
 public class PromoterEvent: Event {
+    
     var price: Double?
     var buyTicketsLink: URL?
     
@@ -89,7 +90,7 @@ public class PromoterEventCoder: EventCoder {
         event.buyTicketsLink = URL(string: link ?? "")
     }
     
-    override public func createEvent() -> Event {
+    override public func createEvent() -> PromoterEvent {
         let baseEvent = super.createEvent()
         let event = PromoterEvent(event: baseEvent, price: price, buyTicketsLink: URL(string: link ?? "") )
         return event

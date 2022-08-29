@@ -38,12 +38,12 @@ extension EventType: CustomStringConvertible {
         }
     }
     
-    public var coderType: EventCoder.Type {
+    public func getData(document: QueryDocumentSnapshot) throws -> Event  {
         switch self {
-        case .Event: return EventCoder.self
-        case .Open: return OpenEventCoder.self
-        case .Closed: return ClosedEventCoder.self
-        case .Promoter: return PromoterEventCoder.self
+        case .Event: return try document.data(as: EventCoder.self).createEvent()
+        case .Open: return try document.data(as: OpenEventCoder.self).createEvent()
+        case .Closed: return try document.data(as: ClosedEventCoder.self).createEvent()
+        case .Promoter: return try document.data(as: PromoterEventCoder.self).createEvent()
         }
     }
 }
@@ -195,13 +195,13 @@ public class Event : Equatable, CustomStringConvertible {
         out += "coordinates: \(self.coordinates)\n"
         out += "address: \(self.address)\n"
 
-        out += "hosts: \(self.hosts)\n"
+        out += "hosts: \(self.hosts.map({ $0.userId }))\n"
         out += "bio: \(self.bio)\n"
         out += "max guests: \(self.maxGuests)\n"
         out += "startTime: \(self.startTime)\n"
         out += "endTime: \(self.endTime)\n"
-        out += "usersInvite: \(self.usersInvite)\n"
-        out += "usersGoing: \(self.usersGoing)\n"
+        out += "usersInvite: \(self.usersInvite.map({ $0.userId }))\n"
+        out += "usersGoing: \(self.usersGoing.map({ $0.userId }))\n"
         out += "picNum: \(self.picNum)\n"
         return out
     }

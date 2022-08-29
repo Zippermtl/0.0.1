@@ -288,6 +288,7 @@ class MapViewController: UIViewController {
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
                 DispatchQueue.main.async {
+
                     strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
                 }
                 strongSelf.mappedEvents[event.eventId] = event
@@ -322,7 +323,7 @@ class MapViewController: UIViewController {
         }, allCompletion: { result in
 
         })
-        
+
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             print("LOADING EVENT \(event.title)")
             guard let strongSelf = self else { return }
@@ -333,9 +334,9 @@ class MapViewController: UIViewController {
                 }
             }
         }, allCompletion: { result in
-            
+
         })
-        
+
     }
 
 }
@@ -490,7 +491,9 @@ extension MapViewController: MKMapViewDelegate {
             return annotationView
             
         case .Event:
-            return MKAnnotationView()
+            let x = MKAnnotationView()
+            x.canShowCallout = false
+            return x
         }
 
     }
@@ -498,20 +501,25 @@ extension MapViewController: MKMapViewDelegate {
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
-        if mapView.zoomLevel < DOT_ZOOM_DISTANCE { return }
-        if let annotation = view.annotation as? EventAnnotation {
-            var eventVC: UIViewController
-            let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
-            if annotation.event.hosts.map({ $0.userId }).contains(userId) {
-                eventVC = MyEventViewController(event: annotation.event)
-            } else {
-                eventVC = EventViewController(event: annotation.event)
+        if mapView.zoomLevel < DOT_ZOOM_DISTANCE {
+            let zoomRegion = MKCoordinateRegion(center: view.annotation!.coordinate, latitudinalMeters: DEFAULT_ZOOM_DISTANCE,longitudinalMeters: DEFAULT_ZOOM_DISTANCE)
+            mapView.setRegion(zoomRegion, animated: true)
+        } else {
+            if let annotation = view.annotation as? EventAnnotation {
+                var eventVC: UIViewController
+                let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
+                if annotation.event.hosts.map({ $0.userId }).contains(userId) {
+                    eventVC = MyEventViewController(event: annotation.event)
+                } else {
+                    eventVC = EventViewController(event: annotation.event)
+                }
+                
+                navigationController?.pushViewController(eventVC, animated: true)
+                
+                mapView.deselectAnnotation(view.annotation, animated: false)
             }
-            
-            navigationController?.pushViewController(eventVC, animated: true)
-            
-            mapView.deselectAnnotation(view.annotation, animated: false)
         }
+        
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {

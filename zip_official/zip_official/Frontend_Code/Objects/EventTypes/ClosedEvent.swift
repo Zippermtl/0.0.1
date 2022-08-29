@@ -14,6 +14,7 @@ import FirebaseFirestoreSwift
 import MapKit
 
 public class ClosedEvent: Event {
+    
     override init() {
         super.init()
     }
@@ -63,9 +64,10 @@ public class ClosedEventCoder: EventCoder {
         try super.encode(to: encoder)
     }
     
-    override public func createEvent() -> Event {
+    public override func createEvent() -> ClosedEvent {
         let event = ClosedEvent()
         updateEvent(event: event)
+        print("PRINTING IN CREATE EVENT", event.getType())
         return event
     }
 }

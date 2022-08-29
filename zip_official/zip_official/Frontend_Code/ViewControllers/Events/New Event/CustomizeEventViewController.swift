@@ -461,7 +461,7 @@ extension CustomizeEventViewController {
             
             
             allowUserInvitesSwitch.translatesAutoresizingMaskIntoConstraints = false
-            allowUserInvitesSwitch.centerYAnchor.constraint(equalTo: openClosedDescriptionLabel.centerYAnchor).isActive = true
+            allowUserInvitesSwitch.centerYAnchor.constraint(equalTo: allowUserInvitesLabel.centerYAnchor).isActive = true
             allowUserInvitesSwitch.rightAnchor.constraint(equalTo: openButton.rightAnchor).isActive = true
         }
         
