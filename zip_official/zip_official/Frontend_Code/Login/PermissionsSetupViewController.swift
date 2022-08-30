@@ -31,7 +31,7 @@ class PermissionsSetupViewController: UIViewController {
         btn.backgroundColor = .zipBlue
         btn.setTitle("Enable Location", for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = .zipBodyBold.withSize(16)
+        btn.titleLabel?.font = .zipSubtitle2
         btn.layer.masksToBounds = true
         
         let view = UIImageView(image: UIImage(named: "distanceTo")?.withTintColor(.white))
@@ -52,7 +52,7 @@ class PermissionsSetupViewController: UIViewController {
         btn.layer.masksToBounds = true
         btn.setTitle("Turn on Notifications", for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = .zipBodyBold.withSize(16)
+        btn.titleLabel?.font = .zipSubtitle2
         
         let view = UIImageView(image: UIImage(named: "notifications"))
         btn.addSubview(view)
@@ -73,7 +73,7 @@ class PermissionsSetupViewController: UIViewController {
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 15
         btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
+        btn.titleLabel?.font = .zipSubtitle2
         return btn
     }()
     
@@ -81,7 +81,7 @@ class PermissionsSetupViewController: UIViewController {
         let label = UILabel()
         label.text = "Create an Account"
         label.textColor = .white
-        label.font = .zipBodyBold
+        label.font = .zipHeader
         return label
     }()
     
@@ -89,7 +89,7 @@ class PermissionsSetupViewController: UIViewController {
         let label = UILabel()
         label.text = "STEP 3"
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(12)
+        label.font = .zipSubtitle
         return label
     }()
     
@@ -97,7 +97,7 @@ class PermissionsSetupViewController: UIViewController {
         let label = UILabel()
         label.text = "Permissions"
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(22)
+        label.font = .zipHeader
         return label
     }()
     
@@ -113,7 +113,7 @@ class PermissionsSetupViewController: UIViewController {
     private let requiredLabel: UILabel = {
         let label = UILabel()
         label.textColor = .zipVeryLightGray
-        label.font = .zipBodyBold.withSize(12)
+        label.font = .zipTextDetail
         label.text = "Required"
         return label
     }()
@@ -121,7 +121,7 @@ class PermissionsSetupViewController: UIViewController {
     private let recommendedLabel: UILabel = {
         let label = UILabel()
         label.textColor = .zipVeryLightGray
-        label.font = .zipBodyBold.withSize(12)
+        label.font = .zipTextDetail
         label.text = "Recommended"
         return label
     }()

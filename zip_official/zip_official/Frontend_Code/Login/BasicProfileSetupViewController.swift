@@ -185,15 +185,15 @@ class BasicProfileSetupViewController: UIViewController {
         let label = UILabel()
         label.text = "Create An Account"
         label.textColor = .white
-        label.font = .zipBodyBold
+        label.font = .zipHeader
         return label
     }()
     
     private let stepLabel: UILabel = {
         let label = UILabel()
-        label.text = "STEP 1"
+        label.text = "Step 1"
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(12)
+        label.font = .zipSubtitle
         return label
     }()
     
@@ -201,7 +201,7 @@ class BasicProfileSetupViewController: UIViewController {
         let label = UILabel()
         label.text = "Create Your Profile"
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(22)
+        label.font = .zipHeader
         return label
     }()
     

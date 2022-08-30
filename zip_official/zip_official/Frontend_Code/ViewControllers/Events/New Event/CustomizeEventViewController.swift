@@ -62,7 +62,7 @@ class CustomizeEventViewController: UIViewController {
         btn.titleLabel?.font = .zipSubtitle2
         btn.layer.cornerRadius = 15
         btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
+        btn.titleLabel?.font = .zipSubtitle2
         return btn
     }()
     

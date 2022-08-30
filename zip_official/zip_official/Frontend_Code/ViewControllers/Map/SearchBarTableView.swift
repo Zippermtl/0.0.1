@@ -94,11 +94,11 @@ class SearchBarTableView: UITableView {
         usersButton.addTarget(self, action: #selector(didTapUsersButton), for: .touchUpInside)
         eventsButton.addTarget(self, action: #selector(didTapEventsButton), for: .touchUpInside)
         
-        let underlineAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBodyBold.withSize(16),
+        let underlineAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextFill,
                                                                .foregroundColor: UIColor.white,
                                                                .underlineStyle: NSUnderlineStyle.single.rawValue]
         
-        let normalAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBodyBold.withSize(16),
+        let normalAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextFill,
                                                                .foregroundColor: UIColor.white]
         
         let allSelected = NSAttributedString(string: "All", attributes: underlineAttributes)

@@ -71,7 +71,7 @@ class CreateEventViewController: UIViewController {
         continueButton.setTitleColor(.white, for: .normal)
         continueButton.layer.cornerRadius = 15
         continueButton.layer.masksToBounds = true
-        continueButton.titleLabel?.font = .zipBodyBold//.withSize(20)
+        continueButton.titleLabel?.font = .zipSubtitle2
        
         
         pageStatus1.select()
@@ -89,14 +89,14 @@ class CreateEventViewController: UIViewController {
         eventNameField.borderStyle = .roundedRect
         eventNameField.attributedPlaceholder = NSAttributedString(string: "Ex. Ezra's Birthday Bash",
                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
-                                                                               NSAttributedString.Key.font: UIFont.zipBodyBold])
+                                                                               NSAttributedString.Key.font: UIFont.zipTextFill])
         
         eventNameField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 5, height: 0))
         eventNameField.leftViewMode = .always
         eventNameField.backgroundColor = .zipLightGray
         eventNameField.tintColor = .white
         eventNameField.textColor = .white
-        eventNameField.font = .zipBodyBold
+        eventNameField.font = .zipTextFill
 
         locationField.font = .zipBody
         locationField.borderStyle = .roundedRect

@@ -43,12 +43,33 @@ extension EditEventProfileViewController: OpenGMSCellDelegate {
         navigationController?.pushViewController(autocompleteController, animated: true)
     }
     
-    internal class EditEventLocationTableViewCell: EditTextFieldTableViewCell {
+    internal class EditEventLocationTableViewCell: EditProfileTableViewCell, UITextViewDelegate {
+        static let identifier = "locationCell"
         weak var GMSDelegate: OpenGMSCellDelegate?
-        
+        let textView: UITextView
+        var saveFunc: ((String) -> Void)?
+
         override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+            self.textView = UITextView()
+
             super.init(style: style, reuseIdentifier: reuseIdentifier)
+            textView.showsHorizontalScrollIndicator = false
+            textView.showsVerticalScrollIndicator = false
+            textView.isScrollEnabled = false
             textView.delegate = self
+            textView.bounces = false
+            textView.layer.cornerRadius = 5
+            textView.backgroundColor = .zipGray
+            textView.font = .zipTextFill
+            textView.textColor = .white
+            textView.tintColor = .white
+            
+            rightView.addSubview(textView)
+            textView.translatesAutoresizingMaskIntoConstraints = false
+            textView.topAnchor.constraint(equalTo: rightView.topAnchor).isActive = true
+            textView.leftAnchor.constraint(equalTo: rightView.leftAnchor).isActive = true
+            textView.rightAnchor.constraint(equalTo: rightView.rightAnchor).isActive = true
+            textView.bottomAnchor.constraint(equalTo: rightView.bottomAnchor).isActive = true
         }
         
         required init?(coder: NSCoder) {
@@ -56,11 +77,11 @@ extension EditEventProfileViewController: OpenGMSCellDelegate {
         }
     
         public func configure(event: Event, saveFunc: @escaping (String) -> Void) {
-            super.configure(label: "Location", content: event.address, saveFunc: saveFunc)
+            textView.text = event.address
+            super.configure(label: "Location")
         }
         
-        override func textViewDidBeginEditing(_ textView: UITextView) {
-            super.textViewDidBeginEditing(textView)
+        func textViewDidBeginEditing(_ textView: UITextView) {
             GMSDelegate?.openSearch()
             textView.resignFirstResponder()
         }

@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 class EditProfileTableViewCell: UITableViewCell {
 
     let titleLabel: UILabel
@@ -24,7 +25,6 @@ class EditProfileTableViewCell: UITableViewCell {
         
         addSubviews()
         configureSubviewLayout()
-        
     }
     
     required init?(coder: NSCoder) {
@@ -42,16 +42,20 @@ class EditProfileTableViewCell: UITableViewCell {
     
     private func configureSubviewLayout() {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
+//        titleLabel.centerYAnchor.constraint(equalTo: rightView.centerYAnchor).isActive = true
+        titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+
         titleLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10).isActive = true
-        titleLabel.widthAnchor.constraint(equalToConstant: 128).isActive = true
+        titleLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 128).isActive = true
         
         rightView.translatesAutoresizingMaskIntoConstraints = false
         rightView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
         rightView.leftAnchor.constraint(equalTo: titleLabel.rightAnchor).isActive = true
         rightView.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
         rightView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
-        
+
+            
     }
     
     override func awakeFromNib() {

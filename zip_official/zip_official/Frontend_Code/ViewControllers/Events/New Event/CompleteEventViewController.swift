@@ -61,7 +61,7 @@ class CompleteEventViewController: UIViewController {
     let inviteAllButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Invite All", for: .normal)
-        btn.titleLabel?.font = .zipBodyBold
+        btn.titleLabel?.font = .zipSubtitle2
         btn.backgroundColor = .zipLightGray
         btn.layer.cornerRadius = 10
         return btn
@@ -70,7 +70,7 @@ class CompleteEventViewController: UIViewController {
     let clearButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Clear", for: .normal)
-        btn.titleLabel?.font = .zipBodyBold
+        btn.titleLabel?.font = .zipSubtitle2
         btn.backgroundColor = .zipLightGray
         btn.layer.cornerRadius = 10
         return btn
@@ -78,7 +78,7 @@ class CompleteEventViewController: UIViewController {
     
     private let myZipsLabel: UILabel = {
         let label = UILabel()
-        label.font = .zipBodyBold
+        label.font = .zipSubtitle2
         label.textColor = .white
         label.text = "My Zips (0)"
         return label
@@ -91,7 +91,7 @@ class CompleteEventViewController: UIViewController {
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 15
         btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
+        btn.titleLabel?.font = .zipSubtitle2//.withSize(20)
         return btn
     }()
     

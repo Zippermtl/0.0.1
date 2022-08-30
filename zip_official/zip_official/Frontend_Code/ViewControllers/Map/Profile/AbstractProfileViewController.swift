@@ -227,7 +227,7 @@ class AbstractProfileViewController: UIViewController {
         centerActionButton.backgroundColor = centerActionInfo.1
         centerActionButton.setTitle(centerActionInfo.0, for: .normal)
         centerActionButton.titleLabel?.textColor = .white
-        centerActionButton.titleLabel?.font = .zipBodyBold
+        centerActionButton.titleLabel?.font = .zipSubtitle2
         centerActionButton.titleLabel?.textAlignment = .center
         centerActionButton.contentVerticalAlignment = .center
         

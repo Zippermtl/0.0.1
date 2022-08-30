@@ -24,10 +24,10 @@ class NewAccountPopupViewController: UIViewController {
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "COMPLETE YOUR PROFILE"
+        label.text = "Complete Your Profile"
         label.textAlignment = .center
         label.textColor = .white
-        label.font = .zipBodyBold
+        label.font = .zipSubtitle2
         return label
     }()
     
@@ -38,13 +38,13 @@ class NewAccountPopupViewController: UIViewController {
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(16)
+        label.font = .zipTextFill
         return label
     }()
     
     private let completeProfileButton: UIButton = {
         let btn = UIButton()
-        btn.setTitle("GO TO MY\nPROFILE", for: .normal)
+        btn.setTitle("Go to My\nProfile", for: .normal)
         btn.backgroundColor = .zipBlue
         btn.setTitleColor(.white, for: .normal)
         btn.titleLabel?.lineBreakMode = .byWordWrapping
@@ -52,7 +52,7 @@ class NewAccountPopupViewController: UIViewController {
 
         btn.layer.cornerRadius = 12
         btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold.withSize(18)
+        btn.titleLabel?.font = .zipSubtitle2
         return btn
     }()
     
@@ -69,7 +69,7 @@ class NewAccountPopupViewController: UIViewController {
         
         btn.layer.cornerRadius = 12
         btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold.withSize(16)
+        btn.titleLabel?.font = .zipSubtitle2
         return btn
     }()
     

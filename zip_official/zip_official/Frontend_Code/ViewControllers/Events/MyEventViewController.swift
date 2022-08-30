@@ -19,13 +19,9 @@ class MyEventViewController: EventViewController {
         
 //        goingButton.layer.borderWidth = 1
            
-        goingButton.setTitle("Edit", for: .normal)
-        goingButton.titleLabel?.textColor = .white
-        goingButton.titleLabel?.font = .zipSubtitle2
-        goingButton.titleLabel?.textAlignment = .center
-        goingButton.contentVerticalAlignment = .center
+      
         
-        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
+        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular, scale: .large)
         let config2 = UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
 
         let shareIcon =  UIImage(systemName: "square.and.arrow.up", withConfiguration: config)!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
@@ -42,6 +38,18 @@ class MyEventViewController: EventViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func configureGoingButton() {
+        goingButton.setTitle("Edit", for: .normal)
+        goingButton.titleLabel?.textColor = .white
+        goingButton.titleLabel?.font = .zipSubtitle2
+        goingButton.titleLabel?.textAlignment = .center
+        goingButton.contentVerticalAlignment = .center
+        goingButton.backgroundColor = .zipLightGray
+    }
+    
+    override func configureInviteButton() {
+        goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+    }
     
     override func configureLabels(){
         super.configureLabels()
@@ -89,7 +97,7 @@ class MyEventViewController: EventViewController {
     
     override func didTapReportButton() {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Delete Event", style: .cancel, handler: { _ in
+        alert.addAction(UIAlertAction(title: "Delete Event", style: .default, handler: { _ in
             
         }))
         
@@ -102,10 +110,13 @@ class MyEventViewController: EventViewController {
     }
 }
 
-extension MyEventViewController: UpdateFromEditProtocol {
-    func update() {
-        tableView.reloadData()
-        title = event.title
+extension MyEventViewController: UpdateFromEditEventProtocol {
+    func update(event: Event) {
+        self.event = event
         configureCells()
+        eventPhotoView.sd_setImage(with: event.imageUrl)
+        titleLabel.text = event.title
+        eventTypeLabel.text = event.getType().description
+        tableView.reloadData()
     }
 }

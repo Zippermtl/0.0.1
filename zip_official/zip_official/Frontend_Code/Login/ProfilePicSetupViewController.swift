@@ -56,28 +56,28 @@ class ProfilePicSetupViewController: UIViewController {
     
     private let continueButton: UIButton = {
         let btn = UIButton()
-        btn.setTitle("CONTINUE", for: .normal)
+        btn.setTitle("Continue", for: .normal)
         btn.backgroundColor = .zipBlue
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 15
         btn.layer.masksToBounds = true
-        btn.titleLabel?.font = .zipBodyBold//.withSize(20)
+        btn.titleLabel?.font = .zipSubtitle2
         return btn
     }()
     
     private let createAnAccountLabel: UILabel = {
         let label = UILabel()
-        label.text = "CREATE AN ACCOUNT"
+        label.text = "Create an Account"
         label.textColor = .white
-        label.font = .zipBodyBold
+        label.font = .zipHeader
         return label
     }()
     
     private let stepLabel: UILabel = {
         let label = UILabel()
-        label.text = "STEP 2"
+        label.text = "Step 2"
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(12)
+        label.font = .zipSubtitle
         return label
     }()
     
@@ -85,7 +85,7 @@ class ProfilePicSetupViewController: UIViewController {
         let label = UILabel()
         label.text = "PROFILE PICTURE"
         label.textColor = .white
-        label.font = .zipBodyBold.withSize(22)
+        label.font = .zipHeader
         return label
     }()
     
@@ -100,7 +100,7 @@ class ProfilePicSetupViewController: UIViewController {
     
     private let picErrorLabel: UILabel = {
         let label = UILabel()
-        label.font = .zipBodyBold.withSize(12)
+        label.font = .zipTextDetail
         label.textColor = .white
         label.text = "You must have a profile picture to use Zipper"
         return label

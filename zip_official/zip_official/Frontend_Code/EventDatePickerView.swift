@@ -76,7 +76,8 @@ class EventDatePickerView: UIView {
     
     public func setInitialData() {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
         startDateField.text = formatter.string(from: event.startTime)
         endDateField.text = formatter.string(from: event.endTime)
         
@@ -211,7 +212,7 @@ class EventDatePickerView: UIView {
         
         startDateField.attributedPlaceholder = NSAttributedString(string: "Date",
                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        startDateField.font = .zipBody
+        startDateField.font = .zipTextFill
         startDateField.borderStyle = .roundedRect
         startDateField.tintColor = .white
         startDateField.backgroundColor = .zipLightGray
@@ -223,7 +224,7 @@ class EventDatePickerView: UIView {
 
         startTimeField.attributedPlaceholder = NSAttributedString(string: "Time",
                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        startTimeField.font = .zipBody
+        startTimeField.font = .zipTextFill
         startTimeField.borderStyle = .roundedRect
         startTimeField.tintColor = .white
         startTimeField.backgroundColor = .zipLightGray
@@ -235,7 +236,7 @@ class EventDatePickerView: UIView {
         
         endTimeField.attributedPlaceholder = NSAttributedString(string: "Time",
                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        endTimeField.font = .zipBody
+        endTimeField.font = .zipTextFill
         endTimeField.borderStyle = .roundedRect
         endTimeField.tintColor = .white
         endTimeField.backgroundColor = .zipLightGray
@@ -247,7 +248,7 @@ class EventDatePickerView: UIView {
         
         endDateField.attributedPlaceholder = NSAttributedString(string: "Date",
                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray])
-        endDateField.font = .zipBody
+        endDateField.font = .zipTextFill
         endDateField.borderStyle = .roundedRect
         endDateField.tintColor = .white
         endDateField.backgroundColor = .zipLightGray
@@ -275,7 +276,7 @@ class EventDatePickerView: UIView {
         
         endDateField.translatesAutoresizingMaskIntoConstraints = false
         endDateField.leftAnchor.constraint(equalTo: startDateField.leftAnchor).isActive = true
-        endDateField.topAnchor.constraint(equalTo: startDateField.bottomAnchor, constant: 10).isActive = true
+        endDateField.topAnchor.constraint(equalTo: startDateField.bottomAnchor, constant: 5).isActive = true
         endDateField.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         
         endTimeField.translatesAutoresizingMaskIntoConstraints = false

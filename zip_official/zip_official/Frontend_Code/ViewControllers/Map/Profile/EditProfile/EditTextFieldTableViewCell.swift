@@ -8,6 +8,7 @@
 import UIKit
 
 
+
 protocol GrowingCellProtocol: AnyObject {
     func updateHeightOfRow(_ cell: UITableViewCell, _ view: UIView)
     func updateValue(value: String)
@@ -101,26 +102,26 @@ extension EditTextFieldTableViewCell: UITextViewDelegate {
     }
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        var cLimit = true
+        var accepted = true
         if let limit = charLimit {
             let currentString = (textView.text ?? "") as NSString
             let str = currentString.replacingCharacters(in: range, with: text)
-            if str.count > limit { return false }
+            cLimit = str.count <= limit
         }
         
         if let aChars = acceptableCharacters {
             let cs = NSCharacterSet(charactersIn: aChars).inverted
             let filtered = text.components(separatedBy: cs).joined(separator: "")
-            return (text == filtered)
+            accepted = !(text == filtered)
         }
         
-        return true
+        return cLimit && accepted
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
-        print("begin edit")
-        print("text color = ", textView.textColor)
         if textView.textColor != .white {
-            textView.text = nil
+            textView.text = ""
             textView.textColor = .white
         }
     }

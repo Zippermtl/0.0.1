@@ -6,10 +6,14 @@
 //
 
 import UIKit
+protocol UpdateFromEditEventProtocol: AnyObject {
+    func update(event: Event)
+}
+
 
 class EditEventProfileViewController: UIViewController {
     private var dismissTap: UITapGestureRecognizer?
-    weak var delegate : UpdateFromEditProtocol?
+    weak var delegate : UpdateFromEditEventProtocol?
     var event: Event
     var changedPFP = false
     var tableView: UITableView
@@ -18,6 +22,9 @@ class EditEventProfileViewController: UIViewController {
     private var tableHeader: UIView
     private var eventBorder: UIView
     private var imagePicker: UIImagePickerController
+    
+    var initialEventType: EventType
+    var newEventType: EventType
 
     
     init(event: Event) {
@@ -28,7 +35,10 @@ class EditEventProfileViewController: UIViewController {
         self.tableHeader = UIView()
         self.eventBorder = UIView()
         self.imagePicker = UIImagePickerController()
-        
+        print("INIT TYPE = \(event.getType())")
+        self.initialEventType = event.getType()
+        self.newEventType = event.getType()
+
         super.init(nibName: nil, bundle: nil)
         dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
         dismissTap?.delegate = self
@@ -66,6 +76,22 @@ class EditEventProfileViewController: UIViewController {
     }
     
     @objc private func didTapSave(){
+        view.endEditing(true)
+        
+        if newEventType != initialEventType {
+            if newEventType == .Open {
+                event = OpenEvent(event: event)
+                print("O - NEW TYPE = \(event.getType())")
+
+            } else {
+                event = ClosedEvent(event: event)
+                print("C - NEW TYPE = \(event.getType())")
+
+            }
+        }
+        
+        
+        
         DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else {
@@ -77,15 +103,18 @@ class EditEventProfileViewController: UIViewController {
                 let pp = PictureHolder(image: strongSelf.profilePic.image!)
                 pp.isEdited = true
                 DatabaseManager.shared.updateImages(key: id, images: [pp], imageType: DatabaseManager.ImageType.eventCoverIndex, completion: { [weak self] res in
+                    guard let strongSelf = self else {
+                        return
+                    }
                     switch res{
                     case .success(let urls):
                         if urls.count != 0 {
                             self?.event.imageUrl = urls[0].url
                         }
                         DispatchQueue.main.async {
-                            self?.navigationController?.popViewController(animated: true)
+                            strongSelf.navigationController?.popViewController(animated: true)
                             print("success changing profile 56 in editprofileviewcontroller")
-                            self?.delegate?.update()
+                            strongSelf.delegate?.update(event: strongSelf.event)
                         }
                     case .failure(let error):
                         print("error uploading profile pic: \(error)")
@@ -101,13 +130,13 @@ class EditEventProfileViewController: UIViewController {
                         }))
                         
                         DispatchQueue.main.async {
-                            self?.present(actionSheet, animated: true)
+                            strongSelf.present(actionSheet, animated: true)
                         }
                     }
                 }, completionProfileUrl: {_ in})
             } else {
                 DispatchQueue.main.async {
-                    self?.delegate?.update()
+                    strongSelf.delegate?.update(event: strongSelf.event)
                     strongSelf.navigationController?.popViewController(animated: true)
                 }
             }
@@ -169,7 +198,7 @@ class EditEventProfileViewController: UIViewController {
         tableView.register(EditEventTypeTableViewCell.self, forCellReuseIdentifier: EditEventTypeTableViewCell.identifier)
         tableView.register(EditEventTimeTableViewCell.self, forCellReuseIdentifier: EditEventTimeTableViewCell.identifier)
         tableView.register(EditEventLocationTableViewCell.self, forCellReuseIdentifier: EditEventLocationTableViewCell.identifier)
-        tableView.register(EditEventCapacityTableViewCell.self, forCellReuseIdentifier: EditEventCapacityTableViewCell.identifier)
+        tableView.register(EditCanInviteZipsTableViewCell.self, forCellReuseIdentifier: EditCanInviteZipsTableViewCell.identifier)
     }
     
     private func configureTableHeader() {
@@ -230,10 +259,13 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
     }
     
     func saveTitleFunc(_ s: String) {
+        print("s = \(s), title = \(event.title)")
+
         event.title = s
     }
     
     func saveDescriptionFunc(_ s: String) {
+        
         event.bio = s
     }
     
@@ -247,6 +279,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
             let cell = tableView.dequeueReusableCell(withIdentifier: EditEventTypeTableViewCell.identifier, for: indexPath) as! EditEventTypeTableViewCell
             cell.configure(event: event)
             cell.selectionStyle = .none
+            cell.delegate = self
             return cell
         case 1: // Title
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
@@ -266,7 +299,6 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
             let cell = tableView.dequeueReusableCell(withIdentifier: EditEventLocationTableViewCell.identifier, for: indexPath) as! EditEventLocationTableViewCell
             cell.configure(event: event, saveFunc: saveLocationFunc(_:))
             cell.GMSDelegate = self
-            cell.cellDelegate = self
             cell.selectionStyle = .none
             return cell
         case 4:
@@ -277,7 +309,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
             cell.cellDelegate = self
             return cell
         case 5:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditEventCapacityTableViewCell.identifier, for: indexPath) as! EditEventCapacityTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: EditCanInviteZipsTableViewCell.identifier, for: indexPath) as! EditCanInviteZipsTableViewCell
             cell.configure(event: event)
             cell.selectionStyle = .none
             return cell
@@ -336,5 +368,16 @@ extension EditEventProfileViewController: UIImagePickerControllerDelegate, UINav
 extension EditEventProfileViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         return !(touch.view is UIControl) && !(touch.view is UITextView)
+    }
+}
+
+extension EditEventProfileViewController: EventTypeCellDelegate {
+    func isOpen() {
+        newEventType = .Open
+        
+    }
+    
+    func isClosed() {
+        newEventType = .Closed
     }
 }

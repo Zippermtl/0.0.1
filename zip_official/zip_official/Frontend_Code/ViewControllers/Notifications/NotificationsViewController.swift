@@ -47,7 +47,7 @@ class NotificationsViewController: UIViewController {
         zipRequestButton.addTarget(self, action: #selector(didTapZipRequestsButton), for: .touchUpInside)
         zipRequestButton.backgroundColor = .clear
         zipRequestButton.titleLabel?.textColor = .white
-        zipRequestButton.titleLabel?.font = .zipBodyBold
+        zipRequestButton.titleLabel?.font = .zipSubtitle2
         zipRequestButton.contentHorizontalAlignment = .left
         zipRequestButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         
@@ -55,7 +55,7 @@ class NotificationsViewController: UIViewController {
         eventInvitesButton.addTarget(self, action: #selector(didTapEventInvites), for: .touchUpInside)
         eventInvitesButton.backgroundColor = .clear
         eventInvitesButton.titleLabel?.textColor = .white
-        eventInvitesButton.titleLabel?.font = .zipBodyBold
+        eventInvitesButton.titleLabel?.font = .zipSubtitle2
         eventInvitesButton.contentHorizontalAlignment = .left
         eventInvitesButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         
@@ -205,7 +205,7 @@ extension NotificationsViewController: UITableViewDataSource {
         view.backgroundColor = .zipGray
         
         let label = UILabel()
-        label.font = .zipBodyBold
+        label.font = .zipSubtitle2
         label.textColor = .zipVeryLightGray
         
         switch section {

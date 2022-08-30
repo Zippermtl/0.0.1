@@ -23,27 +23,27 @@ class EventViewController: UIViewController {
     
     private let refreshControl: UIRefreshControl
 
-    private let titleLabel: UILabel
+    let titleLabel: UILabel
 
 
     // MARK: - SubViews
 
     //    private var pictureCollectionView: UICollectionView!
     let tableView: UITableView
-    private let tableHeader: UIView
+    let tableHeader: UIView
     private let tableFooter: UIView
     
     private let liveView: UIView
     
     private let eventBorder: UIView
-    private let eventPhotoView: UIImageView
+    let eventPhotoView: UIImageView
     private let spinner: JGProgressHUD
     
     // MARK: - Labels
     private let countDownLabel: UILabel
     let hostLabel: UILabel
     private let userCountLabel: UILabel
-    private let eventTypeLabel: UILabel
+    let eventTypeLabel: UILabel
     
     // MARK: - Buttons
     let goingButton: UIButton
@@ -119,18 +119,7 @@ class EventViewController: UIViewController {
             savedUI()
         }
         
-        goingButton.backgroundColor = .zipLightGray
-        goingButton.setTitle("RSVP", for: .normal)
-        if event.usersGoing.contains(User(userId: userId)) {
-            goingUI()
-        }
-        if event.usersNotGoing.contains(User(userId: userId)) {
-           notGoingUI()
-        }
-        goingButton.titleLabel?.textColor = .white
-        goingButton.titleLabel?.font = .zipSubtitle2
-        goingButton.titleLabel?.textAlignment = .center
-        goingButton.contentVerticalAlignment = .center
+        
         
         if let inviteButton = inviteButton {
             inviteButton.backgroundColor = .zipLightGray
@@ -141,18 +130,7 @@ class EventViewController: UIViewController {
             inviteButton.contentVerticalAlignment = .center
         }
         
-        goingDD.anchorView = goingButton
-        goingDD.dismissMode = .onTap
-        goingDD.direction = .bottom
-        goingDD.textFont = .zipSubtitle2
-        goingDD.dataSource = ["Going", "Not Going"]
-        goingDD.selectionAction = { [unowned self] (index: Int, item: String) in
-            if item == "Going" {
-                self.markGoing()
-            } else {
-                self.markNotGoing()
-            }
-        }
+        
         
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
         let img = UIImage(systemName: "chevron.compact.up", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
@@ -181,8 +159,59 @@ class EventViewController: UIViewController {
         
         countDownLabel.textAlignment = .center
         
+        configureGoingButton()
         configureNavBar()
         configureTable()
+    }
+    
+    public func configureGoingButton(){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+
+        
+        goingButton.backgroundColor = .zipLightGray
+        goingButton.setTitle("RSVP", for: .normal)
+        if event.usersGoing.contains(User(userId: userId)) {
+            goingUI()
+        }
+        if event.usersNotGoing.contains(User(userId: userId)) {
+           notGoingUI()
+        }
+        goingButton.titleLabel?.textColor = .white
+        goingButton.titleLabel?.font = .zipSubtitle2
+        goingButton.titleLabel?.textAlignment = .center
+        goingButton.contentVerticalAlignment = .center
+        
+        goingDD.anchorView = goingButton
+        goingDD.dismissMode = .onTap
+        goingDD.direction = .bottom
+        goingDD.textFont = .zipSubtitle2
+        goingDD.dataSource = ["Going", "Not Going"]
+        goingDD.selectionAction = { [unowned self] (index: Int, item: String) in
+            if item == "Going" {
+                self.markGoing()
+            } else {
+                self.markNotGoing()
+            }
+        }
+    }
+    
+    public func configureInviteButton() {
+        if let inviteButton = inviteButton {
+            tableHeader.addSubview(inviteButton)
+            inviteButton.translatesAutoresizingMaskIntoConstraints = false
+            inviteButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+            inviteButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            inviteButton.topAnchor.constraint(equalTo: goingButton.topAnchor).isActive = true
+            inviteButton.leftAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: 5).isActive = true
+            
+            goingButton.rightAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: -5).isActive = true
+            
+            inviteButton.layer.cornerRadius = 8
+            inviteButton.addTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+
+        } else {
+            goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -600,22 +629,7 @@ class EventViewController: UIViewController {
         goingButton.topAnchor.constraint(equalTo: hostLabel.bottomAnchor, constant: 15).isActive = true
         
         
-        if let inviteButton = inviteButton {
-            tableHeader.addSubview(inviteButton)
-            inviteButton.translatesAutoresizingMaskIntoConstraints = false
-            inviteButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
-            inviteButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
-            inviteButton.topAnchor.constraint(equalTo: goingButton.topAnchor).isActive = true
-            inviteButton.leftAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: 5).isActive = true
-            
-            goingButton.rightAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: -5).isActive = true
-            
-            inviteButton.layer.cornerRadius = 8
-            inviteButton.addTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
-
-        } else {
-            goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        }
+        configureInviteButton()
         
         tableHeader.addSubview(userCountLabel)
         userCountLabel.translatesAutoresizingMaskIntoConstraints = false

@@ -34,7 +34,7 @@ class EventFinderViewController: UIViewController {
         btn.backgroundColor = .zipVeryLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
         btn.setTitle("Public", for: .normal)
         btn.titleLabel?.textColor = .white
-        btn.titleLabel?.font = .zipBodyBold
+        btn.titleLabel?.font = .zipSubtitle2
         btn.titleLabel?.textAlignment = .center
         btn.contentVerticalAlignment = .center
         btn.layer.cornerRadius = 10
@@ -46,7 +46,7 @@ class EventFinderViewController: UIViewController {
         btn.backgroundColor = .zipLightGray//UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1)
         btn.setTitle("Private", for: .normal)
         btn.titleLabel?.textColor = .white
-        btn.titleLabel?.font = .zipBodyBold
+        btn.titleLabel?.font = .zipSubtitle2
         btn.titleLabel?.textAlignment = .center
         btn.contentVerticalAlignment = .center
         btn.layer.cornerRadius = 10

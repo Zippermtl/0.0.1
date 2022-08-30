@@ -100,16 +100,16 @@ class SettingsPageViewController: UIViewController {
 //        syncContactsButton.backgroundColor = UIColor(red: 137/255, green: 197/255, blue: 156/255, alpha: 1)
 //        syncContactsButton.setTitle("SYNC CONTACTS", for: .normal)
 //        syncContactsButton.titleLabel?.textColor = .white
-//        syncContactsButton.titleLabel?.font = .zipBodyBold
+//        syncContactsButton.titleLabel?.font = .zipSubtitle2
 //        syncContactsButton.titleLabel?.textAlignment = .center
 //        syncContactsButton.contentVerticalAlignment = .center
 //        syncContactsButton.layer.cornerRadius = syncContactsButton.titleLabel!.intrinsicContentSize.height/2
         
-        logoutButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 25))
+        logoutButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 35))
         logoutButton.backgroundColor = UIColor(red: 254/255, green: 97/255, blue: 127/255, alpha: 1)
         logoutButton.setTitle("LOG OUT", for: .normal)
         logoutButton.titleLabel?.textColor = .white
-        logoutButton.titleLabel?.font = .zipBodyBold.withSize(15)
+        logoutButton.titleLabel?.font = .zipTextFill.withSize(15)
         logoutButton.titleLabel?.textAlignment = .center
         logoutButton.contentVerticalAlignment = .center
         logoutButton.layer.cornerRadius = logoutButton.titleLabel!.intrinsicContentSize.height/2

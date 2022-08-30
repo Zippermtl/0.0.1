@@ -464,7 +464,7 @@ public class Event : Equatable, CustomStringConvertible {
         self.usersGoing = event.usersGoing
         self.usersNotGoing = event.usersNotGoing
         self.usersInterested = event.usersInterested
-        self.usersInvite = event.usersInterested
+        self.usersInvite = event.usersInvite
         self.startTime = event.startTime
         self.endTime = event.endTime
         self.duration = event.duration
