@@ -56,7 +56,7 @@ class ZFCardBackView: UIView {
         zipsButton = IconButton.zipsIcon()
         inviteButton = IconButton.inviteIcon()
         messageButton = IconButton.messageIcon()
-        firstNameLabel = UILabel.zipHeader()
+        firstNameLabel = UILabel.zipSubtitle()
         lastNameLabel = UILabel.zipSubtitle()
         usernameLabel = UILabel.zipHeader()
         ageLabel = UILabel.zipSubtitle2()
@@ -68,7 +68,7 @@ class ZFCardBackView: UIView {
         tapToFlipLabel = UILabel.zipTextPrompt()
 
         
-        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold, scale: .large)
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular, scale: .large)
 
         schoolImage = UIImageView(image: UIImage(systemName: "graduationcap", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
         interestsImage = UIImageView(image: UIImage(systemName: "star", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white))
@@ -97,13 +97,13 @@ class ZFCardBackView: UIView {
         reportButton.setImage(UIImage(systemName: "ellipsis",withConfiguration: reportConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
          
-        if AppDelegate.userDefaults.bool(forKey: "hasHomeButton"){
-            usernameLabel.font = .zipBody.withSize(18)
-            firstNameLabel.font = .zipTitle.withSize(20)
-            lastNameLabel.font = .zipTitle.withSize(20)
-            ageLabel.font = .zipTitle.withSize(20)
-        }
-        
+//        if AppDelegate.userDefaults.bool(forKey: "hasHomeButton"){
+//            usernameLabel.font = .zipBody.withSize(18)
+//            firstNameLabel.font = .zipTitle.withSize(20)
+//            lastNameLabel.font = .zipTitle.withSize(20)
+//            ageLabel.font = .zipTitle.withSize(20)
+//        }
+//        
         let usernameTap = UITapGestureRecognizer(target: self, action: #selector(openProfile))
         usernameLabel.isUserInteractionEnabled = true
         usernameLabel.addGestureRecognizer(usernameTap)
@@ -416,14 +416,14 @@ class ZFCardBackView: UIView {
         
         // Age label
         ageLabel.translatesAutoresizingMaskIntoConstraints = false
-        ageLabel.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor).isActive = true
+        ageLabel.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor,constant: 5).isActive = true
         ageLabel.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
 
 
         // Profile Picture
         profilePicture.translatesAutoresizingMaskIntoConstraints = false
         profilePicture.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
-        profilePicture.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 5).isActive = true
+        profilePicture.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 10).isActive = true
         profilePicture.heightAnchor.constraint(equalToConstant: 80).isActive = true
         profilePicture.widthAnchor.constraint(equalTo: profilePicture.heightAnchor).isActive = true
         profilePicture.layer.masksToBounds = true
@@ -442,7 +442,7 @@ class ZFCardBackView: UIView {
         // Age Label
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
         distanceLabel.leftAnchor.constraint(equalTo: firstNameLabel.leftAnchor).isActive = true
-        distanceLabel.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor).isActive = true
+        distanceLabel.topAnchor.constraint(equalTo: lastNameLabel.bottomAnchor,constant: 5).isActive = true
 
         // Right buttons
         zipsButton.translatesAutoresizingMaskIntoConstraints = false
@@ -477,16 +477,16 @@ class ZFCardBackView: UIView {
         interestsImage.centerYAnchor.constraint(equalTo: interestsLabel.centerYAnchor).isActive = true
         
         interestsLabel.translatesAutoresizingMaskIntoConstraints = false
-        interestsLabel.topAnchor.constraint(equalTo: schoolLabel.bottomAnchor, constant: 10).isActive = true
-        interestsLabel.leftAnchor.constraint(equalTo: schoolLabel.leftAnchor).isActive = true
+        interestsLabel.topAnchor.constraint(equalTo: schoolLabel.bottomAnchor, constant: 15).isActive = true
         interestsLabel.rightAnchor.constraint(equalTo: zipsButton.leftAnchor, constant: -10).isActive = true
+        interestsLabel.leftAnchor.constraint(equalTo: schoolLabel.leftAnchor).isActive = true
 
         joinedDateLabel.translatesAutoresizingMaskIntoConstraints = false
-        joinedDateLabel.leftAnchor.constraint(equalTo: interestsImage.leftAnchor).isActive = true
+        joinedDateLabel.leftAnchor.constraint(equalTo: usernameLabel.leftAnchor).isActive = true
         joinedDateLabel.rightAnchor.constraint(equalTo: interestsLabel.rightAnchor).isActive = true
         joinedDateLabel.bottomAnchor.constraint(equalTo: inviteButton.bottomAnchor).isActive = true
         
-        
+
         // Bio Label
         bioLabel.translatesAutoresizingMaskIntoConstraints = false
         bioLabel.topAnchor.constraint(equalTo: inviteButton.bottomAnchor, constant: 20).isActive = true

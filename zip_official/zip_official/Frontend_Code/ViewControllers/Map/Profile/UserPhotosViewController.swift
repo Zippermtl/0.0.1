@@ -48,7 +48,7 @@ class UserPhotosViewController: UIViewController {
     
     let editButton: UIButton = {
         let btn = UIButton()
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
                                                          .foregroundColor: UIColor.zipBlue]
 
         btn.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
@@ -91,7 +91,7 @@ class UserPhotosViewController: UIViewController {
                 cell?.xButton.isHidden = false
             }
             
-            let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+            let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
                                                              .foregroundColor: UIColor.zipBlue]
 
             editButton.setAttributedTitle(NSMutableAttributedString(string: "Done", attributes: attributes), for: .normal)
@@ -115,7 +115,7 @@ class UserPhotosViewController: UIViewController {
                     strongSelf.user.pictureURLs = strongSelf.originalPicUrls
                     strongSelf.user.picIndices = pics.map({ $0.idx })
                     DispatchQueue.main.async {
-                        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+                        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
                                                                          .foregroundColor: UIColor.zipBlue]
                         strongSelf.editButton.setAttributedTitle(NSMutableAttributedString(string: "Edit", attributes: attributes), for: .normal)
                         

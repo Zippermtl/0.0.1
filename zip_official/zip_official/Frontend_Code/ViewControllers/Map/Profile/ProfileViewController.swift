@@ -36,7 +36,7 @@ import JGProgressHUD
 class ProfileViewController: AbstractProfileViewController {
     
     init(id: String) {
-        let actionButtonInfo = ("EDIT", UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1))
+        let actionButtonInfo = ("Edit", UIColor.zipLightGray)
         let settingsIcon = UIImage(systemName: "gearshape")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         super.init(id: id,
                    B1: IconButton.eventsIcon(),

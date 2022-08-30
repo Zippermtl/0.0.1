@@ -70,7 +70,7 @@ class InterestSelectionViewController: UIViewController {
 //MARK: - CollectionView Delegate
 extension InterestSelectionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let fontAttributes = [NSAttributedString.Key.font: UIFont.zipBody]
+        let fontAttributes = [NSAttributedString.Key.font: UIFont.zipSubtitle]
         return CGSize(width: Interests.allCases[indexPath.row].description.size(withAttributes: fontAttributes).width+20,
                       height: 40)
         

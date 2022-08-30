@@ -30,6 +30,7 @@ class EditInterestsTableViewCell: EditProfileTableViewCell {
         self.interests = []
         
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        titleLabel.widthAnchor.constraint(lessThanOrEqualToConstant: 128).isActive = true
         contentView.backgroundColor = .zipGray
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -73,6 +74,7 @@ class EditInterestsTableViewCell: EditProfileTableViewCell {
 
 extension EditInterestsTableViewCell: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        print("CELLS = \(interests.count + 1)")
         return interests.count + 1
     }
     
@@ -186,7 +188,7 @@ extension EditInterestsTableViewCell: UICollectionViewDelegate, UICollectionView
 
 extension EditInterestsTableViewCell: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let fontAttributes = [NSAttributedString.Key.font: UIFont.zipBody]
+        let fontAttributes = [NSAttributedString.Key.font: UIFont.zipSubtitle]
         if indexPath.row == interests.count {
             return CGSize(width: "Add More".size(withAttributes: fontAttributes).width+30, height: 30)
         } else {

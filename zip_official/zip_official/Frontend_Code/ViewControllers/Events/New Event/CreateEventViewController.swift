@@ -98,7 +98,7 @@ class CreateEventViewController: UIViewController {
         eventNameField.textColor = .white
         eventNameField.font = .zipTextFill
 
-        locationField.font = .zipBody
+        locationField.font = .zipTextFill
         locationField.borderStyle = .roundedRect
         locationField.tintColor = .white
         locationField.backgroundColor = .zipLightGray

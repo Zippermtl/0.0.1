@@ -32,7 +32,7 @@ class ZipMessagesViewController: UIViewController {
         let label = UILabel()
         label.text = "No Conversations"
         label.textAlignment = .center
-        label.font = .zipBody
+        label.font = .zipSubtitle
         label.textColor = .zipLightGray
         return label
     }()

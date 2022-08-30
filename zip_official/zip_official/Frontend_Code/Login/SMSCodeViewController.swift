@@ -427,7 +427,7 @@ extension SMSCodeViewController {
             layer.borderWidth = 1
             layer.borderColor = UIColor.zipLightGray.cgColor
             backgroundColor = .zipLightGray
-            font = .zipBody.withSize(30)
+            font = .zipSubtitle2
             tintColor = .white
             textColor = .white
             

@@ -398,7 +398,7 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
       
       return NSAttributedString(
         string: message.sender.displayName,
-        attributes: [.font: UIFont.zipBody])
+        attributes: [.font: UIFont.zipTextFill])
     }
     
   

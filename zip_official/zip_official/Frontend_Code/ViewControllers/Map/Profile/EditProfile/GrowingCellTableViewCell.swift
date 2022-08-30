@@ -24,7 +24,7 @@ class GrowingCellTableViewCell: UITableViewCell {
         textView.layer.cornerRadius = 5
         
         textView.backgroundColor = .zipGray
-        textView.font = .zipBody
+        textView.font = .zipTextFill
         textView.textColor = .white
         textView.tintColor = .white
         

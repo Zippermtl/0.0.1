@@ -30,7 +30,7 @@ class LoadingViewController: UIViewController {
     private let signoutButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Sign out", for: .normal)
-        btn.titleLabel?.font = .zipBody
+        btn.titleLabel?.font = .zipSubtitle2
         btn.titleLabel?.textColor = .white
 
         return btn
@@ -40,7 +40,7 @@ class LoadingViewController: UIViewController {
     private let continueButton: UIButton = {
         let btn = UIButton()
         btn.setTitle("Continue to App", for: .normal)
-        btn.titleLabel?.font = .zipBody
+        btn.titleLabel?.font = .zipSubtitle2
         btn.titleLabel?.textColor = .white
         return btn
     }()

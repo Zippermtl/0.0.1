@@ -88,7 +88,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
     }
     
     func applyDropDownAppearanceChanges(){
-        DropDown.appearance().textFont = .zipBody
+        DropDown.appearance().textFont = .zipTextFill
         DropDown.appearance().textColor = .white
         DropDown.appearance().selectedTextColor = .white
         DropDown.appearance().backgroundColor = .zipLightGray

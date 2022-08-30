@@ -53,7 +53,7 @@ class MyEventViewController: EventViewController {
     
     override func configureLabels(){
         super.configureLabels()
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextPrompt4,
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         if event.hosts.count > 1 {

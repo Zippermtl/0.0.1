@@ -23,18 +23,21 @@ class DistanceLabel: IconLabel {
         let pinConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
         let pin = UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(pinConfig)
         super.init(iconImage: pin)
+        icon.bounds = CGRect(x: -5, y: -5, width: 18, height: 23)
     }
     
     init(labelFont: UIFont, color: UIColor, config: UIImage.Configuration){
         let pin = UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         super.init(iconImage: pin?.withConfiguration(config), labelFont: labelFont, color: color)
+        icon.bounds = CGRect(x: -5, y: -5, width: 18, height: 23)
         textColor = color
     }
     
-    init(distance: Double, labelFont: UIFont = .zipTextFillBold, color: UIColor = .zipBlue) {
+    init(distance: Double, labelFont: UIFont = .zipSubtitle2, color: UIColor = .zipBlue) {
         let pinConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
         let pin = UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(pinConfig)
         super.init(iconImage: pin, labelFont: labelFont, color: color)
+        icon.bounds = CGRect(x: -5, y: -5, width: 18, height: 23)
         textColor = color
         update(distance: distance)
     }

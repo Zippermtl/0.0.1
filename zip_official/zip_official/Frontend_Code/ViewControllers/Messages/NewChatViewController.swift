@@ -56,7 +56,7 @@ class NewChatViewController: UIViewController {
         label.text = "No Results"
         label.textAlignment = .center
         label.textColor = .zipLightGray
-        label.font = .zipBody
+        label.font = .zipSubtitle2
         return label
     }()
     

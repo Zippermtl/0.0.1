@@ -77,7 +77,7 @@ extension EventInvitesTableView: UITableViewDelegate, UITableViewDataSource {
             cell.selectionStyle = .none
             var content = cell.defaultContentConfiguration()
             content.textProperties.color = .zipVeryLightGray
-            content.textProperties.font = .zipBody.withSize(16)
+            content.textProperties.font = .zipSubtitle2
             content.textProperties.alignment = .center
             content.text = "You have no pending event Invites"
             cell.contentConfiguration = content

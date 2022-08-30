@@ -89,7 +89,7 @@ class EventViewController: UIViewController {
         self.goingDD = DropDown()
         self.messageButton = IconButton.messageIcon()
         self.messageButton.setTextLabel(s: "Contact")
-        let saveConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
+        let saveConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
         self.saveButton = IconButton(text: "Save",
                                      icon: UIImage(systemName: "bookmark")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
                                      config: saveConfig)
@@ -99,8 +99,7 @@ class EventViewController: UIViewController {
             .withTintColor(.white)
             .withConfiguration(saveConfig), for: .selected)
         
-        self.participantsButton = IconButton.zipsIcon()
-        participantsButton.setTextLabel(s: "Participants")
+        self.participantsButton = IconButton.participantsIcon()
 
         self.liveView = UIView()
         
@@ -267,46 +266,53 @@ class EventViewController: UIViewController {
 
     
     private func markGoing(){
-        DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
-            guard let strongSelf = self,
-                  error == nil else {
-                return
-            }
-            
-            guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
-            
-            if let idx = strongSelf.event.usersNotGoing.firstIndex(of: User(userId: userId)) {
-                strongSelf.event.usersNotGoing.remove(at: idx)
-            }
-            strongSelf.event.usersGoing.append(User(userId: userId))
-            
-            DispatchQueue.main.async {
-                strongSelf.goingUI()
-                strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
-            }
+        let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        if !event.usersGoing.contains(User(userId: userId)) {
+            DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                
+                guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+                
+                if let idx = strongSelf.event.usersNotGoing.firstIndex(of: User(userId: userId)) {
+                    strongSelf.event.usersNotGoing.remove(at: idx)
+                }
+                strongSelf.event.usersGoing.append(User(userId: userId))
+                
+                DispatchQueue.main.async {
+                    strongSelf.goingUI()
+                    strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
+                }
 
-        })
+            })
+        }
+        
     }
     
     private func markNotGoing() {
-        DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
-            guard let strongSelf = self,
-                  error == nil else {
-                return
-            }
-            
-            guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
-            
-            if let idx = strongSelf.event.usersGoing.firstIndex(of: User(userId: userId)) {
-                strongSelf.event.usersGoing.remove(at: idx)
-            }
-            strongSelf.event.usersNotGoing.append(User(userId: userId))
-            
-            DispatchQueue.main.async {
-                strongSelf.notGoingUI()
-                strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
-            }
-        })
+        let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        if !event.usersNotGoing.contains(User(userId: userId)) {
+            DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
+                    return
+                }
+                
+                guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+                
+                if let idx = strongSelf.event.usersGoing.firstIndex(of: User(userId: userId)) {
+                    strongSelf.event.usersGoing.remove(at: idx)
+                }
+                strongSelf.event.usersNotGoing.append(User(userId: userId))
+                
+                DispatchQueue.main.async {
+                    strongSelf.notGoingUI()
+                    strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
+                }
+            })
+        }
     }
     
     @objc func didTapGoingButton(){
@@ -320,7 +326,7 @@ class EventViewController: UIViewController {
     }
     
     private func notGoingUI() {
-        goingButton.setTitle("NotGoing", for: .normal)
+        goingButton.setTitle("Not Going", for: .normal)
         isGoing = false
         goingButton.backgroundColor = .zipRed
     }
@@ -541,7 +547,7 @@ class EventViewController: UIViewController {
     private func configureRefresh() {
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh",
                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
-                                                                         NSAttributedString.Key.font: UIFont.zipBody])
+                                                                         NSAttributedString.Key.font: UIFont.zipSubtitle2])
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         tableView.addSubview(refreshControl)
     }
@@ -689,7 +695,7 @@ class EventViewController: UIViewController {
     //MARK: - Label Config
     func configureLabels(){
         userCountLabel.text = String(event.usersGoing.count) + " participants"
-        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextNoti,
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         if event.hosts.count > 1 {

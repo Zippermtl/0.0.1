@@ -126,7 +126,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     private func setRequestedState(){
         centerActionButton.setTitle("Requested", for: .normal)
-        centerActionButton.backgroundColor = .zipVeryLightGray
+        centerActionButton.backgroundColor = .zipLightGray
         centerActionButton.layer.borderWidth = 0
     }
     
@@ -138,14 +138,14 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     private func setZippedState(){
         centerActionButton.setTitle("Zipped", for: .normal)
-        centerActionButton.backgroundColor = .zipGray
-        centerActionButton.layer.borderWidth = 3
+        centerActionButton.backgroundColor = .zipLightGray
+        centerActionButton.layer.borderWidth = 0
     }
     
     private func setIncomingRequestState() {
         centerActionButton.setTitle("Zip Back", for: .normal)
         centerActionButton.backgroundColor = .zipBlue
-        centerActionButton.layer.borderWidth = 3
+        centerActionButton.layer.borderWidth = 0
     }
     
 
@@ -198,8 +198,8 @@ class OtherProfileViewController: AbstractProfileViewController  {
         messageButton.iconButton.layer.masksToBounds = false
         view.addSubview(messageButton)
         messageButton.translatesAutoresizingMaskIntoConstraints = false
-        messageButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        messageButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20).isActive = true
+        messageButton.bottomAnchor.constraint(equalTo: view.bottomAnchor,constant: -10).isActive = true
+        messageButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -30).isActive = true
     }
     
     @objc private func didTapMessage(){

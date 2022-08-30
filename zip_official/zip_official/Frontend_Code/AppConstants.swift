@@ -148,7 +148,6 @@ extension UIFont {
     static var zipTextDetail: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
     static var zipTextDetail2: UIFont {  return UIFont.zipFontRegular.withSize(10)  }
     static var zipTextFill: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
-    static var zipTextFillBold: UIFont {  return UIFont.zipFontSemiBold.withSize(16)  }
     static var zipTextIcon: UIFont {  return UIFont.zipFontRegular.withSize(12)  }
     static var zipTextNoti: UIFont {  return UIFont.zipFontMedium.withSize(14)  }
     static var zipTextNotiBold: UIFont {  return UIFont.zipFontSemiBold.withSize(14)  }
@@ -163,9 +162,7 @@ extension UIFont {
     static var zipBodyBold: UIFont {
         return UIFont(name: "HelveticaNeue-Bold", size: 18)!
     }
-    static var zipSubscript: UIFont {
-        return UIFont(name: "HelveticaNeue-Medium", size: 15)!
-    }
+
 
 }
 
@@ -219,12 +216,7 @@ extension UILabel {
         label.font = .zipTextFill
         return label
     }
-    static func zipTextFillBold() -> UILabel {
-        let label = UILabel()
-        label.textColor = UILabel.DEFAULT_TEXTCOLOR
-        label.font = .zipTextFillBold
-        return label
-    }
+
     static func zipTextIcon() -> UILabel {
         let label = UILabel()
         label.textColor = UILabel.DEFAULT_TEXTCOLOR

@@ -63,9 +63,12 @@ class FPCViewController: UIViewController {
         self.eventsTable = EventInvitesTableView(events: events)
         self.searchTable = SearchBarTableView()
         
-        let iconConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
-        self.findEventsIcon = IconButton(text: "Find\nEvents", icon: UIImage(systemName: "calendar"), config: iconConfig )
-        self.createEventIcon = IconButton(text: "Create\nEvent", icon: UIImage(systemName: "calendar.badge.plus"), config: iconConfig )
+        let iconConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
+        let createEventConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .light, scale: .large)
+
+        self.findEventsIcon = IconButton.eventsIcon()
+        findEventsIcon.setTextLabel(s: "Find\nEvents")
+        self.createEventIcon = IconButton(text: "Create\nEvent", icon: UIImage(systemName: "calendar.badge.plus"), config: createEventConfig )
         self.notificationIcon = IconButton(text: "Notifications", icon: UIImage(systemName: "bell"), config: iconConfig )
         self.messagesIcon = IconButton.messageIcon()
         
@@ -127,14 +130,14 @@ class FPCViewController: UIViewController {
         
         
         zipRequestsButton.backgroundColor = .clear
-        let ZRattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        let ZRattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         zipRequestsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: ZRattributes), for: .normal)
         
         
         eventsButton.backgroundColor = .clear
-        let Eattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipBody.withSize(16),
+        let Eattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         eventsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: Eattributes), for: .normal)

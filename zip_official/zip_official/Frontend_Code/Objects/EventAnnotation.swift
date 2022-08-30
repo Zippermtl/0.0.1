@@ -170,7 +170,7 @@ class UserEventAnnotationView: EventAnnotationView {
     static let identifier = "pubic"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue, view_length: 40, dot_length: 40)
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue, view_length: 40, dot_length: 12)
     }
     
     required init?(coder aDecoder: NSCoder) {

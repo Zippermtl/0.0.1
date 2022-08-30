@@ -57,7 +57,7 @@ extension String {
         let tempLabel = UILabel(frame: CGRect(x: 0, y: 0, width: width, height: CGFloat.greatestFiniteMagnitude))
         tempLabel.numberOfLines = 0
         tempLabel.lineBreakMode = .byWordWrapping
-        tempLabel.font = .zipBody
+        tempLabel.font = .zipTextFill
         tempLabel.text = self
         tempLabel.sizeToFit()
         return tempLabel.frame.height

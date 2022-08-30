@@ -77,13 +77,21 @@ class IconButton: UIButton {
         return IconButton(
             text: "Events",
             icon:  UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .light, scale: .large)
         )
     }
     
     static func zipsIcon() -> IconButton {
         return IconButton(
             text: "Zips",
+            icon:  UIImage(systemName: "person.2")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
+            config: UIImage.SymbolConfiguration(pointSize: 23, weight: .regular, scale: .large)
+        )
+    }
+    
+    static func participantsIcon() -> IconButton {
+        return IconButton(
+            text: "Participants",
             icon:  UIImage(systemName: "person.3")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
             config: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium, scale: .large)
         )
@@ -93,7 +101,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "Invite",
             icon:  UIImage(systemName: "paperplane")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 23, weight: .regular, scale: .large)
         )
     }
     
@@ -101,7 +109,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "Message",
             icon:  UIImage(systemName: "message")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
         )
     }
     
@@ -109,7 +117,7 @@ class IconButton: UIButton {
         return IconButton(
             text: "My Card",
             icon:  UIImage(systemName: "lanyardcard")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
-            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium, scale: .large)
+            config: UIImage.SymbolConfiguration(pointSize: 30, weight: .light, scale: .large)
         )
     }
         

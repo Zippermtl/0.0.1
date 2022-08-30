@@ -26,13 +26,13 @@ class IconLabel: UILabel {
         }
     }
 
-    private let icon: NSTextAttachment
+    let icon: NSTextAttachment
     private var labelFont: UIFont
     private var color: UIColor
     private var labelText: String
     
     init(iconImage: UIImage?){
-        self.labelFont = .zipBody
+        self.labelFont = .zipSubtitle2
         self.color = .zipBlue
         self.labelText = ""
         
@@ -57,6 +57,7 @@ class IconLabel: UILabel {
             return
         }
 
+        
         icon.image = iconImage.withRenderingMode(.alwaysOriginal).withTintColor(self.color)
         
         textColor = color
@@ -74,6 +75,7 @@ class IconLabel: UILabel {
             labelText += " "
         }
         labelText += s
+
         let attachmentString = NSAttributedString(attachment: icon)
         let completeString = NSMutableAttributedString(string: "")
         completeString.append(attachmentString)

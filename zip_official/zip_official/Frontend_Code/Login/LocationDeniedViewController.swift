@@ -22,7 +22,7 @@ class LocationDeniedViewController: UIViewController {
     
     let subtitleLabel: UILabel = {
         let label = UILabel()
-        label.font = .zipBody
+        label.font = .zipSubtitle
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0

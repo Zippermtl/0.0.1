@@ -185,8 +185,8 @@ class FilterSettingsViewController: UIViewController {
         distanceView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.topAnchor.constraint(equalTo: distanceView.subtitleView.bottomAnchor, constant: 15).isActive = true
-        distanceLabel.leftAnchor.constraint(equalTo: distanceView.titleView.leftAnchor).isActive = true
+        distanceLabel.centerYAnchor.constraint(equalTo: distanceView.centerYAnchor).isActive = true
+        distanceLabel.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -15).isActive = true
         distanceLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
         distanceLabel.widthAnchor.constraint(equalToConstant: 75).isActive = true
 
@@ -194,10 +194,10 @@ class FilterSettingsViewController: UIViewController {
         distanceLabel.layer.cornerRadius = 25
 
         distanceSlider.translatesAutoresizingMaskIntoConstraints = false
-        distanceSlider.centerYAnchor.constraint(equalTo: distanceLabel.centerYAnchor).isActive = true
-        distanceSlider.leftAnchor.constraint(equalTo: distanceLabel.rightAnchor,constant: 10).isActive = true
+        distanceSlider.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor,constant: 10).isActive = true
+        distanceSlider.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 15).isActive = true
         distanceSlider.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -15).isActive = true
-        
+        distanceSlider.bottomAnchor.constraint(equalTo: distanceView.bottomAnchor).isActive = true
         
         ageView.translatesAutoresizingMaskIntoConstraints = false
         ageView.topAnchor.constraint(equalTo: distanceView.bottomAnchor).isActive = true
@@ -206,8 +206,8 @@ class FilterSettingsViewController: UIViewController {
         ageView.leftAnchor.constraint(equalTo: distanceView.leftAnchor).isActive = true
         
         ageLabel.translatesAutoresizingMaskIntoConstraints = false
-        ageLabel.topAnchor.constraint(equalTo: ageView.subtitleView.bottomAnchor, constant: 15).isActive = true
-        ageLabel.leftAnchor.constraint(equalTo: ageView.titleView.leftAnchor).isActive = true
+        ageLabel.topAnchor.constraint(equalTo: ageView.topAnchor).isActive = true
+        ageLabel.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -15).isActive = true
         ageLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
         ageLabel.widthAnchor.constraint(equalToConstant: 75).isActive = true
 
@@ -215,9 +215,10 @@ class FilterSettingsViewController: UIViewController {
         ageLabel.layer.cornerRadius = 25
 
         ageSlider.translatesAutoresizingMaskIntoConstraints = false
-        ageSlider.centerYAnchor.constraint(equalTo: ageLabel.centerYAnchor).isActive = true
-        ageSlider.leftAnchor.constraint(equalTo: ageLabel.rightAnchor,constant: 10).isActive = true
-        ageSlider.rightAnchor.constraint(equalTo: distanceSlider.rightAnchor).isActive = true
+        ageSlider.topAnchor.constraint(equalTo: ageLabel.bottomAnchor,constant: 10).isActive = true
+        ageSlider.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 15).isActive = true
+        ageSlider.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -15).isActive = true
+        ageSlider.bottomAnchor.constraint(equalTo: ageSlider.bottomAnchor).isActive = true
 
 
         genderView.translatesAutoresizingMaskIntoConstraints = false
@@ -227,7 +228,7 @@ class FilterSettingsViewController: UIViewController {
         genderView.leftAnchor.constraint(equalTo: distanceView.leftAnchor).isActive = true
 
         buttonHolder.translatesAutoresizingMaskIntoConstraints = false
-        buttonHolder.topAnchor.constraint(equalTo: genderView.subtitleView.bottomAnchor).isActive = true
+        buttonHolder.topAnchor.constraint(equalTo: genderView.bottomAnchor).isActive = true
         buttonHolder.bottomAnchor.constraint(equalTo: genderView.bottomAnchor).isActive = true
         buttonHolder.leftAnchor.constraint(equalTo: genderView.leftAnchor,constant: 25).isActive = true
         buttonHolder.rightAnchor.constraint(equalTo: genderView.rightAnchor,constant: -25).isActive = true

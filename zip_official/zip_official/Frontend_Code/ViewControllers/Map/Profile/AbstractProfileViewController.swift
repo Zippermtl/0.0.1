@@ -203,7 +203,7 @@ class AbstractProfileViewController: UIViewController {
     private func configureRefresh() {
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh",
                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.zipVeryLightGray,
-                                                                         NSAttributedString.Key.font: UIFont.zipBody])
+                                                                         NSAttributedString.Key.font: UIFont.zipTextFill])
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         tableView.addSubview(refreshControl)
     }
@@ -302,8 +302,8 @@ class AbstractProfileViewController: UIViewController {
         
         tableHeader.addSubview(centerActionButton)
         centerActionButton.translatesAutoresizingMaskIntoConstraints = false
-        centerActionButton.widthAnchor.constraint(equalToConstant: 120).isActive = true
-        centerActionButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        centerActionButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        centerActionButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         centerActionButton.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 10).isActive = true
         centerActionButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
        
@@ -405,7 +405,8 @@ extension AbstractProfileViewController: UITableViewDataSource {
             content.textProperties.color = .white
             content.textProperties.font = .zipTextFill
             content.text = user.school
-            content.image = UIImage(systemName: "graduationcap")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+            let gradCapConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .medium)
+            content.image = UIImage(systemName: "graduationcap", withConfiguration: gradCapConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
             schoolCell!.contentConfiguration = content
             
             tableCells.append(schoolCell!)

@@ -230,7 +230,7 @@ extension EventFinderViewController :  UITableViewDataSource {
         default:  title.text = "default"
         }
         
-        title.font = .zipBody
+        title.font = .zipTextFill
         title.textColor = .white
         view.addSubview(title)
         title.translatesAutoresizingMaskIntoConstraints = false
