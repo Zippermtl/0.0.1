@@ -142,7 +142,7 @@ class EventDatePickerView: UIView {
         formatter.timeStyle = .none
         endDateField.text = formatter.string(from: sender.date)
 
-        event.endTime = combineDateWithTime(date: sender.date, time: event.endTime) ?? event.endTime
+        event.endTime = combineDateWithTime(date: sender.date, time: event.endTime)!
         setMinMax()
     }
     
@@ -156,11 +156,11 @@ class EventDatePickerView: UIView {
         setMinMax()
     }
     
-    func combineDateWithTime(date: Date, time: Date) -> Date? {
+    func combineDateWithTime(date: Date?, time: Date?) -> Date? {
         let calendar = Calendar.current
         
-        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
-        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date ?? Date())
+        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time ?? Date())
         
         let mergedComponments = NSDateComponents()
         mergedComponments.year = dateComponents.year ?? 2021

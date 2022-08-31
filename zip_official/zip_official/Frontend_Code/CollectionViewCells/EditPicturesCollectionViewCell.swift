@@ -12,6 +12,7 @@ protocol EditPicturesCollectionViewCellDelegate: AnyObject {
 }
 
 class EditPicturesCollectionViewCell: UICollectionViewCell {
+    static let identifier = "pictureCell"
     weak var delegate: EditPicturesCollectionViewCellDelegate?
     var picture = UIImageView()
 
@@ -19,8 +20,8 @@ class EditPicturesCollectionViewCell: UICollectionViewCell {
     
     let xButton: UIButton = {
         let btn = UIButton()
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold, scale: .medium)
-        let img = UIImage(systemName: "xmark.circle.fill", withConfiguration: largeConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold, scale: .small)
+        let img = UIImage(systemName: "xmark", withConfiguration: largeConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
         btn.setImage(img, for: .normal)
         
         btn.addTarget(self, action: #selector(didTapDeleteButton), for: .touchUpInside)
@@ -43,42 +44,29 @@ class EditPicturesCollectionViewCell: UICollectionViewCell {
         picture.layer.cornerRadius = cornerRadius
 
         picture.translatesAutoresizingMaskIntoConstraints = false
-        picture.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        picture.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10).isActive = true
         picture.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
-        picture.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
+        picture.rightAnchor.constraint(equalTo: contentView.rightAnchor,constant: -(10*7/10)).isActive = true
         picture.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
         
         
         contentView.addSubview(xButton)
         xButton.translatesAutoresizingMaskIntoConstraints = false
-        xButton.centerYAnchor.constraint(equalTo: picture.topAnchor).isActive = true
-        xButton.centerXAnchor.constraint(equalTo: picture.rightAnchor).isActive = true
+        xButton.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        xButton.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
+        xButton.widthAnchor.constraint(equalToConstant: 20).isActive = true
         xButton.heightAnchor.constraint(equalTo: xButton.widthAnchor).isActive = true
-//        xButton.backgroundColor = .zipBlue
         
-        guard let bg =  xButton.imageView else {
-            return
-        }
-        bg.backgroundColor = .zipBlue
-        bg.layer.masksToBounds = true
+    
+       
         
-        
+        xButton.backgroundColor = .white
         xButton.layer.masksToBounds = true
-        
+        xButton.layer.cornerRadius = 10
         xButton.addTarget(self, action: #selector(didTapDeleteButton), for: .touchUpInside)
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        guard let bg =  xButton.imageView else {
-            return
-        }
-        
-        bg.layer.cornerRadius = bg.frame.height/2
-//        xButton.layer.cornerRadius = xButton.frame.height/2
-//        print("width = \(xButton.frame.width) height = \(xButton.frame.height)")
 
-    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

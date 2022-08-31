@@ -130,14 +130,14 @@ class FPCViewController: UIViewController {
         
         
         zipRequestsButton.backgroundColor = .clear
-        let ZRattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
+        let ZRattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextPrompt2,
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         zipRequestsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: ZRattributes), for: .normal)
         
         
         eventsButton.backgroundColor = .clear
-        let Eattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipSubtitle2,
+        let Eattributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextPrompt2,
                                                          .foregroundColor: UIColor.zipVeryLightGray,
                                                          .underlineStyle: NSUnderlineStyle.single.rawValue]
         eventsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: Eattributes), for: .normal)

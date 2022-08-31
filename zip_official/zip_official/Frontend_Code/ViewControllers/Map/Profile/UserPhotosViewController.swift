@@ -24,6 +24,7 @@ class UserPhotosViewController: UIViewController {
     private var collectionView: UICollectionView?
 
     private var focusedImageScale = CGFloat(0)
+    private var focusedImageNumber = 0
     private var focusedImage: UIImageView = {
         let img = UIImageView()
         img.isHidden = true
@@ -57,23 +58,47 @@ class UserPhotosViewController: UIViewController {
         return btn
     }()
     
+    var viewTap : UITapGestureRecognizer!
+    var viewSwipe : UISwipeGestureRecognizer!
+    var focusedSwipeDown : UISwipeGestureRecognizer!
+    var focusedSwipeUp : UISwipeGestureRecognizer!
+    var focusedSwipeLeft : UISwipeGestureRecognizer!
+    var focusedSwipeRight : UISwipeGestureRecognizer!
+    var focusedTap : UITapGestureRecognizer!
+    
+    @objc private func didSwipeLeftFocusedImage(){
+        if focusedImageNumber < userPictures.count - 1 {
+            focusedImageNumber += 1
+            let imageToFocus = userPictures[focusedImageNumber]
+            if imageToFocus.isUrl() {
+                focusedImage.sd_setImage(with: imageToFocus.url, completed: nil)
+            } else {
+                focusedImage.image = imageToFocus.image
+            }
+        }
+    }
+    
+    @objc private func didSwipeRightFocusedImage(){
+        if focusedImageNumber > 0 {
+            focusedImageNumber -= 1
+            let imageToFocus = userPictures[focusedImageNumber]
+            if imageToFocus.isUrl() {
+                focusedImage.sd_setImage(with: imageToFocus.url, completed: nil)
+            } else {
+                focusedImage.image = imageToFocus.image
+            }
+        }
+    }
+    
     @objc private func didTapFocusedImage(){
         focusedImage.layer.removeAllAnimations()
-//        guard let collectionView = collectionView else {
-//            return
-//        }
-        
-//        guard let cellAttributes = collectionView.layoutAttributesForItem(at: IndexPath(row: focusedImage.tag, section: 0)) else {
-//            return
-//        }
         
         UIView.animate(withDuration: 0.1, animations: { [weak self] in
-            self?.focusedImage.transform = CGAffineTransform(scaleX: 1, y: 1)//1/(self?.focusedImageScale ?? 1),
-                                                                  //y: 1/(self?.focusedImageScale ?? 1))
+            self?.focusedImage.transform = CGAffineTransform(scaleX: 1, y: 1)
             
             guard let strongSelf = self else { return }
-            self?.focusedImage.center.y = strongSelf.view.frame.midY //collectionView.frame.minY + cellAttributes.frame.midY + collectionView.contentInset.top
-            self?.focusedImage.center.x = strongSelf.view.frame.midX //collectionView.frame.minX + cellAttributes.frame.midX
+            self?.focusedImage.center.y = strongSelf.view.frame.midY
+            self?.focusedImage.center.x = strongSelf.view.frame.midX
         },completion: { [weak self] _ in
             self?.focusedImage.isHidden = true
         })
@@ -158,12 +183,44 @@ class UserPhotosViewController: UIViewController {
             editButton.isHidden = true
         }
         
-        
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.8)
         view.isOpaque = false
+
+        viewSwipe = UISwipeGestureRecognizer(target: self, action: #selector(didTapCloseButton))
+        viewSwipe.direction = .down
+        viewTap = UITapGestureRecognizer(target: self, action: #selector(didTapCloseButton))
+
+        focusedSwipeDown = UISwipeGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
+        focusedSwipeDown.direction = .down
+        focusedSwipeUp = UISwipeGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
+        focusedSwipeUp.direction = .up
+        focusedSwipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
+        focusedSwipeLeft.direction = .left
+        focusedSwipeRight = UISwipeGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
+        focusedSwipeRight.direction = .right
+        focusedTap = UITapGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapFocusedImage))
-        focusedImage.addGestureRecognizer(tap)
+        view.addGestureRecognizer(viewTap)
+        view.addGestureRecognizer(viewSwipe)
+
+        focusedImage.addGestureRecognizer(focusedTap)
+        focusedImage.addGestureRecognizer(focusedSwipeDown)
+        focusedImage.addGestureRecognizer(focusedSwipeUp)
+        
+        focusedImage.addGestureRecognizer(focusedSwipeLeft)
+        focusedImage.addGestureRecognizer(focusedSwipeRight)
+
+        
+        viewTap.delegate = self
+        viewSwipe.delegate = self
+        
+        focusedSwipeUp.delegate = self
+        focusedSwipeDown.delegate = self
+        focusedSwipeLeft.delegate = self
+        focusedSwipeRight.delegate = self
+        focusedTap.delegate = self
+        
+        
         xButton.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
         editButton.addTarget(self, action: #selector(didTapEditButton), for: .touchUpInside)
 
@@ -192,17 +249,16 @@ class UserPhotosViewController: UIViewController {
     
     private func configureCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = 20
-        layout.minimumLineSpacing = 20
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 10
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
         guard let collectionView = collectionView else {
             return
         }
         
-        collectionView.register(EditPicturesCollectionViewCell.self, forCellWithReuseIdentifier: "pictureCell")
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "default")
-        collectionView.register(AddImageCollectionViewCell.self, forCellWithReuseIdentifier: "addImage")
+        collectionView.register(EditPicturesCollectionViewCell.self, forCellWithReuseIdentifier: EditPicturesCollectionViewCell.identifier)
+        collectionView.register(AddImageCollectionViewCell.self, forCellWithReuseIdentifier: AddImageCollectionViewCell.identifier)
 
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
@@ -211,7 +267,7 @@ class UserPhotosViewController: UIViewController {
         collectionView.backgroundColor = .clear
         collectionView.bounces = false
         collectionView.isScrollEnabled = false
-        collectionView.contentInset = UIEdgeInsets(top: 100, left: 12, bottom: 0, right: 12)
+        collectionView.contentInset = UIEdgeInsets(top: 100, left: 12, bottom: 0, right: 5)
     }
     
     private func addSubviews(){
@@ -256,8 +312,14 @@ extension UserPhotosViewController: UICollectionViewDelegate {
             guard let cellAttributes = collectionView.layoutAttributesForItem(at: indexPath) else {
                 return
             }
+            focusedImageNumber = indexPath.row
+            let imageToFocus = userPictures[indexPath.row]
+            if imageToFocus.isUrl() {
+                focusedImage.sd_setImage(with: imageToFocus.url, completed: nil)
+            } else {
+                focusedImage.image = imageToFocus.image
+            }
             
-            focusedImage.sd_setImage(with: user.otherPictureUrls[indexPath.row], completed: nil)
             focusedImage.frame = CGRect(x: collectionView.frame.midX,
                                         y: collectionView.frame.midY,
                                         width: cellAttributes.frame.width,
@@ -314,24 +376,26 @@ extension UserPhotosViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.row < userPictures.count {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "pictureCell", for: indexPath) as! EditPicturesCollectionViewCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EditPicturesCollectionViewCell.identifier, for: indexPath) as! EditPicturesCollectionViewCell
             cell.delegate = self
             cell.xButton.tag = indexPath.row
             if editButton.titleLabel?.text == "Done" {
                 cell.xButton.isHidden = false
             }
-            
+            cell.isUserInteractionEnabled = true
             cell.configure(pictureHolder: userPictures[indexPath.row])
             
             return cell
         } else if editButton.titleLabel?.text == "Edit" {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "default", for: indexPath)
-            cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AddImageCollectionViewCell.identifier, for: indexPath) as! AddImageCollectionViewCell
+            cell.delegate = self
+            cell.addButton.isHidden = true
             return cell
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "addImage", for: indexPath) as! AddImageCollectionViewCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AddImageCollectionViewCell.identifier, for: indexPath) as! AddImageCollectionViewCell
             cell.delegate = self
-            cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+            cell.addButton.isHidden = false
+
             return cell
         }
         
@@ -378,27 +442,18 @@ extension UserPhotosViewController: UIImageCropperProtocol {
 }
 
 
+extension UserPhotosViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return false
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if gestureRecognizer == viewTap || gestureRecognizer == viewSwipe  {
+            if touch.view != self.view {
+                return false
+            }
+        }
 
-
-//func shakeCell(_ cell: UICollectionViewCell ) {
-//    let shakeAnimation = CABasicAnimation(keyPath: "transform.rotation")
-//    shakeAnimation.duration = 0.05
-//    shakeAnimation.repeatCount = 2
-//    shakeAnimation.autoreverses = true
-//    let startAngle: Float = (-2) * 3.14159/180
-//    let stopAngle = -startAngle
-//    shakeAnimation.fromValue = NSNumber(value: startAngle as Float)
-//    shakeAnimation.toValue = NSNumber(value: 3 * stopAngle as Float)
-//    shakeAnimation.autoreverses = true
-//    shakeAnimation.duration = 0.15
-//    shakeAnimation.repeatCount = 10000
-//    shakeAnimation.timeOffset = 290 * drand48()
-//
-//    let layer: CALayer = cell.layer
-//    layer.add(shakeAnimation, forKey:"shaking")
-//}
-//
-//func stopShaking(_ cell: UICollectionViewCell) {
-//    let layer: CALayer = cell.layer
-//    layer.removeAnimation(forKey: "shaking")
-//}
+        return true
+    }
+}

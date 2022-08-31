@@ -37,9 +37,11 @@ class ZFCardFrontView: UIView {
     private var reportButton: UIButton
     private var requestButton: UIButton
     
+    var canRequest = true
+    
     //MARK: - Button Actions
     @objc private func didTapReportButton(){
-        guard let user = user else {
+        guard let user = user, canRequest else {
             return
         }
         delegate?.presentReport(user: user)
@@ -49,6 +51,8 @@ class ZFCardFrontView: UIView {
         guard let user = user else {
             return
         }
+        
+        if !canRequest { return }
 
         switch user.friendshipStatus {
         case .none:
@@ -96,10 +100,9 @@ class ZFCardFrontView: UIView {
         }
     }
     
-    private func updateRequestButtonImage(name: String, tintColor: UIColor) {
+    private func updateRequestButtonImage(name: String, tintColor: UIColor, config: UIImage.SymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 50.0) ) {
         // create UIImage from SF Symbol at "160-pts" size
-        let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
-        guard let imgA = UIImage(systemName: name, withConfiguration: cfg)?.withTintColor(tintColor, renderingMode: .alwaysOriginal) else {
+        guard let imgA = UIImage(systemName: name, withConfiguration: config)?.withTintColor(tintColor, renderingMode: .alwaysOriginal) else {
             fatalError("Could not load SF Symbol: \(name)!")
         }
         
@@ -159,9 +162,7 @@ class ZFCardFrontView: UIView {
         requestButton.layer.shadowOffset = CGSize(width: 1, height: 4)
         requestButton.layer.shadowRadius = 2
         requestButton.layer.masksToBounds = false
-        
-        requestButton.layer.borderColor = UIColor.white.cgColor
-
+    
 
         nameLabel.numberOfLines = 0
         
@@ -195,19 +196,16 @@ class ZFCardFrontView: UIView {
         case .none:
             updateRequestButtonImage(name: "plus.circle.fill", tintColor: .white)
             requestButton.backgroundColor = .zipBlue
-            requestButton.layer.borderWidth = 0
         case .ACCEPTED:
             updateRequestButtonImage(name: "checkmark.circle.fill", tintColor: .zipBlue)
             requestButton.backgroundColor = .white
-            requestButton.layer.borderWidth = 0
         case .REQUESTED_INCOMING:
             updateRequestButtonImage(name: "plus.circle.fill", tintColor: .white)
             requestButton.backgroundColor = .zipBlue
-            requestButton.layer.borderWidth = 0
         case .REQUESTED_OUTGOING:
-            updateRequestButtonImage(name: "arrow.forward.circle.fill", tintColor: .zipYellow)
-            requestButton.backgroundColor = .white
-            requestButton.layer.borderWidth = 2
+            let arrowConfig = UIImage.SymbolConfiguration(pointSize: 25 , weight: .bold, scale: .medium)
+            updateRequestButtonImage(name: "arrow.forward", tintColor: .white, config: arrowConfig)
+            requestButton.backgroundColor = .zipLightGray
         }
     }
     

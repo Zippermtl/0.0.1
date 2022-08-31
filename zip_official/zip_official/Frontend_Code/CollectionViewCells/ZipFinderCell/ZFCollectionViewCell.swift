@@ -134,8 +134,14 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     func flip() {
         let flipSide: UIView.AnimationOptions = cardFrontView.isHidden ? .transitionFlipFromLeft : .transitionFlipFromRight
         UIView.transition(with: cardView, duration: 0.5, options: flipSide, animations: { [weak self]  () -> Void in
-            self?.cardFrontView.isHidden = !(self?.cardFrontView.isHidden ?? true)
-            self?.cardBackView.isHidden = !(self?.cardBackView.isHidden ?? false)
+            guard let cardFrontView = self?.cardFrontView,
+                  let cardBackView = self?.cardBackView
+            else { return }
+            
+            cardFrontView.isHidden = !cardFrontView.isHidden
+            cardBackView.isHidden = !cardBackView.isHidden
+            cardFrontView.updateRequestButton()
+            cardBackView.updateSlider()
         }, completion: nil)
     }
     

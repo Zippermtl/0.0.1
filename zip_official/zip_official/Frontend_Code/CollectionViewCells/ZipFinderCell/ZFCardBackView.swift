@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 import MapKit
-import DropDown
 
 protocol ZFCardBackDelegate: AnyObject {
     func openVC(_ vc: UIViewController)
@@ -21,7 +20,6 @@ class ZFCardBackView: UIView {
     var frontView: ZFCardFrontView?
     var userLoc: CLLocation
 
-    private var dropDownTitles: [String]
     
     //MARK: - Labels
     private var firstNameLabel: UILabel
@@ -34,7 +32,8 @@ class ZFCardBackView: UIView {
     private var interestsLabel: UILabel
     private var joinedDateLabel: UILabel
     private var tapToFlipLabel: UILabel
-    
+    private var requestedLabel : UILabel
+
     
     private let zipsButton: IconButton
     private let messageButton: IconButton
@@ -43,14 +42,13 @@ class ZFCardBackView: UIView {
     
     //MARK: - Subviews
     private var profilePicture: UIImageView
-    private var reportPopUp: DropDown
-    private var reportButton: UIButton
     
     let schoolImage: UIImageView
     let interestsImage: UIImageView
     
     private var slideView: MTSlideToOpenViewCopy
     
+    var canRequest = true
     
     init() {
         zipsButton = IconButton.zipsIcon()
@@ -66,6 +64,7 @@ class ZFCardBackView: UIView {
         interestsLabel = UILabel.zipTextFill()
         distanceLabel = DistanceLabel()
         tapToFlipLabel = UILabel.zipTextPrompt()
+        requestedLabel = UILabel.zipSubtitle2()
 
         
         let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular, scale: .large)
@@ -76,11 +75,8 @@ class ZFCardBackView: UIView {
         
         slideView = MTSlideToOpenViewCopy(frame: CGRect(x: 0, y: 0, width: 317, height: 56))
         
-        reportPopUp = DropDown()
-            
-        reportButton = UIButton()
+    
         userLoc = CLLocation()
-        dropDownTitles = []
         
         super.init(frame: .zero)
         layer.cornerRadius = 20
@@ -93,17 +89,7 @@ class ZFCardBackView: UIView {
         messageButton.iconAddTarget(self, action: #selector(didTapMessageButton), for: .touchUpInside)
         inviteButton.iconAddTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
         
-        let reportConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
-        reportButton.setImage(UIImage(systemName: "ellipsis",withConfiguration: reportConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        reportButton.addTarget(self, action: #selector(didTapReportButton), for: .touchUpInside)
-         
-//        if AppDelegate.userDefaults.bool(forKey: "hasHomeButton"){
-//            usernameLabel.font = .zipBody.withSize(18)
-//            firstNameLabel.font = .zipTitle.withSize(20)
-//            lastNameLabel.font = .zipTitle.withSize(20)
-//            ageLabel.font = .zipTitle.withSize(20)
-//        }
-//        
+      
         let usernameTap = UITapGestureRecognizer(target: self, action: #selector(openProfile))
         usernameLabel.isUserInteractionEnabled = true
         usernameLabel.addGestureRecognizer(usernameTap)
@@ -139,8 +125,6 @@ class ZFCardBackView: UIView {
         addSubviews()
         configureSubviewLayout()
         configureSlider()
-        configureDropDown()
-
     }
     
     required init?(coder: NSCoder) {
@@ -148,7 +132,7 @@ class ZFCardBackView: UIView {
     }
     
     @objc private func didTapZipsButton(){
-        guard let user = user else {
+        guard let user = user, canRequest else {
             return
         }
         let vc = UsersTableViewController(users: [])
@@ -168,8 +152,8 @@ class ZFCardBackView: UIView {
     }
     
     @objc private func didTapMessageButton() {
-
-        guard let user = user else {
+        
+        guard let user = user, canRequest else {
             return
         }
         
@@ -222,16 +206,10 @@ class ZFCardBackView: UIView {
     }
     
     @objc private func didTapInviteButton(){
-        guard let user = user else {
+        guard let user = user, canRequest else {
             return
         }
         delegate?.openVC(InviteUserToEventViewController(user: user))
-    }
-    
-    //MARK: - Button Actions
-    @objc private func didTapReportButton(){
-        reportPopUp.show()
-        print("report tapped")
     }
     
     @objc private func openProfile(){
@@ -277,6 +255,15 @@ class ZFCardBackView: UIView {
         
         configureLabels()
         profilePicture.sd_setImage(with: user.profilePicUrl, completed: nil)
+        updateSlider()
+    }
+    
+    func updateSlider() {
+        switch user?.friendshipStatus {
+        case .none, .REQUESTED_INCOMING: noStatusUI()
+        case .REQUESTED_OUTGOING: requestedUI()
+        case .ACCEPTED: zippedUI()
+        }
     }
     
     private func configureLabels() {
@@ -287,7 +274,6 @@ class ZFCardBackView: UIView {
         ageLabel.text = "\(user.age) years old"
         bioLabel.text = user.bio
         distanceLabel.update(distance: user.getDistance())
-        print("USER LOCATION = ",user.location)
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
         joinedDateLabel.text = "Join Zipper on " + dateFormatter.string(from: user.joinDate)
@@ -315,7 +301,7 @@ class ZFCardBackView: UIView {
         
         
         slideView.swipeDistanceMultiplier = 0.6
-        slideView.sliderViewTopDistance = 8
+        slideView.sliderViewTopDistance = 7
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
         slideView.sliderTextLabel.text = ""
@@ -326,7 +312,6 @@ class ZFCardBackView: UIView {
         slideView.slidingColor = .clear
             //.zipBlue.withAlphaComponent(0.5)
         
-        let requestedLabel = UILabel.zipSubtitle2()
         requestedLabel.text = "Requested"
         requestedLabel.textColor = .white
         requestedLabel.textAlignment = .center
@@ -347,33 +332,11 @@ class ZFCardBackView: UIView {
 
     }
     
-    //MARK: - Configure Drop Down
-    private func configureDropDown(){
-        guard let user = user else {
-            return
-        }
-        
-        dropDownTitles = ["Report \(user.firstName)",
-                          "Block \(user.firstName)",
-                          "Don't show me \(user.firstName)"]
-        
-        reportPopUp.dataSource = dropDownTitles
-        reportPopUp.anchorView = reportButton
-        
-        reportPopUp.selectionAction = { index, title in
-            print("index \(index) and \(title)")
-        }
-        reportPopUp.setEdgeInsets()
-        reportPopUp.direction = .bottom
-    }
-    
-    //MARK: - Configure Table
-   
+
     
     //MARK: - Add Subviews
     public func addSubviews(){
         addSubview(usernameLabel)
-        addSubview(reportButton)
         
         addSubview(profilePicture)
         
@@ -407,13 +370,6 @@ class ZFCardBackView: UIView {
         usernameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 20).isActive = true
         usernameLabel.topAnchor.constraint(equalTo: topAnchor, constant: buffer).isActive = true
 
-        //Report Button
-        reportButton.translatesAutoresizingMaskIntoConstraints = false
-        reportButton.heightAnchor.constraint(equalToConstant: usernameLabel.intrinsicContentSize.height*1.5).isActive = true
-        reportButton.widthAnchor.constraint(equalTo: reportButton.heightAnchor).isActive = true
-        reportButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -buffer).isActive = true
-        reportButton.centerYAnchor.constraint(equalTo: usernameLabel.centerYAnchor).isActive = true
-        
         // Age label
         ageLabel.translatesAutoresizingMaskIntoConstraints = false
         ageLabel.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor,constant: 5).isActive = true
@@ -513,6 +469,7 @@ class ZFCardBackView: UIView {
 //MARK: - Slider Delegate
 extension ZFCardBackView: MTSlideToOpenDelegateCopy {
     func mtSlideToOpenDelegateDidFinish(_ sender: MTSlideToOpenViewCopy) {
+        print("X end point = \(slideView.xEndingPoint)")
         request()
     }
     
@@ -545,6 +502,7 @@ extension ZFCardBackView: MTSlideToOpenDelegateCopy {
         let imgB = UIImage(cgImage: cgRef, scale: imgA.scale, orientation: imgA.imageOrientation)
                     .withTintColor(.zipBlue, renderingMode: .alwaysOriginal)
         
+        requestedLabel.text = "Requested"
         slideView.thumnailImageView.image = imgB
         slideView.thumnailImageView.backgroundColor = .white
         slideView.updateThumbnailXPosition(slideView.xEndingPoint)
@@ -553,13 +511,31 @@ extension ZFCardBackView: MTSlideToOpenDelegateCopy {
     }
     
     public func zippedUI() {
+        let cfg = UIImage.SymbolConfiguration(pointSize: 50.0)
+        guard let imgA = UIImage(systemName: "checkmark.circle.fill", withConfiguration: cfg)?.withTintColor(.zipBlue, renderingMode: .alwaysOriginal) else {
+            fatalError("Could not load SF Symbol: \("xmark.circle.fill")!")
+        }
         
+        guard let cgRef = imgA.cgImage else {
+            fatalError("Could not get cgImage!")
+        }
+        
+        let imgB = UIImage(cgImage: cgRef, scale: imgA.scale, orientation: imgA.imageOrientation)
+                    .withTintColor(.zipBlue, renderingMode: .alwaysOriginal)
+        
+        requestedLabel.text = "Zipped"
+        slideView.thumnailImageView.image = imgB
+        slideView.thumnailImageView.backgroundColor = .white
+        slideView.updateThumbnailXPosition(slideView.xEndingPoint)
+        print("end point = \(slideView.xEndingPoint)")
+        slideView.isFinished = true
     }
     
     public func noStatusUI() {
         slideView.resetStateWithAnimation(true)
         slideView.thumnailImageView.image = UIImage(named: "zipperSlider")
         slideView.thumnailImageView.backgroundColor = .zipBlue
+        slideView.isFinished = false
     }
     
     

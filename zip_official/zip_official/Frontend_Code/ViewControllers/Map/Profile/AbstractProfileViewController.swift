@@ -24,7 +24,7 @@ class AbstractProfileViewController: UIViewController {
     private var firstnameLabel: UILabel
     private var lastnameLabel: UILabel
     private var ageLabel: UILabel
-    var photoCountLabel: UILabel
+    var photoCountButton: UIButton
 
     // MARK: - Buttons
     var centerActionButton: UIButton
@@ -75,7 +75,7 @@ class AbstractProfileViewController: UIViewController {
         self.firstnameLabel = UILabel.zipTitle()
         self.lastnameLabel = UILabel.zipTitle()
         self.ageLabel = UILabel.zipSubtitle2()
-        self.photoCountLabel = UILabel.zipSubtitle2()
+        self.photoCountButton = UIButton()
         self.centerActionButton = UIButton()
 
         super.init(nibName: nil, bundle: nil)
@@ -89,7 +89,6 @@ class AbstractProfileViewController: UIViewController {
                                                  action: #selector(didTapRightBarButton))
         
         configureButtons()
-        configureLabels()
         configureTable()
     }
     
@@ -131,7 +130,6 @@ class AbstractProfileViewController: UIViewController {
     }
     
     @objc private func refresh(){
-        photoCountLabel.text = ""
         fetchUser(completion: { [weak self] in
             guard let refreshControl = self?.refreshControl else {
                 return
@@ -170,7 +168,6 @@ class AbstractProfileViewController: UIViewController {
             guard let strongSelf = self else { return }
             switch result {
             case .success(let urls):
-                strongSelf.photoCountLabel.text = "\(urls.count)"
                 let profileURL: URL?
                 
                 if strongSelf.user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
@@ -180,9 +177,9 @@ class AbstractProfileViewController: UIViewController {
                     profileURL = strongSelf.user.profilePicUrl
                 }
                 
-                if strongSelf.user.picIndices.count == 0 {
-                    strongSelf.photoCountLabel.isHidden = true
-                }
+
+                
+                strongSelf.configurePhotoCountText()
                 print("URL = \(profileURL)")
                 strongSelf.spinner.dismiss()
                 guard let url = profileURL else {
@@ -208,21 +205,26 @@ class AbstractProfileViewController: UIViewController {
         tableView.addSubview(refreshControl)
     }
     
-    private func configureLabels() {
-        photoCountLabel.backgroundColor = .zipBlue
-        photoCountLabel.layer.masksToBounds = true
-        photoCountLabel.font = .zipSubtitle2
-        photoCountLabel.textColor = .white
-        photoCountLabel.textAlignment = .center
-        photoCountLabel.isUserInteractionEnabled = true
-
+    func configurePhotoCountText() {
+        photoCountButton.setTitle("\(user.pictureURLs.count)", for: .normal)
+        photoCountButton.setTitle("", for: .selected)
+    
+        if user.pictureURLs.count == 0 {
+            photoCountButton.isHidden = true
+        }
+        
+        photoCountButton.backgroundColor = .zipBlue
+        photoCountButton.layer.masksToBounds = true
+        photoCountButton.titleLabel!.textColor = .white
+        photoCountButton.titleLabel!.textAlignment = .center
     }
+    
+
     
     private func configureButtons() {
         let tapPic = UITapGestureRecognizer(target: self, action: #selector(didTapPhotos))
-        let tapLabel = UITapGestureRecognizer(target: self, action: #selector(didTapPhotos))
         profilePictureView.addGestureRecognizer(tapPic)
-        photoCountLabel.addGestureRecognizer(tapLabel)
+        photoCountButton.addTarget(self, action: #selector(didTapPhotos), for: .touchUpInside)
         
         centerActionButton.backgroundColor = centerActionInfo.1
         centerActionButton.setTitle(centerActionInfo.0, for: .normal)
@@ -278,12 +280,12 @@ class AbstractProfileViewController: UIViewController {
         profilePictureView.layer.masksToBounds = true
         profilePictureView.layer.cornerRadius = view.frame.width/4
         
-        tableHeader.addSubview(photoCountLabel)
-        photoCountLabel.translatesAutoresizingMaskIntoConstraints = false
-        photoCountLabel.topAnchor.constraint(equalTo: profilePictureView.topAnchor,constant: 30).isActive = true
-        photoCountLabel.rightAnchor.constraint(equalTo: profilePictureView.rightAnchor).isActive = true
-        photoCountLabel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        photoCountLabel.widthAnchor.constraint(equalTo: photoCountLabel.heightAnchor).isActive = true
+        tableHeader.addSubview(photoCountButton)
+        photoCountButton.translatesAutoresizingMaskIntoConstraints = false
+        photoCountButton.topAnchor.constraint(equalTo: profilePictureView.topAnchor,constant: 30).isActive = true
+        photoCountButton.rightAnchor.constraint(equalTo: profilePictureView.rightAnchor).isActive = true
+        photoCountButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        photoCountButton.widthAnchor.constraint(equalTo: photoCountButton.heightAnchor).isActive = true
         
         tableHeader.addSubview(firstnameLabel)
         firstnameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -330,7 +332,7 @@ class AbstractProfileViewController: UIViewController {
         B3Button.setIconDimension(width: 60)
 
         centerActionButton.layer.cornerRadius = 8
-        photoCountLabel.layer.cornerRadius = 15
+        photoCountButton.layer.cornerRadius = 15
         B1Button.layer.cornerRadius = 30
         B2Button.layer.cornerRadius = 30
         B3Button.layer.cornerRadius = 30

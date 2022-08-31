@@ -43,14 +43,13 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(oopsLabel)
         oopsLabel.numberOfLines = 0
         oopsLabel.lineBreakMode = .byWordWrapping
-        oopsLabel.text = "Opps! There's no more people to show you!"
+        oopsLabel.text = "Oops! There's no more people to show you!"
         
         oopsLabel.translatesAutoresizingMaskIntoConstraints = false
         oopsLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
         oopsLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 75).isActive = true
         oopsLabel.widthAnchor.constraint(equalTo: cardView.widthAnchor, multiplier: 0.75).isActive = true
 
-        
         
         contentView.addSubview(goToSettingsLabel)
         goToSettingsLabel.numberOfLines = 0

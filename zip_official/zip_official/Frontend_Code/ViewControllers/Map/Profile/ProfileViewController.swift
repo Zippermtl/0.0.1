@@ -106,13 +106,28 @@ class ProfileViewController: AbstractProfileViewController {
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: true)
     }
+    
+    override func configurePhotoCountText() {
+        super.configurePhotoCountText()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium, scale: .small)
+        let img = UIImage(systemName: "plus", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+        photoCountButton.setImage(img, for: .selected)
+
+        
+        if user.pictureURLs.count == 0 {
+            photoCountButton.isHidden = false
+            photoCountButton.isSelected = true
+        } else {
+            photoCountButton.isSelected = false
+        }
+    }
 
 
 }
 
 extension ProfileViewController: UpdateFromEditProtocol {
     func update() {
-        photoCountLabel.text = "\(user.pictureURLs.count)"
+        configurePhotoCountText()
         profilePictureView.sd_setImage(with: user.profilePicUrl)
         configureCells()
         tableView.reloadData()

@@ -464,6 +464,8 @@ extension MapViewController: FPCMapDelegate {
 // MARK: MKMapViewDelegate
 extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+   
+        
         guard let eventAnnotation = annotation as? EventAnnotation else {
             return nil
         }

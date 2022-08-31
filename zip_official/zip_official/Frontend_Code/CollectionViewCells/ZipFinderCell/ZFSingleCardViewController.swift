@@ -15,6 +15,7 @@ class ZFSingleCardViewController: UIViewController {
     private var cardBackView: ZFCardBackView?
     private var cardView = UIView()
     
+    
     private let previewLabel: UILabel = {
         let label = UILabel()
         label.font = .zipTitle
@@ -26,7 +27,6 @@ class ZFSingleCardViewController: UIViewController {
     private let xButton: UIButton = {
         let btn = UIButton()
         btn.setImage(UIImage(systemName: "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
-        btn.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
         return btn
     }()
     
@@ -38,15 +38,25 @@ class ZFSingleCardViewController: UIViewController {
         super.viewDidLoad()
         view.isOpaque = false
         view.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.8)
+        xButton.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapCloseButton))
+        view.addGestureRecognizer(tap)
+        
+        let swipe = UISwipeGestureRecognizer(target: self, action: #selector(didTapCloseButton))
+        swipe.direction = .down
+        view.addGestureRecognizer(swipe)
     }
     
     
     public func configure(user: User) {
         self.user = user
         cardFrontView = ZFCardFrontView()
+        cardFrontView?.canRequest = false
         cardFrontView?.configure(user: user)
 
         cardBackView = ZFCardBackView()
+        cardBackView?.canRequest = false
         cardBackView?.configure(user: user)
         
         configureBackground()
@@ -145,6 +155,8 @@ class ZFSingleCardViewController: UIViewController {
             
             cardFrontView.isHidden = !cardFrontView.isHidden
             cardBackView.isHidden = !cardBackView.isHidden
+            cardFrontView.updateRequestButton()
+            cardBackView.updateSlider()
         }, completion: nil)
     }
 

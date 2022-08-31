@@ -15,11 +15,12 @@ class AddImageCollectionViewCell: UICollectionViewCell {
     static let identifier = "PictureCollectionViewCell"
     weak var delegate: AddImageCollectionViewCellDelegate?
     
+    private var bgView: UIView
     @objc private func didTapAddButton() {
         delegate?.addImage()
     }
     
-    private var addButton: UIButton = {
+    var addButton: UIButton = {
         let btn = UIButton()
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         let img = UIImage(systemName: "plus.circle.fill", withConfiguration: largeConfig)?
@@ -32,26 +33,34 @@ class AddImageCollectionViewCell: UICollectionViewCell {
     }()
         
     override init(frame: CGRect) {
+        bgView = UIView()
         super.init(frame: frame)
+        
         contentView.backgroundColor = .clear
         addButton.addTarget(self, action: #selector(didTapAddButton), for: .touchUpInside)
 
-        contentView.addSubview(addButton)
+        bgView.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+        contentView.addSubview(bgView)
+        bgView.translatesAutoresizingMaskIntoConstraints = false
+        bgView.translatesAutoresizingMaskIntoConstraints = false
+        bgView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10).isActive = true
+        bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+        bgView.rightAnchor.constraint(equalTo: contentView.rightAnchor,constant: -(10*7/10)).isActive = true
+        bgView.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
+        
+        
+        bgView.addSubview(addButton)
+        
+        
         addButton.layer.masksToBounds = true
-
         addButton.translatesAutoresizingMaskIntoConstraints = false
-        addButton.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
-        addButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
-        addButton.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
-        addButton.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
+        addButton.centerXAnchor.constraint(equalTo: bgView.centerXAnchor).isActive = true
+        addButton.centerYAnchor.constraint(equalTo: bgView.centerYAnchor).isActive = true
+
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
-    
-    
-
 }

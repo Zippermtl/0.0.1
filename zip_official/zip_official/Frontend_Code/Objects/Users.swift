@@ -156,14 +156,14 @@ class UserUpdateCoder: Codable {
         self.bio = try container.decode(String.self, forKey: .bio)
         self.gender = try container.decode(String.self, forKey: .gender)
         self.interests = try container.decode([Interests].self, forKey: .interests)
-        self.school = try container.decode(String.self, forKey: .school)
+        self.school = try? container.decode(String.self, forKey: .school)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(bio, forKey: .bio)
         try container.encode(gender, forKey: .gender)
-        try container.encode(school, forKey: .school)
+        try? container.encode(school, forKey: .school)
         try container.encode(interests, forKey: .interests)
     }
     
