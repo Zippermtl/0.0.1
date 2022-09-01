@@ -11,7 +11,7 @@ class SearchManager{
     static let shared = SearchManager()
 //    var loadedData: [SearchObject] = []
     var loadedData: [String:SearchObject] = [:]
-    var returnData: [SearchObject] = []
+    var returnData: [String] = []
 //    var unfinishedUsers: [User] = []
 //    var unfinishedEvents: [Event] = []
 //    var tempData = NSDictionary
@@ -38,10 +38,11 @@ class SearchManager{
 //        }()
     }
     
-    public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<SearchObject, Error>) -> Void, allCompletion: @escaping (Result <[SearchObject], Error>) -> Void){
+    public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<String, Error>) -> Void, allCompletion: @escaping (Result <[String], Error>) -> Void){
         let queryText = searchString.lowercased()
         var index = -1
         var newq = true
+        var addOldData = false
         if(queryText == ""){
             
         } else {
@@ -50,9 +51,12 @@ class SearchManager{
                 print(searchVal[i])
                 print(searchVal.count)
                 if (queryText.contains(searchVal[i])) {
-                    newq = false
-                    index = i
-                    print("Data Exists in previous query")
+//                    if(queryText!.first == searchVal!.first){
+                        newq = false
+                        index = i
+                        print("Data Exists in previous query")
+//                    }
+                    addOldData = true
                 }
             }
             
@@ -60,6 +64,8 @@ class SearchManager{
                 updateSearch(ss: queryText)
                 print(presQuery + " in index -1")
                 DatabaseManager.shared.getSearchBarData(queryText: presQuery, event: event, user: user, finishedLoadingCompletion: { [weak self] res in
+                    let presData = self?.loadedData
+
                     switch res{
                     case .success(let data):
                         print("here in ln 41")
@@ -82,7 +88,13 @@ class SearchManager{
                             if(self?.loadedData[key]?.isEvent() as! Bool){
                                 self?.loadedData[key]?.event?.imageUrl = data.getUrl()
                             } else if (self?.loadedData[key]?.isUser() as! Bool){
-                                self?.loadedData[key]?.user? = data.user!
+                                let fullnameCheck = self?.loadedData[key]?.user!.fullName
+                                let datacheck = data.user!.fullName
+                                if ((fullnameCheck == fullnameCheck?.lowercased()) && (datacheck.lowercased() == datacheck)){
+                                    self?.loadedData[key]?.user?.FillSelf(user: data.user!)
+                                } else {
+                                    self?.loadedData[key]?.user?.updateSelfHard(user: data.user!)
+                                }
                                 //MARK: Problem on line above is an optimization problem due to load user profile taking
                                 ///more time than not doing loaduserprofile base
                                 ///possible fixes:
@@ -119,7 +131,11 @@ class SearchManager{
                         } else {
                             
                         }
-                        finishedLoadingCompletion(.success(data))
+                        var temp: [String] = []
+                        for i in data {
+                            temp.append(i.getId())
+                        }
+                        finishedLoadingCompletion(.success(temp))
                     case .failure(let err):
                         finishedLoadingCompletion(.failure(err))
 
@@ -151,6 +167,7 @@ class SearchManager{
                         
                     }
                 }, allCompletion: { [weak self] res in
+                    let presData = self?.loadedData
                     switch res{
                     case .success(let data):
                         print("here in ln 64")
@@ -161,9 +178,19 @@ class SearchManager{
                             }
                         }
     //                    self?.loadedData.append(contentsOf: data)
-                        let finalData = self?.sortSearch(returns: data)
-                        print("FINAL DATA = \n\(finalData)")
-                        allCompletion(.success(finalData ?? []))
+                        if addOldData {
+                            let finalData = self?.sortSearch(returns: data)
+                            //MARK: temp fix for the edge case edited above with mark
+//                            let finalData = self?.sortSearch(returns: data+self!.returnData)
+
+                            print("FINAL DATA = \n\(finalData)")
+                            allCompletion(.success(finalData ?? []))
+                        } else {
+                            let finalData = self?.sortSearch(returns: data)
+                            print("FINAL DATA = \n\(finalData)")
+                            allCompletion(.success(finalData ?? []))
+                        }
+                        
                     case .failure(let err):
                         allCompletion(.failure(err))
                     }
@@ -172,13 +199,13 @@ class SearchManager{
                 print("here in ln 73")
                 updateSearch(ss: queryText)
                 allCompletion(.success(returnData))
-                finishedLoadingCompletion(.success(SearchObject(User(userId: "0"))))
+                finishedLoadingCompletion(.success("0"))
             } else {
                 print("here in ln 78")
                 updateSearch(ss: queryText)
                 returnData = sortSearch(empty: true)
                 allCompletion(.success(returnData))
-                finishedLoadingCompletion(.success(SearchObject(User(userId: "0"))))
+                finishedLoadingCompletion(.success("0"))
             }
         }
     }
@@ -219,12 +246,12 @@ class SearchManager{
         return front
     }
     
-    private func sortSearch(returns: [SearchObject] = [], empty: Bool = false) -> [SearchObject] {
-        var local: [SearchObject] = []
-        var front: [SearchObject] = []
+    private func sortSearch(returns: [SearchObject] = [], empty: Bool = false) -> [String] {
+        var local: [String] = []
+        var front: [String] = []
         print("sorting search")
         let printForGabe = searchVal
-        let kms = loadedData
+//        let kms = loadedData
 //        var
         if(returns.count == 0 || empty){
             for (i,j) in loadedData{
@@ -233,9 +260,9 @@ class SearchManager{
                     if (l.contains(presQuery) && singleUse){
                         singleUse = false
                         if(priority.contains(j)){
-                            front.append(j)
+                            front.append(j.getId())
                         } else {
-                            local.append(j)
+                            local.append(j.getId())
                         }
 //                        if (j.isEvent()) {
 //                            if invitedEvents.contains(j){
@@ -256,9 +283,9 @@ class SearchManager{
         } else {
             for i in returns{
                 if (priority.contains(i)){
-                    front.append(i)
+                    front.append(i.getId())
                 } else {
-                    local.append(i)
+                    local.append(i.getId())
                 }
             }
         }
