@@ -511,6 +511,17 @@ extension DatabaseManager {
         
     }
     
+    public func deleteEvent(eventId: String, completion: @escaping (Error?) -> Void){
+        firestore.collection("EventProfiles").document(eventId).delete() { err in
+            if let err = err {
+                completion(err)
+            } else {
+                print("Successfully deleted Event")
+                completion(nil)
+            }
+        }
+    }
+    
 }
 
 
