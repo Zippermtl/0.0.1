@@ -106,38 +106,44 @@ extension UIColor {
 
 extension UIFont {
     static var zipFontRegular: UIFont {
-        guard let font = UIFont(name: "WorkSans-Regular", size: 12) else {
-            fatalError("""
-                    Failed to load the "WorkSans-Regular" font.
-                    Make sure the font file is included in the project and the font name is spelled correctly.
-                    """
-            )
-
-        }
-        return font
+        print("reached regular")
+//        guard let font = UIFont(name: "WorkSans-Regular", size: 12) else {
+//            fatalError("""
+//                    Failed to load the "WorkSans-Regular" font.
+//                    Make sure the font file is included in the project and the font name is spelled correctly.
+//                    """
+//            )
+//
+//        }
+//        return font
+        return zipBodyBold
     }
     static var zipFontMedium: UIFont {
-        guard let font = UIFont(name: "WorkSans-Medium", size: 12) else {
-            fatalError("""
-                    Failed to load the "WorkSans-Regular" font.
-                    Make sure the font file is included in the project and the font name is spelled correctly.
-                    """
-            )
-
-        }
-        return font
+        print("reached medium")
+//        guard let font = UIFont(name: "WorkSans-Medium", size: 12) else {
+//            fatalError("""
+//                    Failed to load the "WorkSans-Regular" font.
+//                    Make sure the font file is included in the project and the font name is spelled correctly.
+//                    """
+//            )
+//
+//        }
+//        return font
+        return zipBodyBold
     }
     
     static var zipFontSemiBold: UIFont {
-        guard let font = UIFont(name: "WorkSans-SemiBold", size: 12) else {
-            fatalError("""
-                    Failed to load the "WorkSans-SemiBold" font.
-                    Make sure the font file is included in the project and the font name is spelled correctly.
-                    """
-            )
-
-        }
-        return font
+        print("reached SemiBold")
+//        guard let font = UIFont(name: "WorkSans-Medium", size: 12) else {
+//            fatalError("""
+//                    Failed to load the "WorkSans-SemiBold" font.
+//                    Make sure the font file is included in the project and the font name is spelled correctly.
+//                    """
+//            )
+//
+//        }
+//        return font
+        return zipBodyBold
     }
 
     static var zipHeader: UIFont {  return UIFont.zipFontSemiBold.withSize(24)  }
