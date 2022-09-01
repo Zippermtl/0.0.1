@@ -747,34 +747,188 @@ public class User : CustomStringConvertible, Equatable {
         case PicUrls = 5
     }
     
-    public func updateSelf(user: User){
-        if (user.userId == self.userId){
+    public func updateSelfHard(user: User){
+            if (user.userId == self.userId){
+                print("BIG ERROR")
+                return
+            } else {
+                self.username = user.username
+                self.firstName = user.firstName
+                self.lastName = user.lastName
+                self.birthday = user.birthday
+                self.picNum = user.picNum
+                self.bio = user.bio
+                self.school = user.school
+                self.interests = user.interests
+                self.friendships = user.friendships
+                self.notificationPreferences = user.notificationPreferences
+                self.deviceId = user.deviceId
+                self.notificationToken = user.notificationToken
+                self.gender = user.gender
+                self.email = user.email
+                self.friendshipStatus = user.friendshipStatus
+                self.location = user.location
+                self.pictures = user.pictures
+                self.pictureURLs = user.pictureURLs
+                self.profilePicIndex = user.profilePicIndex
+                self.profilePicUrl = user.profilePicUrl
+                self.picIndices = user.picIndices
+                self.previousEvents = user.previousEvents
+                self.goingEvents = user.goingEvents
+            }
+        }
+    
+    public func FillSelf(user: User){
+        if (user.userId != self.userId){
             print("BIG ERROR")
             return
         } else {
-            self.username = user.username
-            self.firstName = user.firstName
-            self.lastName = user.lastName
-            self.birthday = user.birthday
-            self.picNum = user.picNum
-            self.bio = user.bio
-            self.school = user.school
-            self.interests = user.interests
-            self.friendships = user.friendships
-            self.notificationPreferences = user.notificationPreferences
-            self.deviceId = user.deviceId
-            self.notificationToken = user.notificationToken
-            self.gender = user.gender
-            self.email = user.email
-            self.friendshipStatus = user.friendshipStatus
-            self.location = user.location
-            self.pictures = user.pictures
-            self.pictureURLs = user.pictureURLs
-            self.profilePicIndex = user.profilePicIndex
-            self.profilePicUrl = user.profilePicUrl
-            self.picIndices = user.picIndices
-            self.previousEvents = user.previousEvents
-            self.goingEvents = user.goingEvents            
+            if self.username != "" {
+                self.username = user.username
+            }
+            if self.firstName != "" {
+                self.firstName = user.firstName
+            }
+            if self.lastName != "" {
+                self.lastName = user.lastName
+            }
+            if self.birthday != Date() {
+                self.birthday = user.birthday
+            }
+            if self.picNum != 0 {
+                self.picNum = user.picNum
+            }
+            if self.bio != "" {
+                self.bio = user.bio
+            }
+            if self.school != "" {
+                self.school = user.school
+            }
+            if self.interests != [] {
+                self.interests = user.interests
+            }
+            if self.friendships.count > 0 {
+                self.friendships = user.friendships
+            }
+            if self.notificationPreferences != [:] {
+                self.notificationPreferences = user.notificationPreferences
+            }
+            if self.deviceId != "" {
+                self.deviceId = user.deviceId
+            }
+            if self.notificationToken != "" {
+                self.notificationToken = user.notificationToken
+            }
+            if self.gender != "" {
+                self.gender = user.gender
+            }
+            if self.email != "" {
+                self.email = user.email
+            }
+            if self.friendshipStatus != nil {
+                self.friendshipStatus = user.friendshipStatus
+            }
+            if self.location != CLLocation() {
+                self.location = user.location
+            }
+            if self.pictures != [] {
+                self.pictures = user.pictures
+            }
+            if self.pictureURLs != [] {
+                self.pictureURLs = user.pictureURLs
+            }
+            if self.profilePicIndex != [] {
+                self.profilePicIndex = user.profilePicIndex
+            }
+            if self.profilePicUrl != nil {
+                self.profilePicUrl = user.profilePicUrl
+            }
+            if self.picIndices != [] {
+                self.picIndices = user.picIndices
+            }
+            if self.previousEvents != [] {
+                self.previousEvents = user.previousEvents
+            }
+            if self.goingEvents != [] {
+                self.goingEvents = user.goingEvents
+            }
+        }
+    }
+    
+    public func updateSelfSoft(user: User){
+        if (user.userId != self.userId){
+            print("BIG ERROR")
+            return
+        } else {
+            if user.username != "" {
+                self.username = user.username
+            }
+            if user.firstName != "" {
+                self.firstName = user.firstName
+            }
+            if user.lastName != "" {
+                self.lastName = user.lastName
+            }
+            if user.birthday != Date() {
+                self.birthday = user.birthday
+            }
+            if user.picNum != 0 {
+                self.picNum = user.picNum
+            }
+            if user.bio != "" {
+                self.bio = user.bio
+            }
+            if user.school != "" {
+                self.school = user.school
+            }
+            if user.interests != [] {
+                self.interests = user.interests
+            }
+            if user.friendships.count > 0 {
+                self.friendships = user.friendships
+            }
+            if user.notificationPreferences != [:] {
+                self.notificationPreferences = user.notificationPreferences
+            }
+            if user.deviceId != "" {
+                self.deviceId = user.deviceId
+            }
+            if user.notificationToken != "" {
+                self.notificationToken = user.notificationToken
+            }
+            if user.gender != "" {
+                self.gender = user.gender
+            }
+            if user.email != "" {
+                self.email = user.email
+            }
+            if user.friendshipStatus != nil {
+                self.friendshipStatus = user.friendshipStatus
+            }
+            if user.location != CLLocation() {
+                self.location = user.location
+            }
+            if user.pictures != [] {
+                self.pictures = user.pictures
+            }
+            if user.pictureURLs != [] {
+                self.pictureURLs = user.pictureURLs
+            }
+            if user.profilePicIndex != [] {
+                self.profilePicIndex = user.profilePicIndex
+            }
+            if user.profilePicUrl != nil {
+                self.profilePicUrl = user.profilePicUrl
+            }
+            if user.picIndices != [] {
+                self.picIndices = user.picIndices
+            }
+            if user.previousEvents != [] {
+                self.previousEvents = user.previousEvents
+            }
+            if user.goingEvents != [] {
+                self.goingEvents = user.goingEvents
+            }
         }
     }
     
