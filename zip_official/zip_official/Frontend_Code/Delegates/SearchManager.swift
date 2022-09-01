@@ -131,11 +131,12 @@ class SearchManager{
                         } else {
                             
                         }
-                        var temp: [String] = []
-                        for i in data {
-                            temp.append(i.getId())
-                        }
-                        finishedLoadingCompletion(.success(temp))
+//                        var temp: [String] = []
+////                        for i in data {
+////                            temp.append(i.getId())
+////                        }
+//                        temp.append(data.getId())
+                        finishedLoadingCompletion(.success(data.getId()))
                     case .failure(let err):
                         finishedLoadingCompletion(.failure(err))
 
