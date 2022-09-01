@@ -53,7 +53,7 @@ class ZFCardFrontView: UIView {
         }
         
         if !canRequest { return }
-
+        GeoManager.shared.addedOrBlockedUser(user: user)
         switch user.friendshipStatus {
         case .none:
             user.sendRequest(completion: { [weak self] error in
