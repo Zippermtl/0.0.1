@@ -231,6 +231,7 @@ class ZFCardBackView: UIView {
             strongSelf.noStatusUI()
             strongSelf.frontView?.updateRequestButton()
         })
+        GeoManager.shared.forceAddUser(user: user)
     }
     
     
@@ -487,6 +488,8 @@ extension ZFCardBackView: MTSlideToOpenDelegateCopy {
             strongSelf.requestedUI()
             strongSelf.frontView?.updateRequestButton()
         })
+        
+        GeoManager.shared.addedOrBlockedUser(user: user)
     }
     
     public func requestedUI() {
