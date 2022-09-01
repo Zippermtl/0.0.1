@@ -245,6 +245,26 @@ class GeoManager {
         return true
     }
     
+    public func forceAddUser(user: User){
+        if (!loadedUsers.contains(user)){
+            if(!alreadyReadySeen.contains(user.userId)){
+                alreadyReadySeen.append(user.userId)
+            }
+            loadedUsers.append(user)
+        }
+    }
+    
+    public func addedOrBlockedUser(user: User){
+        if let indx = loadedUsers.firstIndex(of: user) {
+            if indx != nil {
+                loadedUsers.remove(at: indx)
+                if (!alreadyReadySeen.contains(user.userId)){
+                    alreadyReadySeen.append(user.userId)
+                }
+            }
+        }
+    }
+    
     public func LoadNextUsers(size: Int, completion: () -> Void) {//        if(GeoManager.shared.userIdList.isEmpty){
 //            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
 //            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
