@@ -31,7 +31,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfile(given: user, completion: { results in
                 switch results {
                 case .success(let u):
-                    user.updateSelf(user: u)
+                    user.updateSelfHard(user: u)
                     dataCompletion(.success(u))
                 case .failure(let error):
                     print("error load in LoadUser -> LoadUserProfile \(error)")
@@ -42,7 +42,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { res in
                 switch res{
                 case .success(let u):
-                    user.updateSelf(user: u)
+                    user.updateSelfHard(user: u)
                     dataCompletion(.success(u))
                 case .failure(let error):
                     dataCompletion(.failure(error))
@@ -62,7 +62,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfileNoPic(given: user, completion: { res in
                 switch res{
                 case .success(let u):
-                    user.updateSelf(user: u)
+                    user.updateSelfHard(user: u)
                     dataCompletion(.success(u))
                 case .failure(let err):
                     dataCompletion(.failure(err))
@@ -72,7 +72,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfileSubView(given: user.userId, completion: { results in
                 switch results {
                 case .success(let u):
-                    user.updateSelf(user: u)
+                    user.updateSelfHard(user: u)
                     dataCompletion(.success(u))
                 case .failure(let err):
                     dataCompletion(.failure(err))
@@ -121,7 +121,7 @@ public class UserCache {
     func loadUser(us: User, loadLevel: User.UserLoadType, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL], Error>) -> Void) {
         if let cachedUser = cache[us.userId] {
             // Use the cached version
-            us.updateSelf(user: cachedUser)
+            us.updateSelfHard(user: cachedUser)
             completion(.success(cachedUser))
             return
         }
