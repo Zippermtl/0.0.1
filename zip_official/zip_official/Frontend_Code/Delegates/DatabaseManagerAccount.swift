@@ -473,6 +473,18 @@ extension DatabaseManager {
             completion(nil)
         }
     }
+    
+    public func deleteUser(userId: String, completion: @escaping (Error?) -> Void){
+        firestore.collection("AllUserIds").document(userId).delete() { err in
+            if let err = err {
+                completion(err)
+            } else {
+                print("successfully deleted user")
+                completion(nil)
+            }
+        }
+    }
+    
     //MARK: Gabe todo --> finished needs testing
     public func userLoadTableView(user: User, completion: @escaping (Result<User, Error>) -> Void){
         loadUserProfileNoPic(given: user, completion: { result in
@@ -521,6 +533,8 @@ extension DatabaseManager {
                 completion(.failure(error))
             }
         })
+        
+        
         
     }
     
