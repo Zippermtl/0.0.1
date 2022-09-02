@@ -12,8 +12,6 @@ import CoreLocation
 
 
 class EventFinderTableViewCell: AbstractEventTableViewCell {
-    static let identifier = "event finder"
-
     let saveButton: UIButton
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

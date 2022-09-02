@@ -143,11 +143,9 @@ class LoadingViewController: UIViewController {
             }
         })
         
+        DatabaseManager.shared.getAllHostedEvents(userId: userId, eventCompletion: { _ in }, allCompletion: { result in })
         
-        DatabaseManager.shared.getAllHostedEventsForMap(eventCompletion: { _ in }, allCompletion: { result in })
-        
-        DatabaseManager.shared.getAllStoredEventsForUser(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String,
-                                                         completion: {})
+        DatabaseManager.shared.getAllStoredEventsForUser(userId: userId, completion: {})
         
         DatabaseManager.shared.getAllGoingEvents(eventCompletion: { event in }, allCompletion: { events in })
     }

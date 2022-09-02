@@ -137,10 +137,6 @@ class CompleteEventViewController: UIViewController {
         event.ownerId = host.userId
         event.ownerName = host.fullName
 
-        //MARK: Fuckmyass is the variable which contains the string of the url of the picture
-        // the code below was written by Yianni and was originally if success a else b has been
-        // rewritten to be switch: case success a case failure b
-        // note this is with a and b being code blocks excluding the code obviously written by me
         DatabaseManager.shared.createEvent(event: event, completion: { [weak self] success in
             guard let strongSelf = self else { return }
             switch success {
@@ -296,16 +292,12 @@ extension CompleteEventViewController: UITableViewDataSource {
 }
 
 
-extension CompleteEventViewController : InviteTableViewCellDelegate {
-    func inviteUser(user: User) {
-        invitedUsers.append(user)
-        
-        
+extension CompleteEventViewController : InviteTableViewDelegate {
+    func select(cellItem: CellItem) {
+        invitedUsers.append(cellItem as! User)
     }
     
-    func uninviteUser(user: User) {
-        invitedUsers = invitedUsers.filter({ $0.userId != user.userId })
+    func unselect(cellItem: CellItem) {
+        invitedUsers = invitedUsers.filter({ $0.userId != (cellItem as! User).userId })
     }
-    
-    
 }

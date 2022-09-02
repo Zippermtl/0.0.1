@@ -14,7 +14,6 @@ import JGProgressHUD
 
 
 class OtherProfileViewController: AbstractProfileViewController  {
-    private var distanceLabel: DistanceLabel
     private var messageButton: IconButton
     
     init(id: String) {
@@ -22,7 +21,6 @@ class OtherProfileViewController: AbstractProfileViewController  {
         let actionButtonInfo = ("Zipped", UIColor.zipBlue)
         let reportIcon = UIImage(systemName: "ellipsis")!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
 
-        distanceLabel = DistanceLabel()
         
         super.init(id: id,
                    B1: IconButton.eventsIcon(),
@@ -33,10 +31,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
         )
         
         
-        tableHeader.addSubview(distanceLabel)
-        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        distanceLabel.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 10).isActive = true
+       
         
         configureMessageButton()
     }
@@ -52,7 +47,6 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        distanceLabel.update(distance: user.getDistance())
         centerActionButton.layer.borderColor = UIColor.zipBlue.cgColor
     }
 
@@ -151,33 +145,86 @@ class OtherProfileViewController: AbstractProfileViewController  {
 
     
     override func didTapB1Button() {
-      
+        let vc = MasterTableViewController(cellData: [], cellType: CellType(eventType: .rsvp))
+        DatabaseManager.shared.getAllHostedEvents(userId: user.userId, eventCompletion: { event in }, allCompletion: { [weak self] result in
+            switch result {
+            case .success(let events):
+                let filteredEvents = Event.getTodayUpcomingPrevious(events: events)
+                
+                let todaySection = CellSectionData(title: "Today",
+                                                   items: filteredEvents.0,
+                                                   cellType: CellType(eventType: .rsvp))
+                let upcomingSection = CellSectionData(title: "Upcoming",
+                                                      items: filteredEvents.1,
+                                                      cellType: CellType(eventType: .rsvp))
+                
+                let previousSection = CellSectionData(title: "Previous",
+                                                      items: filteredEvents.2,
+                                                      cellType: CellType(eventType: .rsvp))
+                
+               
+                vc.reload(multiSectionData: [MultiSectionData(title: nil, sections: [todaySection, upcomingSection, previousSection])])
+            case .failure(_):
+                guard let strongSelf = self else { return }
+                strongSelf.navigationController?.popViewController(animated: true)
+                let alert = UIAlertController(title: "Error loading \(strongSelf.user.firstName)'s events",
+                                              message: "Try again later",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+                strongSelf.present(alert, animated: true)
+            }
+        })
+        
+        vc.title = "\(user.firstName)'s Events"
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     override func didTapB2Button() {
-        let myZipsView = UsersTableViewController(users: [])
+  
+        let vc = MasterTableViewController(cellData: [], cellType: CellType(userType: .zipList))
 
         DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
             switch result {
             case .success(let users):
                 print("loading ezras friends \(users)")
-                myZipsView.reload(users: users)
+                vc.reload(cellItems: users)
             case .failure(let error):
                 print("failure loading other users ids, Error: \(error)")
             }
         })
-        myZipsView.title = "\(user.firstName)'s Zips"
-        myZipsView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(myZipsView, animated: true)
+        vc.title = "\(user.firstName)'s Zips"
+        navigationController?.pushViewController(vc, animated: true)
     }
     
 
     
     override func didTapB3Button() {
-        let vc = InviteUserToEventViewController(user: user)
-        vc.modalPresentationStyle = .overCurrentContext
+        
+        let vc = InviteTableViewController(items: User.getUDEvents(toKey: .hostedEvents)) { [weak self] items in
+            guard let strongSelf = self else { return }
+            let events = items.map({ $0 as! Event })
+            var idx = 0
+            for event in events {
+                DatabaseManager.shared.inviteUsers(event: event, users: [strongSelf.user], completion: { [weak self] error in
+                    guard let strongSelf = self,
+                          error == nil else {
+                        idx+=1
+                        return
+                    }
+                    idx+=1
+                    if idx == events.count {
+                        DispatchQueue.main.async {
+                            strongSelf.navigationController?.popViewController(animated: true)
+                        }
+                    }
+                })
+            }
+        }
+        vc.title = "Invite \(user.firstName)"
+
         navigationController?.pushViewController(vc, animated: true)
     }
+ 
     
     override func didTapPhotos() {
         let vc = UserPhotosViewController()

@@ -6,21 +6,18 @@
 //
 import UIKit
 
-protocol UpdateZipRequestsTableDelegate: AnyObject {
-    func deleteZipRequestRow(_ sender: UIButton)
-    func deleteEventsRow(_ sender: UIButton)
-}
 
-class ZipRequestTableViewCell: AbstractUserTableViewCell {
-    weak var delegate: UpdateZipRequestsTableDelegate?
-    
+
+class ZipRequestTableViewCell: AbstractUserTableViewCell, InvitedCell {
+    weak var delegate: InvitedTableViewDelegate?
+    var iPath: IndexPath
     let acceptButton: UIButton
     let rejectButton: UIButton
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         rejectButton = UIButton()
         acceptButton = UIButton()
-
+        iPath = IndexPath(row: 0, section: 0)
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         extraInfoLabel.font = .zipTextNoti
         
@@ -51,6 +48,10 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell {
         
     }
     
+    func setIndexPath(indexPath: IndexPath) {
+        iPath = indexPath
+    }
+    
     override func configure(_ user: User) {
         super.configure(user)
         extraInfoLabel.text = "@" + user.username
@@ -67,8 +68,7 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell {
         user.acceptRequest(completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else { return }
-            strongSelf.delegate?.deleteZipRequestRow(strongSelf.acceptButton)
-
+            strongSelf.delegate?.removeCell(indexPath: strongSelf.iPath)
         })
     }
     
@@ -76,7 +76,7 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell {
         user.rejectRequest(completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else { return }
-            strongSelf.delegate?.deleteZipRequestRow(strongSelf.rejectButton)
+            strongSelf.delegate?.removeCell(indexPath: strongSelf.iPath)
         })
     }
     

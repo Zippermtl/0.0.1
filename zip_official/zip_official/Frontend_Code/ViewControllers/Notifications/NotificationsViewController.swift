@@ -19,7 +19,7 @@ class NotificationsViewController: UIViewController {
 
         
     @objc private func didTapZipRequestsButton(){
-        let vc = ZipRequestsViewController()
+        let vc = InvitedTableViewController(cellItems: User.getMyRequests())
         navigationController?.pushViewController(vc, animated: true)
     }
     

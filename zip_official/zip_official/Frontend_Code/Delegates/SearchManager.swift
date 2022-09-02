@@ -20,8 +20,8 @@ class SearchManager{
     lazy var priority: [SearchObject] = {
         let friends = User.getMyZips().map({SearchObject($0)})
         let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
-        let host = User.getHostedEvents()
-        let saved = User.getSavedEvents()
+        let host = User.getUDEvents(toKey: .hostedEvents)
+        let saved = User.getUDEvents(toKey: .savedEvents)
         return friends+invitedEvents
     }()
     
@@ -32,10 +32,9 @@ class SearchManager{
 //        lazy var priority: [SearchObject] = {
             let friends = User.getMyZips().map({SearchObject($0)})
             let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
-            let host = User.getHostedEvents()
-            let saved = User.getSavedEvents()
+            let host = User.getUDEvents(toKey: .hostedEvents)
+            let saved = User.getUDEvents(toKey: .savedEvents)
             priority = friends+invitedEvents
-//        }()
     }
     
     public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<String, Error>) -> Void, allCompletion: @escaping (Result <[String], Error>) -> Void){

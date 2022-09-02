@@ -15,8 +15,11 @@ protocol FPCMapDelegate: AnyObject {
     func createEvent()
 }
 
+protocol FPCTableDelegate: AnyObject {
+    func updateLabel(cellItems: [CellItem])
+}
+
 class FPCViewController: UIViewController {
-    public var eventsTable: EventInvitesTableView
 
     weak var delegate: FPCMapDelegate?
     private var userLoc: CLLocation
@@ -30,7 +33,11 @@ class FPCViewController: UIViewController {
     private let eventsLabel: UILabel
     private let zipRequestsButton: UIButton
     private let eventsButton: UIButton
-    private var zipRequestsTable: ZipRequestTableView
+    
+    private let eventsContainer: UIView
+    private let zipRequestContainer: UIView
+    public var eventsTableView: InvitedTableViewController
+    private var zipRequestsTableView: InvitedTableViewController
     private var searchTable: SearchBarTableView
     private var searchBg: UIView
     var events: [Event]
@@ -59,8 +66,11 @@ class FPCViewController: UIViewController {
         self.events = []
         
         self.searchBg = UIView()
-        self.zipRequestsTable = ZipRequestTableView()
-        self.eventsTable = EventInvitesTableView(events: events)
+        
+        self.zipRequestContainer = UIView()
+        self.eventsContainer = UIView()
+        self.zipRequestsTableView = InvitedTableViewController(cellItems: User.getMyRequests())
+        self.eventsTableView = InvitedTableViewController(cellItems: events.filter({ User.getUDEvents(toKey: .goingEvents).contains( $0 ) }))
         self.searchTable = SearchBarTableView()
         
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
@@ -171,11 +181,11 @@ class FPCViewController: UIViewController {
     }
     
     @objc private func didTapZipRequests(){
-        delegate?.openVC(ZipRequestsViewController())
+        delegate?.openVC(InvitedTableViewController(cellItems: User.getMyRequests()))
     }
     
     @objc private func didTapEventInvites(){
-        delegate?.openVC(EventInvitesViewController(events: events))
+        delegate?.openVC(InvitedTableViewController(cellItems: events))
     }
     
     @objc func createEvent() {
@@ -200,8 +210,8 @@ class FPCViewController: UIViewController {
         zipRequestsButton.addTarget(self, action: #selector(didTapZipRequests), for: .touchUpInside)
         eventsButton.addTarget(self, action: #selector(didTapEventInvites), for: .touchUpInside)
         
-        zipRequestsTable.FPCDelegate = self
-        eventsTable.FPCDelegate = self
+        zipRequestsTableView.FPCDelegate = self
+        eventsTableView.FPCDelegate = self
         
       
         zipRequestsLabel.text = "Zip Requests (\(User.getMyRequests().count))"
@@ -239,10 +249,34 @@ class FPCViewController: UIViewController {
         scrollView.addSubview(collectionView)
         scrollView.addSubview(zipRequestsLabel)
         scrollView.addSubview(zipRequestsButton)
-        scrollView.addSubview(zipRequestsTable)
+        
+        
+        scrollView.addSubview(zipRequestContainer)
+        zipRequestContainer.addSubview(zipRequestsTableView.view)
+        addChild(zipRequestsTableView)
+        zipRequestsTableView.didMove(toParent: self)
+        
+        scrollView.addSubview(eventsContainer)
+        eventsContainer.addSubview(eventsTableView.view)
+        addChild(eventsTableView)
+        eventsTableView.didMove(toParent: self)
+        
+        zipRequestsTableView.view.translatesAutoresizingMaskIntoConstraints = false
+        zipRequestsTableView.view.topAnchor.constraint(equalTo: zipRequestContainer.topAnchor).isActive = true
+        zipRequestsTableView.view.bottomAnchor.constraint(equalTo: zipRequestContainer.bottomAnchor).isActive = true
+        zipRequestsTableView.view.rightAnchor.constraint(equalTo: zipRequestContainer.rightAnchor).isActive = true
+        zipRequestsTableView.view.leftAnchor.constraint(equalTo: zipRequestContainer.leftAnchor).isActive = true
+
+     
+        eventsTableView.view.translatesAutoresizingMaskIntoConstraints = false
+        eventsTableView.view.topAnchor.constraint(equalTo: eventsContainer.topAnchor).isActive = true
+        eventsTableView.view.bottomAnchor.constraint(equalTo: eventsContainer.bottomAnchor).isActive = true
+        eventsTableView.view.rightAnchor.constraint(equalTo: eventsContainer.rightAnchor).isActive = true
+        eventsTableView.view.leftAnchor.constraint(equalTo: eventsContainer.leftAnchor).isActive = true
+
+
         scrollView.addSubview(eventsLabel)
         scrollView.addSubview(eventsButton)
-        scrollView.addSubview(eventsTable)
         
         scrollView.addSubview(searchBg)
         searchBg.addSubview(searchTable)
@@ -270,7 +304,6 @@ class FPCViewController: UIViewController {
         searchBar.bottomAnchor.constraint(equalTo: zipFinderButton.bottomAnchor).isActive = true
         searchBar.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -12).isActive = true
 
-        
         searchBg.translatesAutoresizingMaskIntoConstraints = false
         searchBg.topAnchor.constraint(equalTo: searchBar.bottomAnchor).isActive = true
         searchBg.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
@@ -283,7 +316,6 @@ class FPCViewController: UIViewController {
         searchTable.bottomAnchor.constraint(equalTo: searchBg.bottomAnchor).isActive = true
         searchTable.leftAnchor.constraint(equalTo: searchBg.leftAnchor).isActive = true
         searchTable.rightAnchor.constraint(equalTo: searchBg.rightAnchor).isActive = true
-
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 30).isActive = true
@@ -300,26 +332,25 @@ class FPCViewController: UIViewController {
         zipRequestsButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -12).isActive = true
         zipRequestsButton.centerYAnchor.constraint(equalTo: zipRequestsLabel.centerYAnchor).isActive = true
         
-        zipRequestsTable.translatesAutoresizingMaskIntoConstraints = false
-        zipRequestsTable.topAnchor.constraint(equalTo: zipRequestsLabel.bottomAnchor, constant: 5).isActive = true
-        zipRequestsTable.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        zipRequestsTable.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        zipRequestsTable.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        zipRequestContainer.translatesAutoresizingMaskIntoConstraints = false
+        zipRequestContainer.topAnchor.constraint(equalTo: zipRequestsLabel.bottomAnchor, constant: 5).isActive = true
+        zipRequestContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        zipRequestContainer.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        zipRequestContainer.heightAnchor.constraint(equalToConstant: 80).isActive = true
         
         eventsLabel.translatesAutoresizingMaskIntoConstraints = false
         eventsLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 12).isActive = true
-        eventsLabel.topAnchor.constraint(equalTo: zipRequestsTable.bottomAnchor, constant: 20).isActive = true
+        eventsLabel.topAnchor.constraint(equalTo: zipRequestContainer.bottomAnchor, constant: 20).isActive = true
         
         eventsButton.translatesAutoresizingMaskIntoConstraints = false
         eventsButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -12).isActive = true
         eventsButton.centerYAnchor.constraint(equalTo: eventsLabel.centerYAnchor).isActive = true
         
-        eventsTable.translatesAutoresizingMaskIntoConstraints = false
-        eventsTable.topAnchor.constraint(equalTo: eventsLabel.bottomAnchor, constant: 5).isActive = true
-        eventsTable.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        eventsTable.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        eventsTable.heightAnchor.constraint(equalToConstant: 360).isActive = true
-
+        eventsContainer.translatesAutoresizingMaskIntoConstraints = false
+        eventsContainer.topAnchor.constraint(equalTo: eventsLabel.bottomAnchor, constant: 5).isActive = true
+        eventsContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        eventsContainer.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        eventsContainer.heightAnchor.constraint(equalToConstant: 360).isActive = true
     }
     
     override func viewDidLayoutSubviews() {
@@ -419,7 +450,7 @@ extension FPCViewController: UITextFieldDelegate {
             guard let strongSelf = self else { return }
             switch result {
             case .success(let searchResults):
-                strongSelf.searchTable.searchData.append(contentsOf: searchResults)
+//                strongSelf.searchTable.searchData.append(contentsOf: searchResults)
                 strongSelf.searchTable.configureTableData()
                 print("SEARCH TABLE DATA = ", strongSelf.searchTable.searchData)
                 strongSelf.searchTable.reloadData()
@@ -440,28 +471,16 @@ extension FPCViewController: UITextFieldDelegate {
 
 
 extension FPCViewController: FPCTableDelegate {
-    func updateRequestsLabel(requests: [User]) {
-        print("running this? ", requests.count)
-        zipRequestsLabel.text = "Zip Requests (\(requests.count))"
-    }
-    
-    func updateEventsLabel(events: [Event]) {
-        eventsLabel.text = "Event Invites (\(events.count))"
-        self.events = events
-    }
-    
-    func openEvent(event: Event) {
-        if event.ownerId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
-            let vc = MyEventViewController(event: event)
-            delegate?.openVC(vc)
-        } else {
-            let vc = EventViewController(event: event)
-            delegate?.openVC(vc)
+    func updateLabel(cellItems: [CellItem]) {
+        if let users = cellItems as? [User] {
+            zipRequestsLabel.text = "Zip Requests (\(users.count))"
+
+        } else if let events = cellItems as? [Event] {
+            eventsLabel.text = "Event Invites (\(events.count))"
+            self.events = events
         }
     }
-    
 }
-
 
 extension FPCViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {

@@ -45,13 +45,8 @@ public class PromoterEvent: Event {
         return PromoterEventCoder(event: self)
     }
     
-    override func getParticipants() -> [UserCellSectionData] {
-        let going = UserCellSectionData(title: "Going",
-                                        users: usersGoing)
-        let invited = UserCellSectionData(title: "Not Going",
-                                          users: usersNotGoing)
-        
-        let sections = [going, invited]
+    override func getParticipants() -> [CellSectionData] {
+        let sections = [hostingSection, goingSection, invitedSection]
         return sections
     }
 }

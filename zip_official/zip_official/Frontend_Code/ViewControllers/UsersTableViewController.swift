@@ -18,6 +18,11 @@ class UserCellSectionData {
     }
 }
 
+protocol UserTableDelegate: AnyObject {
+    func didTapRightBarButton()
+}
+
+public typealias UserTableSwipeConfiguration = (style: UIContextualAction.Style, title: String?, action: ((User) -> Void), excludedUsers : [User]?)
 
 class UsersTableViewController: UIViewController {
     var tableView: UITableView
@@ -27,6 +32,20 @@ class UsersTableViewController: UIViewController {
     
     var noCellsLabel: String?
     
+//    var cellType : AbstractUserTableViewCell.Type?
+    
+    weak var delegate: UserTableDelegate?
+
+    var trailingCellSwipeConfiguration : [UserTableSwipeConfiguration]?
+    var leadingCellSwipeConfiguration :  [UserTableSwipeConfiguration]?
+    
+    var defaultRightBarButton: UIBarButtonItem? {
+        didSet {
+            self.navigationItem.rightBarButtonItem = defaultRightBarButton
+        }
+    }
+    
+    var dispearingRightButton = false
  
     
     init(users: [User]) {
@@ -79,6 +98,10 @@ class UsersTableViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
     }
+    
+    private func userForIndexPath(indexPath: IndexPath) -> User {
+        return sections[indexPath.section].users[indexPath.row]
+    }
 
     
     private func fetchUsers() {
@@ -97,13 +120,24 @@ class UsersTableViewController: UIViewController {
                         DispatchQueue.main.async {
                             strongSelf.tableView.reloadData()
                         }
-                        print("error loading \(user.userId) with Error: \(error)")
+                        print("error loading \(user.userId) with Error:  \(error)")
                     }
                 })
             }
         }
     }
     
+    @objc public func didTapRightBarButton() {
+        delegate?.didTapRightBarButton()
+
+        if dispearingRightButton {
+            if let defaultRightBarButton = defaultRightBarButton {
+                navigationItem.rightBarButtonItem = defaultRightBarButton
+            } else {
+                navigationItem.rightBarButtonItem = nil
+            }
+        }
+    }
     
     //MARK: - Table Config
     private func configureTable(){
@@ -112,7 +146,7 @@ class UsersTableViewController: UIViewController {
         tableView.register(sectionHeader.self, forHeaderFooterViewReuseIdentifier: sectionHeader.identifier)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = .zipGray
         tableView.separatorStyle = .none
         tableView.tableHeaderView = nil
         tableView.tableFooterView = nil
@@ -136,7 +170,6 @@ class UsersTableViewController: UIViewController {
         searchBar.barStyle = .black
         searchBar.backgroundColor = .zipGray
         searchBar.barTintColor = .zipGray
-
         searchBar.placeholder = " Search..."
         searchBar.sizeToFit()
         searchBar.isTranslucent = false
@@ -168,7 +201,6 @@ extension UsersTableViewController :  UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 90
     }
-    
 }
 
 //MARK: TableDataSource
@@ -209,15 +241,70 @@ extension UsersTableViewController :  UITableViewDataSource {
         transition.subtype = CATransitionSubtype.fromRight
         view.window!.layer.add(transition, forKey: nil)
         navigationController?.pushViewController(vc, animated: true)
-        
     }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let user = self.userForIndexPath(indexPath: indexPath)
+        guard let configs = trailingCellSwipeConfiguration else { return nil }
+        
+        var contextualActions = [UIContextualAction]()
+        for config in configs {
+            if let excludedUsers = config.excludedUsers {
+                if excludedUsers.contains(user) { continue }
+            }
+            
+            let action = UIContextualAction(style: config.style, title: config.title, handler: { [weak self] _,_,completion in
+                if config.style == .destructive {
+                    guard let strongSelf = self else {
+                        completion(false)
+                        return
+                    }
+                    strongSelf.sections[indexPath.section].users.remove(at: indexPath.row)
+                    tableView.deleteRows(at: [indexPath], with: .left)
+                }
+                
+                config.action(user)
+                completion(true)
+            })
+            contextualActions.append(action)
+        }
+        if contextualActions.isEmpty { return nil }
+        return UISwipeActionsConfiguration(actions: contextualActions)
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let user = self.userForIndexPath(indexPath: indexPath)
+        guard let configs = leadingCellSwipeConfiguration else { return nil }
+        
+        var contextualActions = [UIContextualAction]()
+        for config in configs {
+            if let excludedUsers = config.excludedUsers {
+                if excludedUsers.contains(user) { continue }
+            }
+            
+            let action = UIContextualAction(style: config.style, title: config.title, handler: { [weak self] _,_,completion in
+                if config.style == .destructive {
+                    guard let strongSelf = self else { return }
+                    strongSelf.sections[indexPath.section].users.remove(at: indexPath.row)
+                    tableView.deleteRows(at: [indexPath], with: .right)
+
+                }
+                config.action(user)
+                completion(true)
+            })
+            contextualActions.append(action)
+        }
+        if contextualActions.isEmpty { return nil }
+        return UISwipeActionsConfiguration(actions: contextualActions)
+    }
+    
+    
+    
     
  
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            
         let cell = tableView.dequeueReusableCell(withIdentifier: MyZipsTableViewCell.identifier, for: indexPath) as! MyZipsTableViewCell
-        let section = tableData[indexPath.section]
-        let user = section.users[indexPath.row]
+        let user = userForIndexPath(indexPath: indexPath)
         user.tableViewCell = cell
 
         cell.selectionStyle = .none
@@ -233,21 +320,18 @@ extension UsersTableViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange textSearched: String) {
         if textSearched == "" {
             tableData = sections
-            print(tableData[0].users)
-            print("sections = ", sections)
-            print("tableData = ", tableData)
+
             tableView.reloadData()
         } else {
             tableData = []
             for section in sections {
-                let usersInSection = section.users.filter({ $0.fullName.contains(textSearched) || $0.username.contains(textSearched)})
+                let textLower = textSearched.lowercased()
+                let usersInSection = section.users.filter({ $0.fullName.lowercased().contains(textLower) || $0.username.contains(textLower)})
                 if !usersInSection.isEmpty {
                     tableData.append(UserCellSectionData(title: section.title, users: usersInSection))
                 }
             }
             
-            print("sections = ", sections)
-            print("tableData = ", tableData)
 
             tableView.reloadData()
         }
@@ -289,6 +373,7 @@ extension UsersTableViewController {
             fatalError("init(coder:) has not been implemented")
         }
     }
+    
 }
 
 

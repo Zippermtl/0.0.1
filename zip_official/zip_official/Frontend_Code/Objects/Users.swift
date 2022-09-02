@@ -185,7 +185,21 @@ class UserUpdateCoder: Codable {
     }
 }
 
-public class User : CustomStringConvertible, Equatable {
+public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
+    public var isUser: Bool = true
+    
+    public var isEvent: Bool = false
+    
+    public func getId() -> String {
+        return userId
+    }
+    
+    
+    
+    public static func < (lhs: User, rhs: User) -> Bool {
+        return lhs.firstName < rhs.firstName
+    }
+    
     func getEncoder() -> UserCoder {
         let encoder = UserCoder(user: self)
         return encoder
@@ -748,7 +762,7 @@ public class User : CustomStringConvertible, Equatable {
     }
     
     public func updateSelfHard(user: User){
-            if (user.userId == self.userId){
+            if (user.userId != self.userId){
                 print("BIG ERROR")
                 return
             } else {
@@ -1058,21 +1072,6 @@ public class User : CustomStringConvertible, Equatable {
         return events
     }
     
-    static func getHostedEvents() -> [Event]{
-        guard let raw_events = AppDelegate.userDefaults.value(forKey: "myHostedEvents") as? [String] else {
-            return []
-        }
-        let events = raw_events.map({ Event(eventId: $0)})
-        return events
-    }
-    
-    static func getSavedEvents() -> [Event]{
-        guard let raw_events = AppDelegate.userDefaults.value(forKey: "mySavedEvents") as? [String] else {
-            return []
-        }
-        let events = raw_events.map({ Event(eventId: $0)})
-        return events
-    }
     
     static func getMyRequests() -> [User]{
         guard let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]] else {
@@ -1083,5 +1082,38 @@ public class User : CustomStringConvertible, Equatable {
        
         return requestsArr.map({ $0.receiver })
     }
+
     
+    static func setUDEvents(events: [Event], toKey key : UserDefaultEventKeys) {
+        let encoders : [EventCoder] = events.map({ $0.getEncoder() })
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(encoders)
+            AppDelegate.userDefaults.set(data, forKey: key.rawValue)
+        } catch {
+            print("unable to decode \(key.rawValue)")
+        }
+    }
+    
+    static func getUDEvents(toKey key : UserDefaultEventKeys) -> [Event] {
+        if let data = AppDelegate.userDefaults.data(forKey: key.rawValue) {
+            do {
+                let decoder = JSONDecoder()
+                let eventCoders = try decoder.decode([EventCoder].self, from: data)
+                return eventCoders.map({ $0.createEvent() })
+            } catch {
+                print("unable to decode \(key.rawValue)")
+                return []
+            }
+        } else {
+            return []
+        }
+    }
+    
+}
+
+public enum UserDefaultEventKeys : String {
+    case hostedEvents = "hostedEvents"
+    case goingEvents = "goingEvents"
+    case savedEvents = "savedEvents"
 }

@@ -11,6 +11,7 @@ import MapKit
 
 protocol ZFCardBackDelegate: AnyObject {
     func openVC(_ vc: UIViewController)
+    func popVC()
 }
 
 class ZFCardBackView: UIView {
@@ -135,13 +136,13 @@ class ZFCardBackView: UIView {
         guard let user = user, canRequest else {
             return
         }
-        let vc = UsersTableViewController(users: [])
+        let vc = MasterTableViewController(cellData: [], cellType: CellType(userType: .zipList))
 
         DatabaseManager.shared.loadUserZipsIds(given: user.userId, completion: { result in
             switch result {
             case .success(let users):
                 print("loading ezras friends \(users)")
-                vc.reload(users: users)
+                vc.reload(cellItems: users)
             case .failure(let error):
                 print("failure loading other users ids, Error: \(error)")
             }
@@ -209,19 +210,45 @@ class ZFCardBackView: UIView {
         guard let user = user, canRequest else {
             return
         }
-        delegate?.openVC(InviteUserToEventViewController(user: user))
+        let vc = InviteTableViewController(items: User.getUDEvents(toKey: .hostedEvents), saveFunc: { [weak self] items in
+            guard let user = self?.user else { return }
+            let events = items.map({ $0 as! Event })
+            var idx = 0
+            for event in events {
+                DatabaseManager.shared.inviteUsers(event: event, users: [user], completion: { [weak self] error in
+                    guard let strongSelf = self,
+                          error == nil else {
+                        idx+=1
+                        if idx == events.count {
+                            DispatchQueue.main.async {
+                                self?.delegate?.popVC()
+                            }
+                        }
+                        return
+                    }
+                    idx+=1
+                    if idx == events.count {
+                        DispatchQueue.main.async {
+                            strongSelf.delegate?.popVC()
+                        }
+                    }
+                })
+            }
+        })
+        vc.title = "Invite \(user.firstName)"
+
+        delegate?.openVC(vc)
     }
     
     @objc private func openProfile(){
-        print("OPEN PROFILE")
-        guard let user = user else {
+        guard let user = user , canRequest else {
             return
         }
         delegate?.openVC(OtherProfileViewController(id: user.userId))
     }
     
     @objc private func unrequestUser(){
-        guard let user = user else { return }
+        guard let user = user , canRequest else { return }
         user.unsendRequest(completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else {

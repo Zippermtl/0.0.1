@@ -7,13 +7,10 @@
 
 import UIKit
 
-protocol InviteTableViewCellDelegate: AnyObject {
-    func inviteUser(user: User)
-    func uninviteUser(user: User)
-}
 
-class InviteTableViewCell: AbstractUserTableViewCell {
-    weak var delegate: InviteTableViewCellDelegate?
+
+class InviteTableViewCell: AbstractUserTableViewCell, InviteCell {
+    weak var delegate: InviteTableViewDelegate?
     
     public var addButton: UIButton
     
@@ -21,11 +18,11 @@ class InviteTableViewCell: AbstractUserTableViewCell {
     @objc private func didTapAdd(_ sender: UIButton){
         if sender.isSelected {
             sender.isSelected = false
-            delegate?.uninviteUser(user: user)
+            delegate?.unselect(cellItem: user)
         } else {
             sender.isSelected = true
             user.isInivted = true
-            delegate?.inviteUser(user: user)
+            delegate?.select(cellItem: user)
         }
     }
     

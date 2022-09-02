@@ -14,7 +14,9 @@ import CoreLocation
 //}
 
 class AbstractEventTableViewCell: UITableViewCell {
-    var event: Event?
+    static let identifier = "abstractEventCell"
+    
+    var event: Event!
     
     //MARK: - Subviews
     let bgView: UIView

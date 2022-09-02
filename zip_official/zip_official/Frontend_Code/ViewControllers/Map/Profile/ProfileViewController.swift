@@ -79,17 +79,47 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB1Button() {
-        print("tapping events")
-        let myEventsView = MyEventsViewController()
-        myEventsView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(myEventsView, animated: true)
+        let hostingEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .hostedEvents))
+        let goingEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .goingEvents))
+        let savedEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .savedEvents))
+        
+        let goingData = [
+            CellSectionData(title: "Today", items: goingEvents.0, cellType: CellType(eventType: .save)),
+            CellSectionData(title: "Upcoming", items: goingEvents.1, cellType: CellType(eventType: .save)),
+            CellSectionData(title: "Previous", items: goingEvents.2, cellType: CellType(eventType: .save))
+        ]
+
+        let savedData = [
+            CellSectionData(title: "Today", items: savedEvents.0, cellType: CellType(eventType: .save)),
+            CellSectionData(title: "Upcoming", items: savedEvents.1, cellType: CellType(eventType: .save)),
+            CellSectionData(title: "Previous", items: savedEvents.2, cellType: CellType(eventType: .save))
+        ]
+        
+        let hostingData = [
+            CellSectionData(title: "Today", items: hostingEvents.0, cellType: CellType(eventType: .save)),
+            CellSectionData(title: "Upcoming", items: hostingEvents.1, cellType: CellType(eventType: .save)),
+            CellSectionData(title: "Previous", items: hostingEvents.2, cellType: CellType(eventType: .save))
+        ]
+        
+        let tableData : [MultiSectionData] = [
+            MultiSectionData(title: "Going", sections: goingData),
+            MultiSectionData(title: "Saved", sections: savedData),
+            MultiSectionData(title: "Hosting", sections: hostingData)
+        ]
+
+        let vc = MasterTableViewController(multiSectionData: tableData)
+        vc.title = "My Events"
+        vc.modalPresentationStyle = .overCurrentContext
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     override func didTapB2Button() {
-        let myZipsView = UsersTableViewController(users: User.getMyZips())
-        myZipsView.title = "My Zips"
-        myZipsView.modalPresentationStyle = .overCurrentContext
-        navigationController?.pushViewController(myZipsView, animated: true)
+        let section = MasterTableViewController.cellControllers(with: User.getMyZips(), title: nil, cellType: .zipList)
+        let multisection = MultiSectionData(title: nil, sections: [section])
+        let myZips = MasterTableViewController(multiSectionData: [multisection])
+        myZips.title = "My Zips"
+        navigationController?.pushViewController(myZips, animated: true)
+        
     }
     
     override func didTapB3Button() {

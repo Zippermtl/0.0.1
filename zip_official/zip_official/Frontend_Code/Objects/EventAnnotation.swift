@@ -26,6 +26,8 @@ class EventAnnotationView: MKAnnotationView {
     var view_length: CGFloat = 40
     var dot_length: CGFloat = 12
     
+    var isDot = false
+    
     private var eventImage: UIImageView
     private var dotView: UIView
     private var ringColor: UIColor = .black
@@ -137,12 +139,14 @@ class EventAnnotationView: MKAnnotationView {
     public func makeDot(){
         eventImage.isHidden = true
         dotView.isHidden = false
+        isDot = true
         transform = CGAffineTransform(scaleX: 1, y: 1)
         centerOffset = CGPoint(x: -view_length/2, y: -view_length/2)
         layer.shadowColor = UIColor.clear.cgColor
     }
     
     public func makeEvent() {
+        isDot = false
         eventImage.isHidden = false
         dotView.isHidden = true
         layer.shadowColor = UIColor.black.cgColor

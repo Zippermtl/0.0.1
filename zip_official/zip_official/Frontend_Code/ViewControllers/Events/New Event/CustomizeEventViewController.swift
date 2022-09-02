@@ -14,12 +14,18 @@ class CustomizeEventViewController: UIViewController {
     private var descriptionField: UITextView
     private var customizeView: UIView
     
-    
+    private let addHostButton: UIButton
+    private let addHostsLabel: UILabel
+    private let hostCountLabel: UILabel
     init(event: Event) {
         self.event = event
         self.descriptionField = UITextView()
         self.descriptionLabel = UILabel.zipTextFill()
         self.eventPicture = UIImageView()
+        self.addHostButton = UIButton()
+        self.addHostsLabel = UILabel.zipTextFill()
+        self.hostCountLabel = UILabel.zipTextFill()
+        hostCountLabel.textColor = .zipVeryLightGray
         
         if event.getType() == .Promoter {
             customizeView = PromoterTicketsView()
@@ -30,7 +36,9 @@ class CustomizeEventViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         descriptionField.text = "Tell us about your event here!"
         descriptionLabel.text = "Event Description:"
-        
+        addHostsLabel.text = "Add Co-hosts: "
+        addHostButton.addTarget(self, action: #selector(didTapAddHosts), for: .touchUpInside)
+        addHostButton.setImage(UIImage(systemName: "plus"), for: .normal)
         
         eventPicture.contentMode = .scaleAspectFit
         eventPicture.tintColor = .white
@@ -43,9 +51,6 @@ class CustomizeEventViewController: UIViewController {
         descriptionField.tintColor = .white
         descriptionField.textColor = .zipVeryLightGray
         descriptionField.layer.cornerRadius = 15
-        
-        
- 
     }
     
     required init?(coder: NSCoder) {
@@ -147,6 +152,41 @@ class CustomizeEventViewController: UIViewController {
 
     }
     
+    @objc private func didTapAddHosts() {
+        let vc = InviteTableViewController(items: User.getMyZips()) { [weak self] items in
+            guard let event = self?.event else { return }
+            let hosts = items.map({ $0 as! User })
+            for user in hosts {
+                if !event.usersInvite.contains(user) {
+                    event.usersInvite.append(user)
+                }
+            }
+            event.hosts += hosts
+            DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
+                guard error == nil else {
+                    let alert = UIAlertController(title: "Error Inviting Users",
+                                                  message: "\(error!.localizedDescription)",
+                                                  preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "Ok",
+                                                  style: .cancel,
+                                                  handler: { _ in }))
+                    DispatchQueue.main.async {
+                        self?.present(alert, animated: true)
+                    }
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            })
+        }
+        vc.title = "Co-Host"
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -194,6 +234,9 @@ class CustomizeEventViewController: UIViewController {
         view.addSubview(descriptionLabel)
         view.addSubview(descriptionField)
         view.addSubview(customizeView)
+        view.addSubview(addHostsLabel)
+        view.addSubview(addHostButton)
+        view.addSubview(hostCountLabel)
 
         
         view.addSubview(continueButton)
@@ -225,6 +268,19 @@ class CustomizeEventViewController: UIViewController {
         descriptionField.heightAnchor.constraint(greaterThanOrEqualToConstant: 100).isActive = true
         descriptionField.heightAnchor.constraint(lessThanOrEqualToConstant: 225).isActive = true
 
+        addHostsLabel.translatesAutoresizingMaskIntoConstraints = false
+        addHostsLabel.topAnchor.constraint(equalTo: descriptionField.bottomAnchor,constant: 10).isActive = true
+        addHostsLabel.leftAnchor.constraint(equalTo: descriptionLabel.leftAnchor).isActive = true
+        
+        hostCountLabel.translatesAutoresizingMaskIntoConstraints = false
+        hostCountLabel.leftAnchor.constraint(equalTo: addHostsLabel.rightAnchor,constant: 10).isActive = true
+        hostCountLabel.topAnchor.constraint(equalTo: addHostsLabel.topAnchor).isActive = true
+        hostCountLabel.rightAnchor.constraint(lessThanOrEqualTo: addHostButton.leftAnchor).isActive = true
+        
+        addHostButton.translatesAutoresizingMaskIntoConstraints = false
+        addHostButton.rightAnchor.constraint(equalTo: descriptionField.rightAnchor).isActive = true
+        addHostButton.centerYAnchor.constraint(equalTo: addHostsLabel.centerYAnchor).isActive = true
+        
         customizeView.translatesAutoresizingMaskIntoConstraints = false
         customizeView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         customizeView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
@@ -656,7 +712,13 @@ extension CustomizeEventViewController {
                 }
                 let priceString = text.suffix(text.count-1)
                 price = Double(priceString)
-                textField.text = "$" + String(format: "%.2f", price!)
+                
+                guard let price = price else {
+                    textField.text = nil
+                    return
+                }
+                textField.text = "$" + String(format: "%.2f", price)
+
             } else {
                 guard let text = textField.text else {
                     link = nil

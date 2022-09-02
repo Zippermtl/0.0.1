@@ -100,9 +100,7 @@ class EventViewController: UIViewController {
             .withConfiguration(saveConfig), for: .selected)
         
         self.participantsButton = IconButton.participantsIcon()
-
         self.liveView = UIView()
-        
         self.cellConfigureations = []
         
         reportView = ReportMessageView()
@@ -111,14 +109,14 @@ class EventViewController: UIViewController {
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         if event.usersGoing.contains(User(userId: userId)) {
             goingUI()
+        } else if event.usersNotGoing.contains(User(userId: userId)) {
+            notGoingUI()
         }
         
-        let events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
-        if events.contains(event.eventId) {
+        let savedEvents = User.getUDEvents(toKey: .savedEvents)
+        if savedEvents.contains(event) {
             savedUI()
         }
-        
-        
         
         if let inviteButton = inviteButton {
             inviteButton.backgroundColor = .zipLightGray
@@ -128,7 +126,6 @@ class EventViewController: UIViewController {
             inviteButton.titleLabel?.textAlignment = .center
             inviteButton.contentVerticalAlignment = .center
         }
-        
         
         
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .bold, scale: .large)
@@ -155,6 +152,7 @@ class EventViewController: UIViewController {
         
         let dismissReportTap = UITapGestureRecognizer(target: self, action: #selector(dismissReport))
         tableView.addGestureRecognizer(dismissReportTap)
+        dismissReportTap.cancelsTouchesInView = false
         
         countDownLabel.textAlignment = .center
         
@@ -169,6 +167,7 @@ class EventViewController: UIViewController {
         
         goingButton.backgroundColor = .zipLightGray
         goingButton.setTitle("RSVP", for: .normal)
+        goingButton.titleLabel?.font = .zipSubtitle2
         if event.usersGoing.contains(User(userId: userId)) {
             goingUI()
         }
@@ -266,6 +265,13 @@ class EventViewController: UIViewController {
 
     
     private func markGoing(){
+        if event.endTime <= Date() {
+            let alert = UIAlertController(title: "This Event Has Ended", message: "You cannot RSVP to expired events", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+            present(alert, animated: true)
+            return
+        }
+        
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         if !event.usersGoing.contains(User(userId: userId)) {
             DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
@@ -292,6 +298,13 @@ class EventViewController: UIViewController {
     }
     
     private func markNotGoing() {
+        if event.endTime <= Date() {
+            let alert = UIAlertController(title: "This Event Has Ended", message: "You cannot RSVP to expired events", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+            present(alert, animated: true)
+            return
+        }
+        
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         if !event.usersNotGoing.contains(User(userId: userId)) {
             DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
@@ -331,29 +344,48 @@ class EventViewController: UIViewController {
         goingButton.backgroundColor = .zipRed
     }
     
-    @objc private func didTapParticipantsButton(){
-        navigationController!.navigationBar.setTitleVerticalPositionAdjustment(0, for: .default)
-
-        
-       
-        
-        let zipListView = UsersTableViewController(sectionData: event.getParticipants())
-        zipListView.title = "Participants"
-        let transition = CATransition()
-        transition.duration = 0.5
-        transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
-        transition.type = CATransitionType.moveIn
-        transition.subtype = CATransitionSubtype.fromTop
-        view.layer.add(transition, forKey: nil)
-        
-        navigationController?.pushViewController(zipListView, animated: true)
-        
-    }
-    
-    @objc private func didTapInviteButton(){
-        let vc = InviteMoreViewController(event: event)
+    @objc func didTapParticipantsButton(){
+        let vc = MasterTableViewController(sectionData: event.getParticipants())
+        vc.title = "Participants"
         navigationController?.pushViewController(vc, animated: true)
     }
+    
+    @objc func didTapInviteButton(){
+        if event.endTime <= Date() {
+            let alert = UIAlertController(title: "This Event Has Ended", message: "You cannot invite people to expired events", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+            present(alert, animated: true)
+            return
+        }
+        let vc = InviteTableViewController(items: User.getMyZips(), saveFunc: { [weak self] items in
+            guard let event = self?.event else { return }
+            let users = items.map({ $0 as! User })
+            event.usersInvite += users
+            DatabaseManager.shared.inviteUsers(event: event, users: users, completion: { [weak self] error in
+                guard error == nil else {
+                    let alert = UIAlertController(title: "Error Inviting Users",
+                                                  message: "\(error!.localizedDescription)",
+                                                  preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "Ok",
+                                                  style: .cancel,
+                                                  handler: { _ in }))
+                    DispatchQueue.main.async {
+                        self?.present(alert, animated: true)
+                    }
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            })
+        })
+        vc.title = "Invite"
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+  
     
     
     @objc func didTapMessageButton(){
@@ -447,7 +479,7 @@ class EventViewController: UIViewController {
     }
     
     @objc func didTapHost(){
-        let vc = UsersTableViewController(users: event.hosts)
+        let vc = MasterTableViewController(sectionData: [event.hostingSection])
         vc.title = "Hosts"
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -476,6 +508,13 @@ class EventViewController: UIViewController {
         reportView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         reportView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         reportView.heightAnchor.constraint(equalToConstant: 300).isActive = true
+    }
+    
+    func reloadEvent() {
+        configureCells()
+        configureLabels()
+        eventPhotoView.sd_setImage(with: event.imageUrl)
+        tableView.reloadData()
     }
     
     override func viewDidLayoutSubviews() {
@@ -578,6 +617,8 @@ class EventViewController: UIViewController {
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "desc")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "buytickets")
+
         tableView.delegate = self
         tableView.dataSource = self
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 150, right: 0)
@@ -785,11 +826,10 @@ class EventViewController: UIViewController {
                                     UIImage(systemName: "clock")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
 
         
-        if let event = event as? PromoterEvent {
-            guard let price = event.price,
-                  let link = event.buyTicketsLink else {
-                return
-            }
+        if let event = event as? PromoterEvent,
+           let price = event.price,
+           let link = event.buyTicketsLink {
+
             let priceString = NSMutableAttributedString(string:("$\(String(format: "%.2f", price))"))
             let linkString = NSMutableAttributedString(string:("Buy Tickets Here"))
             print("link = ", link)
@@ -842,7 +882,15 @@ extension EventViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        var cell : UITableViewCell
+        if indexPath.row == 5,
+           let event = event as? PromoterEvent,
+           let url = event.buyTicketsLink
+        {
+            cell = tableView.dequeueReusableCell(withIdentifier: "buytickets", for: indexPath)
+        } else {
+            cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        }
         var config = cell.defaultContentConfiguration()
         config.textProperties.color = .white
         config.textProperties.font = .zipTextFill
@@ -858,9 +906,12 @@ extension EventViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print(indexPath.row)
         if indexPath.row == 5 {
+            print("did select")
             guard let event = event as? PromoterEvent,
                   let url = event.buyTicketsLink else {
+                print("Failing url")
                 return
             }
             print("OPEN URL")

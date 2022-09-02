@@ -349,7 +349,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 return
             }
             //append to existing conversation data
-            DatabaseManager.shared.sendMessage(to: conversationId, otherUserId: otherUserId, name: otherUser.displayName ?? "User", newMessage: message) { [weak self] success in
+            DatabaseManager.shared.sendMessage(to: conversationId, otherUserId: otherUserId, name: otherUser.displayName, newMessage: message) { [weak self] success in
                 if success {
                     DispatchQueue.main.async {
                         self?.messageInputBar.inputTextView.text = nil

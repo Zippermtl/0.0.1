@@ -302,9 +302,10 @@ class MapViewController: UIViewController {
                     return
                 }
                 DispatchQueue.main.async {
-                    fpcVC.events = events
-                    fpcVC.updateEventsLabel(events: events)
-                    fpcVC.eventsTable.updateEvents(events: events)
+                    let filteredEvents = events.filter({ !User.getUDEvents(toKey: .goingEvents).contains($0)})
+                    fpcVC.events = filteredEvents
+                    fpcVC.updateLabel(cellItems: filteredEvents)
+                    fpcVC.eventsTableView.reload(cellItems: filteredEvents)
                 }
                
             case .failure(let error):
@@ -426,6 +427,7 @@ extension MapViewController: FPCMapDelegate {
                                       handler: { [weak self] _ in
             DispatchQueue.main.async {
                 let event = ClosedEvent()
+                event.mapView = self?.mapView
                 let vc = CreateEventViewController(event: event)
                 self?.navigationController?.pushViewController(vc, animated: true)
             }
@@ -436,6 +438,7 @@ extension MapViewController: FPCMapDelegate {
                                       handler: { [weak self] _ in
             DispatchQueue.main.async {
                 let event = PromoterEvent()
+                event.mapView = self?.mapView
                 let vc = CreateEventViewController(event: event)
                 self?.navigationController?.pushViewController(vc, animated: true)
             }
@@ -502,24 +505,31 @@ extension MapViewController: MKMapViewDelegate {
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
-        if mapView.zoomLevel < DOT_ZOOM_DISTANCE {
-            let zoomRegion = MKCoordinateRegion(center: view.annotation!.coordinate, latitudinalMeters: DEFAULT_ZOOM_DISTANCE,longitudinalMeters: DEFAULT_ZOOM_DISTANCE)
-            mapView.setRegion(zoomRegion, animated: true)
-        } else {
-            if let annotation = view.annotation as? EventAnnotation {
-                var eventVC: UIViewController
-                let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
-                if annotation.event.hosts.map({ $0.userId }).contains(userId) {
-                    eventVC = MyEventViewController(event: annotation.event)
-                } else {
-                    eventVC = EventViewController(event: annotation.event)
-                }
-                
-                navigationController?.pushViewController(eventVC, animated: true)
-                
-                mapView.deselectAnnotation(view.annotation, animated: false)
-            }
+        if let annotationView = view as? EventAnnotationView,
+           let annotation = view.annotation as? EventAnnotation {
+           
+            if annotationView.isDot {
+                let zoomRegion = MKCoordinateRegion(center: view.annotation!.coordinate,
+                                                    latitudinalMeters: DEFAULT_ZOOM_DISTANCE-10,
+                                                    longitudinalMeters: DEFAULT_ZOOM_DISTANCE-10)
+                mapView.setRegion(zoomRegion, animated: true)
+            }  else {
+              
+                   var eventVC: UIViewController
+                   let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
+                   if annotation.event.hosts.map({ $0.userId }).contains(userId) {
+                       eventVC = MyEventViewController(event: annotation.event)
+                   } else {
+                       eventVC = EventViewController(event: annotation.event)
+                   }
+                   
+                   navigationController?.pushViewController(eventVC, animated: true)
+                   
+                   mapView.deselectAnnotation(view.annotation, animated: false)
+               
+           }
         }
+         
         
     }
     

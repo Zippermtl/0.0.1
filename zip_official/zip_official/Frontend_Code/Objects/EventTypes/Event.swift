@@ -52,6 +52,7 @@ extension EventType: CustomStringConvertible {
 
 //for future, enumerate event type
 public class EventCoder: Codable {
+    var id: String?
     var title: String
     var coordinates: [String: Double]
     var hosts: [String]
@@ -74,6 +75,7 @@ public class EventCoder: Codable {
 
     
     init(event: Event) {
+        self.id = event.eventId
         self.title = event.title
         self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
         self.hosts = event.hosts.map({($0.userId)})
@@ -96,6 +98,7 @@ public class EventCoder: Codable {
     }
     
     enum CodingKeys: String, CodingKey {
+        case id = "id"
         case title = "title"
         case coordinates = "coordinates"
         case hosts = "hosts"
@@ -119,6 +122,8 @@ public class EventCoder: Codable {
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try? container.decode(String.self, forKey: .id)
+
         self.title = try container.decode(String.self, forKey: .title)
         self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
         self.hosts = try container.decode([String].self, forKey: .hosts)
@@ -142,6 +147,7 @@ public class EventCoder: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try? container.encode(id, forKey: .id)
         try container.encode(title, forKey: .title)
         try container.encode(coordinates, forKey: .coordinates)
         try container.encode(hosts, forKey: .hosts)
@@ -170,6 +176,10 @@ public class EventCoder: Codable {
     }
     
     public func updateEvent(event: Event) {
+        if let id = id {
+            event.eventId = id
+        }
+        
         event.title = title
         event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
         event.hosts = hosts.map({ User(userId: $0 )})
@@ -187,7 +197,13 @@ public class EventCoder: Codable {
     }
 }
 
-public class Event : Equatable, CustomStringConvertible {
+public class Event : Equatable, CustomStringConvertible, CellItem {
+    public var isUser: Bool = false
+    public var isEvent: Bool = true
+    public func getId() -> String {
+        return eventId
+    }
+    
     public var description: String {
         var out = ""
         out += "ID: \(self.eventId)\n"
@@ -223,9 +239,10 @@ public class Event : Equatable, CustomStringConvertible {
     var maxGuests: Int = -1
     var usersGoing: [User] = []
     var usersNotGoing: [User] = []
-
     var usersInterested: [User] = []
     var usersInvite: [User] = []
+    
+    
 //    var type: String = "promoter"
 //    var isPublic: Bool = false
 //    var type: Int
@@ -357,25 +374,51 @@ public class Event : Equatable, CustomStringConvertible {
         print("Max guests: ", maxGuests)
         print("Start Time: ", startTimeString)
         print("End Time: ", endTimeString)
-        print("Img URL: ", imageUrl)
+        print("Img URL: ", imageUrl ?? "")
         print("Users invite ", usersInvite)
         print("Users going ", usersGoing)
         print("Users Not Going ", usersNotGoing)
         print("allowUserInvites ", allowUserInvites)
     }
     
-    func getParticipants() -> [UserCellSectionData] {
-        let going = UserCellSectionData(title: "Going",
-                                        users: usersGoing)
-        let invited = UserCellSectionData(title: "Invited",
-                                          users: usersInvite.filter({ !(usersGoing.contains($0) || usersNotGoing.contains($0)) }))
-        let notGoing = UserCellSectionData(title: "Not Going",
-                                           users: usersNotGoing)
-
-        let sections = [going, invited, notGoing]
+    func sortUsers(a: User, b: User) -> Bool {
+        if a.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String && b.userId == ownerId { return false }
+        if b.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String && a.userId == ownerId { return true }
+        if a.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String { return true }
+        if b.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String { return false }
+        return a > b
+    }
+    
+    func getSortedUsers(users: [User]) -> [User] {
+        return users.sorted(by:{ sortUsers(a: $0 , b: $1) })
+    }
+    
+    func getParticipants() -> [CellSectionData] {
+        let sections = [hostingSection, goingSection, invitedSection, notGoingSection]
         return sections
     }
     
+    var hostingSection: CellSectionData { get {
+        let items = getSortedUsers(users: self.hosts)
+        return CellSectionData(title: "Hosts", items: items, cellType: CellType(userType: .zipList))
+    }}
+    
+    var goingSection: CellSectionData { get {
+        let items = getSortedUsers(users: usersGoing).filter({ !hosts.contains($0)} )
+        return CellSectionData(title: "Going", items: items, cellType: CellType(userType: .zipList))
+    }}
+    
+    var invitedSection: CellSectionData { get {
+        let items = getSortedUsers(users: usersInvite).filter({ !(usersGoing.contains($0)
+                                                                  || usersNotGoing.contains($0)
+                                                                  || hosts.contains($0)) })
+        return CellSectionData(title: "Invited", items: items, cellType: CellType(userType: .zipList))
+    }}
+    
+    var notGoingSection: CellSectionData { get {
+        let items = getSortedUsers(users: usersNotGoing)
+        return CellSectionData(title: "Not Going", items: items, cellType: CellType(userType: .zipList))
+    }}
     
     //MARK: accessory function for yianni to pull for visuals if needed:
     // ex sponsor events could return an even with the visual appened on
@@ -483,6 +526,24 @@ public class Event : Equatable, CustomStringConvertible {
         
     }
     
+    static func getTodayUpcomingPrevious(events: [Event]) -> ([Event],[Event],[Event]) {
+        var today = [Event]()
+        var upcoming = [Event]()
+        var previous = [Event]()
+
+        for event in events {
+            if event.endTime <= Date() {
+                previous.append(event)
+            } else if event.startTime >= Date(timeIntervalSinceNow: 86400) {
+                upcoming.append(event)
+            } else {
+                today.append(event)
+            }
+        }
+        
+        return (today,upcoming,previous)
+    }
+    
 }
 
 public func createEventLocal(eventId Id: String = "",
@@ -517,4 +578,9 @@ public func createEventLocal(eventId Id: String = "",
     case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
     case .Open: return OpenEvent(event: baseEvent)
     }
+    
+    
+    
+    
+    
 }

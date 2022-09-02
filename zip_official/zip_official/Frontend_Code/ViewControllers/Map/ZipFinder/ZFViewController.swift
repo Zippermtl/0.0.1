@@ -368,6 +368,10 @@ extension ZipFinderViewController: ZFCardBackDelegate {
     func openVC(_ vc: UIViewController) {
         navigationController?.pushViewController(vc, animated: true)
     }
+    
+    func popVC() {
+        navigationController?.popViewController(animated: true)
+    }
 }
 
 extension ZipFinderViewController: ZFCardFrontDelegate {

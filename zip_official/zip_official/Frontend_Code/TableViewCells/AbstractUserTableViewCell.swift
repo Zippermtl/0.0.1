@@ -38,7 +38,7 @@ class AbstractUserTableViewCell: UITableViewCell {
     }
     
     
-
+    
     
     //MARK: - Configure
     public func configure(_ user: User){

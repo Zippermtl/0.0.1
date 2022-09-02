@@ -77,7 +77,6 @@ extension DatabaseManager {
             return
         }
         
-        print("not running ")
         firestore.collection("EventProfiles").whereField("type", isEqualTo: EventType.Promoter.rawValue).getDocuments() { (querySnapshot, err) in
             guard err == nil else {
                 print("Error getting documents: \(err!)")
@@ -131,7 +130,28 @@ extension DatabaseManager {
                 return
             }
             
-            AppDelegate.userDefaults.set(s, forKey: "savedEvents")
+            let events = s.map({ Event(eventId : $0) })
+            var successEvents = [Event]()
+            var count = 0
+            for event in events {
+                DatabaseManager.shared.loadEvent(event: event, completion: { result in
+                    switch result {
+                    case .success(let event):
+                        count += 1
+                        successEvents.append(event)
+                        if count == events.count {
+                            User.setUDEvents(events: successEvents, toKey: .savedEvents)
+                        }
+                    case .failure(let error):
+                        count += 1
+                        if count == events.count {
+                            User.setUDEvents(events: successEvents, toKey: .savedEvents)
+                        }
+                        print("error loading saved event Error: \(error)")
+                    }
+                })
+            }
+            
             completion()
         }
     }
@@ -142,7 +162,7 @@ extension DatabaseManager {
             return
         }
         
-        firestore.collection("EventProfiles").whereField("usersGoing", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
+        firestore.collection("EventProfiles").whereField("usersGoing", arrayContains: userId).getDocuments() { (querySnapshot, err) in
             print("getting hosts")
             guard err == nil else {
                 print("Error getting documents: \(err!)")
@@ -188,27 +208,17 @@ extension DatabaseManager {
                 
             }
             
-            let goingEvents: [String] = events.map({ $0.eventId })
-            AppDelegate.userDefaults.set(goingEvents, forKey: "goingEvents")
+            User.setUDEvents(events: events, toKey: .goingEvents)
             allCompletion(.success(events))
         }
     }
     
-    public func getAllHostedEventsForMap(eventCompletion: @escaping (Event) -> Void,
-                                         allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
+    public func getAllHostedEvents(userId: String,
+                                   eventCompletion: @escaping (Event) -> Void,
+                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
+  
         
-        firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
-            print("getting hosts")
-            guard let strongSelf = self,
-                  err == nil else {
-                print("Error getting documents: \(err!)")
-                allCompletion(.failure(err!))
-                return
-            }
-            
+        firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { (querySnapshot, err) in
             var events: [Event] = []
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -247,8 +257,9 @@ extension DatabaseManager {
                 
             }
             
-            let hostedEvents: [String] = events.map({ $0.eventId })
-            AppDelegate.userDefaults.set(hostedEvents, forKey: "hostedEvents")
+            if userId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
+                User.setUDEvents(events: events, toKey: .hostedEvents)
+            }
             allCompletion(.success(events))
         }
     }
@@ -339,9 +350,9 @@ extension DatabaseManager {
                     completion(.failure(error!))
                     return
                 }
-                var hostedEvents = AppDelegate.userDefaults.value(forKey: "hostedEvents") as? [String] ?? []
-                hostedEvents.append(event.eventId)
-                AppDelegate.userDefaults.set(hostedEvents, forKey: "hostedEvents")
+                var hostedEvents = User.getUDEvents(toKey: .hostedEvents)
+                hostedEvents.append(event)
+                User.setUDEvents(events: hostedEvents, toKey: .hostedEvents)
                 
                 GeoManager.shared.UpdateEventLocation(event: event)
                 self?.updateEventImage(event: event, completion: { result in
@@ -440,11 +451,12 @@ extension DatabaseManager {
     
     public func markSaved(event: Event, completion: @escaping (Error?) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
-        events.append(event.eventId)
-        AppDelegate.userDefaults.set(events, forKey: "savedEvents")
         
-        firestore.collection("UserStoredEvents").document(selfId).setData(["saved":events]) { error in
+        var savedEvents = User.getUDEvents(toKey: .savedEvents)
+        savedEvents.append(event)
+        User.setUDEvents(events: savedEvents, toKey: .savedEvents)
+        
+        firestore.collection("UserStoredEvents").document(selfId).setData(["saved": savedEvents]) { error in
             guard error == nil else {
                 completion(error!)
                 return
@@ -455,10 +467,10 @@ extension DatabaseManager {
     
     public func markUnsaved(event: Event, completion: @escaping (Error?) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        var events = AppDelegate.userDefaults.value(forKey: "savedEvents") as? [String] ?? []
-        events.removeAll(where: { $0 == event.eventId })
-        AppDelegate.userDefaults.set(events, forKey: "savedEvents")
-        firestore.collection("UserStoredEvents").document(selfId).setData(["saved":events]) { error in
+        var savedEvents = User.getUDEvents(toKey: .savedEvents)
+        savedEvents.removeAll(where: { $0 == event})
+        User.setUDEvents(events: savedEvents, toKey: .savedEvents)
+        firestore.collection("UserStoredEvents").document(selfId).setData(["saved":savedEvents]) { error in
             guard error == nil else {
                 completion(error!)
                 return
