@@ -52,12 +52,31 @@ class CustomizeEventViewController: UIViewController {
         descriptionField.tintColor = .white
         descriptionField.textColor = .zipVeryLightGray
         descriptionField.layer.cornerRadius = 15
+        addDoneButtonOnKeyboard()
+    }
+    
+    func addDoneButtonOnKeyboard(){
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonAction))
+        
+        let items = [flexSpace, done]
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        descriptionField.inputAccessoryView = doneToolbar
+       
+    }
+    
+    @objc func doneButtonAction(){
+        descriptionField.resignFirstResponder()
     }
     
     private func setupKeyboardHiding() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-
     }
     
     required init?(coder: NSCoder) {
@@ -626,6 +645,8 @@ extension CustomizeEventViewController {
             tableView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         }
         
+        
+        
         required init?(coder: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
@@ -725,8 +746,28 @@ extension CustomizeEventViewController {
             linkField.bottomAnchor.constraint(equalTo: view.bottomAnchor,constant: -5).isActive = true
             linkField.leftAnchor.constraint(equalTo: linkLabel.rightAnchor, constant: 10).isActive = true
             linkField.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10).isActive = true
-
+            
             return cell
+        }
+        
+        func addDoneButtonOnKeyboard(){
+            let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+            doneToolbar.barStyle = .default
+            
+            let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonAction))
+            
+            let items = [flexSpace, done]
+            doneToolbar.items = items
+            doneToolbar.sizeToFit()
+            
+            linkField.inputAccessoryView = doneToolbar
+            priceField.inputAccessoryView = doneToolbar
+        }
+        
+        @objc func doneButtonAction(){
+            priceField.resignFirstResponder()
+            linkField.resignFirstResponder()
         }
         
         func textFieldDidBeginEditing(_ textField: UITextField) {

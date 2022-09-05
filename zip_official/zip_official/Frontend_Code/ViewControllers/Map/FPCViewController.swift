@@ -26,7 +26,7 @@ class FPCViewController: UIViewController {
     private var scrollView: UIScrollView
     private var zipFinderButton: UIButton
 
-    private let searchBar: UITextField
+    let searchBar: UITextField
     private var collectionView: UICollectionView
 
     private let zipRequestsLabel: UILabel
@@ -163,6 +163,23 @@ class FPCViewController: UIViewController {
         notificationIcon.iconButton.addTarget(self, action: #selector(openNotifications), for: .touchUpInside)
     }
     
+    func addDoneButtonOnKeyboard(){
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonAction))
+        
+        let items = [flexSpace, done]
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        searchBar.inputAccessoryView = doneToolbar
+    }
+    
+    @objc func doneButtonAction(){
+        searchBar.resignFirstResponder()
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -468,7 +485,6 @@ extension FPCViewController: UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        print("ending edit")
         if textField.text == "" {
             searchTable.isHidden = true
             searchBg.isHidden = true
@@ -525,15 +541,17 @@ extension FPCViewController: FPCTableDelegate {
 extension FPCViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         print("CHECKING TOUCH")
-//        print(touch.view == zipRequestsTableView.tableHeader)
-//        print(touch.view == eventsTableView.tableHeader)
-//        print(touch.view is UIControl)
-//        print(touch.view is UITableViewHeaderFooterView)
+        print("touch view = \(touch.view)")
+        print(searchBar.isEditing)
+        print(touch.view is UITextField)
 
-        print(isEditing)
-        if !isEditing {
+        if touch.view is UITextField {
+            print("returning where it is supposed to")
             return false
-            
+        }
+        
+        if !searchBar.isEditing {
+            return false
         }
         
         return !(touch.view is UIControl) && !(touch.view is IconButton)

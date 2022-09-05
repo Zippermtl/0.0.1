@@ -263,6 +263,28 @@ class BasicProfileSetupViewController: UIViewController {
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(openDD))
         genderLabel.addGestureRecognizer(tap)
+        addDoneButtonOnKeyboard()
+    }
+    
+    func addDoneButtonOnKeyboard(){
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonAction))
+        
+        let items = [flexSpace, done]
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        firstNameField.inputAccessoryView = doneToolbar
+        lastNameField.inputAccessoryView = doneToolbar
+        usernameField.inputAccessoryView = doneToolbar
+        birthdayField.inputAccessoryView = doneToolbar
+    }
+    
+    @objc func doneButtonAction(){
+        view.endEditing(true)
     }
     
     required init?(coder: NSCoder) {

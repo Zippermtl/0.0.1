@@ -190,7 +190,7 @@ class MapViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        isNewAccount = true
+//        isNewAccount = true
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -461,7 +461,11 @@ extension MapViewController: FPCMapDelegate {
     
     func openFPC() {
         if fpc.state != .full {
-            fpc.move(to: .full, animated: true, completion: nil)
+            fpc.move(to: .full, animated: true, completion: { [weak self] in
+//                if let fpcVC = self?.fpc.contentViewController as? FPCViewController {
+//                    fpcVC.searchBar.becomeFirstResponder()
+//                }
+            })
         }
     }
 }
@@ -620,7 +624,13 @@ extension MapViewController: FloatingPanelControllerDelegate {
     }
     
     func floatingPanelDidMove(_ fpc: FloatingPanelController) {
-        self.fpc.view.endEditing(true)
+        
+    }
+    
+    func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
+        if fpc.state != .full {
+            fpc.view.endEditing(true)
+        }
     }
 }
 

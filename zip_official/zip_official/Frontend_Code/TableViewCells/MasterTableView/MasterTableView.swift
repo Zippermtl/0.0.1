@@ -106,6 +106,13 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         configureTable()
     }
     
+
+    
+    @objc func doneButtonAction(){
+        view.endEditing(true)
+    }
+    
+    
     private func configureSearchbar(){
         let searchController = UISearchController(searchResultsController: nil)
 
@@ -119,6 +126,18 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         searchController.searchBar.backgroundImage = UIImage()
         searchController.searchBar.delegate = self
         searchController.hidesNavigationBarDuringPresentation = false
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonAction))
+        
+        let items = [flexSpace, done]
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        searchController.searchBar.inputAccessoryView = doneToolbar
+        
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
     }
@@ -245,7 +264,7 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.register(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: "empty")
 
         tableData = multiSectionData[superSection]
-//        tableView.reloadData()o
+//        tableView.reloadData()
         
         guard let tableHeader = tableHeader else {
             tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 1))
@@ -337,8 +356,6 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
             fetchAll()
         }
     }
-    
-    
     
     public func reload(multiSectionData: [MultiSectionData]) {
         self.multiSectionData = multiSectionData
