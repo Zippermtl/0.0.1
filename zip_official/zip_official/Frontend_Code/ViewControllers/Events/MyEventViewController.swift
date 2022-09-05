@@ -153,7 +153,13 @@ class MyEventViewController: EventViewController {
                 }
                 
                 DispatchQueue.main.async {
+                    self?.configureLabels()
                     self?.navigationController?.popViewController(animated: true)
+                    if let vc = self?.navigationController?.topViewController as? MasterTableViewController {
+                        if let sectionData = self?.event.hostingSection {
+                            vc.reload(multiSectionData: [MultiSectionData(title: nil, sections: [sectionData])])
+                        }
+                    }
                 }
             })
         }

@@ -190,6 +190,7 @@ class MapViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        isNewAccount = true
         if isNewAccount {
             isNewAccount = false
             let vc = NewAccountPopupViewController()
@@ -485,6 +486,7 @@ extension MapViewController: MKMapViewDelegate {
             annotationView.canShowCallout = false
             
             eventAnnotation.event.annotationView = annotationView
+            annotationView.delegate = self
             return annotationView
 
         case .Promoter:
@@ -495,6 +497,7 @@ extension MapViewController: MKMapViewDelegate {
             
             annotationView.canShowCallout = false
             eventAnnotation.event.annotationView = annotationView
+            annotationView.delegate = self
             return annotationView
             
         case .Event:
@@ -515,22 +518,22 @@ extension MapViewController: MKMapViewDelegate {
                 let zoomRegion = MKCoordinateRegion(center: view.annotation!.coordinate,
                                                     latitudinalMeters: DEFAULT_ZOOM_DISTANCE-10,
                                                     longitudinalMeters: DEFAULT_ZOOM_DISTANCE-10)
+//                annotationView.makeEvent()
                 mapView.setRegion(zoomRegion, animated: true)
             }  else {
-              
-                   var eventVC: UIViewController
-                   let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
-                   if annotation.event.hosts.map({ $0.userId }).contains(userId) {
-                       eventVC = MyEventViewController(event: annotation.event)
-                   } else {
-                       eventVC = EventViewController(event: annotation.event)
-                   }
-                   
-                   navigationController?.pushViewController(eventVC, animated: true)
-                   
-                   mapView.deselectAnnotation(view.annotation, animated: false)
-               
-           }
+//                var eventVC: UIViewController
+//                let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
+//                if annotation.event.hosts.map({ $0.userId }).contains(userId) {
+//                    eventVC = MyEventViewController(event: annotation.event)
+//                } else {
+//                    eventVC = EventViewController(event: annotation.event)
+//                }
+//
+//                navigationController?.pushViewController(eventVC, animated: true)
+//
+//                mapView.deselectAnnotation(view.annotation, animated: false)
+                
+            }
         }
          
         
@@ -547,6 +550,25 @@ extension MapViewController: MKMapViewDelegate {
     }
 }
 
+extension MapViewController : EventAnnotationDelegate {
+    func selectEvent(for annotationView: EventAnnotationView) {
+        guard let annotation = annotationView.annotation as? EventAnnotation  else {
+            return
+        }
+        let event = annotation.event
+        
+        var eventVC: UIViewController
+        let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
+        if annotation.event.hosts.map({ $0.userId }).contains(userId) {
+            eventVC = MyEventViewController(event: event)
+        } else {
+            eventVC = EventViewController(event: event)
+        }
+        
+        navigationController?.pushViewController(eventVC, animated: true)
+    }
+}
+
 extension MapViewController: UIGestureRecognizerDelegate {
     @objc func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
         if sender.state == .ended {
@@ -560,9 +582,11 @@ extension MapViewController: UIGestureRecognizerDelegate {
                 continue
             }
             guard let annotationView = self.mapView.view(for: annotation) as? EventAnnotationView else { continue }
-            if mapView.zoomLevel <= DOT_ZOOM_DISTANCE {
+            if mapView.zoomLevel <= DOT_ZOOM_DISTANCE && !annotationView.isDot{
+                print("MAKING DOT")
                 annotationView.makeDot()
-            } else {
+            } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && annotationView.isDot {
+                print("MAKING EVENT")
                 annotationView.makeEvent()
             }
         }

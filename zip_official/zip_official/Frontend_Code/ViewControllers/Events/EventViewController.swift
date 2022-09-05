@@ -681,7 +681,6 @@ class EventViewController: UIViewController {
         goingButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         goingButton.topAnchor.constraint(equalTo: hostLabel.bottomAnchor, constant: 15).isActive = true
         
-        
         configureInviteButton()
         
         tableHeader.addSubview(userCountLabel)
@@ -698,13 +697,13 @@ class EventViewController: UIViewController {
 
         tableHeader.addSubview(saveButton)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
-        saveButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -35).isActive = true
+        saveButton.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -55).isActive = true
         saveButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
         saveButton.setIconDimension(width: 60)
         
         tableHeader.addSubview(messageButton)
         messageButton.translatesAutoresizingMaskIntoConstraints = false
-        messageButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
+        messageButton.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 55).isActive = true
         messageButton.topAnchor.constraint(equalTo: participantsButton.topAnchor).isActive = true
         messageButton.setIconDimension(width: 60)
         
@@ -712,6 +711,7 @@ class EventViewController: UIViewController {
 //        tableHeader.topAnchor.constraint(equalTo: eventPhotoView.topAnchor).isActive = true
         tableHeader.bottomAnchor.constraint(equalTo: participantsButton.bottomAnchor, constant: 20).isActive = true
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        
         
         goingButton.layer.cornerRadius = 8
         participantsButton.layer.cornerRadius = 30

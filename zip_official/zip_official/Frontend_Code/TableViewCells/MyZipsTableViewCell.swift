@@ -41,7 +41,10 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
     override func configure(_ user: User) {
         super.configure(user)
         extraInfoLabel.text = "@" + user.username
-        
+        configureRequestedButton()
+    }
+    
+    private func configureRequestedButton() {
         switch user.friendshipStatus {
         case .none:
             requestButton.isHidden = false
@@ -62,7 +65,32 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
     }
     
     @objc private func didTapRequest(){
-        
+        switch user.friendshipStatus {
+        case .ACCEPTED:
+            break
+        case .REQUESTED_OUTGOING:
+            user.unsendRequest(completion: { [weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.configureRequestedButton()
+            })
+        case .REQUESTED_INCOMING: // You have now accepted the follow request
+            user.acceptRequest(completion: { [weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.configureRequestedButton()
+            })
+        case .none:
+            user.sendRequest(completion: { [weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.configureRequestedButton()
+            })
+            
+        }
     }
     
 }

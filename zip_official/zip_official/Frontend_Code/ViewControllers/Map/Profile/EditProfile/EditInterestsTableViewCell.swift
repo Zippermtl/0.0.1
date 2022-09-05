@@ -16,6 +16,7 @@ class EditInterestsTableViewCell: EditProfileTableViewCell {
     weak var cellDelegate: GrowingCellProtocol?
     weak var presentInterestDelegate: PresentEditInterestsProtocol?
     weak var updateInterestsDelegate: UpdateInterestsProtocol?
+    weak var deleteInterestsDelegate: DeleteInterestsProtocol?
 
     static let identifier = "interestTBviewCell"
     let collectionView: DynamicHeightCollectionView
@@ -222,6 +223,7 @@ extension EditInterestsTableViewCell {
 extension EditInterestsTableViewCell: DeleteInterestsProtocol {
     func deleteInterest(idx: Int) {
         interests.remove(at: idx)
+        deleteInterestsDelegate?.deleteInterest(idx: idx)
         collectionView.collectionViewLayout.invalidateLayout()
         collectionView.reloadData()
     }

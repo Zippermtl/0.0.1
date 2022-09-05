@@ -43,30 +43,34 @@ class FilterSettingsViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         title = "ZipFinder Preferences"
         view.backgroundColor = .zipGray
-        let minAge = CGFloat(AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as? Int ?? 20)
-        let maxAge = CGFloat(AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as? Int ?? 25)
-        
-        ageSlider.setLeftValue(minAge,
-                               rightValue: maxAge)
+        print("this valye is ",AppDelegate.userDefaults.value(forKey: "MinAgeFilter"))
+        let minAge = CGFloat(AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as? Int ?? 18)
+        let maxAge = CGFloat(AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as? Int ?? 60)
         
         ageLabel.text = Int(minAge).description + "-" + Int(maxAge).description
         ageLabel.textAlignment = .center
         ageLabel.backgroundColor = .zipLightGray
-
-        ageSlider.setMinValue(17, maxValue: 60)
+        
+        ageSlider.setLeftValue(minAge, rightValue: maxAge)
         ageSlider.minimumDistance = 5
         ageSlider.addTarget(self, action: #selector(ageSliderChanged), for: .valueChanged)
         ageSlider.rangeImage = ageSlider.rangeImage.withTintColor(.zipBlue)
         
-        let maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as? Float ?? 25000.0
         
+        let maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as? Int ?? 100
+
         distanceSlider.addTarget(self, action: #selector(sliderChanged(_:)), for: .valueChanged)
-        distanceSlider.minimumValue = 10000
-        distanceSlider.maximumValue = 100000
+        distanceSlider.minimumValue = 14
+        distanceSlider.maximumValue = 100
         distanceSlider.trackHeight = 2
         distanceSlider.minimumTrackTintColor = .zipBlue
-        distanceSlider.setValue(maxRangeFilter, animated: false)
-        distanceLabel.text = Int(maxRangeFilter/1000).description + " km"
+        distanceSlider.setValue(Float(convertBack(inDistance: maxRangeFilter)), animated: false)
+        
+        var unit = "km"
+        if NSLocale.current.regionCode == "US" {
+            unit = "miles"
+        }
+        distanceLabel.text = maxRangeFilter.description + " " + unit
         distanceLabel.backgroundColor = .zipLightGray
         distanceLabel.textAlignment = .center
         
@@ -123,13 +127,30 @@ class FilterSettingsViewController: UIViewController {
     }
     
     
+    func convertDistance(inDistance: Int) -> Int {
+        let d = Double(inDistance)
+        return Int(0.007130 * d * d + 0.2870 * d)
+    }
+    
+    func convertBack(inDistance: Int) -> Int {
+        let d = Double(inDistance)
+        return Int(round((-0.287 + sqrt(0.082368 + 0.02852 * d))/0.01426))
+    }
     
     
     @objc func sliderChanged(_ sender: UISlider) {
-        distanceLabel.text = Int((round((Double(sender.value)/1000)*0.2)/0.2)).description + " km"
+        let convertedDistance = convertDistance(inDistance: Int(sender.value))
+        var unit = "km"
+        if NSLocale.current.regionCode == "US" {
+            unit = "miles"
+        }
+        distanceLabel.text = convertedDistance.description + " " + unit
+        AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
     }
     
     @objc func ageSliderChanged(){
+        AppDelegate.userDefaults.set(Int(ageSlider.leftValue), forKey: "MinAgeFilter")
+        AppDelegate.userDefaults.set(Int(ageSlider.rightValue), forKey: "MaxAgeFilter")
         ageLabel.text = Int(ageSlider.leftValue).description + "-" + Int(ageSlider.rightValue).description
     }
     
@@ -152,22 +173,29 @@ class FilterSettingsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        ageSlider.setMinValue(17, maxValue: 60)
 
         // Do any additional setup after loading the view.
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        distanceLabel.layer.cornerRadius = distanceLabel.frame.height/2
+        ageLabel.layer.cornerRadius = ageLabel.frame.height/2
     }
     
     private func addSubviews() {
        
         
         view.addSubview(distanceView)
-        distanceView.addSubview(distanceLabel)
-        distanceView.addSubview(distanceSlider)
+        view.addSubview(distanceLabel)
+        view.addSubview(distanceSlider)
         
 
         view.addSubview(ageView)
-        ageView.addSubview(ageLabel)
-        ageView.addSubview(ageSlider)
-//
+        view.addSubview(ageLabel)
+        view.addSubview(ageSlider)
+
         view.addSubview(genderView)
         genderView.addSubview(buttonHolder)
         buttonHolder.addArrangedSubview(menButton)
@@ -180,46 +208,50 @@ class FilterSettingsViewController: UIViewController {
     private func configureSubviewLayout(){
         distanceView.translatesAutoresizingMaskIntoConstraints = false
         distanceView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        distanceView.bottomAnchor.constraint(equalTo: distanceLabel.bottomAnchor, constant: 25).isActive = true
+        distanceView.bottomAnchor.constraint(equalTo: distanceSlider.bottomAnchor, constant: 10).isActive = true
         distanceView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         distanceView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.centerYAnchor.constraint(equalTo: distanceView.centerYAnchor).isActive = true
+        distanceLabel.topAnchor.constraint(equalTo: distanceView.titleView.topAnchor).isActive = true
         distanceLabel.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -15).isActive = true
-        distanceLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        distanceLabel.widthAnchor.constraint(equalToConstant: 75).isActive = true
+        distanceLabel.bottomAnchor.constraint(equalTo: distanceView.subtitleView.bottomAnchor).isActive = true
+        
+        if NSLocale.current.regionCode == "US" {
+            distanceLabel.widthAnchor.constraint(equalToConstant: 90).isActive = true
+        } else {
+            distanceLabel.widthAnchor.constraint(equalToConstant: 75).isActive = true
+
+        }
 
         distanceLabel.layer.masksToBounds = true
-        distanceLabel.layer.cornerRadius = 25
+       
 
         distanceSlider.translatesAutoresizingMaskIntoConstraints = false
         distanceSlider.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor,constant: 10).isActive = true
-        distanceSlider.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 15).isActive = true
+        distanceSlider.leftAnchor.constraint(equalTo: ageSlider.leftAnchor).isActive = true
+
+//        distanceSlider.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 15).isActive = true
         distanceSlider.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -15).isActive = true
-        distanceSlider.bottomAnchor.constraint(equalTo: distanceView.bottomAnchor).isActive = true
         
         ageView.translatesAutoresizingMaskIntoConstraints = false
         ageView.topAnchor.constraint(equalTo: distanceView.bottomAnchor).isActive = true
-        ageView.heightAnchor.constraint(equalTo: distanceView.heightAnchor).isActive = true
+        ageView.bottomAnchor.constraint(equalTo: ageSlider.bottomAnchor,constant: 10).isActive = true
         ageView.rightAnchor.constraint(equalTo: distanceView.rightAnchor).isActive = true
         ageView.leftAnchor.constraint(equalTo: distanceView.leftAnchor).isActive = true
         
         ageLabel.translatesAutoresizingMaskIntoConstraints = false
-        ageLabel.topAnchor.constraint(equalTo: ageView.topAnchor).isActive = true
+        ageLabel.topAnchor.constraint(equalTo: ageView.titleView.topAnchor).isActive = true
+        ageLabel.bottomAnchor.constraint(equalTo: ageView.subtitleView.bottomAnchor).isActive = true
         ageLabel.rightAnchor.constraint(equalTo: view.rightAnchor,constant: -15).isActive = true
-        ageLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
         ageLabel.widthAnchor.constraint(equalToConstant: 75).isActive = true
 
         ageLabel.layer.masksToBounds = true
-        ageLabel.layer.cornerRadius = 25
 
         ageSlider.translatesAutoresizingMaskIntoConstraints = false
-        ageSlider.topAnchor.constraint(equalTo: ageLabel.bottomAnchor,constant: 10).isActive = true
-        ageSlider.leftAnchor.constraint(equalTo: view.leftAnchor,constant: 15).isActive = true
+        ageSlider.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 10).isActive = true
         ageSlider.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -15).isActive = true
-        ageSlider.bottomAnchor.constraint(equalTo: ageSlider.bottomAnchor).isActive = true
-
+        ageSlider.leftAnchor.constraint(equalTo: ageView.subtitleView.leftAnchor).isActive = true
 
         genderView.translatesAutoresizingMaskIntoConstraints = false
         genderView.topAnchor.constraint(equalTo: ageView.bottomAnchor).isActive = true
@@ -228,17 +260,19 @@ class FilterSettingsViewController: UIViewController {
         genderView.leftAnchor.constraint(equalTo: distanceView.leftAnchor).isActive = true
 
         buttonHolder.translatesAutoresizingMaskIntoConstraints = false
-        buttonHolder.topAnchor.constraint(equalTo: genderView.bottomAnchor).isActive = true
+        buttonHolder.topAnchor.constraint(equalTo: genderView.subtitleView.bottomAnchor).isActive = true
         buttonHolder.bottomAnchor.constraint(equalTo: genderView.bottomAnchor).isActive = true
         buttonHolder.leftAnchor.constraint(equalTo: genderView.leftAnchor,constant: 25).isActive = true
         buttonHolder.rightAnchor.constraint(equalTo: genderView.rightAnchor,constant: -25).isActive = true
-
+        
+//        menButton.frame = CGRect(x: 0, y: 0, width: 80, height: 40)
         menButton.translatesAutoresizingMaskIntoConstraints = false
         menButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        
+//        menButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+
         womenButton.translatesAutoresizingMaskIntoConstraints = false
         womenButton.widthAnchor.constraint(equalTo: menButton.widthAnchor).isActive = true
-        
+
         everyoneButton.translatesAutoresizingMaskIntoConstraints = false
         everyoneButton.widthAnchor.constraint(equalTo: menButton.widthAnchor).isActive = true
     }

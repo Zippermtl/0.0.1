@@ -8,7 +8,9 @@
 import Foundation
 import MapKit
 
-
+protocol EventAnnotationDelegate : AnyObject {
+    func selectEvent(for annotationView : EventAnnotationView)
+}
 
 class EventAnnotation: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
@@ -25,10 +27,10 @@ class EventAnnotation: NSObject, MKAnnotation {
 class EventAnnotationView: MKAnnotationView {
     var view_length: CGFloat = 40
     var dot_length: CGFloat = 12
-    
+    weak var delegate: EventAnnotationDelegate?
     var isDot = false
     
-    private var eventImage: UIImageView
+    private var eventImage: UIButton
     private var dotView: UIView
     private var ringColor: UIColor = .black
     
@@ -38,11 +40,11 @@ class EventAnnotationView: MKAnnotationView {
             print("event type = ", eventAnnotation.event.getType())
         }
         self.ringColor = .white
-        self.eventImage = UIImageView()
+        self.eventImage = UIButton()
         self.dotView = UIView()
 
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-       
+        eventImage.addTarget(self, action: #selector(didTapEventImage), for: .touchUpInside)
         configureSubviews()
         addSubviews()
         configureSubviewLayout()
@@ -52,10 +54,11 @@ class EventAnnotationView: MKAnnotationView {
         self.ringColor = c
         self.view_length = v
         self.dot_length = d
-        self.eventImage = UIImageView()
+        self.eventImage = UIButton()
         self.dotView = UIView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        
+        eventImage.addTarget(self, action: #selector(didTapEventImage), for: .touchUpInside)
+
         configureSubviews()
         addSubviews()
         configureSubviewLayout()
@@ -96,7 +99,6 @@ class EventAnnotationView: MKAnnotationView {
     }
     
     private func configureSubviewLayout(){
-        print("configuring")
         eventImage.frame = bounds
 
         dotView.translatesAutoresizingMaskIntoConstraints = false
@@ -114,10 +116,11 @@ class EventAnnotationView: MKAnnotationView {
         }
         
         if let url = event.imageUrl {
-            eventImage.sd_setImage(with: url, completed: nil)
+            
+            eventImage.sd_setImage(with: url, for: .normal, completed: nil)
         } else {
             let imageName = event.getType() == .Promoter ? "defaultPromoterEventProfilePic" : "defaultEventProfilePic"
-            eventImage.image = UIImage(named: imageName)
+            eventImage.setImage(UIImage(named: imageName), for: .normal)
         }
         dotView.backgroundColor = ringColor
         dotView.isHidden = true
@@ -126,7 +129,7 @@ class EventAnnotationView: MKAnnotationView {
     }
     
     public func updateImage(_ url: URL) {
-        eventImage.sd_setImage(with: url, completed: nil)
+        eventImage.sd_setImage(with: url, for: .normal, completed: nil)
     }
     
     public func updateSize(scale: CGFloat){
@@ -141,7 +144,7 @@ class EventAnnotationView: MKAnnotationView {
         dotView.isHidden = false
         isDot = true
         transform = CGAffineTransform(scaleX: 1, y: 1)
-        centerOffset = CGPoint(x: -view_length/2, y: -view_length/2)
+//        centerOffset = CGPoint(x: -view_length/2, y: -view_length/2)
         layer.shadowColor = UIColor.clear.cgColor
     }
     
@@ -153,6 +156,9 @@ class EventAnnotationView: MKAnnotationView {
 
     }
     
+    @objc private func didTapEventImage() {
+        delegate?.selectEvent(for: self)
+    }
     
     
 }

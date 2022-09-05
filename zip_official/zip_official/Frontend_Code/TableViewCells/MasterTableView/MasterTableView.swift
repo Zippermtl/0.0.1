@@ -338,6 +338,8 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         }
     }
     
+    
+    
     public func reload(multiSectionData: [MultiSectionData]) {
         self.multiSectionData = multiSectionData
         tableData = multiSectionData[0]

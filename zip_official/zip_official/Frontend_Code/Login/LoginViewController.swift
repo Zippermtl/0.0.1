@@ -391,6 +391,10 @@ class LoginViewController: UIViewController {
     
     @objc private func textDidChange() {
         configureNumber(phoneText: getNumText())
+
+        if getNumText().count == 10 {
+            phoneField.resignFirstResponder()
+        }
     }
     
     private func getNumText() -> String {
@@ -577,8 +581,7 @@ extension LoginViewController: UITextFieldDelegate {
         didTapLoginButton()
         return true
     }
-    
-    
+
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
 
@@ -592,7 +595,7 @@ extension LoginViewController: UITextFieldDelegate {
         }
 
         var max = 10
-        if countryCode == "+33" { max = 9}
+        if countryCode == "+33" { max = 9 }
         let nums = getNumText()
 
         if nums.count + string.count > max { return false }

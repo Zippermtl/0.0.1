@@ -292,7 +292,7 @@ extension ProfilePicSetupViewController: UIImagePickerControllerDelegate, UINavi
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true, completion: nil)
         
-        guard let selectedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage else {
+        guard let selectedImage = info[.editedImage] as? UIImage else {
             return
         }
         

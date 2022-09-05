@@ -49,7 +49,8 @@ class FPCViewController: UIViewController {
     
     private let icons: [IconButton]
 
-    
+    private let zipsHeader : UIView
+    private let eventsHeader : UIView
     private var dismissTap: UITapGestureRecognizer?
     private var dismissTapCV: UITapGestureRecognizer?
     
@@ -89,7 +90,8 @@ class FPCViewController: UIViewController {
         layout.minimumInteritemSpacing = 5
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
-        
+        self.zipsHeader = UIView()
+        self.eventsHeader = UIView()
         super.init(nibName: nil, bundle: nil)
         
         dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
@@ -181,11 +183,16 @@ class FPCViewController: UIViewController {
     }
     
     @objc private func didTapZipRequests(){
-        delegate?.openVC(InvitedTableViewController(cellItems: User.getMyRequests()))
+        let vc = InvitedTableViewController(cellItems: User.getMyRequests())
+        vc.title = "Zip Requests"
+        delegate?.openVC(vc)
     }
     
     @objc private func didTapEventInvites(){
-        delegate?.openVC(InvitedTableViewController(cellItems: events))
+        print("we can tap")
+        let vc = InvitedTableViewController(cellItems: events)
+        vc.title = "Event Invites"
+        delegate?.openVC(vc)
     }
     
     @objc func createEvent() {
@@ -211,9 +218,12 @@ class FPCViewController: UIViewController {
         eventsButton.addTarget(self, action: #selector(didTapEventInvites), for: .touchUpInside)
         
         zipRequestsTableView.FPCDelegate = self
-        eventsTableView.FPCDelegate = self
         zipRequestsTableView.noItemsLabel.text = "You have no Zip Requests"
+        zipRequestsTableView.tableView.isScrollEnabled = false
+        
+        eventsTableView.FPCDelegate = self
         eventsTableView.noItemsLabel.text = "You have no event invites"
+        eventsTableView.tableView.isScrollEnabled = false
 
       
         zipRequestsLabel.text = "Zip Requests (\(User.getMyRequests().count))"
@@ -287,29 +297,39 @@ class FPCViewController: UIViewController {
     }
     
     private func configureTableHeaders() {
-        let zipsHeader = UIView()
+        zipsHeader.isUserInteractionEnabled = true
         zipsHeader.addSubview(zipRequestsLabel)
         zipsHeader.addSubview(zipRequestsButton)
         
         zipRequestsLabel.translatesAutoresizingMaskIntoConstraints = false
         zipRequestsLabel.leftAnchor.constraint(equalTo: zipsHeader.leftAnchor, constant: 12).isActive = true
         zipRequestsLabel.topAnchor.constraint(equalTo: zipsHeader.topAnchor).isActive = true
+//        zipRequestsButton.bottomAnchor.constraint(equalTo: zipsHeader.bottomAnchor).isActive = true
         
         zipRequestsButton.translatesAutoresizingMaskIntoConstraints = false
         zipRequestsButton.rightAnchor.constraint(equalTo: zipsHeader.rightAnchor, constant: -12).isActive = true
         zipRequestsButton.centerYAnchor.constraint(equalTo: zipRequestsLabel.centerYAnchor).isActive = true
         
-        let eventsHeader = UIView()
+        eventsHeader.isUserInteractionEnabled = true
         eventsHeader.addSubview(eventsLabel)
         eventsHeader.addSubview(eventsButton)
         
         eventsLabel.translatesAutoresizingMaskIntoConstraints = false
         eventsLabel.leftAnchor.constraint(equalTo: eventsHeader.leftAnchor, constant: 12).isActive = true
         eventsLabel.topAnchor.constraint(equalTo: eventsHeader.topAnchor).isActive = true
+//        eventsLabel.bottomAnchor.constraint(equalTo: eventsHeader.bottomAnchor).isActive = true
         
         eventsButton.translatesAutoresizingMaskIntoConstraints = false
         eventsButton.rightAnchor.constraint(equalTo: eventsHeader.rightAnchor, constant: -12).isActive = true
         eventsButton.centerYAnchor.constraint(equalTo: eventsLabel.centerYAnchor).isActive = true
+        
+        zipsHeader.translatesAutoresizingMaskIntoConstraints = false
+        zipsHeader.bottomAnchor.constraint(equalTo: zipRequestsLabel.bottomAnchor).isActive = true
+        zipsHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+
+        eventsHeader.translatesAutoresizingMaskIntoConstraints = false
+        eventsHeader.bottomAnchor.constraint(equalTo: eventsLabel.bottomAnchor).isActive = true
+        eventsHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
 
         zipRequestsTableView.tableHeader = zipsHeader
         eventsTableView.tableHeader = eventsHeader
@@ -360,7 +380,7 @@ class FPCViewController: UIViewController {
         zipRequestContainer.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 5).isActive = true
         zipRequestContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         zipRequestContainer.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        zipRequestContainer.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        zipRequestContainer.heightAnchor.constraint(equalToConstant: 120).isActive = true
 
         
         eventsContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -376,7 +396,11 @@ class FPCViewController: UIViewController {
         super.viewDidLayoutSubviews()
 
         scrollView.updateContentView()
-        
+        zipsHeader.setNeedsLayout()
+        zipsHeader.layoutIfNeeded()
+        eventsHeader.setNeedsLayout()
+        eventsHeader.layoutIfNeeded()
+
     }
     
     
@@ -491,21 +515,27 @@ extension FPCViewController: UITextFieldDelegate {
 
 extension FPCViewController: FPCTableDelegate {
     func updateLabel(cellItems: [CellItem]) {
-        if let users = cellItems as? [User] {
-            print("updaing users")
-            zipRequestsLabel.text = "Zip Requests (\(users.count))"
-
-        } else if let events = cellItems as? [Event] {
-            eventsLabel.text = "Event Invites (\(events.count))"
-            print("updating events")
-            self.events = events
-        }
+        eventsLabel.text = "Event Invites (\(events.count))"
+        zipRequestsLabel.text = "Zip Requests (\(User.getMyRequests().count))"
+        
         print("updating either")
     }
 }
 
 extension FPCViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        print("CHECKING TOUCH")
+//        print(touch.view == zipRequestsTableView.tableHeader)
+//        print(touch.view == eventsTableView.tableHeader)
+//        print(touch.view is UIControl)
+//        print(touch.view is UITableViewHeaderFooterView)
+
+        print(isEditing)
+        if !isEditing {
+            return false
+            
+        }
+        
         return !(touch.view is UIControl) && !(touch.view is IconButton)
     }
 }

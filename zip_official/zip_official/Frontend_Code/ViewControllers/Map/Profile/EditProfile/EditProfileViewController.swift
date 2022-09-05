@@ -315,8 +315,10 @@ extension EditProfileViewController :  UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: EditInterestsTableViewCell.identifier, for: indexPath) as! EditInterestsTableViewCell
             cell.configure(label: "Interests", content: user.interests)
             cell.cellDelegate = self
+            cell.deleteInterestsDelegate = self
             cell.presentInterestDelegate = self
             cell.updateInterestsDelegate = self
+            
             return cell
         default: return UITableViewCell()
         }
@@ -386,4 +388,16 @@ extension EditProfileViewController: PresentEditInterestsProtocol {
         interestSelection.delegate = self
         navigationController?.pushViewController(interestSelection, animated: true)
     }    
+}
+
+extension EditProfileViewController : DeleteInterestsProtocol {
+    func deleteInterest(idx: Int) {
+        user.interests.remove(at: idx)
+    }
+    
+    func openInterestSelect() {
+        
+    }
+    
+    
 }

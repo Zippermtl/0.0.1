@@ -36,11 +36,37 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
         saveButton.rightAnchor.constraint(equalTo: participantsLabel.rightAnchor).isActive = true
     }
     
+    override func configure(_ event: Event) {
+        super.configure(event)
+        let savedEvents = User.getUDEvents(toKey: .savedEvents)
+        if savedEvents.contains(event) {
+            saveButton.isSelected = true
+        }
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     @objc private func didTapSaveButton(){
-        saveButton.isSelected = !saveButton.isSelected
+        if saveButton.isSelected { // case where it was already saved
+            DatabaseManager.shared.markSaved(event: event, completion: { [weak self] error in
+                guard error == nil,
+                      let saveButton = self?.saveButton else {
+                    return
+                }
+                saveButton.isSelected = !saveButton.isSelected
+            })
+        } else {
+            DatabaseManager.shared.markUnsaved(event: event, completion: {[weak self] error in
+                guard error == nil,
+                      let saveButton = self?.saveButton else {
+                    return
+                }
+                saveButton.isSelected = !saveButton.isSelected
+            })
+
+        }
+        
     }
 }

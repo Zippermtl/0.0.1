@@ -31,6 +31,7 @@ class AbstractUserTableViewCell: UITableViewCell {
         pictureView.backgroundColor = .zipLightGray
         addSubviews()
         configureSubviewLayout()
+        pictureView.contentMode = .scaleAspectFit
     }
     
     required init?(coder: NSCoder) {
@@ -54,7 +55,10 @@ class AbstractUserTableViewCell: UITableViewCell {
     }
     
     public func configureImage(_ user: User) {
-        pictureView.sd_setImage(with: user.profilePicUrl)
+        guard let pfp = user.profilePicUrl else {
+            return
+        }
+        pictureView.sd_setImage(with: pfp)
     }
     
     //MARK: -Add Subviews

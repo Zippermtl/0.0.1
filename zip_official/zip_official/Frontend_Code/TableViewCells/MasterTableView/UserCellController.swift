@@ -76,21 +76,41 @@ class UserCellController: TableCellController {
     }
     
     func fetch(completion: @escaping (Error) -> Void) {
-        user.load(status: .UserProfileUpdates, dataCompletion: { result in
+        DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { [weak self] result in
+            guard let user = self?.user,
+                  let cell = user.tableViewCell else { return }
+            cell.configure(user)
+        }, pictureCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
             switch result {
-            case .success(let user):
-                guard let cell = user.tableViewCell else { return }
-                cell.configure(user)
+            case .success(let urls):
+                guard let strongSelf = self,
+                      let cell = strongSelf.user.tableViewCell else {
+                    return
+                }
+                cell.configureImage(strongSelf.user)
             case .failure(let error):
-                completion(error)
+                print("Failure to load user photos in profile, Error: \(error)")
             }
-        }, completionUpdates: { [weak self] result in
-            guard let strongSelf = self,
-                  let cell = strongSelf.user.tableViewCell else {
-                return
-            }
-            cell.configureImage(strongSelf.user)
+
+        
         })
+        
+//        user.load(status: .UserProfileUpdates, dataCompletion: { result in
+//            switch result {
+//            case .success(let user):
+//                guard let cell = user.tableViewCell else { return }
+//                cell.configure(user)
+//            case .failure(let error):
+//                completion(error)
+//            }
+//        }, completionUpdates: { [weak self] result in
+//            guard let strongSelf = self,
+//                  let cell = strongSelf.user.tableViewCell else {
+//                return
+//            }
+//            cell.configureImage(strongSelf.user)
+//        })
     }
     
     func filterResult(searchText: String) -> Bool {

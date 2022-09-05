@@ -169,16 +169,13 @@ class AbstractProfileViewController: UIViewController {
             switch result {
             case .success(let urls):
                 let profileURL: URL?
-                
                 if strongSelf.user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
                     let profileString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String ?? ""
                     profileURL = URL(string: profileString)
                 } else {
                     profileURL = strongSelf.user.profilePicUrl
                 }
-                
-
-                
+            
                 strongSelf.configurePhotoCountText()
                 print("URL = \(profileURL)")
                 strongSelf.spinner.dismiss()
@@ -270,7 +267,6 @@ class AbstractProfileViewController: UIViewController {
 
     
     private func configureTableHeaderLayout() {
-        
         tableHeader.addSubview(profilePictureView)
         profilePictureView.translatesAutoresizingMaskIntoConstraints = false
         profilePictureView.topAnchor.constraint(equalTo: tableHeader.topAnchor, constant: 10).isActive = true
@@ -313,22 +309,19 @@ class AbstractProfileViewController: UIViewController {
         B2Button.translatesAutoresizingMaskIntoConstraints = false
         B2Button.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
         B2Button.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 40).isActive = true
-        B2Button.widthAnchor.constraint(equalToConstant: 60).isActive = true
         B2Button.setIconDimension(width: 60)
 
         tableHeader.addSubview(B1Button)
         B1Button.translatesAutoresizingMaskIntoConstraints = false
-        B1Button.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 35).isActive = true
+        B1Button.leftAnchor.constraint(equalTo: tableHeader.leftAnchor, constant: 55).isActive = true
         B1Button.topAnchor.constraint(equalTo: B2Button.topAnchor).isActive = true
-        B1Button.widthAnchor.constraint(equalTo: B2Button.widthAnchor).isActive = true
         B1Button.setIconDimension(width: 60)
 
 
         tableHeader.addSubview(B3Button)
         B3Button.translatesAutoresizingMaskIntoConstraints = false
-        B3Button.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -35).isActive = true
+        B3Button.rightAnchor.constraint(equalTo: tableHeader.rightAnchor, constant: -55).isActive = true
         B3Button.topAnchor.constraint(equalTo: B2Button.topAnchor).isActive = true
-        B3Button.widthAnchor.constraint(equalTo: B3Button.heightAnchor).isActive = true
         B3Button.setIconDimension(width: 60)
 
         centerActionButton.layer.cornerRadius = 8
@@ -343,9 +336,10 @@ class AbstractProfileViewController: UIViewController {
         B3Button.addTarget(self, action: #selector(didTapB3Button), for: .touchUpInside)
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
-        tableHeader.topAnchor.constraint(equalTo: profilePictureView.topAnchor).isActive = true
+//        tableHeader.topAnchor.constraint(equalTo: profilePictureView.topAnchor).isActive = true
         tableHeader.bottomAnchor.constraint(equalTo: B2Button.bottomAnchor,constant: 10).isActive = true
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        
         
         tableView.tableHeaderView = tableHeader
         

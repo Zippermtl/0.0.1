@@ -67,7 +67,6 @@ class CustomizeEventViewController: UIViewController {
     var originalY : CGFloat?
     @objc private func keyboardWillShow(sender: NSNotification) {
         originalY = view.frame.origin.y
-        print("ORIGINAL = ")
         guard let userInfo = sender.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
               let currentTextField = UIResponder.currentFirst() as? UITextField else {
@@ -86,7 +85,9 @@ class CustomizeEventViewController: UIViewController {
     }
     
     @objc private func keyboardWillHide(notification : NSNotification) {
-        view.frame.origin.y = originalY!
+        if let originalY = originalY {
+            view.frame.origin.y = originalY
+        }
     }
    
     
@@ -148,9 +149,13 @@ class CustomizeEventViewController: UIViewController {
                 return
             }
             if isOpen {
+                let map = event.mapView
                 event = OpenEvent(event: event)
+                event.mapView = map
             } else {
+                let map = event.mapView
                 event = ClosedEvent(event: event)
+                event.mapView = map
             }
         } else if let promoterView = customizeView as? PromoterTicketsView {
             if promoterView.sellTicketsSwitch.isOn {

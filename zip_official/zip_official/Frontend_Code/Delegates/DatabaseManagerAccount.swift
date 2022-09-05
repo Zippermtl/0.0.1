@@ -496,35 +496,21 @@ extension DatabaseManager {
                 var key = user.userId
                 var index = user.profilePicIndex
                 DatabaseManager.shared.getImages(Id: key, indices: index, event: false, completion: { res in
-                    switch res{
+                    switch res {
                     case .success(let url):
+                        print("767 \(url)")
                         if (url.count > 0){
                             user.profilePicUrl = url[0]
-                        }                     case .failure(let error):
+                        }
+                    case .failure(let error):
                         print("error loading event in tableview: \(error)")
                     }
+                    
                     guard let cell = user.tableViewCell else {
                         return
                     }
                     cell.configureImage(user)
-//                StorageManager.shared.getProfilePicture(path: "images/\(user.userId)", completion: { result in
-//                    switch result {
-//                    case .success(let url):
-//                        if user.pictureURLs.count > 0 {
-//                            user.pictureURLs[0] = url
-//                        } else {
-//                            user.pictureURLs.append(url)
-//                        }
-//
-//                        guard let cell = user.tableViewCell else {
-//                            return
-//                        }
-//                        cell.configureImage(user)
-//                    case .failure(let error):
-//                        print("error loading event in tableview: \(error)")
-//                    }
-                    
-                    
+
                 })
             case .failure(let error):
                 print("error loading user in tableview: \(error)")

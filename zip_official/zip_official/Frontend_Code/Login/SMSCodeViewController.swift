@@ -57,6 +57,8 @@ class SMSCodeViewController: UIViewController {
 //        code5 = SMSCodeField()
 //        code6 = SMSCodeField()
         super.init(nibName: nil, bundle: nil)
+        smsField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+        
         smsField.textContentType = .oneTimeCode
         let dismissKeyboardTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(dismissKeyboardTap)
@@ -89,7 +91,6 @@ class SMSCodeViewController: UIViewController {
 //        SMSCodeStack.distribution = .equalSpacing
 //        SMSCodeStack.spacing = 15
 //        SMSCodeStack.alignment = .center
-        
         
         confirmButton.setTitle("Confirm", for: .normal)
         confirmButton.backgroundColor = .zipBlue
@@ -149,6 +150,15 @@ class SMSCodeViewController: UIViewController {
         })
     }
     
+    @objc private func textDidChange() {
+        guard let text = smsField.text else {
+            return
+        }
+        if text.count == 6 {
+            smsField.resignFirstResponder()
+        }
+    }
+    
     @objc private func didTapLoginButton(){
 //        code1.resignFirstResponder()
 //        code2.resignFirstResponder()
@@ -174,7 +184,6 @@ class SMSCodeViewController: UIViewController {
     
     
     private func addSubviews(){
-  
 //        view.addSubview(SMSCodeStack)
 //        SMSCodeStack.addArrangedSubview(code1)
 //        SMSCodeStack.addArrangedSubview(code2)
@@ -459,17 +468,12 @@ extension SMSCodeViewController: UITextFieldDelegate {
         }
     }
     
+    
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-//        let maxLength = 1
-//        let currentString = (textField.text ?? "") as NSString
-//        let newString = currentString.replacingCharacters(in: range, with: string)
-//        if newString.count <= maxLength {
-//            let allowedCharacters = CharacterSet.decimalDigits
-//            let characterSet = CharacterSet(charactersIn: string)
-//            return allowedCharacters.isSuperset(of: characterSet)
-//        }
-//
-//        return false
+        guard let text = textField.text else { return true }
+        if text.count + string.count > 6 { return false }
+        
         return true
     }
 

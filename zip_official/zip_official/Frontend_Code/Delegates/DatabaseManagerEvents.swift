@@ -88,7 +88,7 @@ extension DatabaseManager {
             for document in querySnapshot!.documents {
                 print("there are docs")
                 do {
-                    let currentEvent = try document.data(as: PromoterEventCoder.self).createEvent()
+                    let currentEvent = try document.data(as: EventCoder.self).createEvent()
                     currentEvent.eventId = document.documentID
                     
                     events.append(currentEvent)
@@ -456,7 +456,7 @@ extension DatabaseManager {
         savedEvents.append(event)
         User.setUDEvents(events: savedEvents, toKey: .savedEvents)
         
-        firestore.collection("UserStoredEvents").document(selfId).setData(["saved": savedEvents]) { error in
+        firestore.collection("UserStoredEvents").document(selfId).setData(["saved": savedEvents.map({ $0.eventId })]) { error in
             guard error == nil else {
                 completion(error!)
                 return
@@ -470,7 +470,7 @@ extension DatabaseManager {
         var savedEvents = User.getUDEvents(toKey: .savedEvents)
         savedEvents.removeAll(where: { $0 == event})
         User.setUDEvents(events: savedEvents, toKey: .savedEvents)
-        firestore.collection("UserStoredEvents").document(selfId).setData(["saved":savedEvents]) { error in
+        firestore.collection("UserStoredEvents").document(selfId).setData(["saved":savedEvents.map({ $0.eventId })]) { error in
             guard error == nil else {
                 completion(error!)
                 return

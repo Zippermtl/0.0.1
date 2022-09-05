@@ -72,6 +72,10 @@ class AbstractEventTableViewCell: UITableViewCell {
         self.event = event
         configureLabels()
         configureImage(event)
+        eventImage.layer.borderWidth = 2
+        print("title = \(event.title)")
+        print("type = \(event.getType())")
+        eventImage.layer.borderColor = event.getType().color.cgColor
     }
     
     public func configureImage(_ event: Event) {
@@ -165,9 +169,6 @@ class AbstractEventTableViewCell: UITableViewCell {
         eventImage.widthAnchor.constraint(equalTo: eventImage.heightAnchor).isActive = true
         
         eventImage.layer.masksToBounds = true
-        
-        eventImage.layer.borderWidth = 2
-        eventImage.layer.borderColor = UIColor.zipYellow.cgColor
     }
     
     override func layoutSubviews() {
