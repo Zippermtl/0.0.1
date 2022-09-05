@@ -132,7 +132,7 @@ class FPCEventTableViewCell: AbstractEventTableViewCell, InvitedCell {
     private func configureSubviewLayout() {
         contentView.addSubview(rsvpButton)
         rsvpButton.translatesAutoresizingMaskIntoConstraints = false
-        rsvpButton.widthAnchor.constraint(equalToConstant: 70).isActive = true
+        rsvpButton.widthAnchor.constraint(equalToConstant: 85).isActive = true
         rsvpButton.heightAnchor.constraint(equalToConstant: 25).isActive = true
         rsvpButton.rightAnchor.constraint(equalTo: participantsLabel.rightAnchor).isActive = true
         rsvpButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -15).isActive = true

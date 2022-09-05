@@ -34,11 +34,12 @@ class CustomizeEventViewController: UIViewController {
         }
         
         super.init(nibName: nil, bundle: nil)
+        setupKeyboardHiding()
         descriptionField.text = "Tell us about your event here!"
         descriptionLabel.text = "Event Description:"
         addHostsLabel.text = "Add Co-hosts: "
         addHostButton.addTarget(self, action: #selector(didTapAddHosts), for: .touchUpInside)
-        addHostButton.setImage(UIImage(systemName: "plus"), for: .normal)
+        addHostButton.setImage(UIImage(systemName: "plus")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         
         eventPicture.contentMode = .scaleAspectFit
         eventPicture.tintColor = .white
@@ -53,10 +54,40 @@ class CustomizeEventViewController: UIViewController {
         descriptionField.layer.cornerRadius = 15
     }
     
+    private func setupKeyboardHiding() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    var originalY : CGFloat?
+    @objc private func keyboardWillShow(sender: NSNotification) {
+        originalY = view.frame.origin.y
+        print("ORIGINAL = ")
+        guard let userInfo = sender.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+              let currentTextField = UIResponder.currentFirst() as? UITextField else {
+            return
+        }
+        
+        let keyboardTopY = keyboardFrame.cgRectValue.origin.y
+        let convertedTextFieldFrame = view.convert(currentTextField.frame, from: currentTextField.superview)
+        let textFieldBottomY = convertedTextFieldFrame.origin.y + convertedTextFieldFrame.size.height
+        
+        if textFieldBottomY > keyboardTopY {
+            let textBoxY = convertedTextFieldFrame.origin.y
+            let newFrameY = (textBoxY - keyboardTopY / 2) * -1
+            view.frame.origin.y = newFrameY
+        }
+    }
+    
+    @objc private func keyboardWillHide(notification : NSNotification) {
+        view.frame.origin.y = originalY!
+    }
    
     
     private let continueButton: UIButton = {
@@ -269,7 +300,7 @@ class CustomizeEventViewController: UIViewController {
         descriptionField.heightAnchor.constraint(lessThanOrEqualToConstant: 225).isActive = true
 
         addHostsLabel.translatesAutoresizingMaskIntoConstraints = false
-        addHostsLabel.topAnchor.constraint(equalTo: descriptionField.bottomAnchor,constant: 10).isActive = true
+        addHostsLabel.topAnchor.constraint(equalTo: descriptionField.bottomAnchor,constant: 15).isActive = true
         addHostsLabel.leftAnchor.constraint(equalTo: descriptionLabel.leftAnchor).isActive = true
         
         hostCountLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -284,7 +315,7 @@ class CustomizeEventViewController: UIViewController {
         customizeView.translatesAutoresizingMaskIntoConstraints = false
         customizeView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         customizeView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        customizeView.topAnchor.constraint(equalTo: descriptionField.bottomAnchor,constant: 10).isActive = true
+        customizeView.topAnchor.constraint(equalTo: addHostsLabel.bottomAnchor,constant: 10).isActive = true
         customizeView.bottomAnchor.constraint(equalTo: continueButton.topAnchor,constant: -10).isActive = true
         
         continueButton.translatesAutoresizingMaskIntoConstraints = false
@@ -738,6 +769,24 @@ extension CustomizeEventViewController {
         }
 
 
+    }
+    
+}
+
+
+extension UIResponder {
+    private struct Static {
+        static weak var responder: UIResponder?
+    }
+    
+    static func currentFirst() -> UIResponder? {
+        Static.responder = nil
+        UIApplication.shared.sendAction(#selector(UIResponder._trap), to: nil, from: nil, for: nil)
+        return Static.responder
+    }
+    
+    @objc private func _trap() {
+        Static.responder = self
     }
     
 }

@@ -190,6 +190,12 @@ class EventViewController: UIViewController {
             } else {
                 self.markNotGoing()
             }
+            
+            guard let cell = event.tableViewCell else {
+                return
+            }
+            
+            cell.configure(event)
         }
     }
     

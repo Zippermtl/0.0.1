@@ -212,7 +212,9 @@ class FPCViewController: UIViewController {
         
         zipRequestsTableView.FPCDelegate = self
         eventsTableView.FPCDelegate = self
-        
+        zipRequestsTableView.noItemsLabel.text = "You have no Zip Requests"
+        eventsTableView.noItemsLabel.text = "You have no event invites"
+
       
         zipRequestsLabel.text = "Zip Requests (\(User.getMyRequests().count))"
     
@@ -247,9 +249,9 @@ class FPCViewController: UIViewController {
         scrollView.addSubview(zipFinderButton)
         scrollView.addSubview(searchBar)
         scrollView.addSubview(collectionView)
-        scrollView.addSubview(zipRequestsLabel)
-        scrollView.addSubview(zipRequestsButton)
         
+        
+       
         
         scrollView.addSubview(zipRequestContainer)
         zipRequestContainer.addSubview(zipRequestsTableView.view)
@@ -282,6 +284,35 @@ class FPCViewController: UIViewController {
         searchBg.addSubview(searchTable)
 
         scrollView.bringSubviewToFront(searchBg)
+    }
+    
+    private func configureTableHeaders() {
+        let zipsHeader = UIView()
+        zipsHeader.addSubview(zipRequestsLabel)
+        zipsHeader.addSubview(zipRequestsButton)
+        
+        zipRequestsLabel.translatesAutoresizingMaskIntoConstraints = false
+        zipRequestsLabel.leftAnchor.constraint(equalTo: zipsHeader.leftAnchor, constant: 12).isActive = true
+        zipRequestsLabel.topAnchor.constraint(equalTo: zipsHeader.topAnchor).isActive = true
+        
+        zipRequestsButton.translatesAutoresizingMaskIntoConstraints = false
+        zipRequestsButton.rightAnchor.constraint(equalTo: zipsHeader.rightAnchor, constant: -12).isActive = true
+        zipRequestsButton.centerYAnchor.constraint(equalTo: zipRequestsLabel.centerYAnchor).isActive = true
+        
+        let eventsHeader = UIView()
+        eventsHeader.addSubview(eventsLabel)
+        eventsHeader.addSubview(eventsButton)
+        
+        eventsLabel.translatesAutoresizingMaskIntoConstraints = false
+        eventsLabel.leftAnchor.constraint(equalTo: eventsHeader.leftAnchor, constant: 12).isActive = true
+        eventsLabel.topAnchor.constraint(equalTo: eventsHeader.topAnchor).isActive = true
+        
+        eventsButton.translatesAutoresizingMaskIntoConstraints = false
+        eventsButton.rightAnchor.constraint(equalTo: eventsHeader.rightAnchor, constant: -12).isActive = true
+        eventsButton.centerYAnchor.constraint(equalTo: eventsLabel.centerYAnchor).isActive = true
+
+        zipRequestsTableView.tableHeader = zipsHeader
+        eventsTableView.tableHeader = eventsHeader
     }
     
     private func configureSubviewLayout(){
@@ -324,33 +355,21 @@ class FPCViewController: UIViewController {
         let height = (view.frame.width - 35)/4*0.8 + 40
         collectionView.heightAnchor.constraint(equalToConstant: height).isActive = true
         
-        zipRequestsLabel.translatesAutoresizingMaskIntoConstraints = false
-        zipRequestsLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 12).isActive = true
-        zipRequestsLabel.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 20).isActive = true
-        
-        zipRequestsButton.translatesAutoresizingMaskIntoConstraints = false
-        zipRequestsButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -12).isActive = true
-        zipRequestsButton.centerYAnchor.constraint(equalTo: zipRequestsLabel.centerYAnchor).isActive = true
-        
+       
         zipRequestContainer.translatesAutoresizingMaskIntoConstraints = false
-        zipRequestContainer.topAnchor.constraint(equalTo: zipRequestsLabel.bottomAnchor, constant: 5).isActive = true
+        zipRequestContainer.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 5).isActive = true
         zipRequestContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         zipRequestContainer.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         zipRequestContainer.heightAnchor.constraint(equalToConstant: 80).isActive = true
-        
-        eventsLabel.translatesAutoresizingMaskIntoConstraints = false
-        eventsLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 12).isActive = true
-        eventsLabel.topAnchor.constraint(equalTo: zipRequestContainer.bottomAnchor, constant: 20).isActive = true
-        
-        eventsButton.translatesAutoresizingMaskIntoConstraints = false
-        eventsButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -12).isActive = true
-        eventsButton.centerYAnchor.constraint(equalTo: eventsLabel.centerYAnchor).isActive = true
+
         
         eventsContainer.translatesAutoresizingMaskIntoConstraints = false
-        eventsContainer.topAnchor.constraint(equalTo: eventsLabel.bottomAnchor, constant: 5).isActive = true
+        eventsContainer.topAnchor.constraint(equalTo: zipRequestContainer.bottomAnchor, constant: 5).isActive = true
         eventsContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         eventsContainer.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         eventsContainer.heightAnchor.constraint(equalToConstant: 360).isActive = true
+        
+        configureTableHeaders()
     }
     
     override func viewDidLayoutSubviews() {
@@ -473,12 +492,15 @@ extension FPCViewController: UITextFieldDelegate {
 extension FPCViewController: FPCTableDelegate {
     func updateLabel(cellItems: [CellItem]) {
         if let users = cellItems as? [User] {
+            print("updaing users")
             zipRequestsLabel.text = "Zip Requests (\(users.count))"
 
         } else if let events = cellItems as? [Event] {
             eventsLabel.text = "Event Invites (\(events.count))"
+            print("updating events")
             self.events = events
         }
+        print("updating either")
     }
 }
 

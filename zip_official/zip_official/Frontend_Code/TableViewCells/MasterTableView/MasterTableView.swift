@@ -29,7 +29,11 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     var superSection = 0
     
     let tableView : UITableView
-    var tableHeader: UIView?
+    var tableHeader: UIView? {
+        didSet {
+            tableView.tableHeaderView = tableHeader
+        }
+    }
     
     var trailingCellSwipeConfiguration : [MasterTableSwipeConfiguration]?
     var leadingCellSwipeConfiguration :  [MasterTableSwipeConfiguration]?
@@ -56,7 +60,7 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         
      
         super.init(nibName: nil, bundle: nil)
-        searchBar.backgroundColor = .red
+        searchBar.backgroundColor = .zipGray
         initConfig()
     }
     
@@ -126,22 +130,27 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.separatorColor = .zipSeparator
         tableView.dataSource = self
         tableView.delegate = self
-        
+        tableView.contentInsetAdjustmentBehavior = .never
+        tableView.contentInset = .zero
+        tableView.automaticallyAdjustsScrollIndicatorInsets = false
         
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         
         
-        if multiSectionData.count >= 1 {
+        if multiSectionData.count > 1 {
             tableHeader = UIView()
             headerButtonStack = UIStackView()
             configureTableHeader()
+            print("CONFIGURING")
         } else {
-            tableView.tableHeaderView = nil
+            print("NOT CONFIGURING")
+            tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 110, height: 1))
+//            tableView.tableHeaderView?.backgroundColor = .red
         }
     }
     
@@ -233,11 +242,13 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         UserCellController.registerCell(on: tableView, cellTypes: cellTypes)
         EventCellController.registerCell(on: tableView, cellTypes: cellTypes)
         tableView.register(MasterTableSectionHeader.self, forHeaderFooterViewReuseIdentifier: MasterTableSectionHeader.identifier)
-        
+        tableView.register(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: "empty")
+
         tableData = multiSectionData[superSection]
 //        tableView.reloadData()o
         
         guard let tableHeader = tableHeader else {
+            tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 1))
             return
         }
 
@@ -348,7 +359,9 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         let cellType = section.cellType
         var controller = section.items[indexPath.row]
         controller.delegate = self
-        return controller.cellFromTableView(tableView, forIndexPath: indexPath, cellType: cellType)
+        let cell = controller.cellFromTableView(tableView, forIndexPath: indexPath, cellType: cellType)
+//        cell.contentView.backgroundColor = .red
+        return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -425,7 +438,15 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         // no section tabs or sections
         if multiSectionData.count == 1 && multiSectionData[superSection].sections.count == 1 {
-            return nil
+            if #available(iOS 15.0, *) {
+                tableView.sectionHeaderTopPadding = 0
+            }
+            guard let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "empty") else {
+                return UIView()
+            }
+            view.frame =  CGRect(x: 0, y: 0, width: 50, height: 1)
+//            view.backgroundColor = .zipYellow
+            return view
         }
         
         let sectionData = multiSectionData[superSection].sections[section]

@@ -18,12 +18,20 @@ protocol InvitedTableViewDelegate : AnyObject {
 }
 
 class InvitedTableViewController : MasterTableViewController {
+    var noItemsLabel : UILabel
     weak var FPCDelegate: FPCTableDelegate?
-    
     var items : [CellItem]
     init(cellItems : [CellItem]) {
         self.items = cellItems
+        self.noItemsLabel = UILabel.zipSubtitle2()
+        noItemsLabel.textColor = .zipVeryLightGray
         super.init(cellData: cellItems, cellType: CellType(userType: .zipRequest, eventType: .rsvp))
+        view.addSubview(noItemsLabel)
+        noItemsLabel.translatesAutoresizingMaskIntoConstraints = false
+        noItemsLabel.topAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        noItemsLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        view.bringSubviewToFront(noItemsLabel)
+
     }
     
     required init?(coder: NSCoder) {
@@ -38,17 +46,30 @@ class InvitedTableViewController : MasterTableViewController {
         cell.delegate = self
         return cell
     }
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        let num = super.numberOfSections(in: tableView)
+        if num == 0 { noItemsLabel.isHidden = false }
+        else { noItemsLabel.isHidden = true }
+        return num
+    }
+    
+    override func reload(cellItems: [CellItem], reloadTable: Bool = true) {
+        super.reload(cellItems: cellItems, reloadTable: reloadTable)
+        self.items = cellItems
+    }
 }
 
 extension InvitedTableViewController : InvitedTableViewDelegate {
     func removeCell(indexPath: IndexPath) {
-
-//        tableView.beginUpdates()
-//        tableView.deleteRows(at: [indexPath], with: .top)
-//        tableView.endUpdates()
-//        if let delegate = FPCDelegate {
-//            print("Updating")
-//            delegate.updateLabel(cellItems: items)
-//        }
+        items.remove(at: indexPath.row)
+        tableView.beginUpdates()
+        tableView.deleteRows(at: [indexPath], with: .right)
+        reload(cellItems: items,reloadTable: false)
+        tableView.reloadData()
+        tableView.endUpdates()
+        if let delegate = FPCDelegate {
+            delegate.updateLabel(cellItems: items)
+        }
     }
 }

@@ -302,7 +302,10 @@ class MapViewController: UIViewController {
                     return
                 }
                 DispatchQueue.main.async {
-                    let filteredEvents = events.filter({ !User.getUDEvents(toKey: .goingEvents).contains($0)})
+                    let filteredEvents = events.filter({ event in
+                        let selfUser = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)
+                        return !(event.usersNotGoing.contains(selfUser) || event.usersGoing.contains(selfUser))
+                    })
                     fpcVC.events = filteredEvents
                     fpcVC.updateLabel(cellItems: filteredEvents)
                     fpcVC.eventsTableView.reload(cellItems: filteredEvents)
