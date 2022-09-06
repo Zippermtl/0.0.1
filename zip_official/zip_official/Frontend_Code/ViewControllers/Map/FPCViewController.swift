@@ -333,7 +333,7 @@ class FPCViewController: UIViewController {
         eventsHeader.isUserInteractionEnabled = true
         eventsHeader.addSubview(eventsLabel)
         eventsHeader.addSubview(eventsButton)
-        
+
         eventsLabel.translatesAutoresizingMaskIntoConstraints = false
         eventsLabel.leftAnchor.constraint(equalTo: eventsHeader.leftAnchor, constant: 12).isActive = true
         eventsLabel.topAnchor.constraint(equalTo: eventsHeader.topAnchor).isActive = true
@@ -395,13 +395,12 @@ class FPCViewController: UIViewController {
         let height = (view.frame.width - 35)/4*0.8 + 40
         collectionView.heightAnchor.constraint(equalToConstant: height).isActive = true
         
-       
         zipRequestContainer.translatesAutoresizingMaskIntoConstraints = false
         zipRequestContainer.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 5).isActive = true
         zipRequestContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         zipRequestContainer.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         zipRequestContainer.heightAnchor.constraint(equalToConstant: 120).isActive = true
-
+        
         eventsContainer.translatesAutoresizingMaskIntoConstraints = false
         eventsContainer.topAnchor.constraint(equalTo: zipRequestContainer.bottomAnchor, constant: 5).isActive = true
         eventsContainer.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true

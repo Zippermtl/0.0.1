@@ -27,7 +27,7 @@ extension DatabaseManager {
         
         
         let messageSentDate = firstMessage.sentDate
-        let dateString = ChatViewController.dateFormatter.string(from: messageSentDate)
+        let dateInt = messageSentDate.timeIntervalSince1970
         var message = ""
         switch firstMessage.kind {
         case .text(let messageText):
@@ -59,7 +59,7 @@ extension DatabaseManager {
             "other_user_id" : otherUserId,
             "name" : name,
             "latest_message" : [
-                "date" : dateString,
+                "date" : dateInt,
                 "message" : message,
                 "isRead": false
             ]
@@ -70,7 +70,7 @@ extension DatabaseManager {
             "other_user_id" : currentId,
             "name" : currentName,
             "latest_message" : [
-                "date" : dateString,
+                "date" : dateInt,
                 "message" : message,
                 "isRead": false
             ]
@@ -124,8 +124,8 @@ extension DatabaseManager {
     }
     
     private func finishCreatingConversation(name: String, conversationID: String, firstMessage: Message, completion: @escaping (Bool) -> Void) {
-        let messageData = firstMessage.sentDate
-        let dateString = ChatViewController.dateFormatter.string(from: messageData)
+        let messageDate = firstMessage.sentDate
+        let dateInt = messageDate.timeIntervalSince1970
         var messageContent = ""
         switch firstMessage.kind {
             
@@ -162,7 +162,7 @@ extension DatabaseManager {
             "id": firstMessage.messageId,
             "type": firstMessage.kind.messageKindString,
             "content": messageContent,
-            "date": dateString,
+            "date": dateInt,
             "sender_email": myId,
             "isRead": false,
             "name" : name
@@ -187,7 +187,7 @@ extension DatabaseManager {
     
     /// Fetches and retunrs all conversations for the user with passed in email
     public func getAllConversations(for id: String, completion: @escaping (Result<[Conversation], Error>) -> Void){
-        print("get all conversations for id \(id)")
+        
         database.child("userConvos/\(id)").observe(.value, with: { snapshot in
             print("value = \(snapshot.value!)")
 //            print("id = \(snapshot.value!["id"])")
@@ -200,17 +200,17 @@ extension DatabaseManager {
                 return
             }
 
-            let conversations: [Conversation] = value.compactMap({ dictionary in
+            var conversations: [Conversation] = value.compactMap({ dictionary in
                 guard let conversationID = dictionary["id"] as? String,
                       let name = dictionary["name"] as? String,
                       let otherUserId = dictionary["other_user_id"] as? String,
                       let latestMessage = dictionary["latest_message"] as? [String: Any],
-                      let date = latestMessage["date"] as? String,
+                      let dateInt = latestMessage["date"] as? Double,
                       let message = latestMessage["message"] as? String,
                       let isRead = latestMessage["isRead"] as? Bool else {
                           return nil
                       }
-                
+                let date = Date(timeIntervalSince1970: dateInt)
                 let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
                 let otherUser = User(userId: otherUserId)
                 let components = name.split(separator: " ")
@@ -221,10 +221,8 @@ extension DatabaseManager {
                                     latestMessage: latestMessageObject)
                 
             })
-
+            conversations.sort(by: { $0.latestMessage.date >= $1.latestMessage.date })
             completion(.success(conversations))
-            
-            
         })
     }
     
@@ -243,11 +241,10 @@ extension DatabaseManager {
                       let content = dictionary["content"] as? String,
                       let senderEmail = dictionary["sender_email"] as? String,
                       let type = dictionary["type"] as? String,
-                      let dateString = dictionary["date"] as? String,
-                      let date = ChatViewController.dateFormatter.date(from: dateString) else {
+                      let dateInt = dictionary["date"] as? Double else {
                           return nil
                       }
-                
+                let date = Date(timeIntervalSince1970: dateInt)
                 var kind: MessageKind?
                 if type == "photo" {
                     guard let imageUrl = URL(string: content),
@@ -314,8 +311,8 @@ extension DatabaseManager {
                 return
             }
             
-            let messageData = newMessage.sentDate
-            let dateString = ChatViewController.dateFormatter.string(from: messageData)
+            let messageDate = newMessage.sentDate
+            let dateInt = messageDate.timeIntervalSince1970
             var messageContent = ""
             
             switch newMessage.kind {
@@ -351,7 +348,7 @@ extension DatabaseManager {
                 "id": newMessage.messageId,
                 "type": newMessage.kind.messageKindString,
                 "content": messageContent,
-                "date": dateString,
+                "date": dateInt,
                 "sender_email": currentUserId,
                 "isRead": false,
                 "name" : name
@@ -369,7 +366,7 @@ extension DatabaseManager {
                 strongSelf.database.child("userConvos/\(currentUserId)").observeSingleEvent(of: .value, with: { snapshot in
                     var databaseEntryConversations = [[String: Any]]()
                     let updatedValue: [String: Any] = [
-                        "date": dateString,
+                        "date": dateInt,
                         "message": messageContent,
                         "isRead": true
                     ]
@@ -435,7 +432,7 @@ extension DatabaseManager {
                     var databaseEntryConversations = [[String: Any]]()
 
                     let updatedValue: [String: Any] = [
-                        "date": dateString,
+                        "date": dateInt,
                         "message": messageContent,
                         "isRead": false
                     ]

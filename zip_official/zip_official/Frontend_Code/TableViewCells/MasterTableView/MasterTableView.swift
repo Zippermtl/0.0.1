@@ -373,6 +373,8 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         return tableData.sections[section].items.count
     }
     
+    
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let section = tableData.sections[indexPath.section]
         let cellType = section.cellType
@@ -389,6 +391,10 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return tableData.sections[indexPath.section].items[indexPath.row].heightForRowAt(tableView, heightForRowAt: indexPath)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 30
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -461,10 +467,10 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
                 tableView.sectionHeaderTopPadding = 0
             }
             guard let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "empty") else {
-                return UIView()
+                let v =  UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 1))
+                return v
             }
-            view.frame =  CGRect(x: 0, y: 0, width: 50, height: 1)
-//            view.backgroundColor = .zipYellow
+            view.contentView.frame =  CGRect(x: 0, y: 0, width: 50, height: 1)
             return view
         }
         

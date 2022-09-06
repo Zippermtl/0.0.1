@@ -13,7 +13,7 @@ class NewChatViewController: UIViewController {
 
     private let spinner = JGProgressHUD(style: .light)
     
-    private var allUsers = [User]()
+    private var allUsers : [User]
     
     private var results =  [User]()
     
@@ -88,6 +88,18 @@ class NewChatViewController: UIViewController {
 }
 
 extension NewChatViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        guard !searchText.replacingOccurrences(of: " ", with: "").isEmpty else {
+            results = allUsers
+            return
+        }
+                
+        results.removeAll()
+        spinner.show(in: view)
+        
+        filterUsers(with: searchText)
+    }
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {
             return
@@ -96,7 +108,6 @@ extension NewChatViewController: UISearchBarDelegate {
         searchBar.resignFirstResponder()
         
         results.removeAll()
-        spinner.show(in: view)
         
         filterUsers(with: text)
     }

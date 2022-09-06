@@ -145,6 +145,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                                                     left: 0,
                                                     bottom: 0,
                                                     right: 0)
+        collectionView.showsVerticalScrollIndicator = false
         collectionView.frame = view.bounds
         collectionView.scrollsToTop = false
         collectionView.backgroundColor = .clear

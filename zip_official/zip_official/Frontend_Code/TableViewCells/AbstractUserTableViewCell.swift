@@ -27,6 +27,7 @@ class AbstractUserTableViewCell: UITableViewCell {
         self.extraInfoLabel = UILabel.zipTextNotiBold()
         self.outlineView = UIView()
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        backgroundColor = .zipGray
         contentView.backgroundColor = .zipGray
         pictureView.backgroundColor = .zipLightGray
         addSubviews()
@@ -61,6 +62,8 @@ class AbstractUserTableViewCell: UITableViewCell {
         pictureView.sd_setImage(with: pfp)
     }
     
+ 
+    
     //MARK: -Add Subviews
     private func addSubviews(){
         contentView.addSubview(outlineView)
@@ -81,7 +84,7 @@ class AbstractUserTableViewCell: UITableViewCell {
         outlineView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
         outlineView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10).isActive = true
         outlineView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10).isActive = true
-
+        
         pictureView.translatesAutoresizingMaskIntoConstraints = false
         pictureView.leftAnchor.constraint(equalTo: outlineView.leftAnchor, constant: 10).isActive = true
         pictureView.topAnchor.constraint(equalTo: outlineView.topAnchor, constant: 5).isActive = true

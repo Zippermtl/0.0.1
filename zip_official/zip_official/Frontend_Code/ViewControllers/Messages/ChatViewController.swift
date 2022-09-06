@@ -130,10 +130,10 @@ class ChatViewController: MessagesViewController {
         messageInputBar.backgroundView.backgroundColor = .zipGray
         
         sendButton.setup()
-        sendButton.backgroundColor = .white
+        sendButton.backgroundColor = .zipBlue
         sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
-        let config = UIImage.SymbolConfiguration(pointSize: 40)
-        let img = UIImage(systemName: "arrow.up.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
+        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .medium)
+        let img = UIImage(systemName: "arrow.up", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
         sendButton.setImage(img, for: .normal)
         sendButton.layer.masksToBounds = true
         sendButton.layer.cornerRadius = 35/2

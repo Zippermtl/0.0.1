@@ -33,7 +33,15 @@ class InvitedTableViewController : MasterTableViewController {
         initConfig()
     }
     
-//    init(sectionItems)
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        } else {
+            // Fallback on earlier versions
+        }
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -45,6 +53,8 @@ class InvitedTableViewController : MasterTableViewController {
         noItemsLabel.topAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         noItemsLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         view.bringSubviewToFront(noItemsLabel)
+        
+       
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -54,6 +64,7 @@ class InvitedTableViewController : MasterTableViewController {
         if removeCells {
             cell.delegate = self
         }
+        
         return cell
     }
     
@@ -67,6 +78,17 @@ class InvitedTableViewController : MasterTableViewController {
     override func reload(cellItems: [CellItem], reloadTable: Bool = true) {
         super.reload(cellItems: cellItems, reloadTable: reloadTable)
         self.items = cellItems
+    }
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+       
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "empty")
+        view?.contentView.frame = CGRect(x: 0, y: 0, width: 50, height: 1)
+        return view
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 1
     }
 }
 
