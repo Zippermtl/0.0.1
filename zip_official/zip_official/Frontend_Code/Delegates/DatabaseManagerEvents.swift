@@ -25,99 +25,236 @@ public enum EventType: Int {
 }
 
 extension DatabaseManager {
-    
-    public func getAllPublic(eventCompletion: @escaping (Event) -> Void,
-                             allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+    public func getAllUserDefaultsEvents(completion : @escaping (Error?) -> Void) {
+        guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
         
-        firestore.collection("EventProfiles").whereField("type", arrayContains: EventType.Open.rawValue).getDocuments() { [weak self] (querySnapshot, err) in
-            guard let strongSelf = self,
-                  err == nil else {
-                print("Error getting documents: \(err!)")
-                allCompletion(.failure(err!))
-                return
-            }
-            
-            var events: [Event] = []
-            for document in querySnapshot!.documents {
-                print("there are docs")
-                do {
-                    let currentEvent = try document.data(as: OpenEventCoder.self).createEvent()
-                    currentEvent.eventId = document.documentID
-                    events.append(currentEvent)
-                    print("CURRENT EVENT \n\(currentEvent)")
-                    eventCompletion(currentEvent)
-                    DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
-                        switch res {
-                        case .success(let urls):
-                            if urls.count != 0 {
-                                currentEvent.imageUrl = urls[0]
-                            }
-                        case .failure(let error):
-                            print("error loading image in map load Error: \(error)")
-                        }
-                    })
-                }
-                catch {
-                    // event wasn't same as promoter event type shouldn't be happening
-                    print("unexpected error \(error)")
-                    continue
-                }
-            }
-            
-            allCompletion(.success(events))
-        }
+        var h = [Event]()
+        var g = [Event]()
+        var n = [Event]()
+        var i = [Event]()
+        var ph = [Event]()
+        var pg = [Event]()
+        getAllPrivateEventsForMap(eventCompletion: { event in
+            if event.ownerId == selfId { h.append(event) }
+            else if event.usersGoing.contains(User(userId: selfId)) { g.append(event) }
+            else if event.usersNotGoing.contains(User(userId: selfId)) { n.append(event) }
+            else { i.append(event) }
+        }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }            
+            strongSelf.getPastGoingEvents(eventCompletion: { event in
+                print("event title = \(event.title)")
+                if event.ownerId == selfId { ph.append(event) }
+                else { pg.append(event)}
+                
+            }, allCompletion: { result in
+                strongSelf.getAllStoredEventsForUser(userId: selfId, completion: {
+                    User.setUDEvents(events: h, toKey: .hostedEvents)
+                    User.setUDEvents(events: g, toKey: .goingEvents)
+                    User.setUDEvents(events: n, toKey: .notGoingEvents)
+                    User.setUDEvents(events: i, toKey: .invitedEvents)
+                    User.setUDEvents(events: ph, toKey: .pastHostEvents)
+                    User.setUDEvents(events: pg, toKey: .pastGoingEvents)
+                })
+            })
+        })
+    }
+    
+    
+    public func getAllPublic(eventCompletion: @escaping (Event) -> Void,
+                             allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        queryFieldValue(collection: "EventProfiles", field: "type", isEqualTo: EventType.Open.rawValue, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
     }
     
     public func getAllPromoter(eventCompletion: @escaping (Event) -> Void,
                                allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        queryFieldValue(collection: "EventProfiles", field: "type", isEqualTo: EventType.Promoter.rawValue, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    }
+    
+    
+    public func getAllGoingEvents(eventCompletion: @escaping (Event) -> Void,
+                                  allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
         
-        firestore.collection("EventProfiles").whereField("type", isEqualTo: EventType.Promoter.rawValue).getDocuments() { (querySnapshot, err) in
-            guard err == nil else {
-                print("Error getting documents: \(err!)")
-                allCompletion(.failure(err!))
-                return
-            }
-            
-            var events: [Event] = []
-            for document in querySnapshot!.documents {
-                print("there are docs")
+        queryFieldArray(collection: "EventProfiles", field: "usersGoing", arrayContains: userId, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    }
+    
+    
+    public func getAllHostedEvents(userId: String,
+                                   eventCompletion: @escaping (Event) -> Void,
+                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        queryFieldArray(collection: "EventProfiles", field: "hosts", arrayContains: userId, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    }
+    
+    public func getPastGoingEvents(eventCompletion: @escaping (Event) -> Void,
+                                  allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        
+        queryFieldArray(collection: "ExpiredEvents", field: "usersGoing", arrayContains: userId, fast: false, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    }
+    
+    public func getPastHostedEvents(userId: String,
+                                   eventCompletion: @escaping (Event) -> Void,
+                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        queryFieldArray(collection: "ExpiredEvents", field: "hosts", arrayContains: userId, fast: false, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    }
+    
+    public func getAllPrivateEventsForMap(eventCompletion: @escaping (Event) -> Void,
+                                          allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        
+        queryFieldArray(collection: "EventProfiles", field: "usersInvite", arrayContains: userId, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    }
+    
+    public func queryFieldValue(collection : String,
+                                field : String,
+                                isEqualTo : Any,
+                                fast: Bool = true,
+                                eventCompletion: @escaping (Event) -> Void,
+                                allCompletion: @escaping (Result<[Event], Error>) -> Void){
+       firestore.collection(collection).whereField(field, isEqualTo: isEqualTo).getDocuments() { [weak self] (querySnapshot, err) in
+           guard let strongSelf = self else { return }
+           strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: fast, eventCompletion: { event in
+               eventCompletion(event)
+           }, allCompletion: { result in
+               allCompletion(result)
+           })
+       }
+   }
+    
+    public func queryFieldArray(collection : String,
+                                field : String,
+                                arrayContains : Any,
+                                fast: Bool = true,
+                                eventCompletion: @escaping (Event) -> Void,
+                                allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        firestore.collection(collection).whereField(field, arrayContains: arrayContains).getDocuments() { [weak self] (querySnapshot, err) in
+            guard let strongSelf = self else { return }
+            strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: fast, eventCompletion: { event in
+                eventCompletion(event)
+            }, allCompletion: { result in
+                allCompletion(result)
+            })
+        }
+    }
+    
+    /// handels a list of events query snapshot
+    /// params
+    /// - `querySnapshot` : Snapshot result
+    /// - `err` :  optional error returned with query snapshot
+    /// - `fast` :  return event with image
+    /// - `eventCompletion` : completion firing when one event is loaded . When it returns depends on fast
+    /// - `eventCompletion` : completion firing when all events are loaded
+    private func handleEventQueryResults(querySnapshot: QuerySnapshot?,
+                                         err: Error?,
+                                         fast: Bool = true,
+                                         eventCompletion: @escaping (Event) -> Void,
+                                         allCompletion: @escaping (Result<[Event], Error>) -> Void) {
+        guard err == nil else {
+            print("Error getting documents: \(err!)")
+            allCompletion(.failure(err!))
+            return
+        }
+        
+        var events: [Event] = []
+        var count = 0
+        for document in querySnapshot!.documents {
+            let data = document.data()
+            if let eventType = data["type"] as? Int,
+               let coderType = EventType(rawValue: eventType) {
+
                 do {
-                    let currentEvent = try document.data(as: EventCoder.self).createEvent()
+                    let currentEvent = try coderType.getData(document: document)
                     currentEvent.eventId = document.documentID
-                    
                     events.append(currentEvent)
-                    print("CURRENT EVENT \n\(currentEvent)")
-                    eventCompletion(currentEvent)
+                    if fast { // complete event without image
+                        eventCompletion(currentEvent)
+                    }
+
                     DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
+                        count += 1
+
                         switch res {
                         case .success(let urls):
-                            print("2")
                             if urls.count != 0 {
                                 currentEvent.imageUrl = urls[0]
                             }
+                            if !fast {
+                                eventCompletion(currentEvent)
+                                if  count == querySnapshot!.documents.count {
+                                    allCompletion(.success(events))
+                                }
+                            }
+
                         case .failure(let error):
-                            print("3")
+                            if  count == querySnapshot!.documents.count {
+                                allCompletion(.success(events))
+                            }
                             print("error loading image in map load Error: \(error)")
                         }
                     })
                 }
                 catch {
-                    // event wasn't same as promoter event type shouldn't be happening
-                    print("unexpected error \(error)")
+                    count += 1
+
+                    guard let eventIdx = events.firstIndex(where: { $0.eventId == document.documentID}) else {
+                        continue
+                    }
+                    events.remove(at: eventIdx)
+                    if  count == querySnapshot!.documents.count {
+                        allCompletion(.success(events))
+                    }
                     continue
                 }
             }
-            
+        }
+        
+        if fast {
             allCompletion(.success(events))
         }
     }
-    
+
     public func getAllStoredEventsForUser(userId: String, completion: @escaping () -> Void){
         firestore.collection("UserStoredEvents").document(userId).getDocument() { (document, err) in
             guard err == nil,
@@ -134,7 +271,8 @@ extension DatabaseManager {
             var successEvents = [Event]()
             var count = 0
             for event in events {
-                DatabaseManager.shared.loadEvent(event: event, completion: { result in
+                DatabaseManager.shared.loadEvent(event: event, completion: { [weak self] result in
+                    guard let strongSelf = self else { return }
                     switch result {
                     case .success(let event):
                         count += 1
@@ -142,175 +280,29 @@ extension DatabaseManager {
                         if count == events.count {
                             User.setUDEvents(events: successEvents, toKey: .savedEvents)
                         }
-                    case .failure(let error):
-                        count += 1
-                        if count == events.count {
-                            User.setUDEvents(events: successEvents, toKey: .savedEvents)
-                        }
-                        print("error loading saved event Error: \(error)")
+                    case .failure(_):
+                        strongSelf.loadExpiredEvent(event: event, completion: { result in
+                            switch result {
+                            case .success(let event) :
+                                count += 1
+                                successEvents.append(event)
+                                if count == events.count {
+                                    User.setUDEvents(events: successEvents, toKey: .savedEvents)
+                                }
+                            case .failure(let error) :
+                                count += 1
+                                if count == events.count {
+                                    User.setUDEvents(events: successEvents, toKey: .savedEvents)
+                                }
+                                print("error loading saved event Error: \(error)")
+                            }
+                        })
+                        
                     }
                 })
             }
             
             completion()
-        }
-    }
-    
-    public func getAllGoingEvents(eventCompletion: @escaping (Event) -> Void,
-                                  allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
-        
-        firestore.collection("EventProfiles").whereField("usersGoing", arrayContains: userId).getDocuments() { (querySnapshot, err) in
-            print("getting hosts")
-            guard err == nil else {
-                print("Error getting documents: \(err!)")
-                allCompletion(.failure(err!))
-                return
-            }
-            
-            var events: [Event] = []
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-            
-            for document in querySnapshot!.documents {
-                let data = document.data()
-                if let type = data["type"] as? Int,
-                   let coderType = EventType(rawValue: type) {
-                    do {
-                        let currentEvent = try coderType.getData(document: document)
-                        currentEvent.eventId = document.documentID
-                        
-                        events.append(currentEvent)
-                        eventCompletion(currentEvent)
-                        
-                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
-                            switch res {
-                            case .success(let urls):
-                                print("2")
-                                if urls.count != 0 {
-                                    currentEvent.imageUrl = urls[0]
-                                }
-                            case .failure(let error):
-                                print("3")
-                                print("error loading image in map load Error: \(error)")
-                            }
-                        })
-                    }
-                    catch {
-                        // event wasn't same as promoter event type shouldn't be happening
-                        print("unexpected error \(error)")
-                        continue
-                    }
-                }
-                
-                
-            }
-            
-            User.setUDEvents(events: events, toKey: .goingEvents)
-            allCompletion(.success(events))
-        }
-    }
-    
-    public func getAllHostedEvents(userId: String,
-                                   eventCompletion: @escaping (Event) -> Void,
-                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
-  
-        
-        firestore.collection("EventProfiles").whereField("hosts", arrayContains: userId).getDocuments() { (querySnapshot, err) in
-            var events: [Event] = []
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-            
-            for document in querySnapshot!.documents {
-                let data = document.data()
-                if let type = data["type"] as? Int,
-                   let coderType = EventType(rawValue: type) {
-                    do {
-                        let currentEvent = try coderType.getData(document: document)
-                        currentEvent.eventId = document.documentID
-                        
-                        events.append(currentEvent)
-                        eventCompletion(currentEvent)
-                        
-                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
-                            switch res {
-                            case .success(let urls):
-                                print("2")
-                                if urls.count != 0 {
-                                    currentEvent.imageUrl = urls[0]
-                                }
-                            case .failure(let error):
-                                print("3")
-                                print("error loading image in map load Error: \(error)")
-                            }
-                        })
-                    }
-                    catch {
-                        // event wasn't same as promoter event type shouldn't be happening
-                        print("unexpected error \(error)")
-                        continue
-                    }
-                }
-                
-                
-            }
-            
-            if userId == AppDelegate.userDefaults.value(forKey: "userId") as! String {
-                User.setUDEvents(events: events, toKey: .hostedEvents)
-            }
-            allCompletion(.success(events))
-        }
-    }
-    
-    public func getAllPrivateEventsForMap(eventCompletion: @escaping (Event) -> Void,
-                                          allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
-        
-        firestore.collection("EventProfiles").whereField("usersInvite", arrayContains: userId).getDocuments() { [weak self] (querySnapshot, err) in
-            guard let strongSelf = self,
-                  err == nil else {
-                print("Error getting documents: \(err!)")
-                allCompletion(.failure(err!))
-                return
-            }
-            
-            var events: [Event] = []
-            for document in querySnapshot!.documents {
-                let data = document.data()
-                if let eventType = data["type"] as? Int,
-                   let coderType = EventType(rawValue: eventType) {
-                    do {
-                        
-                        let currentEvent = try coderType.getData(document: document)
-                        currentEvent.eventId = document.documentID
-                        
-                        events.append(currentEvent)
-                        eventCompletion(currentEvent)
-                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
-                            switch res {
-                            case .success(let urls):
-                                if urls.count != 0 {
-                                    currentEvent.imageUrl = urls[0]
-                                }
-                            case .failure(let error):
-                                print("error loading image in map load Error: \(error)")
-                            }
-                        })
-                    }
-                    catch {
-                        // event wasn't same as promoter event type shouldn't be happening
-                        continue
-                    }
-                }
-            }
-            
-            let invitedEvents: [String] = events.map({ $0.eventId })
-            AppDelegate.userDefaults.set(invitedEvents, forKey: "myInvitedEvents")
-            allCompletion(.success(events))
         }
     }
     
@@ -335,8 +327,38 @@ extension DatabaseManager {
                 })
                 
             case .failure(let error):
+                completion(.failure(error))
                 print("failed to load event Error: \(error)")
             }
+            
+        }
+    }
+    
+    public func loadExpiredEvent(event: Event, completion: @escaping (Result<Event, Error>) -> Void){
+        firestore.collection("EventProfiles").document(event.eventId).getDocument(as: event.getEncoderType().self)  { result in
+            switch result {
+            case .success(let eventCoder):
+                print("Success loading")
+                eventCoder.updateEvent(event: event)
+                completion(.success(event))
+                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
+                    switch res{
+                    case .success(let url):
+                        print("making event")
+                        if url.count != 0 {
+                            event.imageUrl = url[0]
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                        print("Failed to make event because image failed to load Error: \(error)")
+                    }
+                })
+                
+            case .failure(let error):
+                completion(.failure(error))
+                print("failed to load event Error: \(error)")
+            }
+            
         }
     }
     
@@ -451,11 +473,7 @@ extension DatabaseManager {
     
     public func markSaved(event: Event, completion: @escaping (Error?) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        
-        var savedEvents = User.getUDEvents(toKey: .savedEvents)
-        savedEvents.append(event)
-        User.setUDEvents(events: savedEvents, toKey: .savedEvents)
-        
+        let savedEvents = User.appendUDEvent(event: event, toKey: .savedEvents)
         firestore.collection("UserStoredEvents").document(selfId).setData(["saved": savedEvents.map({ $0.eventId })]) { error in
             guard error == nil else {
                 completion(error!)
@@ -467,9 +485,7 @@ extension DatabaseManager {
     
     public func markUnsaved(event: Event, completion: @escaping (Error?) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        var savedEvents = User.getUDEvents(toKey: .savedEvents)
-        savedEvents.removeAll(where: { $0 == event})
-        User.setUDEvents(events: savedEvents, toKey: .savedEvents)
+        let savedEvents = User.removeUDEvent(event: event, toKey: .savedEvents)
         firestore.collection("UserStoredEvents").document(selfId).setData(["saved":savedEvents.map({ $0.eventId })]) { error in
             guard error == nil else {
                 completion(error!)

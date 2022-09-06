@@ -62,7 +62,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         UITableView.appearance().backgroundColor = .clear
         applyDropDownAppearanceChanges()
         applyNavControllerAppearanceChanges()
-        applyTabBarAppearanceChanges()
         applyGooglePlacesSearchAppearanceChanges()
         setDeviceDefault()
         
@@ -93,7 +92,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         DropDown.appearance().selectedTextColor = .white
         DropDown.appearance().backgroundColor = .zipLightGray
         DropDown.appearance().selectionBackgroundColor = .zipLightGray
-        DropDown.appearance().cornerRadius = 15
+        DropDown.appearance().cornerRadius = 8
         DropDown.appearance().direction = .bottom
     }
   
@@ -130,21 +129,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         UINavigationBar.appearance().backIndicatorTransitionMaskImage = backImage
     }
     
-    func applyTabBarAppearanceChanges(){
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .zipDarkGray
-        UITabBar.appearance().standardAppearance = appearance
-        
-        if #available(iOS 15.0, *) {
-            print("tab bar should be good")
-            UITabBar.appearance().scrollEdgeAppearance = appearance
-        } else {
-            print("WHAT THE FUCK")
-        }
-        UITabBar.appearance().isTranslucent = false
-    }
-
+   
     private func applyGooglePlacesSearchAppearanceChanges() {
 //        GMSAutocompleteViewController.appearance()
     }

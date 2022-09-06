@@ -308,7 +308,7 @@ class MapViewController: UIViewController {
                         return !(event.usersNotGoing.contains(selfUser) || event.usersGoing.contains(selfUser))
                     })
                     fpcVC.events = filteredEvents
-                    fpcVC.updateLabel(cellItems: filteredEvents)
+                    fpcVC.updateEventsLabel(cellItems: filteredEvents)
                     fpcVC.eventsTableView.reload(cellItems: filteredEvents)
                 }
                

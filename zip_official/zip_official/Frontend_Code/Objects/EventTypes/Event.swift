@@ -48,11 +48,49 @@ extension EventType: CustomStringConvertible {
     }
 }
 
+public class LocalEventCoder : EventCoder {
+    var id: String?
+    var imageUrl : String?
 
+    enum CodingKeys: String, CodingKey {
+        case id = "id"
+        case imageUrl = "imageUrl"
+    }
+    
+    override init(event: Event) {
+        self.id = event.eventId
+        self.imageUrl = event.imageUrl?.absoluteString
+        super.init(event: event)
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try? container.decode(String.self, forKey: .id)
+        self.imageUrl = try? container.decode(String.self, forKey: .imageUrl)
+        try super.init(from: decoder)
+    }
+    
+    override public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try? container.encode(id, forKey: .id)
+        try? container.encode(imageUrl, forKey: .imageUrl)
+        try super.encode(to: encoder)
+    }
+    
+    override public func createEvent() -> OpenEvent {
+        let event = OpenEvent()
+        event.eventId = id ?? ""
+        if let url = imageUrl {
+            event.imageUrl = URL(string: url )
+        }
+        updateEvent(event: event)
+        return event
+    }
+
+}
 
 //for future, enumerate event type
 public class EventCoder: Codable {
-    var id: String?
     var title: String
     var coordinates: [String: Double]
     var hosts: [String]
@@ -78,7 +116,6 @@ public class EventCoder: Codable {
 
     
     init(event: Event) {
-        self.id = event.eventId
         self.title = event.title
         self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
         self.hosts = event.hosts.map({($0.userId)})
@@ -98,6 +135,7 @@ public class EventCoder: Codable {
         self.allowUserInvites = event.allowUserInvites
         self.ownerId = event.ownerId
         self.ownerName = event.ownerName
+
         if let pEvent = event as? PromoterEvent {
             self.price = pEvent.price
             self.link = pEvent.buyTicketsLink?.absoluteString
@@ -106,7 +144,6 @@ public class EventCoder: Codable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id = "id"
         case title = "title"
         case coordinates = "coordinates"
         case hosts = "hosts"
@@ -132,8 +169,6 @@ public class EventCoder: Codable {
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try? container.decode(String.self, forKey: .id)
-
         self.title = try container.decode(String.self, forKey: .title)
         self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
         self.hosts = try container.decode([String].self, forKey: .hosts)
@@ -160,7 +195,6 @@ public class EventCoder: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try? container.encode(id, forKey: .id)
         try container.encode(title, forKey: .title)
         try container.encode(coordinates, forKey: .coordinates)
         try container.encode(hosts, forKey: .hosts)
@@ -207,10 +241,6 @@ public class EventCoder: Codable {
     }
     
     public func updateEvent(event: Event) {
-        if let id = id {
-            event.eventId = id
-        }
-        
         event.title = title
         event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
         event.hosts = hosts.map({ User(userId: $0 )})
@@ -249,7 +279,6 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         out += "type: \(self.getType())\n"
         out += "coordinates: \(self.coordinates)\n"
         out += "address: \(self.address)\n"
-
         out += "hosts: \(self.hosts.map({ $0.userId }))\n"
         out += "bio: \(self.bio)\n"
         out += "max guests: \(self.maxGuests)\n"
@@ -258,6 +287,8 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         out += "usersInvite: \(self.usersInvite.map({ $0.userId }))\n"
         out += "usersGoing: \(self.usersGoing.map({ $0.userId }))\n"
         out += "picNum: \(self.picNum)\n"
+        out += "url: \(imageUrl?.absoluteString)\n"
+
         return out
     }
     
@@ -299,6 +330,10 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     func getEncoder() -> EventCoder {
         let encoder = EventCoder(event: self)
         return encoder
+    }
+    
+    func getLocalizedEncoder() -> LocalEventCoder {
+        return LocalEventCoder(event: self)
     }
     
     func getEncoderType() -> EventCoder.Type {
@@ -399,6 +434,40 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         }
         let dateString = ChatViewController.dateFormatter.string(from: Date())
         return "\(userId)_\(title.replacingOccurrences(of: " ", with: "-"))_\(dateString)"
+    }
+    
+    func markGoing(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.markGoing(event: self, completion: { err in
+            completion(err)
+            guard err == nil else {
+                return
+            }
+            let _ = User.removeUDEvent(event: self, toKey: .invitedEvents)
+            User.setUDEvents(events: User.removeUDEvent(event: self, toKey: .notGoingEvents), toKey: .goingEvents)
+        })
+    }
+    
+    func markNotGoing(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.markGoing(event: self, completion: { err in
+            completion(err)
+            guard err == nil else {
+                return
+            }
+            let _ = User.removeUDEvent(event: self, toKey: .invitedEvents)
+            User.setUDEvents(events: User.removeUDEvent(event: self, toKey: .goingEvents), toKey: .notGoingEvents)
+        })
+    }
+    
+    func markSaved(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.markSaved(event: self, completion: { err in
+            completion(err)
+        })
+    }
+    
+    func markUnsaved(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.markUnsaved(event: self, completion: { err in
+            completion(err)
+        })
     }
     
     public func dispatch(user: User) -> Bool {

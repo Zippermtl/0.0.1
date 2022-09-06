@@ -64,6 +64,13 @@ class MyEventViewController: EventViewController {
     }
     
     override func didTapGoingButton() {
+        if event.endTime <= Date() {
+            let alert = UIAlertController(title: "This Event Has Ended", message: "You cannot edit expired events", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+            present(alert, animated: true)
+            return
+        }
+        
         let vc = EditEventProfileViewController(event: event)
         vc.delegate = self
         navigationController?.pushViewController(vc, animated: true)

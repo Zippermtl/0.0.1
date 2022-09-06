@@ -1082,10 +1082,25 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
        
         return requestsArr.map({ $0.receiver })
     }
-
+    
+    static func removeUDEvent(event: Event, toKey key: UserDefaultEventKeys) -> [Event] {
+        var events = self.getUDEvents(toKey: key)
+        if let idx = events.firstIndex(of: event) {
+            events.remove(at: idx)
+            Self.setUDEvents(events: events, toKey: key)
+        }
+        return events
+    }
+    
+    static func appendUDEvent(event: Event, toKey key: UserDefaultEventKeys) -> [Event]{
+        var events = Self.getUDEvents(toKey: key)
+        events.append(event)
+        Self.setUDEvents(events: events, toKey: key)
+        return events
+    }
     
     static func setUDEvents(events: [Event], toKey key : UserDefaultEventKeys) {
-        let encoders : [EventCoder] = events.map({ $0.getEncoder() })
+        let encoders : [EventCoder] = events.map({ $0.getLocalizedEncoder() })
         do {
             let encoder = JSONEncoder()
             let data = try encoder.encode(encoders)
@@ -1099,7 +1114,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         if let data = AppDelegate.userDefaults.data(forKey: key.rawValue) {
             do {
                 let decoder = JSONDecoder()
-                let eventCoders = try decoder.decode([EventCoder].self, from: data)
+                let eventCoders = try decoder.decode([LocalEventCoder].self, from: data)
                 return eventCoders.map({ $0.createEvent() })
             } catch {
                 print("unable to decode \(key.rawValue)")
@@ -1116,4 +1131,8 @@ public enum UserDefaultEventKeys : String {
     case hostedEvents = "hostedEvents"
     case goingEvents = "goingEvents"
     case savedEvents = "savedEvents"
+    case invitedEvents = "invitedEvents"
+    case notGoingEvents = "notGoingEvents"
+    case pastHostEvents = "pastHostEvents"
+    case pastGoingEvents = "pastGoingEvents"
 }

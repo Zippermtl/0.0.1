@@ -17,6 +17,7 @@ class EventViewController: UIViewController {
     var event: Event
     private var timer: Timer!
     private var isGoing: Bool
+    private var isNotGoing : Bool
     private var isSaved: Bool
     private var isReapearing: Bool
     
@@ -69,6 +70,7 @@ class EventViewController: UIViewController {
     init(event: Event) {
         self.event = event
         self.isGoing = false
+        self.isNotGoing = false
         self.isSaved = false
         self.isReapearing = false
         self.refreshControl = UIRefreshControl()
@@ -279,8 +281,9 @@ class EventViewController: UIViewController {
         }
         
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        if !event.usersGoing.contains(User(userId: userId)) {
-            DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
+        let selfUser = User(userId: userId)
+        if !event.usersGoing.contains(selfUser) {
+            event.markGoing(completion: { [weak self] error in
                 guard let strongSelf = self,
                       error == nil else {
                     return
@@ -297,10 +300,8 @@ class EventViewController: UIViewController {
                     strongSelf.goingUI()
                     strongSelf.userCountLabel.text = String(strongSelf.event.usersGoing.count) + " participants"
                 }
-
             })
         }
-        
     }
     
     private func markNotGoing() {
@@ -312,8 +313,10 @@ class EventViewController: UIViewController {
         }
         
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        if !event.usersNotGoing.contains(User(userId: userId)) {
-            DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
+        let selfUser = User(userId: userId)
+
+        if !event.usersNotGoing.contains(selfUser) {
+            event.markNotGoing(completion: { [weak self] error in
                 guard let strongSelf = self,
                       error == nil else {
                     return
@@ -341,12 +344,14 @@ class EventViewController: UIViewController {
     private func goingUI(){
         goingButton.setTitle("Going", for: .normal)
         isGoing = true
+        isNotGoing = false
         goingButton.backgroundColor = .zipGreen
     }
     
     private func notGoingUI() {
         goingButton.setTitle("Not Going", for: .normal)
         isGoing = false
+        isNotGoing = true
         goingButton.backgroundColor = .zipRed
     }
     
@@ -451,8 +456,15 @@ class EventViewController: UIViewController {
     }
     
     @objc func didTapSaveButton(){
+        if event.endTime <= Date() {
+            let alert = UIAlertController(title: "This Event Has Ended", message: "You cannot save expired events", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+            present(alert, animated: true)
+            return
+        }
+        
         if !isSaved {
-            DatabaseManager.shared.markSaved(event: event, completion: { [weak self] error in
+            event.markSaved(completion: { [weak self] error in
                 guard let strongSelf = self,
                       error == nil else {
                     return
@@ -460,9 +472,10 @@ class EventViewController: UIViewController {
                 DispatchQueue.main.async {
                     strongSelf.savedUI()
                 }
+                
             })
         } else {
-            DatabaseManager.shared.markUnsaved(event: event, completion: { [weak self] error in
+            event.markUnsaved(completion: { [weak self] error in
                 guard let strongSelf = self,
                       error == nil else {
                     return
@@ -551,42 +564,45 @@ class EventViewController: UIViewController {
         }
     }
     
-    
-    
     private func fetchEvent(completion: (() -> Void)? = nil) {
-        DatabaseManager.shared.loadEvent(event: event, completion: { [weak self] result in
-            switch result {
-            case .success(let event):
-                guard let strongSelf = self else {
+        if event.endTime <= Date() {
+            configureLoadedEvent() // expired events have already been loaded and cannot change so no need to reload
+        } else {
+            DatabaseManager.shared.loadEvent(event: event, completion: { [weak self] result in
+                switch result {
+                case .success(let event):
+                    guard let strongSelf = self else {
+                        if let complete = completion {
+                            complete()
+                        }
+                        return
+                    }
+                    strongSelf.event = event
+                    DispatchQueue.main.async {
+                        strongSelf.configureLoadedEvent()
+                    }
+                   
                     if let complete = completion {
                         complete()
                     }
-                    return
+                case .failure(let error):                    
+                    if let complete = completion {
+                        complete()
+                    }
                 }
-                
-                DispatchQueue.main.async {
-                    strongSelf.event = event
-                    strongSelf.configureLabels()
-                    strongSelf.eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
-                    strongSelf.updateTime()
-                    strongSelf.configureCells()
-                    strongSelf.tableView.reloadData()
-                
-                    strongSelf.eventTypeLabel.textColor = event.getType().color
-                    strongSelf.eventBorder.layer.borderColor = event.getType().color.cgColor
-                }
-               
-                
-                if let complete = completion {
-                    complete()
-                }
-            case .failure(let error):
-                print("error loading event: \(error)")
-                if let complete = completion {
-                    complete()
-                }
-            }
-        })
+            })
+        }
+    }
+    
+    private func configureLoadedEvent() {
+        configureLabels()
+        eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
+        updateTime()
+        configureCells()
+        tableView.reloadData()
+    
+        eventTypeLabel.textColor = event.getType().color
+        eventBorder.layer.borderColor = event.getType().color.cgColor
     }
     
     private func configureRefresh() {

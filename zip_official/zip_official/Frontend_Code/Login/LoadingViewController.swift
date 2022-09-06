@@ -143,11 +143,12 @@ class LoadingViewController: UIViewController {
             }
         })
         
-        DatabaseManager.shared.getAllHostedEvents(userId: userId, eventCompletion: { _ in }, allCompletion: { result in })
-        
-        DatabaseManager.shared.getAllStoredEventsForUser(userId: userId, completion: {})
-        
-        DatabaseManager.shared.getAllGoingEvents(eventCompletion: { event in }, allCompletion: { events in })
+        DatabaseManager.shared.getAllUserDefaultsEvents(completion: { error in
+            guard error == nil else {
+                print("FUCK USER DEFAULTS FAILED")
+                return
+            }
+        })
     }
     
     private func isLocationEnabled() -> Bool {

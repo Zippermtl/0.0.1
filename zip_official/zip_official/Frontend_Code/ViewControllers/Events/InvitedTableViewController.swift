@@ -19,31 +19,41 @@ protocol InvitedTableViewDelegate : AnyObject {
 
 class InvitedTableViewController : MasterTableViewController {
     var noItemsLabel : UILabel
-    weak var FPCDelegate: FPCTableDelegate?
+    weak var FPCEventDelegate: FPCTableDelegate?
+    weak var FPCZipDelegate: FPCTableDelegate?
+
     var items : [CellItem]
-    init(cellItems : [CellItem]) {
+    var removeCells: Bool
+    init(cellItems : [CellItem], removeCells: Bool = true) {
         self.items = cellItems
         self.noItemsLabel = UILabel.zipSubtitle2()
+        self.removeCells = removeCells
         noItemsLabel.textColor = .zipVeryLightGray
         super.init(cellData: cellItems, cellType: CellType(userType: .zipRequest, eventType: .rsvp))
+        initConfig()
+    }
+    
+//    init(sectionItems)
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func initConfig() {
         view.addSubview(noItemsLabel)
         noItemsLabel.translatesAutoresizingMaskIntoConstraints = false
         noItemsLabel.topAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         noItemsLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         view.bringSubviewToFront(noItemsLabel)
-
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = super.tableView(tableView, cellForRowAt: indexPath) as? InvitedCell else {
             fatalError("Passed InvitedTableView a non invited cell")
         }
-        
-        cell.delegate = self
+        if removeCells {
+            cell.delegate = self
+        }
         return cell
     }
     
@@ -68,8 +78,10 @@ extension InvitedTableViewController : InvitedTableViewDelegate {
         reload(cellItems: items,reloadTable: false)
         tableView.reloadData()
         tableView.endUpdates()
-        if let delegate = FPCDelegate {
-            delegate.updateLabel(cellItems: items)
+        if let delegate = FPCZipDelegate {
+            delegate.updateZipsLabel(cellItems: items)
+        } else if let delegate = FPCEventDelegate {
+            delegate.updateEventsLabel(cellItems: items)
         }
     }
 }

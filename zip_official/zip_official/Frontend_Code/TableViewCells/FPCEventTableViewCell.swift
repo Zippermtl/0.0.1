@@ -45,7 +45,7 @@ class FPCEventTableViewCell: AbstractEventTableViewCell, InvitedCell {
     private func markGoing(){
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         if !event.usersGoing.contains(User(userId: userId)) {
-            DatabaseManager.shared.markGoing(event: event, completion: { [weak self] error in
+            event.markGoing(completion: { [weak self] error in
                 guard let strongSelf = self,
                       error == nil else {
                     return
@@ -71,7 +71,7 @@ class FPCEventTableViewCell: AbstractEventTableViewCell, InvitedCell {
     private func markNotGoing() {
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         if !event.usersNotGoing.contains(User(userId: userId)) {
-            DatabaseManager.shared.markNotGoing(event: event, completion: { [weak self] error in
+            event.markNotGoing(completion: { [weak self] error in
                 guard let strongSelf = self,
                       error == nil else {
                     return

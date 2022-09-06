@@ -83,10 +83,13 @@ class ProfileViewController: AbstractProfileViewController {
         let goingEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .goingEvents))
         let savedEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .savedEvents))
         
+        print("MY PAST EVENTS = ")
+        print(User.getUDEvents(toKey: .pastHostEvents))
+        
         let goingData = [
             CellSectionData(title: "Today", items: goingEvents.0, cellType: CellType(eventType: .save)),
             CellSectionData(title: "Upcoming", items: goingEvents.1, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Previous", items: goingEvents.2, cellType: CellType(eventType: .save))
+            CellSectionData(title: "Previous", items: User.getUDEvents(toKey: .pastGoingEvents), cellType: CellType(eventType: .save))
         ]
 
         let savedData = [
@@ -98,7 +101,7 @@ class ProfileViewController: AbstractProfileViewController {
         let hostingData = [
             CellSectionData(title: "Today", items: hostingEvents.0, cellType: CellType(eventType: .save)),
             CellSectionData(title: "Upcoming", items: hostingEvents.1, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Previous", items: hostingEvents.2, cellType: CellType(eventType: .save))
+            CellSectionData(title: "Previous", items: User.getUDEvents(toKey: .pastHostEvents), cellType: CellType(eventType: .save))
         ]
         
         let tableData : [MultiSectionData] = [
@@ -107,7 +110,7 @@ class ProfileViewController: AbstractProfileViewController {
             MultiSectionData(title: "Hosting", sections: hostingData)
         ]
 
-        let vc = MasterTableViewController(multiSectionData: tableData)
+        let vc = MasterTableViewController(multiSectionData: tableData, fetch: false)
         vc.title = "My Events"
         vc.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(vc, animated: true)

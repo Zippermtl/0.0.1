@@ -38,6 +38,14 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
     
     override func configure(_ event: Event) {
         super.configure(event)
+        let myEvents = User.getUDEvents(toKey: .hostedEvents) + User.getUDEvents(toKey: .pastHostEvents)
+        
+        if myEvents.contains(event) {
+            saveButton.isHidden = true
+        } else {
+            saveButton.isHidden = false
+        }
+        
         let savedEvents = User.getUDEvents(toKey: .savedEvents)
         if savedEvents.contains(event) {
             saveButton.isSelected = true
@@ -48,7 +56,7 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc private func didTapSaveButton(){
+    @objc private func didTapSaveButton() {
         if saveButton.isSelected { // case where it was already saved
             DatabaseManager.shared.markSaved(event: event, completion: { [weak self] error in
                 guard error == nil,
