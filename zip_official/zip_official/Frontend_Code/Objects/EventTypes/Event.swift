@@ -77,13 +77,14 @@ public class LocalEventCoder : EventCoder {
         try super.encode(to: encoder)
     }
     
-    override public func createEvent() -> OpenEvent {
-        let event = OpenEvent()
-        event.eventId = id ?? ""
-        if let url = imageUrl {
-            event.imageUrl = URL(string: url )
+    override public func createEvent() -> Event {
+        let event = super.createEvent()
+        if let id = id {
+            event.eventId = id
         }
-        updateEvent(event: event)
+        if let imageUrl = imageUrl {
+            event.imageUrl = URL(string: imageUrl)
+        }
         return event
     }
 

@@ -567,4 +567,10 @@ extension DatabaseManager {
         
     }
     
+    
+    public func updateConversations(conversations: [Conversation]) {
+        let databaseEntries = conversations.map({ $0.toDict() })
+        let id = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userConvos/\(id)").setValue(databaseEntries, withCompletionBlock: { error, _ in })
+    }
 }

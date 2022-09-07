@@ -102,7 +102,13 @@ class AbstractUserTableViewCell: UITableViewCell {
         
 
     }
-    
-    
+    }
 
-}
+/*
+ 
+ Yianni is a third year student at McGill University majoring in computer science. Yianni leads the development of the Zipper App and manages Zipper's overall operations.
+ 
+ 
+ 
+ 
+ */

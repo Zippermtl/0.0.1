@@ -38,7 +38,7 @@ class MapViewController: UIViewController {
     
     private let fpc: FloatingPanelController
     
-    private var mappedEvents: [String:Event]
+    private var mappedEvents: [String:EventAnnotation]
     
     
     private let mapView: MKMapView
@@ -288,11 +288,11 @@ class MapViewController: UIViewController {
         DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
+                let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-
-                    strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
+                    strongSelf.mapView.addAnnotation(annotation)
                 }
-                strongSelf.mappedEvents[event.eventId] = event
+                strongSelf.mappedEvents[event.eventId] = annotation
             }
         }, allCompletion: { [weak self] result in
             guard let strongSelf = self else { return }
@@ -320,9 +320,10 @@ class MapViewController: UIViewController {
         DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
+                let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-                    strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-                    strongSelf.mappedEvents[event.eventId] = event
+                    strongSelf.mapView.addAnnotation(annotation)
+                    strongSelf.mappedEvents[event.eventId] = annotation
                 }
             }
         }, allCompletion: { result in
@@ -332,9 +333,10 @@ class MapViewController: UIViewController {
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
+                let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-                    strongSelf.mapView.addAnnotation(EventAnnotation(event: event))
-                    strongSelf.mappedEvents[event.eventId] = event
+                    strongSelf.mapView.addAnnotation(annotation)
+                    strongSelf.mappedEvents[event.eventId] = annotation
                 }
             }
         }, allCompletion: { result in
@@ -491,6 +493,7 @@ extension MapViewController: MKMapViewDelegate {
             
             eventAnnotation.event.annotationView = annotationView
             annotationView.delegate = self
+            eventAnnotation.viewFor = annotationView
             return annotationView
 
         case .Promoter:
@@ -502,6 +505,7 @@ extension MapViewController: MKMapViewDelegate {
             annotationView.canShowCallout = false
             eventAnnotation.event.annotationView = annotationView
             annotationView.delegate = self
+            eventAnnotation.viewFor = annotationView
             return annotationView
             
         case .Event:
@@ -522,7 +526,11 @@ extension MapViewController: MKMapViewDelegate {
                 let zoomRegion = MKCoordinateRegion(center: view.annotation!.coordinate,
                                                     latitudinalMeters: DEFAULT_ZOOM_DISTANCE-10,
                                                     longitudinalMeters: DEFAULT_ZOOM_DISTANCE-10)
-//                annotationView.makeEvent()
+                for (_,annotation) in mappedEvents {
+                    if let annotationView = annotation.viewFor {
+                        annotationView.makeEvent()
+                    }
+                }
                 mapView.setRegion(zoomRegion, animated: true)
             }  else {
 //                var eventVC: UIViewController

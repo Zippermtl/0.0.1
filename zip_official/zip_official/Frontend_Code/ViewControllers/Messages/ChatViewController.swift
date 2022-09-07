@@ -117,7 +117,7 @@ class ChatViewController: MessagesViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         messagesCollectionView.backgroundColor = .zipGray
-
+        showMessageTimestampOnSwipeLeft = true
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
@@ -299,6 +299,13 @@ class ChatViewController: MessagesViewController {
         })
     }
 
+    func messageTimestampLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        let messageDate = message.sentDate
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        let dateString = formatter.string(from: messageDate)
+        return NSAttributedString(string: dateString, attributes: [.font: UIFont.zipTextDetail])
+    }
 
 
 
@@ -434,7 +441,7 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
             return .link
         } else {
             // other message
-            return .zipVeryLightGray
+            return .zipLightGray
         }
     }
     

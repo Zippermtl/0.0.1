@@ -129,6 +129,13 @@ public func getDistanceLabel(user: User) -> String {
 }
 
 extension Date {
+    
+    func isEqual(to date: Date, toGranularity component: Calendar.Component, in calendar: Calendar = .current) -> Bool {
+            calendar.isDate(self, equalTo: date, toGranularity: component)
+    }
+    func isInSameWeek(as date: Date) -> Bool { isEqual(to: date, toGranularity: .weekOfYear) }
+    func isInSameYear(as date: Date) -> Bool { isEqual(to: date, toGranularity: .year) }
+    
     func convertToTimeZone(initTimeZone: TimeZone, timeZone: TimeZone) -> Date {
          let delta = TimeInterval(timeZone.secondsFromGMT(for: self) - initTimeZone.secondsFromGMT(for: self))
          return addingTimeInterval(delta)

@@ -5,19 +5,83 @@
 //  Created by Yianni Zavaliagkos on 7/7/21.
 //
 
+
+/*
+ 
+ Fix Double message thingy
+ timestamps
+ read recepits - did you read this conversation (blue dot)
+ clickable avatars / picture in navigation bar
+ different message types
+ push up texts with keyboard
+ make the send button better
+ audio / other types of messages
+ forces picture to crop
+ photoview needs to be better - zooming in
+ report functionality for message
+ see what characters can and cannot be used in messages
+ inset space on top and bottom
+ swipe over time stamps
+ time jump time stamps
+ liking messages
+ group chats
+ change colors??
+ press and hold preview
+ 
+ 
+ 
+ 
+ 
+ */
+
+
+
 import UIKit
 import JGProgressHUD
 
-struct Conversation {
+class Conversation {
     let id: String
     let otherUser: User
-    let latestMessage: LatestMessage
+    var latestMessage: LatestMessage
+    
+    init(id: String, otherUser : User, latestMessage: LatestMessage) {
+        self.id = id
+        self.otherUser = otherUser
+        self.latestMessage = latestMessage
+    }
+    
+    public func markAsRead() {
+        self.latestMessage.isRead = true
+    }
+    
+    public func toDict() -> [String: Any] {
+        var dict = [String:Any]()
+        dict["id"] = id
+        dict["name"] = otherUser.fullName
+        dict["other_user_id"] = otherUser.userId
+        dict["latest_message"] = latestMessage.toDict()
+        return dict
+    }
 }
 
-struct LatestMessage {
+class LatestMessage {
     let date: Date
     let text: String
-    let isRead: Bool
+    var isRead: Bool
+    
+    init(date: Date, text: String, isRead: Bool) {
+        self.date = date
+        self.text = text
+        self.isRead = isRead
+    }
+    
+    public func toDict() -> [String:Any] {
+        var dict = [String:Any]()
+        dict["date"] = date.timeIntervalSince1970
+        dict["isRead"] = isRead
+        dict["message"] = text
+        return dict
+    }
 }
 
 class ZipMessagesViewController: UIViewController {
@@ -239,6 +303,14 @@ extension ZipMessagesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let model = conversations[indexPath.row]
+        if !model.latestMessage.isRead {
+            guard let cell = tableView.cellForRow(at: indexPath) as? ConversationTableViewCell else {
+                return
+            }
+            model.markAsRead()
+            cell.markAsRead()
+            DatabaseManager.shared.updateConversations(conversations: conversations)
+        }
         openConversation(model)
     }
     

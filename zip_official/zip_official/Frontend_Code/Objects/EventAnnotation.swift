@@ -15,6 +15,7 @@ protocol EventAnnotationDelegate : AnyObject {
 class EventAnnotation: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
     var event: Event
+    var viewFor: EventAnnotationView?
 
     init(event: Event){
         self.event = event
