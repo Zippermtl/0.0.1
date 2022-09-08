@@ -70,10 +70,15 @@ class MyEventViewController: EventViewController {
             present(alert, animated: true)
             return
         }
-        
-        let vc = EditEventProfileViewController(event: event)
-        vc.delegate = self
-        navigationController?.pushViewController(vc, animated: true)
+        if event.getType() == .Promoter {
+            let vc = EditPromoterViewController(event: event)
+            vc.delegate = self
+            navigationController?.pushViewController(vc, animated: true)
+        } else {
+            let vc = EditEventProfileViewController(event: event)
+            vc.delegate = self
+            navigationController?.pushViewController(vc, animated: true)
+        }
     }
     
     override func didTapSaveButton() {
@@ -88,34 +93,26 @@ class MyEventViewController: EventViewController {
         didTapInviteButton()
     }
     
+    var originalHosts = [Event]()
+    
     override func didTapHost() {
         let vc = MasterTableViewController(sectionData: [event.hostingSection])
         vc.title = "Hosts"
         vc.delegate = self
         vc.dispearingRightButton = true
+        vc.saveFunc = uninviteHosts
         let selfUser = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)
         if selfUser.userId == event.ownerId {
             vc.defaultRightBarButton = UIBarButtonItem(image: UIImage(systemName: "plus")?.withRenderingMode(.alwaysOriginal).withTintColor(.white),
                                                        style: UIBarButtonItem.Style.done,
                                                        target: self,
                                                        action: #selector(inviteHosts))
-            let uninviteConfig : MasterTableSwipeConfiguration = (UIContextualAction.Style.destructive, "Remove", { [weak self] item in
-                guard let event = self?.event,
-                      item.isUser,
-                      let user = item as? User
-                else {
-                    return
-                    
-                }
-
-                if let hostIdx = event.hosts.firstIndex(of: user) {
-                    event.hosts.remove(at: hostIdx)
-                }
-
+            let uninviteConfig : MasterTableSwipeConfiguration = (UIContextualAction.Style.destructive, "Remove", { item in
+                vc.impactedItems.append(item)
                 vc.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save",
                                                                                 style: .done,
                                                                                 target: vc,
-                                                                                action: #selector(vc.didTapRightBarButton))
+                                                                                action: #selector(vc.saveFuncTarget))
             }, [selfUser])
             vc.trailingCellSwipeConfiguration = [uninviteConfig]
 
@@ -124,6 +121,30 @@ class MyEventViewController: EventViewController {
 
         navigationController?.pushViewController(vc, animated: true)
         
+    }
+    
+    private func uninviteHosts(cellItems: [CellItem]) {
+        let users = cellItems as! [User]
+        DatabaseManager.shared.uninviteHosts(event: event, users: users, completion: { [weak self] error in
+            guard error == nil else {
+                return
+            }
+            DispatchQueue.main.async {
+                self?.reloadEvent()
+            }
+        })
+    }
+    
+    private func uninviteUsers(cellItems: [CellItem]) {
+        let users = cellItems as! [User]
+        DatabaseManager.shared.uninviteUsers(event: event, users: users, completion: { [weak self] error in
+            guard error == nil else {
+                return
+            }
+            DispatchQueue.main.async {
+                self?.reloadEvent()
+            }
+        })
     }
     
     @objc private func inviteHosts(){
@@ -135,33 +156,19 @@ class MyEventViewController: EventViewController {
         }
         
         let possibleHosts = User.getMyZips().filter({ !event.hosts.contains($0) })
-        let vc = InviteTableViewController(items: possibleHosts) { [weak self] items in
-            guard let event = self?.event else { return }
-            let hosts = items.map({ $0 as! User })
-            for user in hosts {
-                if !event.usersInvite.contains(user) {
-                    event.usersInvite.append(user)
-                }
-            }
-            event.hosts += hosts
-            DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
-                guard error == nil else {
-                    let alert = UIAlertController(title: "Error Inviting Users",
-                                                  message: "\(error!.localizedDescription)",
-                                                  preferredStyle: .alert)
-                    
-                    alert.addAction(UIAlertAction(title: "Ok",
-                                                  style: .cancel,
-                                                  handler: { _ in }))
-                    DispatchQueue.main.async {
-                        self?.present(alert, animated: true)
-                    }
+        let vc = InviteTableViewController(items: possibleHosts)
+        vc.saveFunc = { [weak self] items in
+            guard let strongSelf = self else { return }
+            let users = items.map({ $0 as! User })
+            
+            DatabaseManager.shared.inviteHosts(event: strongSelf.event, users: users, completion: { [weak self] error in
+                guard let strongSelf = self,
+                      error == nil else {
                     return
                 }
-                
                 DispatchQueue.main.async {
-                    self?.configureLabels()
-                    self?.navigationController?.popViewController(animated: true)
+                    strongSelf.configureLabels()
+                    strongSelf.navigationController?.popViewController(animated: true)
                     if let vc = self?.navigationController?.topViewController as? MasterTableViewController {
                         if let sectionData = self?.event.hostingSection {
                             vc.reload(multiSectionData: [MultiSectionData(title: nil, sections: [sectionData])])
@@ -177,40 +184,21 @@ class MyEventViewController: EventViewController {
  
     
     override func didTapParticipantsButton() {
-        let zipListView = MasterTableViewController(sectionData: event.getParticipants())
-        zipListView.title = "Participants"
-        zipListView.delegate = self
-        zipListView.dispearingRightButton = true
+        let vc = MasterTableViewController(sectionData: event.getParticipants())
+        vc.title = "Participants"
+        vc.delegate = self
+        vc.dispearingRightButton = true
         let selfUser = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)
-        let uninviteConfig : MasterTableSwipeConfiguration = (UIContextualAction.Style.destructive, "Uninvite", { [weak self] item in
-            guard let event = self?.event,
-                  item.isUser,
-                  let user = item as? User
-            else {
-                return
-                
-            }
-            if let goingIdx = event.usersGoing.firstIndex(of: user) {
-                event.usersGoing.remove(at: goingIdx)
-            } else if let notGoingIdx = event.usersNotGoing.firstIndex(of: user) {
-                event.usersGoing.remove(at: notGoingIdx)
-            }
-            
-            if let inviteIdx = event.usersInvite.firstIndex(of: user) {
-                event.usersInvite.remove(at: inviteIdx)
-            }
-            
-            if let hostIdx = event.hosts.firstIndex(of: user) {
-                event.hosts.remove(at: hostIdx)
-            }
-            
-            zipListView.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save",
-                                                                            style: .done,
-                                                                            target: zipListView,
-                                                                            action: #selector(zipListView.didTapRightBarButton))
+        vc.saveFunc = uninviteUsers
+        let uninviteConfig : MasterTableSwipeConfiguration = (UIContextualAction.Style.destructive, "Uninvite", { item in
+            vc.impactedItems.append(item)
+            vc.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save",
+                                                                   style: .done,
+                                                                   target: vc,
+                                                                   action: #selector(vc.saveFuncTarget))
         }, [selfUser])
-        zipListView.trailingCellSwipeConfiguration = [uninviteConfig]
-        navigationController?.pushViewController(zipListView, animated: true)
+        vc.trailingCellSwipeConfiguration = [uninviteConfig]
+        navigationController?.pushViewController(vc, animated: true)
     }
     
 
@@ -255,17 +243,15 @@ class MyEventViewController: EventViewController {
 extension MyEventViewController: UpdateFromEditEventProtocol {
     func update(event: Event) {
         self.event = event
+        
         reloadEvent()
     }
 }
 
 extension MyEventViewController: MasterTableViewDelegate {
     func didTapRightBarButton() {
-        DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
-            guard error == nil else {
-                return
-            }
-            self?.reloadEvent()
-        })
+        
+       
+        
     }
 }

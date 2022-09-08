@@ -43,7 +43,6 @@ class FilterSettingsViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         title = "ZipFinder Preferences"
         view.backgroundColor = .zipGray
-        print("this valye is ",AppDelegate.userDefaults.value(forKey: "MinAgeFilter"))
         let minAge = CGFloat(AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as? Int ?? 18)
         let maxAge = CGFloat(AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as? Int ?? 60)
         
@@ -60,7 +59,7 @@ class FilterSettingsViewController: UIViewController {
         let maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as? Int ?? 100
 
         distanceSlider.addTarget(self, action: #selector(sliderChanged(_:)), for: .valueChanged)
-        distanceSlider.minimumValue = 14
+        distanceSlider.minimumValue = 4
         distanceSlider.maximumValue = 100
         distanceSlider.trackHeight = 2
         distanceSlider.minimumTrackTintColor = .zipBlue
@@ -136,7 +135,6 @@ class FilterSettingsViewController: UIViewController {
         let d = Double(inDistance)
         return Int(round((-0.287 + sqrt(0.082368 + 0.02852 * d))/0.01426))
     }
-    
     
     @objc func sliderChanged(_ sender: UISlider) {
         let convertedDistance = convertDistance(inDistance: Int(sender.value))

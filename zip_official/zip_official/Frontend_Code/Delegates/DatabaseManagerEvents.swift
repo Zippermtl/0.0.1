@@ -418,30 +418,56 @@ extension DatabaseManager {
                 completion(.failure(error))
             }
         })
-        //        StorageManager.shared.updateIndividualImage(with: event.image!, path: "Event/" + event.eventId + "/", index: 0, completion: { result in
-        //            switch result {
-        //            case .success(let url):
-        //                completion(.success(url))
-        //            case .failure(let error):
-        //                completion(.failure(error))
-        //            }
-        //        })
     }
     
-    public func inviteUsers(event: Event, users: [User], completion: @escaping (Error?) -> Void){
-        var datadic: [String:Any] = [:]
-        let ref = Database.database().reference()
-        for j in users{
-            if(!event.usersInvite.contains(where: { (id) in
-                return (j.userId == id.userId)
-            })){
-                datadic["eventProfiles/\(event.eventId)/usersInvite/\(j.userId)"] = j.fullName
+    public func inviteHosts(event: Event, users: [User], completion: @escaping (Error?) -> Void){
+        firestore.collection("EventProfiles").document(event.eventId).updateData(["hosts" : FieldValue.arrayUnion(users.map({ $0.userId }))]) { error in
+            guard error == nil else {
+                completion(error!)
+                return
             }
+            
+            completion(nil)
         }
-        ref.updateChildValues(datadic) { (error, _) in
-            if let error = error {
-                completion(error)
+    }
+    
+    public func uninviteHosts(event: Event, users: [User], completion: @escaping (Error?) -> Void){
+        firestore.collection("EventProfiles").document(event.eventId).updateData(["hosts" : FieldValue.arrayRemove(users.map({ $0.userId }))]) { error in
+            guard error == nil else {
+                completion(error!)
+                return
             }
+            for user in users {
+                event.uninviteHost(user: user)
+            }
+            
+            completion(nil)
+        }
+    }
+    
+    public func uninviteUsers(event: Event, users: [User], completion: @escaping (Error?) -> Void){
+        firestore.collection("EventProfiles").document(event.eventId).updateData(["usersInvite" : FieldValue.arrayRemove(users.map({ $0.userId })),
+                                                                                  "usersGoing" : FieldValue.arrayRemove(users.map({ $0.userId })),
+                                                                                  "usersNotGoing" : FieldValue.arrayRemove(users.map({ $0.userId })),
+                                                                                  "hosts" : FieldValue.arrayRemove(users.map({ $0.userId }))]) { error in
+            guard error == nil else {
+                completion(error!)
+                return
+            }
+            for user in users {
+                event.uninviteHost(user: user)
+            }
+            completion(nil)
+        }
+    }
+
+    public func inviteUsers(event: Event, users: [User], completion: @escaping (Error?) -> Void){
+        firestore.collection("EventProfiles").document(event.eventId).updateData(["usersInvite" : FieldValue.arrayUnion(users.map({ $0.userId }))]) { error in
+            guard error == nil else {
+                completion(error!)
+                return
+            }
+            
             completion(nil)
         }
     }
@@ -519,11 +545,9 @@ extension DatabaseManager {
         let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI)
         switch t{
         case .Event: return baseEvent
-        case .Closed: return ClosedEvent(event: baseEvent)
+        case .Closed, .Open: return UserEvent(event: baseEvent, type: t)
         case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
-        case .Open: return OpenEvent(event: baseEvent)
         }
-        
     }
     
     public func eventLoadTableView(event: Event, completion: @escaping (Result<Event, Error>) -> Void){

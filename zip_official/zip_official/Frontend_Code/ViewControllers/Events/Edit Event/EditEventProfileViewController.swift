@@ -75,22 +75,12 @@ class EditEventProfileViewController: UIViewController {
         view.endEditing(true)
     }
     
-    @objc private func didTapSave(){
+    @objc public func didTapSave(){
         view.endEditing(true)
         
-        if newEventType != initialEventType {
-            if newEventType == .Open {
-                event = OpenEvent(event: event)
-                print("O - NEW TYPE = \(event.getType())")
-
-            } else {
-                event = ClosedEvent(event: event)
-                print("C - NEW TYPE = \(event.getType())")
-
-            }
+        if let event = event as? UserEvent {
+            event.type = newEventType
         }
-        
-        
         
         DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
             guard let strongSelf = self,
@@ -275,47 +265,68 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.row {
-        case 0: // Public / Private
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditEventTypeTableViewCell.identifier, for: indexPath) as! EditEventTypeTableViewCell
-            cell.configure(event: event)
-            cell.selectionStyle = .none
-            cell.delegate = self
-            return cell
-        case 1: // Title
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Title", content: event.title, saveFunc: saveTitleFunc(_:))
-            cell.charLimit = 30
-            cell.selectionStyle = .none
-            cell.cellDelegate = self
-            return cell
-        case 2: // Date / time
-//            return UITableViewCell()
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditEventTimeTableViewCell.identifier, for: indexPath) as! EditEventTimeTableViewCell
-            cell.configure(event: event)
-            cell.selectionStyle = .none
-
-            return cell
-        case 3: // location
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditEventLocationTableViewCell.identifier, for: indexPath) as! EditEventLocationTableViewCell
-            cell.configure(event: event, saveFunc: saveLocationFunc(_:))
-            cell.GMSDelegate = self
-            cell.selectionStyle = .none
-            return cell
-        case 4:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Description", content: event.bio, saveFunc: saveDescriptionFunc(_:))
-            cell.charLimit = 300
-            cell.selectionStyle = .none
-            cell.cellDelegate = self
-            return cell
-        case 5:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditCanInviteZipsTableViewCell.identifier, for: indexPath) as! EditCanInviteZipsTableViewCell
-            cell.configure(event: event)
-            cell.selectionStyle = .none
-            return cell
+        case 0: return getTypeCell(tableView: tableView, indexPath: indexPath)
+        case 1: return getTypeCell(tableView: tableView, indexPath: indexPath)
+        case 2: return getTimeCell(tableView: tableView, indexPath: indexPath)
+        case 3: return getLocationCell(tableView: tableView, indexPath: indexPath)
+        case 4: return getBioCell(tableView: tableView, indexPath: indexPath)
+        case 5: return getUserInvitesCell(tableView: tableView, indexPath: indexPath)
+            
         default: return UITableViewCell()
         }
     }
+    
+    public func getTypeCell(tableView: UITableView, indexPath : IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditEventTypeTableViewCell.identifier, for: indexPath) as! EditEventTypeTableViewCell
+        cell.configure(event: event)
+        cell.selectionStyle = .none
+        cell.delegate = self
+        return cell
+    }
+    
+    public func getTitleCell(tableView: UITableView, indexPath : IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
+        cell.configure(label: "Title", content: event.title, saveFunc: saveTitleFunc(_:))
+        cell.charLimit = 30
+        cell.selectionStyle = .none
+        cell.cellDelegate = self
+        return cell
+    }
+    
+    public func getTimeCell(tableView: UITableView, indexPath : IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditEventTimeTableViewCell.identifier, for: indexPath) as! EditEventTimeTableViewCell
+        cell.configure(event: event)
+        cell.selectionStyle = .none
+        return cell
+    }
+    
+    public func getLocationCell(tableView: UITableView, indexPath : IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditEventLocationTableViewCell.identifier, for: indexPath) as! EditEventLocationTableViewCell
+        cell.configure(event: event, saveFunc: saveLocationFunc(_:))
+        cell.GMSDelegate = self
+        cell.selectionStyle = .none
+        return cell
+    }
+    
+    public func getBioCell(tableView: UITableView, indexPath : IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
+        cell.configure(label: "Description", content: event.bio, saveFunc: saveDescriptionFunc(_:))
+        cell.charLimit = 300
+        cell.selectionStyle = .none
+        cell.cellDelegate = self
+        return cell
+    }
+    
+    public func getUserInvitesCell(tableView: UITableView, indexPath : IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditCanInviteZipsTableViewCell.identifier, for: indexPath) as! EditCanInviteZipsTableViewCell
+        cell.configure(event: event)
+        cell.selectionStyle = .none
+        return cell
+    }
+
+
+
+
 }
 
 

@@ -20,22 +20,21 @@ protocol InviteTableViewDelegate: AnyObject {
 
 class InviteTableViewController : MasterTableViewController {
     var selectedItems = [String : CellItem]()
-    var saveFunc :  (([CellItem]) -> Void)
-    init(items: [CellItem], saveFunc: @escaping (([CellItem]) -> Void)) {
-        self.saveFunc = saveFunc
+    init(items: [CellItem]) {
         super.init(cellData: items, cellType: CellType(userType: .invite, eventType: .inviteTo))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite", style: .plain, target: self, action: #selector(didTapInvite))
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = super.tableView(tableView, cellForRowAt: indexPath) as? InviteCell else {
-            fatalError("passed a non invite cell to invite table")
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        if let cell = cell as? InviteCell {
+            cell.delegate = self
         }
-        cell.delegate = self
         return cell
     }
     
     @objc private func didTapInvite() {
+        guard let saveFunc = saveFunc else { return }
         saveFunc(Array(selectedItems.values))
     }
     

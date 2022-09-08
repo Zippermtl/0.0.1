@@ -230,6 +230,11 @@ class ZFCardFrontView: UIView {
 
     }
     
+    public func configureImage(user: User) {
+        guard let cardUser = self.user else { return }
+        cardUser.updateSelfSoft(user: user)
+        pictureCollectionView.reloadData()
+    }
   
     
     //MARK: - PictureCofig

@@ -116,8 +116,15 @@ class ChatViewController: MessagesViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+
+        view.backgroundColor = .zipGray
         messagesCollectionView.backgroundColor = .zipGray
         showMessageTimestampOnSwipeLeft = true
+        messagesCollectionView.register(MessageDateReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader)
+
+        scrollsToLastItemOnKeyboardBeginsEditing = true
+    
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
@@ -299,14 +306,6 @@ class ChatViewController: MessagesViewController {
         })
     }
 
-    func messageTimestampLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        let messageDate = message.sentDate
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        let dateString = formatter.string(from: messageDate)
-        return NSAttributedString(string: dateString, attributes: [.font: UIFont.zipTextDetail])
-    }
-
 
 
 }
@@ -445,6 +444,19 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
         }
     }
     
+    func didTapAvatar(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
+        guard let messagesDataSource = messagesCollectionView.messagesDataSource else { return }
+        let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
+        let sender = message.sender
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        var vc : UIViewController
+        if sender.senderId != selfId { vc = OtherProfileViewController(id: sender.senderId) }
+        else { vc = ProfileViewController(id: selfId) }
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         let sender = message.sender
         
@@ -496,6 +508,59 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
             break
         }
     }
+    
+    func messageTimestampLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        let messageDate = message.sentDate
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        let dateString = formatter.string(from: messageDate)
+        return NSAttributedString(string: dateString, attributes: [.font: UIFont.zipTextDetail])
+    }
+    
+    func shouldDisplayHeader(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> Bool {
+        if indexPath.section == 0 {
+            return true
+        }
+        
+        // get previous message
+        let previousIndexPath = IndexPath(row: 0, section: indexPath.section - 1)
+        let previousMessage = messageForItem(at: previousIndexPath, in: messagesCollectionView)
+        
+        if message.sentDate.isInSameDay(as: previousMessage.sentDate) {
+            return false
+        }
+        
+        return true
+    }
+        
+    func headerViewSize(for section: Int, in messagesCollectionView: MessagesCollectionView) -> CGSize {
+        let size = CGSize(width: messagesCollectionView.frame.width, height: 50)
+        if section == 0 {
+            return size
+        }
+        
+        let currentIndexPath = IndexPath(row: 0, section: section)
+        let lastIndexPath = IndexPath(row: 0, section: section - 1)
+        let lastMessage = messageForItem(at: lastIndexPath, in: messagesCollectionView)
+        let currentMessage = messageForItem(at: currentIndexPath, in: messagesCollectionView)
+        
+        if currentMessage.sentDate.isInSameDay(as: lastMessage.sentDate) {
+            return .zero
+        }
+        
+        return size
+    }
+    
+    func messageHeaderView(
+        for indexPath: IndexPath,
+        in messagesCollectionView: MessagesCollectionView
+    ) -> MessageReusableView {
+        let messsage = messageForItem(at: indexPath, in: messagesCollectionView)
+        let header = messagesCollectionView.dequeueReusableHeaderView(MessageDateReusableView.self, for: indexPath)
+        header.label.text = MessageKitDateFormatter.shared.string(from: messsage.sentDate)
+        return header
+    }
+
 
     
 }
@@ -618,3 +683,72 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
     
 }
 
+
+class MessageDateReusableView: MessageReusableView {
+    var label: PaddingLabel!
+
+    override init (frame : CGRect) {
+        super.init(frame : frame)
+        self.backgroundColor = .none
+
+        label = PaddingLabel()
+        label.backgroundColor = .clear
+        label.textColor = .zipVeryLightGray
+        label.textAlignment = .center
+        label.numberOfLines = 1
+        label.font = .zipTextDetail
+        label.paddingLeft = 5
+        label.paddingRight = 5
+        self.addSubview(label)
+
+        label.clipsToBounds = true
+        label.layer.cornerRadius = 3
+        
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        label.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class PaddingLabel: UILabel {
+
+    var textEdgeInsets = UIEdgeInsets.zero {
+         didSet { invalidateIntrinsicContentSize() }
+     }
+     
+     open override func textRect(forBounds bounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
+         let insetRect = bounds.inset(by: textEdgeInsets)
+         let textRect = super.textRect(forBounds: insetRect, limitedToNumberOfLines: numberOfLines)
+         let invertedInsets = UIEdgeInsets(top: -textEdgeInsets.top, left: -textEdgeInsets.left, bottom: -textEdgeInsets.bottom, right: -textEdgeInsets.right)
+         return textRect.inset(by: invertedInsets)
+     }
+     
+     override func drawText(in rect: CGRect) {
+         super.drawText(in: rect.inset(by: textEdgeInsets))
+     }
+     
+     
+     var paddingLeft: CGFloat {
+         set { textEdgeInsets.left = newValue }
+         get { return textEdgeInsets.left }
+     }
+     
+     var paddingRight: CGFloat {
+         set { textEdgeInsets.right = newValue }
+         get { return textEdgeInsets.right }
+     }
+     
+     var paddingTop: CGFloat {
+         set { textEdgeInsets.top = newValue }
+         get { return textEdgeInsets.top }
+     }
+     
+     var paddingBottom: CGFloat {
+         set { textEdgeInsets.bottom = newValue }
+         get { return textEdgeInsets.bottom }
+     }
+ }

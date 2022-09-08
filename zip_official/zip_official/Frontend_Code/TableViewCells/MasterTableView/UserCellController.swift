@@ -92,10 +92,9 @@ class UserCellController: TableCellController {
             case .failure(let error):
                 print("Failure to load user photos in profile, Error: \(error)")
             }
-
         
         })
-        
+
 //        user.load(status: .UserProfileUpdates, dataCompletion: { result in
 //            switch result {
 //            case .success(let user):

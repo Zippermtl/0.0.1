@@ -432,7 +432,7 @@ extension MapViewController: FPCMapDelegate {
                                       style: .default,
                                       handler: { [weak self] _ in
             DispatchQueue.main.async {
-                let event = ClosedEvent()
+                let event = UserEvent()
                 event.mapView = self?.mapView
                 let vc = CreateEventViewController(event: event)
                 self?.navigationController?.pushViewController(vc, animated: true)

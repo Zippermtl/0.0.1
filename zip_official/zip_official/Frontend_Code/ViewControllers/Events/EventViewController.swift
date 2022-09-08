@@ -49,13 +49,13 @@ class EventViewController: UIViewController {
     // MARK: - Buttons
     let goingButton: UIButton
     var goingDD: DropDown
-    let inviteButton: UIButton?
+    var inviteButton: UIButton?
     
     let saveButton: IconButton
     let messageButton: IconButton
     let participantsButton: IconButton
     
-    var cellConfigureations : [(NSMutableAttributedString, UIImage?)]
+    var cellConfigurations : [(NSMutableAttributedString, UIImage?)]
     var locationCell : UITableViewCell?
     var distanceCell : UITableViewCell?
     var dateCell : UITableViewCell?
@@ -87,7 +87,6 @@ class EventViewController: UIViewController {
         self.eventBorder = UIView()
         userCountLabel.textColor = .zipVeryLightGray
         self.goingButton = UIButton()
-        self.inviteButton = UIButton()
         self.goingDD = DropDown()
         self.messageButton = IconButton.messageIcon()
         self.messageButton.setTextLabel(s: "Contact")
@@ -103,11 +102,15 @@ class EventViewController: UIViewController {
         
         self.participantsButton = IconButton.participantsIcon()
         self.liveView = UIView()
-        self.cellConfigureations = []
-        
+        self.cellConfigurations = []
+        self.inviteButton = nil
         reportView = ReportMessageView()
         reportView.isHidden = true
         super.init(nibName: nil, bundle: nil)
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.5
+        
+        
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         if event.usersGoing.contains(User(userId: userId)) {
             goingUI()
@@ -118,15 +121,6 @@ class EventViewController: UIViewController {
         let savedEvents = User.getUDEvents(toKey: .savedEvents)
         if savedEvents.contains(event) {
             savedUI()
-        }
-        
-        if let inviteButton = inviteButton {
-            inviteButton.backgroundColor = .zipLightGray
-            inviteButton.setTitle("Invite", for: .normal)
-            inviteButton.titleLabel?.textColor = .white
-            inviteButton.titleLabel?.font = .zipSubtitle2
-            inviteButton.titleLabel?.textAlignment = .center
-            inviteButton.contentVerticalAlignment = .center
         }
         
         
@@ -147,6 +141,8 @@ class EventViewController: UIViewController {
         
         eventBorder.layer.borderWidth = 6
         eventBorder.backgroundColor = .clear
+        eventBorder.layer.borderColor = UIColor.clear.cgColor
+
         
         liveView.backgroundColor = .red
         liveView.isHidden = true
@@ -161,6 +157,7 @@ class EventViewController: UIViewController {
         configureGoingButton()
         configureNavBar()
         configureTable()
+        configureRefresh()
     }
     
     public func configureGoingButton(){
@@ -202,20 +199,36 @@ class EventViewController: UIViewController {
     }
     
     public func configureInviteButton() {
-        if let inviteButton = inviteButton {
-            tableHeader.addSubview(inviteButton)
-            inviteButton.translatesAutoresizingMaskIntoConstraints = false
-            inviteButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
-            inviteButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
-            inviteButton.topAnchor.constraint(equalTo: goingButton.topAnchor).isActive = true
-            inviteButton.leftAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: 5).isActive = true
+        
+        if event.allowUserInvites {
+            inviteButton = UIButton()
+            
+            inviteButton!.backgroundColor = .zipLightGray
+            inviteButton!.setTitle("Invite", for: .normal)
+            inviteButton!.titleLabel?.textColor = .white
+            inviteButton!.titleLabel?.font = .zipSubtitle2
+            inviteButton!.titleLabel?.textAlignment = .center
+            inviteButton!.contentVerticalAlignment = .center
+
+            tableHeader.addSubview(inviteButton!)
+            inviteButton!.translatesAutoresizingMaskIntoConstraints = false
+            inviteButton!.widthAnchor.constraint(equalToConstant: 100).isActive = true
+            inviteButton!.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            inviteButton!.topAnchor.constraint(equalTo: goingButton.topAnchor).isActive = true
+            inviteButton!.leftAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: 5).isActive = true
             
             goingButton.rightAnchor.constraint(equalTo: tableHeader.centerXAnchor, constant: -5).isActive = true
             
-            inviteButton.layer.cornerRadius = 8
-            inviteButton.addTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+            inviteButton!.layer.cornerRadius = 8
+            inviteButton!.addTarget(self, action: #selector(didTapInviteButton), for: .touchUpInside)
+            tableHeader.bringSubviewToFront(inviteButton!)
 
         } else {
+            if  let inviteButton = inviteButton,
+                let _ = inviteButton.superview {
+                inviteButton.removeFromSuperview()
+            }
+            inviteButton = nil
             goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
         }
     }
@@ -368,7 +381,8 @@ class EventViewController: UIViewController {
             present(alert, animated: true)
             return
         }
-        let vc = InviteTableViewController(items: User.getMyZips(), saveFunc: { [weak self] items in
+        let vc = InviteTableViewController(items: User.getMyZips())
+        vc.saveFunc = { [weak self] items in
             guard let event = self?.event else { return }
             let users = items.map({ $0 as! User })
             event.usersInvite += users
@@ -391,7 +405,7 @@ class EventViewController: UIViewController {
                     self?.navigationController?.popViewController(animated: true)
                 }
             })
-        })
+        }
         vc.title = "Invite"
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -585,7 +599,7 @@ class EventViewController: UIViewController {
                     if let complete = completion {
                         complete()
                     }
-                case .failure(let error):                    
+                case .failure(_):
                     if let complete = completion {
                         complete()
                     }
@@ -595,6 +609,7 @@ class EventViewController: UIViewController {
     }
     
     private func configureLoadedEvent() {
+        configureInviteButton()
         configureLabels()
         eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
         updateTime()
@@ -696,9 +711,7 @@ class EventViewController: UIViewController {
         goingButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
         goingButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         goingButton.topAnchor.constraint(equalTo: hostLabel.bottomAnchor, constant: 15).isActive = true
-        
-        configureInviteButton()
-        
+                
         tableHeader.addSubview(userCountLabel)
         userCountLabel.translatesAutoresizingMaskIntoConstraints = false
         userCountLabel.topAnchor.constraint(equalTo: goingButton.bottomAnchor, constant: 5).isActive = true
@@ -792,14 +805,15 @@ class EventViewController: UIViewController {
             let timeLeft = userCalendar.dateComponents([.day, .hour, .minute, .second], from: currentDate, to: event.startTime)
             
             // Display Countdown
-            countDownLabel.text = "\(timeLeft.day!)d \(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
             
-            if timeLeft.minute == 0 {
+            if timeLeft.day == 0 && timeLeft.hour == 0 && timeLeft.minute == 0 {
                 countDownLabel.text = "\(timeLeft.second!)s"
-            } else if timeLeft.hour == 0 {
+            } else if timeLeft.day == 0 && timeLeft.hour == 0 {
                 countDownLabel.text = "\(timeLeft.minute!)m \(timeLeft.second!)s"
-            } else if timeLeft.day == 0{
+            } else if timeLeft.day == 0 {
                 countDownLabel.text = "\(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
+            } else {
+                countDownLabel.text = "\(timeLeft.day!)d \(timeLeft.hour!)h \(timeLeft.minute!)m \(timeLeft.second!)s"
             }
         }
     }
@@ -819,7 +833,7 @@ class EventViewController: UIViewController {
     }
     
     func configureCells() {
-        cellConfigureations.removeAll()
+        cellConfigurations.removeAll()
         let addressString = NSMutableAttributedString(string: event.address)
         let distanceString = NSMutableAttributedString(string: event.getDistanceString())
         
@@ -831,20 +845,26 @@ class EventViewController: UIViewController {
         endTimeFormatter.timeStyle = .short
         let df = DateFormatter()
         df.dateFormat = "EEEE, MMMM d"
-        let dateString = NSMutableAttributedString(string: (df.string(from: event.startTime)))
-        let timeString = NSMutableAttributedString(string: (startTimeFormatter.string(from: event.startTime) + " - " + startTimeFormatter.string(from: event.endTime)))
         
-        cellConfigureations.append((addressString,
+        var dateString: NSMutableAttributedString
+        if event.endTime.timeIntervalSince(event.startTime) <= 60 * 60 * 24 {
+            dateString = NSMutableAttributedString(string: (df.string(from: event.startTime)) + "\n" + startTimeFormatter.string(from: event.startTime) + " - " + startTimeFormatter.string(from: event.endTime))
+        } else {
+            dateString = NSMutableAttributedString(string: (df.string(from: event.startTime)) + " at " + startTimeFormatter.string(from: event.startTime) + "\n"
+                                                         + (df.string(from: event.endTime)) + " at " + startTimeFormatter.string(from: event.endTime))
+        }
+        
+//        let dateString = NSMutableAttributedString(string: (df.string(from: event.startTime)))
+//        let timeString = NSMutableAttributedString(string: (startTimeFormatter.string(from: event.startTime) + " - " + startTimeFormatter.string(from: event.endTime)))
+        
+        cellConfigurations.append((addressString,
                                     UIImage(systemName: "map")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
         
         let pinConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
-        cellConfigureations.append((distanceString,
+        cellConfigurations.append((distanceString,
                                     UIImage(named: "zip.mappin")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(pinConfig)))
        
-        cellConfigureations.append((dateString,
-                                    UIImage(systemName: "calendar")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
-        
-        cellConfigureations.append((timeString,
+        cellConfigurations.append((dateString,
                                     UIImage(systemName: "clock")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
 
         
@@ -863,17 +883,15 @@ class EventViewController: UIViewController {
 
             ], range: NSMakeRange(0, "Buy Tickets Here".count))
             
-            cellConfigureations.append((priceString,
+            cellConfigurations.append((priceString,
                                         UIImage(systemName: "dollarsign.square")?.withRenderingMode(.alwaysOriginal).withTintColor(.white)))
             
             let ticketConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .light, scale: .large)
-            cellConfigureations.append((linkString,
+            cellConfigurations.append((linkString,
                                         UIImage(named: "zip.ticket")?.withRenderingMode(.alwaysOriginal).withTintColor(.white).withConfiguration(ticketConfig)
                                        ))
         }
-        
-        cellConfigureations.append((NSMutableAttributedString(string: event.bio), nil))
-        
+        cellConfigurations.append((NSMutableAttributedString(string: event.bio), nil))
     }
 }
 
@@ -885,7 +903,9 @@ extension EventViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.row == cellConfigureations.count - 1 {
+        if indexPath.row == cellConfigurations.count - 1 {
+            return UITableView.automaticDimension
+        } else if indexPath.row == 2 {
             return UITableView.automaticDimension
         } else {
             return 52
@@ -900,7 +920,7 @@ extension EventViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return cellConfigureations.count
+        return cellConfigurations.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -916,8 +936,8 @@ extension EventViewController: UITableViewDataSource {
         var config = cell.defaultContentConfiguration()
         config.textProperties.color = .white
         config.textProperties.font = .zipTextFill
-        config.attributedText = cellConfigureations[indexPath.row].0
-        config.image = cellConfigureations[indexPath.row].1
+        config.attributedText = cellConfigurations[indexPath.row].0
+        config.image = cellConfigurations[indexPath.row].1
         
         
         cell.contentConfiguration = config
@@ -929,7 +949,7 @@ extension EventViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print(indexPath.row)
-        if indexPath.row == 5 {
+        if indexPath.row == 4 {
             print("did select")
             guard let event = event as? PromoterEvent,
                   let url = event.buyTicketsLink else {
@@ -1024,6 +1044,7 @@ extension EventViewController : ReportMessageDelegate {
             cancelButton = UIButton()
             
             super.init(frame: .zero)
+            
             backgroundColor = .zipLightGray
             layer.masksToBounds = true
             layer.cornerRadius = 15

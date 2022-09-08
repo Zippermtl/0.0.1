@@ -20,7 +20,7 @@ import CoreData
 extension DatabaseManager {
     /// checks if user exists for given email
     /// parameters
-    ///  - `completion`: async clusire to return with result
+    ///  - `completion` : async clusire to return with result
     public func userExists(with userId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         firestore.collection("AllUserIds").document(userId).getDocument { (document, error) in
             guard error == nil  else {

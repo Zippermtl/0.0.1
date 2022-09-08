@@ -153,7 +153,8 @@ class CustomizeEventViewController: UIViewController {
             return
         }
         
-        if let privacyView = customizeView as? PrivacyView {
+        if let event = event as? UserEvent,
+            let privacyView = customizeView as? PrivacyView {
             event.allowUserInvites = privacyView.allowUserInvitesSwitch.isOn
             guard let isOpen = privacyView.isOpen() else {
                 let alert = UIAlertController(title: "Pick a privacy setting ot continue",
@@ -168,13 +169,9 @@ class CustomizeEventViewController: UIViewController {
                 return
             }
             if isOpen {
-                let map = event.mapView
-                event = OpenEvent(event: event)
-                event.mapView = map
+                event.type = .Open
             } else {
-                let map = event.mapView
-                event = ClosedEvent(event: event)
-                event.mapView = map
+                event.type = .Closed
             }
         } else if let promoterView = customizeView as? PromoterTicketsView {
             if promoterView.sellTicketsSwitch.isOn {
@@ -208,7 +205,9 @@ class CustomizeEventViewController: UIViewController {
     }
     
     @objc private func didTapAddHosts() {
-        let vc = InviteTableViewController(items: User.getMyZips()) { [weak self] items in
+        let vc = InviteTableViewController(items: User.getMyZips())
+        
+        vc.saveFunc = { [weak self] items in
             guard let event = self?.event else { return }
             let hosts = items.map({ $0 as! User })
             for user in hosts {
@@ -834,5 +833,5 @@ extension UIResponder {
     @objc private func _trap() {
         Static.responder = self
     }
-    
+
 }

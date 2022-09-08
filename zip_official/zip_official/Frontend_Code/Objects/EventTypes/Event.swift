@@ -31,7 +31,7 @@ extension EventType: CustomStringConvertible {
     
     public var color: UIColor {
         switch self {
-        case .Event: return .zipYellow
+        case .Event: return .zipBlue
         case .Open: return .zipBlue
         case .Closed: return .zipBlue
         case .Promoter: return .zipYellow
@@ -39,12 +39,7 @@ extension EventType: CustomStringConvertible {
     }
     
     public func getData(document: QueryDocumentSnapshot) throws -> Event  {
-        switch self {
-        case .Event: return try document.data(as: EventCoder.self).createEvent()
-        case .Open: return try document.data(as: OpenEventCoder.self).createEvent()
-        case .Closed: return try document.data(as: ClosedEventCoder.self).createEvent()
-        case .Promoter: return try document.data(as: EventCoder.self).createEvent()
-        }
+        return try document.data(as: EventCoder.self).createEvent()
     }
 }
 
@@ -221,17 +216,14 @@ public class EventCoder: Codable {
     }
     
     public func createEvent() -> Event {
-        switch EventType(rawValue: type)! {
+        let t = EventType(rawValue: type)!
+        switch t {
         case .Event:
             let event = Event()
             updateEvent(event: event)
             return event
-        case .Open:
-            let event = OpenEvent()
-            updateEvent(event: event)
-            return event
-        case .Closed:
-            let event = ClosedEvent()
+        case .Open, .Closed:
+            let event = UserEvent(type: t)
             updateEvent(event: event)
             return event
         case .Promoter:
@@ -429,6 +421,30 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         return distanceText + " away"
     }
     
+    func uninviteUser(user: User) {
+        if let inviteIndx = self.usersInvite.firstIndex(of: user) {
+            self.usersInvite.remove(at: inviteIndx)
+        }
+        
+        if let goingIdx = self.usersGoing.firstIndex(of: user) {
+            self.usersInvite.remove(at: goingIdx)
+        }
+        
+        if let notGoingIdx = self.usersNotGoing.firstIndex(of: user) {
+            self.usersNotGoing.remove(at: notGoingIdx)
+        }
+        
+        if let hostIdx = self.hosts.firstIndex(of: user) {
+            self.hosts.remove(at: hostIdx)
+        }
+    }
+    
+    func uninviteHost(user: User) {
+        if let hostIdx = self.hosts.firstIndex(of: user) {
+            self.hosts.remove(at: hostIdx)
+        }
+    }
+    
     var createEventId: String {
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return ""
@@ -449,7 +465,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     }
     
     func markNotGoing(completion: @escaping (Error?) -> Void) {
-        DatabaseManager.shared.markGoing(event: self, completion: { err in
+        DatabaseManager.shared.markNotGoing(event: self, completion: { err in
             completion(err)
             guard err == nil else {
                 return
@@ -527,7 +543,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     }}
     
     var notGoingSection: CellSectionData { get {
-        let items = getSortedUsers(users: usersNotGoing)
+        let items = getSortedUsers(users: usersNotGoing).filter({ !hosts.contains($0)} )
         return CellSectionData(title: "Not Going", items: items, cellType: CellType(userType: .zipList))
     }}
     
@@ -685,13 +701,8 @@ public func createEventLocal(eventId Id: String = "",
     let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersNotGoing: uNotGoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI,allowUserInvites: aui, ownerName: oN, ownerId: oId)
     switch t{
     case .Event: return baseEvent
-    case .Closed: return ClosedEvent(event: baseEvent)
+    case .Closed, .Open: return UserEvent(event: baseEvent, type: t)
     case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
-    case .Open: return OpenEvent(event: baseEvent)
     }
-    
-    
-    
-    
     
 }

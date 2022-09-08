@@ -210,7 +210,8 @@ class ZFCardBackView: UIView {
         guard let user = user, canRequest else {
             return
         }
-        let vc = InviteTableViewController(items: User.getUDEvents(toKey: .hostedEvents), saveFunc: { [weak self] items in
+        let vc = InviteTableViewController(items: User.getUDEvents(toKey: .hostedEvents))
+        vc.saveFunc = { [weak self] items in
             guard let user = self?.user else { return }
             let events = items.map({ $0 as! Event })
             var idx = 0
@@ -234,7 +235,7 @@ class ZFCardBackView: UIView {
                     }
                 })
             }
-        })
+        }
         vc.title = "Invite \(user.firstName)"
 
         delegate?.openVC(vc)
@@ -286,6 +287,12 @@ class ZFCardBackView: UIView {
         updateSlider()
     }
     
+    public func configureImage(user: User) {
+        guard let cardUser = self.user else { return }
+        cardUser.updateSelfSoft(user: user)
+        profilePicture.sd_setImage(with: cardUser.profilePicUrl, completed: nil)
+    }
+    
     func updateSlider() {
         switch user?.friendshipStatus {
         case .none, .REQUESTED_INCOMING: noStatusUI()
@@ -332,7 +339,7 @@ class ZFCardBackView: UIView {
         slideView.sliderViewTopDistance = 7
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
-        slideView.sliderTextLabel.text = ""
+        slideView.sliderTextLabel.text = "Swipe"
         slideView.textLabel.text = ""
 
 //        slideView.thumbnailViewStartingDistance = -10

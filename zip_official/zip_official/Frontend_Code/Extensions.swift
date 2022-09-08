@@ -135,7 +135,8 @@ extension Date {
     }
     func isInSameWeek(as date: Date) -> Bool { isEqual(to: date, toGranularity: .weekOfYear) }
     func isInSameYear(as date: Date) -> Bool { isEqual(to: date, toGranularity: .year) }
-    
+    func isInSameDay(as date: Date) -> Bool { isEqual(to: date, toGranularity: .day) }
+
     func convertToTimeZone(initTimeZone: TimeZone, timeZone: TimeZone) -> Date {
          let delta = TimeInterval(timeZone.secondsFromGMT(for: self) - initTimeZone.secondsFromGMT(for: self))
          return addingTimeInterval(delta)

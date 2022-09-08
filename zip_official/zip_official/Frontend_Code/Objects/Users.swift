@@ -241,8 +241,9 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     
-    var tableViewCell: AbstractUserTableViewCell?
-
+    weak var tableViewCell: AbstractUserTableViewCell?
+    weak var ZFCell : ZipFinderCollectionViewCell?
+    
     public var description : String {
         var out = ""
         out += "userId = \(userId) \n"

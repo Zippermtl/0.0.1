@@ -200,7 +200,8 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     override func didTapB3Button() {
         
-        let vc = InviteTableViewController(items: User.getUDEvents(toKey: .hostedEvents)) { [weak self] items in
+        let vc = InviteTableViewController(items: User.getUDEvents(toKey: .hostedEvents))
+        vc.saveFunc = { [weak self] items in
             guard let strongSelf = self else { return }
             let events = items.map({ $0 as! Event })
             var idx = 0
@@ -220,6 +221,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
                 })
             }
         }
+        
         vc.title = "Invite \(user.firstName)"
 
         navigationController?.pushViewController(vc, animated: true)

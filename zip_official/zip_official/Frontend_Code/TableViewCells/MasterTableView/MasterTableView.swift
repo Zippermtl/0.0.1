@@ -48,6 +48,8 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     var headerButtonStack: UIStackView?
     var fetch: Bool = true
     
+    var impactedItems = [CellItem]()
+    var saveFunc :  (([CellItem]) -> Void)?
     
     public var findData : (() -> [CellItem])?
     
@@ -85,6 +87,12 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         initConfig()
     }
     
+    @objc public func saveFuncTarget() {
+        guard let saveFunc = saveFunc else {
+            return
+        }
+        saveFunc(impactedItems)
+    }
     
     @objc public func didTapRightBarButton() {
         delegate?.didTapRightBarButton()

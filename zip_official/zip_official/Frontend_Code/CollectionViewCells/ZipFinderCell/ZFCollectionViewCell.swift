@@ -65,6 +65,11 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardFrontView.delegate = frontDelegate
     }
     
+    public func configureImage(user: User){
+        cardFrontView.configureImage(user: user)
+        cardBackView.configureImage(user: user)
+    }
+    
     
     // MARK: - Configure
     

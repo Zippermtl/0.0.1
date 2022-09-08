@@ -80,7 +80,7 @@ extension DatabaseManager {
                               startTime: Date(),
                               endTime: Date(),
                               duration: TimeInterval(3))
-        let a = OpenEvent(event: baseEvent)
+        let a = UserEvent(event: baseEvent, type: .Open)
         createEvent(event: a) { [weak self] fuck in
             guard let strongSelf = self else {
                 return

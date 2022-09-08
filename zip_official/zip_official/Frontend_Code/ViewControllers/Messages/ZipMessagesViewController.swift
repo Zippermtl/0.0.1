@@ -9,9 +9,6 @@
 /*
  
  Fix Double message thingy
- timestamps
- read recepits - did you read this conversation (blue dot)
- clickable avatars / picture in navigation bar
  different message types
  push up texts with keyboard
  make the send button better
@@ -21,16 +18,9 @@
  report functionality for message
  see what characters can and cannot be used in messages
  inset space on top and bottom
- swipe over time stamps
- time jump time stamps
  liking messages
  group chats
- change colors??
  press and hold preview
- 
- 
- 
- 
  
  */
 
