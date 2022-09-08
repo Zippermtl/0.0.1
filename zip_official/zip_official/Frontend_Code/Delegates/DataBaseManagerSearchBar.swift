@@ -202,7 +202,7 @@ extension DatabaseManager {
                             print("lost url")
                         }
                         let forval = SearchObject(pres)
-                        print(forval.getUrl() as! URL)
+//                        print(forval.getUrl() as! URL)
                         indivCompletion(.success(SearchObject(pres)))
                     case .failure(let err):
                         indivCompletion(.failure(err))

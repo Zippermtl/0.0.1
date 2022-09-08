@@ -147,23 +147,37 @@ class OtherProfileViewController: AbstractProfileViewController  {
     override func didTapB1Button() {
         let vc = MasterTableViewController(cellData: [], cellType: CellType(eventType: .rsvp))
         DatabaseManager.shared.getAllHostedEvents(userId: user.userId, eventCompletion: { event in }, allCompletion: { [weak self] result in
+            guard let strongSelf = self else { return }
             switch result {
             case .success(let events):
-                let filteredEvents = Event.getTodayUpcomingPrevious(events: events)
-                
-                let todaySection = CellSectionData(title: "Today",
-                                                   items: filteredEvents.0,
-                                                   cellType: CellType(eventType: .rsvp))
-                let upcomingSection = CellSectionData(title: "Upcoming",
-                                                      items: filteredEvents.1,
-                                                      cellType: CellType(eventType: .rsvp))
-                
-                let previousSection = CellSectionData(title: "Previous",
-                                                      items: filteredEvents.2,
-                                                      cellType: CellType(eventType: .rsvp))
-                
-               
-                vc.reload(multiSectionData: [MultiSectionData(title: nil, sections: [todaySection, upcomingSection, previousSection])])
+                DatabaseManager.shared.getPastHostedEvents(userId: strongSelf.user.userId, eventCompletion: { event in }, allCompletion: { [weak self] result in
+                    switch result {
+                    case .success(let pastEvents) :
+                        let filteredEvents = Event.getTodayUpcomingPrevious(events: events)
+                        
+                        let todaySection = CellSectionData(title: "Today",
+                                                           items: filteredEvents.0,
+                                                           cellType: CellType(eventType: .rsvp))
+                        let upcomingSection = CellSectionData(title: "Upcoming",
+                                                              items: filteredEvents.1,
+                                                              cellType: CellType(eventType: .rsvp))
+                        
+                        let previousSection = CellSectionData(title: "Previous",
+                                                              items: pastEvents,
+                                                              cellType: CellType(eventType: .rsvp))
+                        
+                       
+                        vc.reload(multiSectionData: [MultiSectionData(title: nil, sections: [todaySection, upcomingSection, previousSection])], reloadTable: false)
+                    case .failure(let error) :
+                        guard let strongSelf = self else { return }
+                        strongSelf.navigationController?.popViewController(animated: true)
+                        let alert = UIAlertController(title: "Error loading \(strongSelf.user.firstName)'s events",
+                                                      message: "Try again later",
+                                                      preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+                        strongSelf.present(alert, animated: true)
+                    }
+                })
             case .failure(_):
                 guard let strongSelf = self else { return }
                 strongSelf.navigationController?.popViewController(animated: true)

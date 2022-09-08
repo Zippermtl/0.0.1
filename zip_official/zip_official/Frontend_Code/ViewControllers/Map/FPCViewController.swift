@@ -506,8 +506,16 @@ extension FPCViewController: UITextFieldDelegate {
         SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: { result in
             switch result {
             case .success(let searchObject):
-                print(searchObject)
-                break
+                let object = SearchManager.shared.loadedData[searchObject]!
+                if let user = object as? User {
+                    if let cell = user.tableViewCell {
+                        cell.configureImage(user)
+                    }
+                } else if let event = object as? Event {
+                    if let cell = event.tableViewCell {
+                        cell.configureImage(event)
+                    }
+                }
             case .failure(let error):
                 print("Error loading object in search Error: \(error)")
             }
@@ -516,7 +524,7 @@ extension FPCViewController: UITextFieldDelegate {
             guard let strongSelf = self else { return }
             switch result {
             case .success(let searchResults):
-//                strongSelf.searchTable.searchData.append(contentsOf: searchResults)
+                strongSelf.searchTable.searchData.append(contentsOf: searchResults.map({  SearchManager.shared.loadedData[$0]!  }))
                 strongSelf.searchTable.configureTableData()
                 print("SEARCH TABLE DATA = ", strongSelf.searchTable.searchData)
                 strongSelf.searchTable.reloadData()

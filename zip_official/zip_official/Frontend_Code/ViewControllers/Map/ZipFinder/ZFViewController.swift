@@ -349,6 +349,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         cell.frontDelegate = self
         cell.backDelegate = self
         cell.configure(user: model, loc: userLoc, idPath: indexPath.row)
+        model.ZFCell = cell
 //        print(model.location)
         return cell
     }

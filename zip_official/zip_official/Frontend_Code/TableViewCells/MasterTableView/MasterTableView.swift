@@ -365,11 +365,13 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         }
     }
     
-    public func reload(multiSectionData: [MultiSectionData]) {
+    public func reload(multiSectionData: [MultiSectionData], reloadTable: Bool = true) {
         self.multiSectionData = multiSectionData
         tableData = multiSectionData[0]
         tableView.reloadData()
-        fetchAll()
+        if reloadTable {
+            fetchAll()
+        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
