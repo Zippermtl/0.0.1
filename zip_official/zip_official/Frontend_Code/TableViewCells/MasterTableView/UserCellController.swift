@@ -76,6 +76,8 @@ class UserCellController: TableCellController {
     }
     
     func fetch(completion: @escaping (Error) -> Void) {
+        //MARK: Gabe should be .load
+        // loading userprofile picture as their first picture and not their profile picture
         DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { [weak self] result in
             guard let user = self?.user,
                   let cell = user.tableViewCell else { return }
