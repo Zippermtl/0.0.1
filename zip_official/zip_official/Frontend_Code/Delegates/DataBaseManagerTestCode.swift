@@ -211,4 +211,64 @@ extension DatabaseManager {
         
         
     }
+    
+    public func getCSVData(path: String){
+        
+        do {
+            let content = try String(contentsOfFile: path)
+            let parsedCSV: [String] = content.components(
+                separatedBy: "\n"
+            ).map{ $0.components(separatedBy: ",")[0] }
+            createEventFromCsvData(data: parsedCSV, completion: { err in
+                if let err = err {
+                    print("error in getCsvData")
+                }
+            })
+        }
+        catch {
+            print("failure with csv Parsing")
+            return
+        }
+        
+    }
+    
+//    Title,ID,Venue,Address,Latitude,Longitude,Category,Bio,Date,Start Time,End Time,Phone Number,Website
+    public func createEventFromCsvData(data: [String], completion: @escaping ((Error?) -> Void)) {
+        let constCount = 13
+        let count = 0
+        var cp = data
+        var events : [Event] = []
+        while cp.count > 0 {
+            var tempData: [String] = []
+            for _ in 0 ..< 13 {
+                tempData.append(cp[0])
+                cp.remove(at: 0)
+            }
+            events.append(RecurringEvent(vals: tempData))
+        }
+        
+        for i in events {
+//            let temp = EventCoder.createEvent()
+            //MARK: YIANNI make push with coder should work here pushing cause missing time
+        }
+        
+    }
+    
+//    class dataCodeSetting {
+//        var title
+//        var id
+//        var Venue
+//        var address
+//        var latitude
+//        var longitude
+//        var category
+//        var bio
+//        var date
+//        var startTime
+//        var endTime
+//        var phoneNumber
+//        var website
+//
+//    }
+    
 }
