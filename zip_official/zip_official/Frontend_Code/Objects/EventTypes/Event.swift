@@ -26,6 +26,7 @@ extension EventType: CustomStringConvertible {
         case .Open: return "Open Event"
         case .Closed: return "Closed Event"
         case .Promoter: return "Promoter Event"
+        case .Recurring: return "Recurring Event"
         }
     }
     
@@ -35,227 +36,12 @@ extension EventType: CustomStringConvertible {
         case .Open: return .zipBlue
         case .Closed: return .zipBlue
         case .Promoter: return .zipYellow
+        case .Recurring: return .zipYellow
         }
     }
     
     public func getData(document: QueryDocumentSnapshot) throws -> Event  {
         return try document.data(as: EventCoder.self).createEvent()
-    }
-}
-
-public class LocalEventCoder : EventCoder {
-    var id: String?
-    var imageUrl : String?
-
-    enum CodingKeys: String, CodingKey {
-        case id = "id"
-        case imageUrl = "imageUrl"
-    }
-    
-    override init(event: Event) {
-        self.id = event.eventId
-        self.imageUrl = event.imageUrl?.absoluteString
-        super.init(event: event)
-    }
-    
-    public required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try? container.decode(String.self, forKey: .id)
-        self.imageUrl = try? container.decode(String.self, forKey: .imageUrl)
-        try super.init(from: decoder)
-    }
-    
-    override public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try? container.encode(id, forKey: .id)
-        try? container.encode(imageUrl, forKey: .imageUrl)
-        try super.encode(to: encoder)
-    }
-    
-    override public func createEvent() -> Event {
-        let event = super.createEvent()
-        if let id = id {
-            event.eventId = id
-        }
-        if let imageUrl = imageUrl {
-            event.imageUrl = URL(string: imageUrl)
-        }
-        return event
-    }
-
-}
-
-//for future, enumerate event type
-public class EventCoder: Codable {
-    var title: String
-    var coordinates: [String: Double]
-    var hosts: [String]
-    var bio: String
-    var address: String
-    var maxGuests: Int
-    var usersGoing: [String]
-    var usersNotGoing: [String]
-    var usersInvite: [String]
-    var startTime: Timestamp
-    var endTime: Timestamp
-    var type: Int
-    var eventCoverIndex: [Int]
-    var eventPicIndices: [Int]
-    var picNum: Int
-    var LCTitle: String
-    var allowUserInvites: Bool
-    var ownerName: String
-    var ownerId: String
-    
-    var price: Double?
-    var link: String?
-
-    
-    init(event: Event) {
-        self.title = event.title
-        self.coordinates = ["lat":event.coordinates.coordinate.latitude,"long": event.coordinates.coordinate.longitude]
-        self.hosts = event.hosts.map({($0.userId)})
-        self.bio = event.bio
-        self.address = event.address
-        self.maxGuests = event.maxGuests
-        self.usersGoing = event.usersGoing.map({$0.userId})
-        self.usersNotGoing = event.usersNotGoing.map({$0.userId})
-        self.usersInvite = event.usersInvite.map({$0.userId})
-        self.startTime = Timestamp(date: event.startTime)
-        self.endTime = Timestamp(date: event.endTime)
-        self.type = event.getType().rawValue
-        self.eventCoverIndex = event.eventCoverIndex
-        self.eventPicIndices = event.eventPicIndices
-        self.picNum = event.picNum
-        self.LCTitle = event.title.lowercased()
-        self.allowUserInvites = event.allowUserInvites
-        self.ownerId = event.ownerId
-        self.ownerName = event.ownerName
-
-        if let pEvent = event as? PromoterEvent {
-            self.price = pEvent.price
-            self.link = pEvent.buyTicketsLink?.absoluteString
-        }
-        
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case title = "title"
-        case coordinates = "coordinates"
-        case hosts = "hosts"
-        case bio = "bio"
-        case address = "address"
-        case maxGuests = "max"
-        case usersGoing = "usersGoing"
-        case usersInvite = "usersInvite"
-        case startTime = "startTime"
-        case endTime = "endTime"
-        case type = "type"
-        case eventCoverIndex = "eventCoverIndex"
-        case eventPicIndices = "eventPicIndices"
-        case picNum = "picNum"
-        case LCTitle = "LCTitle"
-        case usersNotGoing = "usersNotGoing"
-        case allowUserInvites = "allowUserInvites"
-        case ownerName = "ownerName"
-        case ownerId = "ownerId"
-        case price = "price"
-        case link = "buyTicketsLink"
-    }
-    
-    public required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.title = try container.decode(String.self, forKey: .title)
-        self.coordinates = try container.decode([String:Double].self, forKey: .coordinates)
-        self.hosts = try container.decode([String].self, forKey: .hosts)
-        self.bio = try container.decode(String.self, forKey: .bio)
-        self.address = try container.decode(String.self, forKey: .address)
-        self.maxGuests = try container.decode(Int.self, forKey: .maxGuests)
-        self.usersGoing = try container.decode([String].self, forKey: .usersGoing)
-        self.usersNotGoing = try container.decode([String].self, forKey: .usersNotGoing)
-        self.usersInvite = try container.decode([String].self, forKey: .usersInvite)
-        self.startTime = try container.decode(Timestamp.self, forKey: .startTime)
-        self.endTime = try container.decode(Timestamp.self, forKey: .endTime)
-        self.type = try container.decode(Int.self, forKey: .type)
-        self.eventCoverIndex = try container.decode([Int].self, forKey: .eventCoverIndex)
-        self.eventPicIndices = try container.decode([Int].self, forKey: .eventPicIndices)
-        self.picNum = try container.decode(Int.self, forKey: .picNum)
-        self.LCTitle = try container.decode(String.self, forKey: .LCTitle)
-        self.allowUserInvites = try container.decode(Bool.self, forKey: .allowUserInvites)
-        self.ownerName = try container.decode(String.self, forKey: .ownerName)
-        self.ownerId = try container.decode(String.self, forKey: .ownerId)
-        
-        self.price = try? container.decode(Double.self, forKey: .price)
-        self.link = try? container.decode(String.self, forKey: .link)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(title, forKey: .title)
-        try container.encode(coordinates, forKey: .coordinates)
-        try container.encode(hosts, forKey: .hosts)
-        try container.encode(bio, forKey: .bio)
-        try container.encode(address, forKey: .address)
-        try container.encode(maxGuests, forKey: .maxGuests)
-        try container.encode(usersGoing, forKey: .usersGoing)
-        try container.encode(usersNotGoing, forKey: .usersNotGoing)
-        try container.encode(usersInvite, forKey: .usersInvite)
-        try container.encode(startTime, forKey: .startTime)
-        try container.encode(endTime, forKey: .endTime)
-        try container.encode(type, forKey: .type)
-        try container.encode(eventCoverIndex, forKey: .eventCoverIndex)
-        try container.encode(eventPicIndices, forKey: .eventPicIndices)
-        try container.encode(picNum, forKey: .picNum)
-        try container.encode(LCTitle, forKey: .LCTitle)
-        try container.encode(allowUserInvites, forKey: .allowUserInvites)
-        try container.encode(ownerName, forKey: .ownerName)
-        try container.encode(ownerId, forKey: .ownerId)
-        
-        try? container.encode(price, forKey: .price)
-        try? container.encode(link, forKey: .link)
-    }
-    
-    public func createEvent() -> Event {
-        let t = EventType(rawValue: type)!
-        switch t {
-        case .Event:
-            let event = Event()
-            updateEvent(event: event)
-            return event
-        case .Open, .Closed:
-            let event = UserEvent(type: t)
-            updateEvent(event: event)
-            return event
-        case .Promoter:
-            let event = PromoterEvent()
-            updateEvent(event: event)
-            return event
-        }
-    }
-    
-    public func updateEvent(event: Event) {
-        event.title = title
-        event.coordinates = CLLocation(latitude: coordinates["lat"]!, longitude: coordinates["long"]!)
-        event.hosts = hosts.map({ User(userId: $0 )})
-        event.bio = bio
-        event.address = address
-        event.maxGuests = maxGuests
-        event.usersGoing = usersGoing.map( { User(userId: $0 )} )
-        event.usersNotGoing = usersNotGoing.map( { User(userId: $0 )} )
-        event.usersInvite = usersInvite.map( { User(userId: $0 )} )
-        event.startTime = startTime.dateValue()
-        event.endTime = endTime.dateValue()
-        event.allowUserInvites = allowUserInvites
-        event.ownerId = ownerId
-        event.ownerName = ownerName
-        
-        guard let price = price,
-              let link = link,
-            let pEvent = event as? PromoterEvent else {
-            return
-        }
-        pEvent.price = price
-        pEvent.buyTicketsLink = URL(string: link)
     }
 }
 
@@ -554,6 +340,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         fatalError("Must Override!")
     }
 
+    //MARK: Yianni i confusian
     public func isPublic() -> Bool {
         return true
     }
@@ -703,6 +490,7 @@ public func createEventLocal(eventId Id: String = "",
     case .Event: return baseEvent
     case .Closed, .Open: return UserEvent(event: baseEvent, type: t)
     case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
+    case .Recurring: return RecurringEvent(event: baseEvent, cat: nil, phoneN: nil, web: nil, ven: nil, price: nil, buyTicketsLink: nil)
     }
     
 }
