@@ -32,9 +32,12 @@ pod 'FirebaseFirestoreSwift', '> 7.0-beta'
 pod 'CodableFirebase' 
 pod 'Firebase/Messaging'
 
+#email
+pod 'GoogleAPIClient/Gmail'
+pod 'mailcore2-ios'
+
 
 pod 'GeoFire', '~> 4.0'
-pod 'mailcore2-ios'
 
 
 end
