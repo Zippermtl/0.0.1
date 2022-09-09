@@ -22,6 +22,7 @@ public enum EventType: Int {
     case Open = 1
     case Closed = 2
     case Promoter = 3
+    case Recurring = 4
 }
 
 extension DatabaseManager {
@@ -547,6 +548,7 @@ extension DatabaseManager {
         case .Event: return baseEvent
         case .Closed, .Open: return UserEvent(event: baseEvent, type: t)
         case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
+        case .Recurring: return RecurringEvent(event: baseEvent, cat: nil, phoneN: nil, web: nil, ven: nil, price: nil, buyTicketsLink: nil)
         }
     }
     
