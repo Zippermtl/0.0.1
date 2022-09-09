@@ -206,7 +206,7 @@ class MapViewController: UIViewController {
 
         profileButton.layer.masksToBounds = true
         profileButton.layer.cornerRadius = 25
-        profileButton.layer.borderColor = UIColor.zipVeryLightGray.cgColor //UIColor.zipVeryLightGray.cgColor
+        profileButton.layer.borderColor = UIColor.white.cgColor //UIColor.zipVeryLightGray.cgColor
         profileButton.layer.borderWidth = 1
     }
     

@@ -1095,7 +1095,9 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     
     static func appendUDEvent(event: Event, toKey key: UserDefaultEventKeys) -> [Event]{
         var events = Self.getUDEvents(toKey: key)
-        events.append(event)
+        if !events.contains(event) {
+            events.append(event)
+        }
         Self.setUDEvents(events: events, toKey: key)
         return events
     }

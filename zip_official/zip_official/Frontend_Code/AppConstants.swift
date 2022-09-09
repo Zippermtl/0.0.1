@@ -134,6 +134,7 @@ extension UIFont {
     
     static var zipFontSemiBold: UIFont {
 //        print("reached SemiBold")
+<<<<<<< Updated upstream
 //        guard let font = UIFont(name: "WorkSans-Medium", size: 12) else {
 //            fatalError("""
 //                    Failed to load the "WorkSans-SemiBold" font.
@@ -144,6 +145,18 @@ extension UIFont {
 //        }
 //        return font
         return zipBodyBold
+=======
+        guard let font = UIFont(name: "WorkSans-SemiBold", size: 12) else {
+            fatalError("""
+                    Failed to load the "WorkSans-SemiBold" font.
+                    Make sure the font file is included in the project and the font name is spelled correctly.
+                    """
+            )
+
+        }
+        return font
+//        return zipBodyBold
+>>>>>>> Stashed changes
     }
 
     static var zipHeader: UIFont {  return UIFont.zipFontSemiBold.withSize(24)  }

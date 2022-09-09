@@ -90,6 +90,11 @@ class LoadingViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(true, animated: true)
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        view.backgroundColor = .zipGray
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipLogoBlue

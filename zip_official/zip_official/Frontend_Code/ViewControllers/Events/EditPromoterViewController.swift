@@ -74,16 +74,36 @@ class EditPromoterViewController: EditEventProfileViewController, UITextFieldDel
             event.price = nil
             event.buyTicketsLink = nil
         } else {
-            event.price = price
-            event.buyTicketsLink = link
+            if verifyUrl(urlString: link?.absoluteString) {
+                event.price = price
+                event.buyTicketsLink = link
+            } else {
+                let alert = UIAlertController(title: "Error: URL Unavailable",
+                                                    message: "Please Enter a Valid URL to continue",
+                                                    preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Ok",
+                                                    style: .cancel,
+                                                    handler: nil))
+                
+                present(alert, animated: true)
+                return
+            }
+            
         }
-        
-        
-        
+
         super.didTapSave()
-        
-        
     }
+    
+    func verifyUrl (urlString: String?) -> Bool {
+        if let urlString = urlString {
+            if let url = NSURL(string: urlString) {
+                return UIApplication.shared.canOpenURL(url as URL)
+            }
+        }
+        return false
+    }
+    
     
     @objc private func didTapSwitch(sender: UISwitch) {
         isOpen = !isOpen
@@ -244,7 +264,17 @@ class EditPromoterViewController: EditEventProfileViewController, UITextFieldDel
                 link = nil
                 return
             }
+            
             link = URL(string: text)
+        }
+        
+        func verifyUrl (urlString: String?) -> Bool {
+            if let urlString = urlString {
+                if let url = NSURL(string: urlString) {
+                    return UIApplication.shared.canOpenURL(url as URL)
+                }
+            }
+            return false
         }
     }
     

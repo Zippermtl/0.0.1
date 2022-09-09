@@ -537,7 +537,7 @@ extension DatabaseManager {
                                  endTime etime: Date = Date(),
                                  duration dur: TimeInterval = TimeInterval(1),
                                  image im: UIImage? = UIImage(named: "launchevent"),
-                                 imageURL url: URL = URL(string: "a")!,
+                                 imageURL url: URL? = nil,
                                  endTimeString ets: String = "",
                                  startTimeString sts: String = "",
                                  type t: EventType = .Event,

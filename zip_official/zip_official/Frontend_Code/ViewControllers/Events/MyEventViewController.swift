@@ -15,12 +15,7 @@ class MyEventViewController: EventViewController {
     
     override init(event: Event) {
         event.allowUserInvites = false
-        super.init(event: event)
-        
-//        goingButton.layer.borderWidth = 1
-           
-      
-        
+        super.init(event: event)        
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .light, scale: .large)
         let config2 = UIImage.SymbolConfiguration(pointSize: 25, weight: .medium, scale: .large)
 
@@ -48,7 +43,15 @@ class MyEventViewController: EventViewController {
     }
     
     override func configureInviteButton() {
+        if  let inviteButton = inviteButton,
+            let _ = inviteButton.superview {
+            inviteButton.removeFromSuperview()
+        }
+        
+        inviteButton = nil
+        tableHeader.addSubview(goingButton)
         goingButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        
     }
     
     override func configureLabels(){

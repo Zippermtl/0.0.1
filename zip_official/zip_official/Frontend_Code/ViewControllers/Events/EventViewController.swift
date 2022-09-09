@@ -158,6 +158,7 @@ class EventViewController: UIViewController {
         configureNavBar()
         configureTable()
         configureRefresh()
+        fetchEvent(completion: nil)
     }
     
     public func configureGoingButton(){
@@ -471,13 +472,6 @@ class EventViewController: UIViewController {
     }
     
     @objc func didTapSaveButton(){
-        if event.endTime <= Date() {
-            let alert = UIAlertController(title: "This Event Has Ended", message: "You cannot save expired events", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
-            present(alert, animated: true)
-            return
-        }
-        
         if !isSaved {
             event.markSaved(completion: { [weak self] error in
                 guard let strongSelf = self,
@@ -523,7 +517,6 @@ class EventViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
         
-        fetchEvent(completion: nil)
         
         tableHeader.setNeedsLayout()
         tableHeader.layoutIfNeeded()

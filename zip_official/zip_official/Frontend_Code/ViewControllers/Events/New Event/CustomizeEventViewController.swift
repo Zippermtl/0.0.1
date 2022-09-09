@@ -189,8 +189,23 @@ class CustomizeEventViewController: UIViewController {
                         present(alert, animated: true)
                         return
                     }
-                    event.price = price
-                    event.buyTicketsLink = link
+                    
+                    if verifyUrl(urlString: link.absoluteString) {
+                        event.price = price
+                        event.buyTicketsLink = link
+                    } else {
+                        let alert = UIAlertController(title: "Error: URL Unavailable",
+                                                            message: "Please Enter a Valid URL to continue",
+                                                            preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "Ok",
+                                                            style: .cancel,
+                                                            handler: nil))
+                        
+                        present(alert, animated: true)
+                        return
+                    }
+                   
                 }
             }
         } else {
@@ -202,6 +217,15 @@ class CustomizeEventViewController: UIViewController {
         let vc = CompleteEventViewController(event: event)
         navigationController?.pushViewController(vc, animated: true)
 
+    }
+    
+    func verifyUrl (urlString: String?) -> Bool {
+        if let urlString = urlString {
+            if let url = NSURL(string: urlString) {
+                return UIApplication.shared.canOpenURL(url as URL)
+            }
+        }
+        return false
     }
     
     @objc private func didTapAddHosts() {
