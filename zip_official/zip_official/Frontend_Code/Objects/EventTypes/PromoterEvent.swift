@@ -33,6 +33,7 @@ public class PromoterEvent: Event {
     override public func dispatch(user:User) -> Bool {
         return true
     }
+    
     override public func getType() -> EventType {
         return .Promoter
     }
