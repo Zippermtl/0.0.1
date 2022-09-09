@@ -370,6 +370,7 @@ class EventViewController: UIViewController {
     
     @objc func didTapParticipantsButton(){
         let vc = MasterTableViewController(sectionData: event.getParticipants())
+        
         vc.title = "Participants"
         navigationController?.pushViewController(vc, animated: true)
     }
