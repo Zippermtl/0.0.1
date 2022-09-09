@@ -483,7 +483,8 @@ extension MapViewController: MKMapViewDelegate {
             return nil
         }
         switch eventAnnotation.event.getType() {
-        case .Open, .Closed:
+            //MARK: YIANNI read
+        case .Open, .Closed, .Recurring:
             guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: UserEventAnnotationView.identifier) as? UserEventAnnotationView else {
                 return MKAnnotationView()
             }
