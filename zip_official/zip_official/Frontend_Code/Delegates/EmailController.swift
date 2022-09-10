@@ -13,6 +13,11 @@ import Foundation
     
 public enum EmailControllerType: String {
     case Harrassment = "Harrassment"
+    case Spam  = "Spam"
+    case FakeEvent = "Fake Event/Spam"
+    case InappropriatePic = "Inappropriate Photo"
+    case InappropriateBio = "Inappropriate Bio"
+    case Danger = "Someone is in Danger"
     //MARK: Yianni add more here
 }
     
