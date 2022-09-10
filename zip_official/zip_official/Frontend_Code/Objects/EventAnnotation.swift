@@ -9,7 +9,11 @@ import Foundation
 import MapKit
 
 protocol EventAnnotationDelegate : AnyObject {
-    func selectEvent(for annotationView : EventAnnotationView)
+    func selectEvent(for annotationView : EventAnnotationViewProtocol)
+}
+
+protocol EventAnnotationViewProtocol {
+    
 }
 
 class EventAnnotation: NSObject, MKAnnotation {
@@ -25,7 +29,7 @@ class EventAnnotation: NSObject, MKAnnotation {
 }
 
 
-class EventAnnotationView: MKAnnotationView {
+class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
     var view_length: CGFloat = 40
     var dot_length: CGFloat = 12
     weak var delegate: EventAnnotationDelegate?

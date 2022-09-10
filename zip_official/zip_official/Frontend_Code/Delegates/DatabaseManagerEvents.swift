@@ -412,6 +412,7 @@ extension DatabaseManager {
     
     
     
+    
     public func createHappenings(events: [RecurringEvent]) {
         for event in events {
             do {

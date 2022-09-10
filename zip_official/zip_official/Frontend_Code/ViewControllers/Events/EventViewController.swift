@@ -36,14 +36,14 @@ class EventViewController: UIViewController {
     
     private let liveView: UIView
     
-    private let eventBorder: UIView
+    let eventBorder: UIView
     let eventPhotoView: UIImageView
     private let spinner: JGProgressHUD
     
     // MARK: - Labels
-    private let countDownLabel: UILabel
+    let countDownLabel: UILabel
     let hostLabel: UILabel
-    private let userCountLabel: UILabel
+    let userCountLabel: UILabel
     let eventTypeLabel: UILabel
     
     // MARK: - Buttons
@@ -574,7 +574,7 @@ class EventViewController: UIViewController {
         }
     }
     
-    private func fetchEvent(completion: (() -> Void)? = nil) {
+    func fetchEvent(completion: (() -> Void)? = nil) {
         if event.endTime <= Date() {
             configureLoadedEvent() // expired events have already been loaded and cannot change so no need to reload
         } else {
@@ -604,7 +604,7 @@ class EventViewController: UIViewController {
         }
     }
     
-    private func configureLoadedEvent() {
+    func configureLoadedEvent() {
         configureInviteButton()
         configureLabels()
         eventPhotoView.sd_setImage(with: event.imageUrl, completed: nil)
@@ -660,7 +660,7 @@ class EventViewController: UIViewController {
         configureTableHeaderLayout()
     }
     
-    private func configureTableHeaderLayout() {
+    func configureTableHeaderLayout() {
         tableHeader.addSubview(eventPhotoView)
         eventPhotoView.translatesAutoresizingMaskIntoConstraints = false
         eventPhotoView.topAnchor.constraint(equalTo: tableHeader.topAnchor, constant: 20).isActive = true

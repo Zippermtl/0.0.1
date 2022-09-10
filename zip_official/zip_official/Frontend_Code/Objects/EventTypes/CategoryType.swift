@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 public enum CategoryType: String {
     case HappyHour = "Happy Hour"
@@ -21,6 +22,16 @@ public enum CategoryType: String {
         case .Deal: return "happenings.deal"
         case .OpenMic: return "happenings.openMic"
         case .Music: return "happenings.music"
+        }
+    }
+    
+    public var color: UIColor {
+        switch self {
+        case .HappyHour: return .zipHappeningsHappyHour
+        case .Trivia: return .zipHappeningsTrivia
+        case .Deal: return .zipHappeningsDeals
+        case .OpenMic: return .zipHappeningsOpenMic
+        case .Music: return .zipHappeningsMusic
         }
     }
 }

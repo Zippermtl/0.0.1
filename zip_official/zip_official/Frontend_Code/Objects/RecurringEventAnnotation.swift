@@ -10,8 +10,9 @@ import UIKit
 import MapKit
 
 
-class RecurringEventAnnotationView: MKAnnotationView {
+class RecurringEventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
     static let identifier = "happeningsAnnotationView"
+    weak var delegate: EventAnnotationDelegate?
 
     var isVisible = false
     
@@ -24,10 +25,18 @@ class RecurringEventAnnotationView: MKAnnotationView {
         addSubview(eventImage)
         eventImage.frame = bounds
         eventImage.contentMode = .scaleAspectFit
+        eventImage.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(openEvent))
+        eventImage.addGestureRecognizer(tap)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc private func openEvent() {
+        print("tapping")
+        delegate?.selectEvent(for: self)
     }
     
     public func configure(event: RecurringEvent) {

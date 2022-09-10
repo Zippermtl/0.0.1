@@ -524,6 +524,7 @@ extension MapViewController: MKMapViewDelegate {
             }
             annotationView.configure(event: event)
             annotationView.canShowCallout = false
+            annotationView.delegate = self
             return annotationView
             
         case .Open, .Closed:
@@ -564,7 +565,9 @@ extension MapViewController: MKMapViewDelegate {
         mapView.isZoomEnabled = true
         if let annotationView = view as? EventAnnotationView,
            let annotation = view.annotation as? EventAnnotation {
+            
             if let recurringEvent = annotation.event as? RecurringEvent {
+                print(recurringEvent.eventId)
                 return
             }
             if annotationView.isDot {
@@ -608,21 +611,32 @@ extension MapViewController: MKMapViewDelegate {
 }
 
 extension MapViewController : EventAnnotationDelegate {
-    func selectEvent(for annotationView: EventAnnotationView) {
-        guard let annotation = annotationView.annotation as? EventAnnotation  else {
-            return
+    func selectEvent(for annotationView: EventAnnotationViewProtocol) {
+        if let aView = annotationView as? EventAnnotationView {
+            guard let annotation = aView.annotation as? EventAnnotation  else {
+                return
+            }
+            let event = annotation.event
+            
+            var eventVC: UIViewController
+            let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
+            if annotation.event.hosts.map({ $0.userId }).contains(userId) {
+                eventVC = MyEventViewController(event: event)
+            } else {
+                eventVC = EventViewController(event: event)
+            }
+            
+            navigationController?.pushViewController(eventVC, animated: true)
+        } else if let aView = annotationView as? RecurringEventAnnotationView{
+            guard let annotation = aView.annotation as? EventAnnotation,
+                  let rEvent = annotation.event as? RecurringEvent else {
+                return
+            }
+            
+            let vc = RecurringEventViewController(event: rEvent)
+            navigationController?.pushViewController(vc, animated: true)
+
         }
-        let event = annotation.event
-        
-        var eventVC: UIViewController
-        let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
-        if annotation.event.hosts.map({ $0.userId }).contains(userId) {
-            eventVC = MyEventViewController(event: event)
-        } else {
-            eventVC = EventViewController(event: event)
-        }
-        
-        navigationController?.pushViewController(eventVC, animated: true)
     }
 }
 
@@ -638,13 +652,18 @@ extension MapViewController: UIGestureRecognizerDelegate {
             if annotation is MKUserLocation {
                 continue
             }
-            guard let annotationView = self.mapView.view(for: annotation) as? EventAnnotationView else { continue }
-            if mapView.zoomLevel <= DOT_ZOOM_DISTANCE && !annotationView.isDot{
-                print("MAKING DOT")
-                annotationView.makeDot()
-            } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && annotationView.isDot {
-                print("MAKING EVENT")
-                annotationView.makeEvent()
+            if let annotationView = self.mapView.view(for: annotation) as? EventAnnotationView  {
+                if mapView.zoomLevel <= DOT_ZOOM_DISTANCE && !annotationView.isDot{
+                    annotationView.makeDot()
+                } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && annotationView.isDot {
+                    annotationView.makeEvent()
+                }
+            } else if let annotationView = self.mapView.view(for: annotation) as? RecurringEventAnnotationView  {
+                if mapView.zoomLevel <= DOT_ZOOM_DISTANCE && annotationView.isVisible {
+                    annotationView.hide()
+                } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && !annotationView.isVisible {
+                    annotationView.show()
+                }
             }
         }
     }

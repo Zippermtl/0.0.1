@@ -168,6 +168,31 @@ final class StorageManager {
         return temp.count
     }
     
+    
+    public func getRecurringEventImage(event: Event, completion: @escaping (Result<URL, Error>) -> Void) {
+        var photoId = event.eventId.replacingOccurrences(of: "1", with: "")
+        photoId = photoId.replacingOccurrences(of: "2", with: "")
+        photoId = photoId.replacingOccurrences(of: "3", with: "")
+        photoId = photoId.replacingOccurrences(of: "4", with: "")
+        photoId = photoId.replacingOccurrences(of: "5", with: "")
+        photoId = photoId.replacingOccurrences(of: "6", with: "")
+        photoId = photoId.replacingOccurrences(of: "7", with: "")
+        photoId = photoId.replacingOccurrences(of: "8", with: "")
+        photoId = photoId.replacingOccurrences(of: "9", with: "")
+        
+
+        let tempPath = "Activities/" + photoId + ".png"
+        self.downloadURL(for: tempPath, completion: { result in
+            switch result {
+            case .success(let url):
+                completion(.success(url))
+            case .failure(let error):
+                print("failed to get image URL: \(error)")
+            }
+        })
+    }
+    
+    
     public func getProfilePicture(path: String, completion: @escaping (Result<URL, Error>) -> Void) {
         let tempPath = path + "/profile_picture.jpeg"
         self.downloadURL(for: tempPath, completion: { result in

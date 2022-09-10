@@ -81,10 +81,11 @@ func createBodyFunc(type: EmailControllerType, self: User, target: SearchObject,
     } else {
         targetType = "Failed to extract type: "
     }
-    switch type{
-    case .Harrassment:
+    //MARK: Gabe - comments this out cause idk what you're tryna do here
+//    switch type{
+//    case .Harrassment:
         return intro + targetType + targetId + mid + type.rawValue + " due to detection in: \n" + "Desc: " + desc
-    }
+//    }
 }
     
 //    func sendEmail() {

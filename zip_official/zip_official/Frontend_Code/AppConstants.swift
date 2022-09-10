@@ -102,6 +102,25 @@ extension UIColor {
         return UIColor(red: 210/255, green: 207/255, blue: 133/255, alpha: 1)
     }
     
+    static var zipHappeningsHappyHour: UIColor {
+        return UIColor(red: 244/255, green: 118/255, blue: 255/255, alpha: 1)
+    }
+    
+    static var zipHappeningsTrivia: UIColor {
+        return UIColor(red: 140/255, green: 200/255, blue: 153/255, alpha: 1)
+    }
+    
+    static var zipHappeningsMusic: UIColor {
+        return UIColor(red: 61/255, green: 151/255, blue: 242/255, alpha: 1)
+    }
+    
+    static var zipHappeningsOpenMic: UIColor {
+        return UIColor(red: 255/255, green: 179/255, blue: 108/255, alpha: 1)
+    }
+    
+    static var zipHappeningsDeals: UIColor {
+        return UIColor(red: 255/255, green: 108/255, blue: 108/255, alpha: 1)
+    }
 }
 
 extension UIFont {
