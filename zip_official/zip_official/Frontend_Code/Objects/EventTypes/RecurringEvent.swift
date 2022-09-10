@@ -31,7 +31,7 @@ public class RecurringEvent: PromoterEvent {
     var category: CategoryType? = .Deal
     var phoneNumber: Int? = -1
     var venu: String? = ""
-    var date: String? = ""
+    var dayOfTheWeek: String = ""
     
     override init() {
         super.init()
@@ -60,13 +60,26 @@ public class RecurringEvent: PromoterEvent {
         toMakeDate.day = calendarDate.day
         
         guard let lat = Double(vals[4]),
-                let long = Double(vals[5]),
-                let phoneNum = Int(vals[11]) else {
+                let long = Double(vals[5]) else {
             print("u done fucked up bad line 59 Recurring Event")
             return
         }
-        let a = (vals[9].split(separator: ":")).map { Int($0)!}
-        let b = (vals[10].split(separator: ":")).map { Int($0)!}
+        if vals[11] == "" {
+            self.phoneNumber = nil
+        } else {
+            let phoneNumArray = vals[11].components(separatedBy: "-")
+            let phoneNumString = phoneNumArray[0] + phoneNumArray[1] + phoneNumArray[2]
+            self.phoneNumber = Int(phoneNumString)
+        }
+        
+        self.dayOfTheWeek = vals[8]
+       
+            
+        let a1 = vals[9].components(separatedBy: ":")
+        let b1 = vals[10].components(separatedBy: ":")
+
+        let a = a1.map { Int($0) ?? 0 }
+        let b = b1.map { Int($0) ?? 0 }
         toMakeDate.hour = a[0]
         toMakeDate.minute = a[1]
         let stDate = calendar.date(from: toMakeDate as DateComponents)
@@ -77,7 +90,7 @@ public class RecurringEvent: PromoterEvent {
             let edDate = calendar.date(from: toMakeDate as DateComponents)
             self.endTime = edDate! as Date
         } else {
-            toMakeDate.day = (calendarDate.day as! Int) + 1
+            toMakeDate.day = (calendarDate.day!) + 1
             let edDate = calendar.date(from: toMakeDate as DateComponents)
             self.endTime = edDate! as Date
         }
@@ -86,22 +99,18 @@ public class RecurringEvent: PromoterEvent {
         self.venu = vals[2]
         self.address = vals[3]
         self.coordinates = CLLocation(latitude: lat, longitude: long)
-        self.category = CategoryType(rawValue: vals[6])
+        self.category = CategoryType(rawValue: vals[0])
         self.bio = vals[7]
-        self.date = vals[8]
 //        self.endTime = vals[10]
-        self.phoneNumber = phoneNum
         self.website = vals[12]
         
     }
     
+//    public func dayOfTheWeak() -> String? {
+//        return startTime.dayOfWeek()
+//    }
+    
     override public func getType() -> EventType {
         return .Recurring
     }
-    
-    override func getParticipants() -> [CellSectionData] {
-        let sections = [hostingSection, goingSection, notGoingSection]
-        return sections
-    }
-    
 }

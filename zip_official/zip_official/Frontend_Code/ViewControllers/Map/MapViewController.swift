@@ -112,10 +112,13 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
-        else { return }
-        let vc = ProfileViewController(id: userId)
-        navigationController?.pushViewController(vc, animated: true)
+        let path = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
+        DatabaseManager.shared.getCSVData(path: path)
+
+//        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
+//        else { return }
+//        let vc = ProfileViewController(id: userId)
+//        navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func didTapZoom(){

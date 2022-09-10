@@ -136,6 +136,13 @@ extension Date {
     func isInSameWeek(as date: Date) -> Bool { isEqual(to: date, toGranularity: .weekOfYear) }
     func isInSameYear(as date: Date) -> Bool { isEqual(to: date, toGranularity: .year) }
     func isInSameDay(as date: Date) -> Bool { isEqual(to: date, toGranularity: .day) }
+    
+    func dayOfWeek() -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE"
+        return dateFormatter.string(from: self).capitalized
+        // or use capitalized(with: locale) if you want
+    }
 
     func convertToTimeZone(initTimeZone: TimeZone, timeZone: TimeZone) -> Date {
          let delta = TimeInterval(timeZone.secondsFromGMT(for: self) - initTimeZone.secondsFromGMT(for: self))

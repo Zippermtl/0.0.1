@@ -363,7 +363,20 @@ extension DatabaseManager {
         }
     }
     
-    
+    public func createHappenings(events: [RecurringEvent]) {
+        for event in events {
+            do {
+                try  firestore.collection("RecurringEvents")
+                    .document(event.dayOfTheWeek)
+                    .collection("events")
+                    .document(event.eventId)
+                    .setData(from: event.getEncoder())
+            } catch {
+                print("Fuck")
+            }
+           
+        }
+    }
     
     public func createEvent(event: Event, completion: @escaping (Result<String,Error>) -> Void) {
         do {

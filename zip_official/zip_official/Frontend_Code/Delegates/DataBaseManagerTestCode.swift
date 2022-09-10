@@ -215,12 +215,47 @@ extension DatabaseManager {
     public func getCSVData(path: String){
         
         do {
+            var parsedCSV = [[String]]()
             let content = try String(contentsOfFile: path)
-            let parsedCSV: [String] = content.components(
-                separatedBy: "\n"
-            ).map{ $0.components(separatedBy: ",")[0] }
+            var separatedEvents = content.components( separatedBy: "\n" )
+            separatedEvents.remove(at: 0)
+            for eventString in separatedEvents {
+                let separated = eventString.split(separator: ",", omittingEmptySubsequences: false).map({ String($0) })
+                var eventArray = [String]()
+                var isCombining = false
+                var combinedString = ""
+                for str in separated {
+                    
+                    if str.starts(with: "\"") {
+                        isCombining = true
+                    }
+                    
+                    if str.count > 0 && str.suffix(1) == "\"" {
+                        isCombining = false
+                        combinedString += str.dropLast()
+                        eventArray.append(combinedString)
+                        combinedString = ""
+                        continue
+                    }
+                    
+                    if isCombining {
+                        if combinedString == "" {
+                            combinedString += str.dropFirst()
+                        } else {
+                            combinedString += ","
+                            combinedString += str
+                        }
+                        
+                    } else {
+                        eventArray.append(String(str))
+                    }
+                    
+                    
+                }
+                parsedCSV.append(eventArray)
+            }
             createEventFromCsvData(data: parsedCSV, completion: { err in
-                if let err = err {
+                if let _ = err {
                     print("error in getCsvData")
                 }
             })
@@ -233,24 +268,23 @@ extension DatabaseManager {
     }
     
 //    Title,ID,Venue,Address,Latitude,Longitude,Category,Bio,Date,Start Time,End Time,Phone Number,Website
-    public func createEventFromCsvData(data: [String], completion: @escaping ((Error?) -> Void)) {
+    public func createEventFromCsvData(data: [[String]], completion: @escaping ((Error?) -> Void)) {
         let constCount = 13
         let count = 0
         var cp = data
-        var events : [Event] = []
-        while cp.count > 0 {
+        var events : [RecurringEvent] = []
+        for eventStrings in data {
             var tempData: [String] = []
-            for _ in 0 ..< 13 {
-                tempData.append(cp[0])
-                cp.remove(at: 0)
+            for str in eventStrings {
+                tempData.append(str)
             }
             events.append(RecurringEvent(vals: tempData))
+
         }
+            
         
-        for i in events {
-//            let temp = EventCoder.createEvent()
-            //MARK: YIANNI make push with coder should work here pushing cause missing time
-        }
+        
+        DatabaseManager.shared.createHappenings(events: events)
         
     }
     

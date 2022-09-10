@@ -70,6 +70,7 @@ public class EventCoder: Codable {
             self.price = pEvent.price
             self.link = pEvent.buyTicketsLink?.absoluteString
         }
+        
         if let rEvent = event as? RecurringEvent {
             self.phoneNumber = rEvent.phoneNumber
             self.category = rEvent.category
@@ -136,7 +137,12 @@ public class EventCoder: Codable {
         self.phoneNumber = try? container.decode(Int.self, forKey: .phoneNumber)
 //        self.category = try? container.decode(CategoryType(rawValue: String.self), forKey: .category)
         //MARK: Yianni fix pls
-        self.category = try? container.decode(String.self, forKey: .category)
+        let catagoryString = try? container.decode(String.self, forKey: .category)
+        if let s = catagoryString {
+            self.category = CategoryType(rawValue: s)
+        } else {
+            self.category = nil
+        }
         self.website = try? container.decode(String.self, forKey: .website)
         self.venu = try? container.decode(String.self, forKey: .venu)
 
@@ -170,8 +176,6 @@ public class EventCoder: Codable {
         try? container.encode(category?.rawValue, forKey: .category)
         try? container.encode(website, forKey: .website)
         try? container.encode(venu, forKey: .venu)
-
-
     }
     
     public func createEvent() -> Event {
