@@ -216,13 +216,25 @@ public class EventCoder: Codable {
         event.ownerId = ownerId
         event.ownerName = ownerName
         
-        guard let price = price,
-              let link = link,
-            let pEvent = event as? PromoterEvent else {
-            return
+        if let price = price,
+           let link = link,
+           let pEvent = event as? PromoterEvent  {
+            pEvent.price = price
+            pEvent.buyTicketsLink = URL(string: link)
         }
-        pEvent.price = price
-        pEvent.buyTicketsLink = URL(string: link)
+        
+        if let p = phoneNumber,
+           let c = category,
+           let w = website,
+           let v = venu,
+           let rEvent = event as? RecurringEvent {
+            rEvent.phoneNumber = p
+            rEvent.category = c
+            rEvent.website = w
+            rEvent.venu = v
+        }
+            
+       
     }
 }
 

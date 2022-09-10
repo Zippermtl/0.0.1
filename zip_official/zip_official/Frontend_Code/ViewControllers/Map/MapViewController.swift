@@ -112,8 +112,11 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
-        let path = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
-        DatabaseManager.shared.getCSVData(path: path)
+        let path1 = "/Users/yiannizavaliagkos/Downloads/happenings.csv"
+        let path2 = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
+        DatabaseManager.shared.getCSVData(path: path1)
+        DatabaseManager.shared.getCSVData(path: path2)
+
 
 //        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
 //        else { return }
@@ -286,7 +289,7 @@ class MapViewController: UIViewController {
         mapView.delegate = self
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
         mapView.register(UserEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: UserEventAnnotationView.identifier)
-
+        mapView.register(RecurringEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: RecurringEventAnnotationView.identifier)
         
         DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
@@ -320,7 +323,7 @@ class MapViewController: UIViewController {
             }
         })
 
-        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
+        DatabaseManager.shared.getAllGoingEvents(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
                 let annotation = EventAnnotation(event: event)
@@ -330,8 +333,35 @@ class MapViewController: UIViewController {
                 }
             }
         }, allCompletion: { result in
-
+            
         })
+
+        DatabaseManager.shared.getAllHappeningsToday(eventCompletion: { [weak self] event in
+            guard let strongSelf = self else { return }
+            if strongSelf.mappedEvents[event.eventId] == nil {
+                let annotation = EventAnnotation(event: event)
+                DispatchQueue.main.async {
+                    strongSelf.mapView.addAnnotation(annotation)
+                    strongSelf.mappedEvents[event.eventId] = annotation
+                }
+            }
+        }, allCompletion: { result in
+            
+            
+        })
+        
+//        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
+//            guard let strongSelf = self else { return }
+//            if strongSelf.mappedEvents[event.eventId] == nil {
+//                let annotation = EventAnnotation(event: event)
+//                DispatchQueue.main.async {
+//                    strongSelf.mapView.addAnnotation(annotation)
+//                    strongSelf.mappedEvents[event.eventId] = annotation
+//                }
+//            }
+//        }, allCompletion: { result in
+//
+//        })
 
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
@@ -487,7 +517,16 @@ extension MapViewController: MKMapViewDelegate {
         }
         switch eventAnnotation.event.getType() {
             //MARK: YIANNI read
-        case .Open, .Closed, .Recurring:
+        case .Recurring:
+            guard let event = eventAnnotation.event as? RecurringEvent,
+                let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: RecurringEventAnnotationView.identifier) as? RecurringEventAnnotationView else {
+                return MKAnnotationView()
+            }
+            annotationView.configure(event: event)
+            annotationView.canShowCallout = false
+            return annotationView
+            
+        case .Open, .Closed:
             guard let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: UserEventAnnotationView.identifier) as? UserEventAnnotationView else {
                 return MKAnnotationView()
             }
@@ -525,7 +564,9 @@ extension MapViewController: MKMapViewDelegate {
         mapView.isZoomEnabled = true
         if let annotationView = view as? EventAnnotationView,
            let annotation = view.annotation as? EventAnnotation {
-           
+            if let recurringEvent = annotation.event as? RecurringEvent {
+                return
+            }
             if annotationView.isDot {
                 let zoomRegion = MKCoordinateRegion(center: view.annotation!.coordinate,
                                                     latitudinalMeters: DEFAULT_ZOOM_DISTANCE-10,

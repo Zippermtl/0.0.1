@@ -364,7 +364,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
          startTime stime: Date = Date(),
          endTime etime: Date = Date(),
          duration dur: TimeInterval = TimeInterval(1),
-         image im: UIImage? = UIImage(named: "launchevent"),
+         image im: UIImage? = UIImage(named: "defaultPromoterEventProfilePic"),
          imageURL url: URL? = nil,
          endTimeString ets: String = "",
          startTimeString sts: String = "",
@@ -475,7 +475,7 @@ public func createEventLocal(eventId Id: String = "",
                              startTime stime: Date = Date(),
                              endTime etime: Date = Date(),
                              duration dur: TimeInterval = TimeInterval(1),
-                             image im: UIImage? = UIImage(named: "launchevent"),
+                             image im: UIImage? = UIImage(named: "defaultPromoterEventProfilePic"),
                              imageURL url: URL? = nil,
                              endTimeString ets: String = "",
                              startTimeString sts: String = "",
@@ -490,7 +490,7 @@ public func createEventLocal(eventId Id: String = "",
     case .Event: return baseEvent
     case .Closed, .Open: return UserEvent(event: baseEvent, type: t)
     case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
-    case .Recurring: return RecurringEvent(event: baseEvent, cat: nil, phoneN: nil, web: nil, ven: nil, price: nil, buyTicketsLink: nil)
+    case .Recurring: return RecurringEvent(event: baseEvent, cat: .Deal, phoneN: nil, web: nil, ven: nil, price: nil, buyTicketsLink: nil)
     }
     
 }

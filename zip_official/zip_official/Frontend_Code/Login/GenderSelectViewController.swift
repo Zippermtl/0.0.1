@@ -63,6 +63,7 @@ class GenderSelectViewController: UIViewController {
         guard gender != "" else {
             return
         }
+        print("user.gender = ",user.gender)
         user.gender = gender
         let vc = BasicProfileSetupViewController(user: user)
         navigationController?.pushViewController(vc, animated: true)

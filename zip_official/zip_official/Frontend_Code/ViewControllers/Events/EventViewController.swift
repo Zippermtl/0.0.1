@@ -383,7 +383,9 @@ class EventViewController: UIViewController {
             present(alert, animated: true)
             return
         }
-        let vc = InviteTableViewController(items: User.getMyZips())
+        let vc = InviteTableViewController(items: User.getMyZips().filter({ user in
+            return !(event.usersInvite.contains(user) || event.usersGoing.contains(user) || event.usersNotGoing.contains(user))
+        }))
         vc.saveFunc = { [weak self] items in
             guard let event = self?.event else { return }
             let users = items.map({ $0 as! User })

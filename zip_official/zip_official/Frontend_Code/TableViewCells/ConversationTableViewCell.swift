@@ -35,7 +35,11 @@ class ConversationTableViewCell: AbstractUserTableViewCell {
         readIcon.layer.masksToBounds = true
 
         readIcon.layer.cornerRadius = 6
-
+        
+        extraInfoLabel.numberOfLines = 2
+        extraInfoLabel.lineBreakMode = .byWordWrapping
+        extraInfoLabel.rightAnchor.constraint(equalTo: readIcon.leftAnchor,constant: -5).isActive = true
+        extraInfoLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
     
     override func layoutSubviews() {

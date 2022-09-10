@@ -138,7 +138,7 @@ extension DatabaseManager {
     public func createSampleUsersMany(){
         var userIdStart = 00000001
         var users: [User] = []
-        let image = UIImage(named: "gabe1")!
+        let image = UIImage(named: "defaultProfilePic")!
         let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
         let userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         for i in 0...100 {
@@ -189,7 +189,7 @@ extension DatabaseManager {
     public func testUserTableView(){
         var userIdStart = 00000001
         var users: [User] = []
-        let image = UIImage(named: "gabe1")!
+        let image = UIImage(named: "defaultProfilePic")!
         let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
         let userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         users.append(User(userId: "u2158018458"))
@@ -269,9 +269,6 @@ extension DatabaseManager {
     
 //    Title,ID,Venue,Address,Latitude,Longitude,Category,Bio,Date,Start Time,End Time,Phone Number,Website
     public func createEventFromCsvData(data: [[String]], completion: @escaping ((Error?) -> Void)) {
-        let constCount = 13
-        let count = 0
-        var cp = data
         var events : [RecurringEvent] = []
         for eventStrings in data {
             var tempData: [String] = []

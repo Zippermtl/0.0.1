@@ -75,7 +75,6 @@ class NotificationsViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zipGray
         
-        generateData()
         
         
     }
@@ -291,35 +290,3 @@ extension NotificationsViewController: UITableViewDataSource {
 }
 
 
-
-extension NotificationsViewController {
-    func generateData() {
-//        let newsUpdate = ZipNotification(type: .news, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: false)
-//        let publicEvent = ZipNotification(type: .eventPublic, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: true)
-//        let privateEvent = ZipNotification(type: .eventInvite, image: UIImage(named: "yianni1")!, time: TimeInterval(96400), hasRead: true)
-//        let eventTimeChange = ZipNotification(type: .eventTimeChange, image: UIImage(named: "launchevent")!, time: TimeInterval(10), hasRead: false)
-//        let eventAddressChange = ZipNotification(type: .eventAddressChange, image: UIImage(named: "launchevent")!, time: TimeInterval(200), hasRead: false)
-//        let eventLimitedSpots = ZipNotification(type: .eventLimitedSpots, image: UIImage(named: "launchevent")!, time: TimeInterval(2000), hasRead: false)
-//        let zipAccepted = ZipNotification(type: .zipAccepted, image: UIImage(named: "yianni1")!, time: TimeInterval(2000), hasRead: true)
-//
-//        notificationsNew.append(newsUpdate)
-//        notificationsNew.append(eventTimeChange)
-//        notificationsNew.append(eventLimitedSpots)
-//        notificationsNew.append(eventAddressChange)
-//
-//        notificationsToday.append(publicEvent)
-//        notificationsToday.append(zipAccepted)
-//
-//        notificationsEarlier.append(privateEvent)
-//
-//
-//        notificationsNew.sort(by: { $0.time < $1.time})
-//        notificationsToday.sort(by: { $0.time < $1.time})
-//        notificationsEarlier.sort(by: { $0.time < $1.time})
-
-
-    }
-    
-    
-    
-}

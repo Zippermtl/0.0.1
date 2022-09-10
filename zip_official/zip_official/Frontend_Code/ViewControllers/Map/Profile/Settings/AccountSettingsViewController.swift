@@ -59,8 +59,15 @@ class AccountSettingsViewController: UITableViewController {
             guard let gender = AppDelegate.userDefaults.value(forKey: "gender") as? String else {
                 return
             }
-            let idx = cellLabels.firstIndex(of: gender)
-            let cell = tableView.cellForRow(at: IndexPath(row: idx!, section: 0)) as! GenderCell
+            let idx: Int
+            switch gender {
+            case "M": idx = 0
+            case "W": idx = 1
+            case "O": idx = 2
+            default: idx = 3
+            }
+            
+            let cell = tableView.cellForRow(at: IndexPath(row: idx, section: 0)) as! GenderCell
             cell.selectionButton.isSelected = true
         }
         

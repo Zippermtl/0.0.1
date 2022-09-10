@@ -26,6 +26,8 @@ public enum EventType: Int {
 }
 
 extension DatabaseManager {
+    /// Gets all private events for current user
+    /// `completion` - Error? if one of the quier
     public func getAllUserDefaultsEvents(completion : @escaping (Error?) -> Void) {
         guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
@@ -62,7 +64,9 @@ extension DatabaseManager {
         })
     }
     
-    
+    /// Gets all Open events for current user
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getAllPublic(eventCompletion: @escaping (Event) -> Void,
                              allCompletion: @escaping (Result<[Event], Error>) -> Void){
         queryFieldValue(collection: "EventProfiles", field: "type", isEqualTo: EventType.Open.rawValue, eventCompletion: { event in
@@ -72,6 +76,9 @@ extension DatabaseManager {
         })
     }
     
+    /// Gets all promoter events
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getAllPromoter(eventCompletion: @escaping (Event) -> Void,
                                allCompletion: @escaping (Result<[Event], Error>) -> Void){
         queryFieldValue(collection: "EventProfiles", field: "type", isEqualTo: EventType.Promoter.rawValue, eventCompletion: { event in
@@ -81,7 +88,9 @@ extension DatabaseManager {
         })
     }
     
-    
+    /// Gets all currently going events for current user
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getAllGoingEvents(eventCompletion: @escaping (Event) -> Void,
                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
@@ -95,7 +104,9 @@ extension DatabaseManager {
         })
     }
     
-    
+    /// Gets all current hosting events for current user
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getAllHostedEvents(userId: String,
                                    eventCompletion: @escaping (Event) -> Void,
                                    allCompletion: @escaping (Result<[Event], Error>) -> Void){
@@ -109,6 +120,9 @@ extension DatabaseManager {
         })
     }
     
+    /// Gets all past attended events for current user
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getPastGoingEvents(eventCompletion: @escaping (Event) -> Void,
                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
@@ -122,6 +136,9 @@ extension DatabaseManager {
         })
     }
     
+    /// Gets all past hosted events for current user
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getPastHostedEvents(userId: String,
                                    eventCompletion: @escaping (Event) -> Void,
                                    allCompletion: @escaping (Result<[Event], Error>) -> Void){
@@ -135,6 +152,9 @@ extension DatabaseManager {
         })
     }
     
+    /// Gets all private events for current user
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func getAllPrivateEventsForMap(eventCompletion: @escaping (Event) -> Void,
                                           allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
@@ -148,6 +168,15 @@ extension DatabaseManager {
         })
     }
     
+    
+
+    ///Queries database for a field equal to a value
+    /// `collection` - string colelction name
+    /// `field` - string field to query on
+    /// `isEqualTo` - comparison
+    /// `fast` - boolean - if false then the function returns events when fully loaded instead of before image
+    /// `eventCompletion` - returns an event whenever one is finished
+    /// `allCompletion` - fires when all events are done loading
     public func queryFieldValue(collection : String,
                                 field : String,
                                 isEqualTo : Any,
@@ -254,6 +283,24 @@ extension DatabaseManager {
         if fast {
             allCompletion(.success(events))
         }
+    }
+    
+    
+    
+    public func getAllHappeningsToday(eventCompletion: @escaping (Event) -> Void,
+                                      allCompletion: @escaping (Result<[Event], Error>) -> Void) {
+        let date = Calendar.current.date(byAdding: .hour, value: -5, to: Date())
+        let dayOfTheWeek = date?.dayOfWeek() ?? "Monday"
+        
+        firestore.collection("RecurringEvents").document(dayOfTheWeek).collection("events").getDocuments(completion: { [weak self] snapshot,err in
+            guard let strongSelf = self else { return }
+            strongSelf.handleEventQueryResults(querySnapshot: snapshot, err: err, eventCompletion: { event in
+                eventCompletion(event)
+            }, allCompletion: { result in
+                allCompletion(result)
+            })
+            
+        })
     }
 
     public func getAllStoredEventsForUser(userId: String, completion: @escaping () -> Void){
@@ -362,6 +409,8 @@ extension DatabaseManager {
             
         }
     }
+    
+    
     
     public func createHappenings(events: [RecurringEvent]) {
         for event in events {
@@ -549,7 +598,7 @@ extension DatabaseManager {
                                  startTime stime: Date = Date(),
                                  endTime etime: Date = Date(),
                                  duration dur: TimeInterval = TimeInterval(1),
-                                 image im: UIImage? = UIImage(named: "launchevent"),
+                                 image im: UIImage? = UIImage(named: "defaultPromoterEventProfilePic"),
                                  imageURL url: URL? = nil,
                                  endTimeString ets: String = "",
                                  startTimeString sts: String = "",
@@ -561,7 +610,7 @@ extension DatabaseManager {
         case .Event: return baseEvent
         case .Closed, .Open: return UserEvent(event: baseEvent, type: t)
         case .Promoter: return PromoterEvent(event: baseEvent, price: nil, buyTicketsLink: nil)
-        case .Recurring: return RecurringEvent(event: baseEvent, cat: nil, phoneN: nil, web: nil, ven: nil, price: nil, buyTicketsLink: nil)
+        case .Recurring: return RecurringEvent(event: baseEvent, cat: .Deal, phoneN: nil, web: nil, ven: nil, price: nil, buyTicketsLink: nil)
         }
     }
     

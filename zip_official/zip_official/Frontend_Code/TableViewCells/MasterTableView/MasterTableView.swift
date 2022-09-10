@@ -152,7 +152,7 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     
     private func configureTable() {
         tableView.separatorStyle = .none
-        tableView.tableFooterView = nil
+        tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 120))
         tableView.sectionIndexBackgroundColor = .zipLightGray
         tableView.separatorColor = .zipSeparator
         tableView.dataSource = self
@@ -397,6 +397,14 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableData.sections[indexPath.section].items[indexPath.row].didSelectCell()
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
+        if multiSectionData.count > 0 && multiSectionData[0].sections.count <= 1 {
+            return 0
+        } else {
+            return 40
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

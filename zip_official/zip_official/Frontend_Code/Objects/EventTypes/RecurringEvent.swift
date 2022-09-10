@@ -28,16 +28,17 @@ public class RecurringEvent: PromoterEvent {
     //     12   var phoneNumber
     //      13  var website
     var website: String? = ""
-    var category: CategoryType? = .Deal
+    var category: CategoryType
     var phoneNumber: Int? = -1
     var venu: String? = ""
     var dayOfTheWeek: String = ""
     
     override init() {
+        category = .Deal
         super.init()
     }
     
-    init(event: Event, cat: CategoryType?, phoneN: Int?, web: String?, ven: String?, price: Double?, buyTicketsLink: URL?) {
+    init(event: Event, cat: CategoryType, phoneN: Int?, web: String?, ven: String?, price: Double?, buyTicketsLink: URL?) {
         self.phoneNumber = phoneN
         self.category = cat
         self.website = web
@@ -51,6 +52,8 @@ public class RecurringEvent: PromoterEvent {
     }
     
     init(vals: [String]){
+        self.category = CategoryType(rawValue: vals[6])!
+
         super.init()
         let calendar = NSCalendar(calendarIdentifier: .gregorian)!
         var toMakeDate = DateComponents()
@@ -99,7 +102,6 @@ public class RecurringEvent: PromoterEvent {
         self.venu = vals[2]
         self.address = vals[3]
         self.coordinates = CLLocation(latitude: lat, longitude: long)
-        self.category = CategoryType(rawValue: vals[0])
         self.bio = vals[7]
 //        self.endTime = vals[10]
         self.website = vals[12]
@@ -113,4 +115,6 @@ public class RecurringEvent: PromoterEvent {
     override public func getType() -> EventType {
         return .Recurring
     }
+    
+
 }

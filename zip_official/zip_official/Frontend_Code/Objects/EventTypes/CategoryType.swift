@@ -13,4 +13,14 @@ public enum CategoryType: String {
     case Deal = "Deal"
     case OpenMic = "Open Mic"
     case Music = "Music"
+    
+    public var imageName: String {
+        switch self {
+        case .HappyHour: return "happenings.happyhour"
+        case .Trivia: return "happenings.trivia"
+        case .Deal: return "happenings.deal"
+        case .OpenMic: return "happenings.openMic"
+        case .Music: return "happenings.music"
+        }
+    }
 }

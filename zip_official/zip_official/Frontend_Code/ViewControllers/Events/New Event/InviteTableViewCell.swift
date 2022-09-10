@@ -19,7 +19,10 @@ class InviteTableViewCell: AbstractUserTableViewCell, InviteCell {
         if sender.isSelected {
             sender.isSelected = false
             delegate?.unselect(cellItem: user)
+            user.isInivted = false
+
         } else {
+            user.isInivted = true
             sender.isSelected = true
             user.isInivted = true
             delegate?.select(cellItem: user)
@@ -32,8 +35,9 @@ class InviteTableViewCell: AbstractUserTableViewCell, InviteCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         extraInfoLabel.font = .zipTextNoti
         
-        let plus = UIImage(systemName: "plus.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
-        let check = UIImage(systemName: "checkmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
+        let config = UIImage.SymbolConfiguration(pointSize: 28, weight: .bold, scale: .medium)
+        let plus = UIImage(systemName: "plus.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+        let check = UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipBlue)
         addButton.setImage(plus, for: .normal)
         addButton.setImage(check, for: .selected)
         addButton.contentVerticalAlignment = .fill
@@ -53,6 +57,7 @@ class InviteTableViewCell: AbstractUserTableViewCell, InviteCell {
     }
     
     override func configure(_ user: User) {
+        addButton.isSelected = user.isInivted
         super.configure(user)
         extraInfoLabel.text = "@" + user.username
     }
