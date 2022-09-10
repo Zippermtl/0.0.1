@@ -354,7 +354,7 @@ extension MapViewController: CLLocationManagerDelegate {
         guard let latestLocation = locations.first else { return }
         
         AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
-
+//        DatabaseManager.shared.testEmail()
         if !guardingGeoFireCalls {
             
             GeoManager.shared.UpdateLocation(location: latestLocation)
