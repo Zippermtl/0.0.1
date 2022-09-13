@@ -8,6 +8,8 @@
 import UIKit
 import MARKRangeSlider
 
+
+//MARK: Yianni fix max range 200 m 500 km or 100 m 150km
 class FilterSettingsViewController: UIViewController {
     private let distanceView: cellView
     private let ageView: cellView
@@ -137,13 +139,15 @@ class FilterSettingsViewController: UIViewController {
     }
     
     @objc func sliderChanged(_ sender: UISlider) {
+        //MARK: GABE Move to GeoManager
         let convertedDistance = convertDistance(inDistance: Int(sender.value))
         var unit = "km"
         if NSLocale.current.regionCode == "US" {
             unit = "miles"
         }
         distanceLabel.text = convertedDistance.description + " " + unit
-        AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
+        GeoManager.shared.setMaxRangeFilter(val: Double(convertedDistance))
+//        AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
     }
     
     @objc func ageSliderChanged(){

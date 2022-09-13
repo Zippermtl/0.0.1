@@ -15,7 +15,7 @@ class GeoManager {
     static let shared = GeoManager()
         
     var userIdList: [User] = []
-    var loadedUsers: [User] = []
+    var loadedUsers: [String:User] = [:]
     var alreadyReadySeen: [String] = []
     var userLocDict: [String:CLLocation] = [:]
 
@@ -38,6 +38,9 @@ class GeoManager {
     var loadedEvent: [Event] = []
     var alreadyReadySeenEvent: [String] = []
     
+    public var presentRange = Double(5)
+    public var rangeMultiplier = Double(1)
+    public var maxRangeFilter = (AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as? Double) ?? 100
     var eventRange: Double = 0
     
     init(){
@@ -63,24 +66,7 @@ class GeoManager {
 //        let safeEmail = email.replacingOccurrences(of: ".", with: "-").replacingOccurrences(of: "@", with: "-")
 //        return safeEmail
 //    }
-    public func UpdateEventLocation(event: Event){
-        if(event.getType() == EventType.Promoter){
-            geoFireEventPromoter.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
-                if (error != nil) {
-                    print("An error occured: \(error)")
-                }
-            }
-        }
-        //MARK: no longer applicable saved for later use
-//        else if (event.getType() == EventType.Public){
-//            geoFireEventPublic.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
-//                if (error != nil) {
-//                    print("An error occured: \(error)")
-//                }
-//            }
-//        }
-        //MARK: GABE COME BACK TOO
-    }
+
 
     public func UpdateLocation(location: CLLocation){
         print("got here")
@@ -109,6 +95,299 @@ class GeoManager {
             print("successfully updated self userlookup")
            
         })
+    }
+    
+
+
+
+    
+    public func GetUserByLoc(location: CLLocation, range: Double?, max: Int, completion: @escaping () -> Void){
+        queryRunning = true
+        let geoRange = (range ?? presentRange)
+        let userID = AppDelegate.userDefaults.value(forKey: "userID")
+//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
+
+        print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
+
+//        let geoRange = Double(locRange)
+//        center =
+       //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
+//        let circleQuery = self.geoFire.query(at: center, withRadius: geoRange)
+//        _ = circleQuery.observe(.keyEntered, with: { key, location in
+//            guard let key = key else { return }
+//            print("Key: " + key + "entered the search radius.")
+//        })
+        let query = self.geoFire.query(at: center, withRadius: geoRange)
+        query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
+            guard let strongSelf = self else {
+                return
+            }
+            if(strongSelf.userIdList.count > max){
+                query.removeAllObservers()
+                strongSelf.moreUsersInQuery = true
+            } else {
+                strongSelf.moreUsersInQuery = false
+            }
+            let user = User(userId: key)
+            user.location = location
+            if(strongSelf.userIsValid(checkUser: user)){
+                GeoManager.shared.userIdList.append(User(userId:key))
+                if(strongSelf.userLocDict[key] == nil){
+                    strongSelf.userLocDict[key] = location
+                }
+                print("userIdList appending \(key.description)")
+            }
+        })
+        var count = 0
+        query.observeReady({
+            print("All initial data has been loaded and events have been fired! \(count)")
+            count += 1
+            self.queryRunning = false
+            query.removeAllObservers()
+            completion()
+        })
+        
+    }
+          
+    public func userIsValid(checkUser: User) -> Bool{
+        for user in userIdList{
+            if(user.userId == checkUser.userId){
+                print("A user is duplicated")
+                return false
+            }
+        }
+        for user in alreadyReadySeen{
+            if(user == checkUser.userId){
+                print("A user is already seen")
+                return false
+            }
+        }
+        if(checkUser.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String){
+            return false
+        }
+        return true
+    }
+    
+    public func forceAddUser(user: User){
+        if (loadedUsers[user.userId] == nil){
+            if(!alreadyReadySeen.contains(user.userId)){
+                alreadyReadySeen.append(user.userId)
+            }
+            loadedUsers[user.userId] = user
+        }
+    }
+    
+    public func addedOrBlockedUser(user: User){
+        loadedUsers[user.userId] = nil
+        if (!alreadyReadySeen.contains(user.userId)){
+            alreadyReadySeen.append(user.userId)
+        }
+    }
+    
+    public func LoadUsers(size: Int, completion: @escaping (Result<String, Error>) -> Void, updateCompletion: @escaping (String) -> Void) {
+        let userSize = GeoManager.shared.userIdList.count
+        if(userSize > size){
+            var dataholder: [User] = []
+            for j in 0..<size{
+                dataholder.append(userIdList[j])
+            }
+            for i in dataholder {
+                let tmp = userIdList.firstIndex(of: i)
+                DatabaseManager.shared.loadUserProfile(given: i, dataCompletion: { [weak self] res in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    switch res{
+                    case .success(let u):
+                        strongSelf.loadedUsers[u.userId] = u
+                        if let loc = strongSelf.userIdList.firstIndex(of: u) {
+                            strongSelf.loadedUsers[u.userId]?.location = strongSelf.userIdList[loc].location
+                            strongSelf.userIdList.remove(at: loc)
+                        } else {
+                            print("Geomanager Error 194")
+                        }
+                        completion(.success(u.userId))
+                    case .failure(let err):
+                        completion(.failure(err))
+                        
+                    }
+                }, pictureCompletion: { [weak self] res in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    guard tmp != nil else {
+                        return
+                    }
+                    updateCompletion(strongSelf.userIdList[tmp!].userId)
+                })
+            }
+        } else {
+            for i in userIdList {
+                let tmp = userIdList.firstIndex(of: i)
+                guard tmp != nil else {
+                    return
+                }
+                let Uid = userIdList[tmp!].userId
+                DatabaseManager.shared.loadUserProfile(given: i, dataCompletion: { [weak self] res in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    switch res{
+                    case .success(let u):
+                        strongSelf.loadedUsers[u.userId] = u
+                        if let loc = strongSelf.userIdList.firstIndex(of: u) {
+                            strongSelf.userIdList.remove(at: loc)
+                        } else {
+                            print("Geomanager Error 194")
+                        }
+                        completion(.success(u.userId))
+                    case .failure(let err):
+                        completion(.failure(err))
+                        
+                    }
+                }, pictureCompletion: { [weak self] res in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    updateCompletion(Uid)
+                })
+            }
+        }
+        print("have data, exiting LoadNextUsers")
+        
+//        print("before completion of load next users")
+//        print(GeoManager.shared.loadedUsers)
+//        completion()
+    }
+    
+    public func getPossiblePresentNumberOfCells() -> Int {
+        return loadedUsers.count + userIdList.count
+    }
+    
+    public func getNumberOfCells() -> Int {
+        return loadedUsers.count
+    }
+    
+    public func needsReload(maxIndex: Int, isInfite: Bool) -> Bool{
+        if(maxIndex >= loadedUsers.count && !isInfite){
+            return true
+        }
+        return false
+    }
+    
+    public func needsReload(presIndex: Int, maxIndices: Int, Incompletion: Bool, isInfinite: Bool) -> Bool{
+        if Incompletion {
+            var a = userIdList.count
+            if a > 5 {
+                a = 5
+            }
+            if(presIndex >= loadedUsers.count+a && presIndex <= getPossiblePresentNumberOfCells()){
+                if(isInfinite){
+                    return false
+                }
+                return true
+            }
+//            else if (!isInfinite){
+//                return true
+//            }
+        }
+        return false
+    }
+    
+    public func needsNewUsers(maxIndex: Int, isConstant: Bool, completion: @escaping () -> Void) -> Bool{
+        if (loadedUsers.count-5 > maxIndex) {
+            if(userIdList.count < 10 && queryRunning == false){
+                let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+                if(moreUsersInQuery){
+                    GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: presentRange, max: 100, completion: {
+                        completion()
+                    })
+                } else if(presentRange < maxRangeFilter){
+                    presentRange += 5*rangeMultiplier
+                    GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: presentRange, max: 100, completion: {
+                        completion()
+                    })
+                }
+            }
+            return true
+        }
+        return false
+    }
+    
+    public func setMaxRangeFilter(val: Double){
+        AppDelegate.userDefaults.set(val, forKey: "MaxRangeFilter")
+        maxRangeFilter = val
+    }
+    
+    public func setRangeMultiplier(val: Int = 0){
+        if(val == 0){
+            if NSLocale.current.regionCode == "US" {
+                rangeMultiplier = 1.6
+            }
+        } else {
+            rangeMultiplier = 1
+        }
+        
+    }
+//    public func LoadUsers(size: Int){
+//        print("LoadUsers \(size) with array size \(userIdList.count)")
+//        for _ in 0..<size{
+//            DatabaseManager.shared.loadUserProfile(given: userIdList[0], dataCompletion: { [weak self] result in
+//                switch result {
+//                case .success(let user):
+//                    if let userlocation = self?.userLocDict[user.userId] {
+//                        user.location = userlocation
+//                    }
+//
+//                    self?.loadedUsers.append(user)
+//                    print("completed user profile copy for: ")
+//                    print("copied \(user.username)")
+//                case .failure(let error):
+//                    print("error load in LoadUser -> LoadUserProfile \(error)")
+//                }
+//            }, pictureCompletion: { result in })
+//            let temp = userIdList[0]
+//            alreadyReadySeen.append(temp.userId)
+//            userIdList.remove(at: 0)
+//        }
+//        print("exiting loadUsers with loadedUsers: \(loadedUsers.count) and ")
+//
+////         Query location by region
+////        let span = MKCoordinateSpanMake(0.001, 0.001)
+////        let region = MKCoordinateRegionMake(center.coordinate, span)
+////        var regionQuery = geoFire.queryWithRegion(region)
+//    }
+//    public func circleQ(center: CLLocation, geoRange: Double) ->  GFCircleQuery {
+//
+//    }
+    
+    public func UpdateEventLocation(event: Event){
+        if(event.getType() == EventType.Promoter){
+            geoFireEventPromoter.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
+                if (error != nil) {
+                    print("An error occured: \(error)")
+                }
+            }
+        }
+        //MARK: no longer applicable saved for later use
+//        else if (event.getType() == EventType.Public){
+//            geoFireEventPublic.setLocation(CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude), forKey: event.eventId){ (error) in
+//                if (error != nil) {
+//                    print("An error occured: \(error)")
+//                }
+//            }
+//        }
+        //MARK: GABE COME BACK TOO
+    }
+    
+    public func eventIsValid(event: Event) -> Bool{
+        if(!alreadyReadySeenEvent.contains(event.eventId)){
+            return true
+                
+        } else{
+            return false
+        }
     }
     
     public func GetPromoterEventByLocation(location: CLLocation, range: Double, max: Int = Int(UInt64.max), autoLoad: Bool = true, completion: @escaping (Event) -> Void){
@@ -154,170 +433,26 @@ class GeoManager {
             })
         }
     }
-//MARK: No longer applicable, saved for later use
-//    public func GetPublicEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
-//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-//        if (range < eventRange){
-//            eventRange = range
-//
-//            let query = self.geoFireEventPublic.query(at: center, withRadius: range)
-//
-//            query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
-//                guard let strongSelf = self else {
-//                    return
-//                }
-//                if(strongSelf.loadedEvent.count > max){
-//                    query.removeAllObservers()
-//                }
-//                strongSelf.eventIsValid(key: key)
-//            })
-//        }
-//    }
-
-    public func eventIsValid(event: Event) -> Bool{
-        if(!alreadyReadySeenEvent.contains(event.eventId)){
-            return true
-                
-        } else{
-            return false
-        }
-    }
-    public func GetUserByLoc(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
-       print("Entering GetUserByLoc, range = \(range) max = \(max)")
-       let userID = AppDelegate.userDefaults.value(forKey: "userID")
-        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-
-       let geoRange = Double(range)
-//        center =
-       //AppDelegate.userDefaults.value(forKey: "PinkCircle") as! Double
-//        let circleQuery = self.geoFire.query(at: center, withRadius: geoRange)
-//        _ = circleQuery.observe(.keyEntered, with: { key, location in
-//            guard let key = key else { return }
-//            print("Key: " + key + "entered the search radius.")
-//        })
-        let query = self.geoFire.query(at: center, withRadius: geoRange)
-        queryRunning = true
-        query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
-            guard let strongSelf = self else {
-                return
-            }
-            if(strongSelf.userIdList.count > max){
-                query.removeAllObservers()
-                strongSelf.moreUsersInQuery = true
-            }
-            let user = User(userId: key)
-            user.location = location
-            if(strongSelf.userIsValid(checkUser: user)){
-                GeoManager.shared.userIdList.append(User(userId:key))
-                if(strongSelf.userLocDict[key] == nil){
-                    strongSelf.userLocDict[key] = location
-                }
-                print("userIdList appending \(key.description)")
-            }
-        })
-        var count = 0
-        query.observeReady({
-            print("All initial data has been loaded and events have been fired! \(count)")
-            count += 1
-            self.queryRunning = false
-            query.removeAllObservers()
-            completion()
-        })
-        
-    }
-          
-    public func userIsValid(checkUser: User) -> Bool{
-        for user in userIdList{
-            if(user.userId == checkUser.userId){
-                print("A user is duplicated")
-                return false
-            }
-        }
-        for user in alreadyReadySeen{
-            if(user == checkUser.userId){
-                print("A user is already seen")
-                return false
-            }
-        }
-        if(checkUser.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String){
-            return false
-        }
-        return true
-    }
     
-    public func forceAddUser(user: User){
-        if (!loadedUsers.contains(user)){
-            if(!alreadyReadySeen.contains(user.userId)){
-                alreadyReadySeen.append(user.userId)
-            }
-            loadedUsers.append(user)
-        }
-    }
-    
-    public func addedOrBlockedUser(user: User){
-        if let indx = loadedUsers.firstIndex(of: user) {
-            if indx != nil {
-                loadedUsers.remove(at: indx)
-                if (!alreadyReadySeen.contains(user.userId)){
-                    alreadyReadySeen.append(user.userId)
-                }
-            }
-        }
-    }
-    
-    public func LoadNextUsers(size: Int, completion: () -> Void) {//        if(GeoManager.shared.userIdList.isEmpty){
-//            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-//            GeoManager.shared.getUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]))
-//        }
-        let userSize = GeoManager.shared.userIdList.count
-        if(userSize > size){
-            GeoManager.shared.LoadUsers(size: size)
-//            hasMore = true
-            print("userIdList.count = \(GeoManager.shared.userIdList.count)")
-        } else {
-            GeoManager.shared.LoadUsers(size: userSize)
-//            hasMore = false
-            print("userIdList.count = \(GeoManager.shared.userIdList.count)")
-        }
-        print("have data, exiting LoadNextUsers")
-        
-//        print("before completion of load next users")
-//        print(GeoManager.shared.loadedUsers)
-        completion()
-    }
-    
-    public func LoadUsers(size: Int){
-        print("LoadUsers \(size) with array size \(userIdList.count)")
-        for _ in 0..<size{
-            DatabaseManager.shared.loadUserProfile(given: userIdList[0], dataCompletion: { [weak self] result in
-                switch result {
-                case .success(let user):
-                    if let userlocation = self?.userLocDict[user.userId] {
-                        user.location = userlocation
-                    }
-                    
-                    self?.loadedUsers.append(user)
-                    print("completed user profile copy for: ")
-                    print("copied \(user.username)")
-                case .failure(let error):
-                    print("error load in LoadUser -> LoadUserProfile \(error)")
-                }
-            }, pictureCompletion: { result in })
-            let temp = userIdList[0]
-            alreadyReadySeen.append(temp.userId)
-            userIdList.remove(at: 0)
-        }
-        print("exiting loadUsers with loadedUsers: \(loadedUsers.count) and ")
-
-//         Query location by region
-//        let span = MKCoordinateSpanMake(0.001, 0.001)
-//        let region = MKCoordinateRegionMake(center.coordinate, span)
-//        var regionQuery = geoFire.queryWithRegion(region)
-    }
-//    public func circleQ(center: CLLocation, geoRange: Double) ->  GFCircleQuery {
-//
-//    }
-    
+    //MARK: No longer applicable, saved for later use
+    //    public func GetPublicEventByLocation(location: CLLocation, range: Double, max: Int, completion: @escaping () -> Void){
+    //        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+    //        if (range < eventRange){
+    //            eventRange = range
+    //
+    //            let query = self.geoFireEventPublic.query(at: center, withRadius: range)
+    //
+    //            query.observe(.keyEntered, with: { [weak self] (key: String!, location: CLLocation!) in
+    //                guard let strongSelf = self else {
+    //                    return
+    //                }
+    //                if(strongSelf.loadedEvent.count > max){
+    //                    query.removeAllObservers()
+    //                }
+    //                strongSelf.eventIsValid(key: key)
+    //            })
+    //        }
+    //    }
     
 }
 

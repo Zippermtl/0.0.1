@@ -393,9 +393,10 @@ extension MapViewController: CLLocationManagerDelegate {
             GeoManager.shared.UpdateLocation(location: latestLocation)
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
             GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3, completion: {
-
-                GeoManager.shared.LoadNextUsers(size: 10, completion: {
-                })
+                
+                GeoManager.shared.LoadUsers(size: 10, completion: {_ in }, updateCompletion: {_ in})
+//                GeoManager.shared.LoadNextUsers(size: 10, completion: {
+//                })
 
             })
             guardingGeoFireCalls = true
