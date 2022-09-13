@@ -403,14 +403,17 @@ extension ZipFinderViewController: UICollectionViewDataSource {
 //    }
     
     func makeFinite(){
-        
+        isInfite = false
     }
     
     func makeInfite(){
-        
+        isInfite = true
     }
     
-    public func numberOfItemsInSelection() -> Int{
+    public func numberOfItemsInSelection() -> Int {
+        if(isInfite){
+            return .max
+        }
         return GeoManager.shared.getPossiblePresentNumberOfCells()
     }
     
