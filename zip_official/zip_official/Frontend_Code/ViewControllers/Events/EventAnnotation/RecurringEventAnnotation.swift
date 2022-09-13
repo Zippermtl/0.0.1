@@ -28,6 +28,7 @@ class RecurringEventAnnotationView: MKAnnotationView, EventAnnotationViewProtoco
         eventImage.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(openEvent))
         eventImage.addGestureRecognizer(tap)
+        clusteringIdentifier = HappeningsClusterAnnotationView.identifier
     }
     
     required init?(coder aDecoder: NSCoder) {

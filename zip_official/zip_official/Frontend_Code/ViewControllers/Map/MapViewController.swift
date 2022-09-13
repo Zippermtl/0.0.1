@@ -21,6 +21,10 @@ import SDWebImage
 import FloatingPanel
 
 extension MKMapView {
+    func visibleAnnotations() -> [MKAnnotation] {
+        return self.annotations(in: self.visibleMapRect).map { obj -> MKAnnotation in return obj as! MKAnnotation }
+    }
+    
     var zoomLevel: Double {
         return log2(360 * ((Double(self.frame.size.width) / 256) / self.region.span.longitudeDelta)) - 1
     }
@@ -39,6 +43,7 @@ class MapViewController: UIViewController {
     private let fpc: FloatingPanelController
     
     private var mappedEvents: [String:EventAnnotation]
+    private var mappedHappenings: [String: EventAnnotation]
     
     
     private let mapView: MKMapView
@@ -69,6 +74,7 @@ class MapViewController: UIViewController {
     init(isNewAccount: Bool){
         self.isNewAccount = isNewAccount
         self.mappedEvents = [:]
+        self.mappedHappenings = [:]
         self.locationManager = CLLocationManager()
         self.mapView = MKMapView()
         self.fpc = FloatingPanelController()
@@ -290,15 +296,21 @@ class MapViewController: UIViewController {
         mapView.register(PromoterEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: PromoterEventAnnotationView.identifier)
         mapView.register(UserEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: UserEventAnnotationView.identifier)
         mapView.register(RecurringEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: RecurringEventAnnotationView.identifier)
+        mapView.register(EventClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: EventClusterAnnotationView.identifier)
+        mapView.register(HappeningsClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: HappeningsClusterAnnotationView.identifier)
+
+        
         
         DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
                 let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-                    strongSelf.mapView.addAnnotation(annotation)
+                    if strongSelf.mappedEvents[event.eventId] == nil {
+                        strongSelf.mapView.addAnnotation(annotation)
+                        strongSelf.mappedEvents[event.eventId] = annotation
+                    }
                 }
-                strongSelf.mappedEvents[event.eventId] = annotation
             }
         }, allCompletion: { [weak self] result in
             guard let strongSelf = self else { return }
@@ -328,8 +340,10 @@ class MapViewController: UIViewController {
             if strongSelf.mappedEvents[event.eventId] == nil {
                 let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-                    strongSelf.mapView.addAnnotation(annotation)
-                    strongSelf.mappedEvents[event.eventId] = annotation
+                    if strongSelf.mappedEvents[event.eventId] == nil {
+                        strongSelf.mapView.addAnnotation(annotation)
+                        strongSelf.mappedEvents[event.eventId] = annotation
+                    }
                 }
             }
         }, allCompletion: { result in
@@ -341,35 +355,26 @@ class MapViewController: UIViewController {
             if strongSelf.mappedEvents[event.eventId] == nil {
                 let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-                    strongSelf.mapView.addAnnotation(annotation)
-                    strongSelf.mappedEvents[event.eventId] = annotation
+                    if strongSelf.mappedHappenings[event.eventId] == nil {
+                        strongSelf.mapView.addAnnotation(annotation)
+                        strongSelf.mappedHappenings[event.eventId] = annotation
+                    }
                 }
             }
         }, allCompletion: { result in
             
             
         })
-        
-//        DatabaseManager.shared.getAllPublic(eventCompletion: { [weak self] event in
-//            guard let strongSelf = self else { return }
-//            if strongSelf.mappedEvents[event.eventId] == nil {
-//                let annotation = EventAnnotation(event: event)
-//                DispatchQueue.main.async {
-//                    strongSelf.mapView.addAnnotation(annotation)
-//                    strongSelf.mappedEvents[event.eventId] = annotation
-//                }
-//            }
-//        }, allCompletion: { result in
-//
-//        })
 
         DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
                 let annotation = EventAnnotation(event: event)
                 DispatchQueue.main.async {
-                    strongSelf.mapView.addAnnotation(annotation)
-                    strongSelf.mappedEvents[event.eventId] = annotation
+                    if strongSelf.mappedEvents[event.eventId] == nil {
+                        strongSelf.mapView.addAnnotation(annotation)
+                        strongSelf.mappedEvents[event.eventId] = annotation
+                    }
                 }
             }
         }, allCompletion: { result in
@@ -442,6 +447,8 @@ extension MapViewController: FPCMapDelegate {
         navigationController?.pushViewController(vc, animated: true)
     }
     
+    
+    
     func openZipFinder() {
         let zipFinder = ZipFinderViewController()
         zipFinder.delegate = self
@@ -511,13 +518,26 @@ extension MapViewController: FPCMapDelegate {
 // MARK: MKMapViewDelegate
 extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-   
+        if annotation is EventClusterAnnotation {
+            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: EventClusterAnnotationView.identifier) as? EventClusterAnnotationView
+            if annotationView == nil {
+                annotationView = EventClusterAnnotationView(annotation: annotation, reuseIdentifier: EventClusterAnnotationView.identifier)
+            }
+            return annotationView
+        }
+
+        if annotation is HappeningsClusterAnnotation {
+            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: HappeningsClusterAnnotationView.identifier) as? HappeningsClusterAnnotationView
+            if annotationView == nil {
+                annotationView = HappeningsClusterAnnotationView(annotation: annotation, reuseIdentifier: HappeningsClusterAnnotationView.identifier)
+            }
+            return annotationView
+        }
         
         guard let eventAnnotation = annotation as? EventAnnotation else {
             return nil
         }
         switch eventAnnotation.event.getType() {
-            //MARK: YIANNI read
         case .Recurring:
             guard let event = eventAnnotation.event as? RecurringEvent,
                 let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: RecurringEventAnnotationView.identifier) as? RecurringEventAnnotationView else {
@@ -561,9 +581,35 @@ extension MapViewController: MKMapViewDelegate {
 
     }
     
+    func mapView(_ mapView: MKMapView, clusterAnnotationForMemberAnnotations memberAnnotations: [MKAnnotation]) -> MKClusterAnnotation {
+        guard let eventAnnotations = memberAnnotations as? [EventAnnotation] else {
+            return MKClusterAnnotation(memberAnnotations: memberAnnotations)
+        }
+        
+        if !(eventAnnotations[0].event is RecurringEvent) {
+//            let eventAnnotations = eventAnnotations.filter({ !($0.event is RecurringEvent) })
+            return EventClusterAnnotation(eventAnnotations: eventAnnotations)
+        } else {
+//            let recuringEventAnnotations = eventAnnotations.filter({ $0.event is RecurringEvent })
+            return HappeningsClusterAnnotation(eventAnnotations: eventAnnotations)
+        }
+    }
+    
+    
+    
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
+        if view is EventClusterAnnotationView || view is HappeningsClusterAnnotationView {
+            // if the user taps a cluster, zoom in
+            let currentSpan = mapView.region.span
+            let zoomSpan = MKCoordinateSpan(latitudeDelta: currentSpan.latitudeDelta / 2.0, longitudeDelta: currentSpan.longitudeDelta / 2.0)
+            let zoomCoordinate = view.annotation?.coordinate ?? mapView.region.center
+            let zoomed = MKCoordinateRegion(center: zoomCoordinate, span: zoomSpan)
+            mapView.setRegion(zoomed, animated: true)
+            return
+        }
+        
         if let annotationView = view as? EventAnnotationView,
            let annotation = view.annotation as? EventAnnotation {
             
@@ -649,6 +695,10 @@ extension MapViewController: UIGestureRecognizerDelegate {
     }
     
     private func updateAnnotation(){
+        configureEventsOnDistance()
+    }
+
+    private func configureEventsOnDistance() {
         for annotation in mapView.annotations {
             if annotation is MKUserLocation {
                 continue
@@ -659,13 +709,14 @@ extension MapViewController: UIGestureRecognizerDelegate {
                 } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && annotationView.isDot {
                     annotationView.makeEvent()
                 }
-            } else if let annotationView = self.mapView.view(for: annotation) as? RecurringEventAnnotationView  {
-                if mapView.zoomLevel <= DOT_ZOOM_DISTANCE && annotationView.isVisible {
-                    annotationView.hide()
-                } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && !annotationView.isVisible {
-                    annotationView.show()
-                }
             }
+//            else if let annotationView = self.mapView.view(for: annotation) as? RecurringEventAnnotationView  {
+//                if mapView.zoomLevel <= DOT_ZOOM_DISTANCE && annotationView.isVisible {
+//                    annotationView.hide()
+//                } else if mapView.zoomLevel > DOT_ZOOM_DISTANCE && !annotationView.isVisible {
+//                    annotationView.show()
+//                }
+//            }
         }
     }
 

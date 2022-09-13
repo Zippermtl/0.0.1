@@ -339,11 +339,6 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     public func pullVisual(){
         fatalError("Must Override!")
     }
-
-    //MARK: Yianni i confusian
-    public func isPublic() -> Bool {
-        return true
-    }
         
     public func getType() -> EventType {
         return EventType.Event

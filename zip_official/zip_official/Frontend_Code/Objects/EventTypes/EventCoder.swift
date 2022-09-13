@@ -136,7 +136,7 @@ public class EventCoder: Codable {
         
         self.phoneNumber = try? container.decode(Int.self, forKey: .phoneNumber)
 //        self.category = try? container.decode(CategoryType(rawValue: String.self), forKey: .category)
-        //MARK: Yianni fix pls
+
         let catagoryString = try? container.decode(String.self, forKey: .category)
         if let s = catagoryString {
             self.category = CategoryType(rawValue: s)

@@ -26,6 +26,22 @@ class EventAnnotation: NSObject, MKAnnotation {
         coordinate = event.coordinates.coordinate
         super.init()
     }
+    
+    
+    public func overlaps(annotation: EventAnnotation) -> Bool {
+        guard let myView = viewFor,
+              let otherView = annotation.viewFor
+        else {
+            return false
+        }
+        
+        if myView.frame.contains(otherView.frame) {
+            return true
+        }
+        return false
+
+    }
+
 }
 
 
@@ -49,10 +65,7 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         self.dotView = UIView()
 
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        eventImage.addTarget(self, action: #selector(didTapEventImage), for: .touchUpInside)
-        configureSubviews()
-        addSubviews()
-        configureSubviewLayout()
+        initConfig()
     }
     
     init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor c: UIColor = .white, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
@@ -62,16 +75,24 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         self.eventImage = UIButton()
         self.dotView = UIView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        initConfig()
+    }
+    
+    private func initConfig(){
         eventImage.addTarget(self, action: #selector(didTapEventImage), for: .touchUpInside)
 
         configureSubviews()
         addSubviews()
         configureSubviewLayout()
+        
+        clusteringIdentifier = EventClusterAnnotationView.identifier
+        isOpaque = false
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
     
     private func configureSubviews() {
         eventImage.backgroundColor = .zipLightGray

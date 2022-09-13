@@ -100,8 +100,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                     return
                 }
                 let loc = strongSelf.data.firstIndex(of: User(userId: res))
-                strongSelf.data[loc!] = GeoManager.shared.loadedUsers[res]!
-                //MARK: Yianni idk what to do right here when the image completion fires
+                let user =  GeoManager.shared.loadedUsers[res]!
+                strongSelf.data[loc!] = user
+                guard let cell = user.ZFCell else {
+                    return
+                }
+                cell.configureImage(user: user)
             })
         })
        
