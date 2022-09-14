@@ -140,12 +140,14 @@ class FilterSettingsViewController: UIViewController {
     
     @objc func sliderChanged(_ sender: UISlider) {
         //MARK: GABE Move to GeoManager
-        let convertedDistance = convertDistance(inDistance: Int(sender.value))
+        var distanceval = Int(sender.value)
+        let convertedDistance = convertDistance(inDistance: distanceval)
         var unit = "km"
         if NSLocale.current.regionCode == "US" {
             unit = "miles"
         }
         distanceLabel.text = convertedDistance.description + " " + unit
+        //MARK: Yianni check 
         GeoManager.shared.setMaxRangeFilter(val: Double(convertedDistance))
 //        AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
     }

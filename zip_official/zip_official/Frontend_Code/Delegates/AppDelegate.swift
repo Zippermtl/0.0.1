@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
 
 //        AppDelegate.userDefaults.setValue("Yianni Zavaliagkos", forKey: "name")
 
-        AppDelegate.userDefaults.setValue(2, forKey: "maxRangeFilter")
+        AppDelegate.userDefaults.setValue(100, forKey: "maxRangeFilter")
         
         if #available(iOS 10.0, *) {
           // For iOS 10 display notification (sent via APNS)

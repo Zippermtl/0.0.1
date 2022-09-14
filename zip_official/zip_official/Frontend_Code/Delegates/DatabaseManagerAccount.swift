@@ -162,7 +162,7 @@ extension DatabaseManager {
 
             AppDelegate.userDefaults.set(EncodePreferences(user.notificationPreferences), forKey: "encodedNotificationSettings")
 
-            AppDelegate.userDefaults.setValue(2, forKey: "maxRangeFilter")
+            AppDelegate.userDefaults.setValue(100, forKey: "maxRangeFilter")
 
             if user.pictures.count == 0 {
                 //TODO: add default image

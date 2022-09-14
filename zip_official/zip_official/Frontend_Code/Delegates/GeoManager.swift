@@ -41,6 +41,9 @@ class GeoManager {
     public var presentRange = Double(5)
     public var rangeMultiplier = Double(1)
     public var maxRangeFilter = (AppDelegate.userDefaults.value(forKey: "maxRangeFilter") as? Double) ?? 100
+    public var maxRange : Double {
+        return Double(maxRangeFilter * rangeMultiplier)
+    }
     var eventRange: Double = 0
     
     init(){
@@ -61,12 +64,6 @@ class GeoManager {
         print("LOOK HERE FOR USERS")
         print(alreadyReadySeen.count)
     }
-    
-//    static func safeEmail(email: String) -> String {
-//        let safeEmail = email.replacingOccurrences(of: ".", with: "-").replacingOccurrences(of: "@", with: "-")
-//        return safeEmail
-//    }
-
 
     public func UpdateLocation(location: CLLocation){
         print("got here")
@@ -95,10 +92,6 @@ class GeoManager {
             print("successfully updated self userlookup")
            
         })
-    }
-    
-    public func setFilters(){
-        
     }
     
     public func matchesFilters(user: User) -> Bool{
@@ -339,7 +332,7 @@ class GeoManager {
                     GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: presentRange, max: 100, completion: {
                         completion()
                     })
-                } else if(presentRange < maxRangeFilter){
+                } else if(presentRange < maxRange){
                     presentRange += 5*rangeMultiplier
                     GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: presentRange, max: 100, completion: {
                         completion()
@@ -351,18 +344,25 @@ class GeoManager {
         return false
     }
     
-    public func setMaxRangeFilter(val: Double){
-        AppDelegate.userDefaults.set(val, forKey: "MaxRangeFilter")
-        maxRangeFilter = val
+    public func setMaxRangeFilter(val: Double?){
+        if(val != nil){
+            maxRangeFilter = val!
+        } else {
+            maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as! Double ?? 100
+        }
+//        AppDelegate.userDefaults.set(val, forKey: "MaxRangeFilter")
+//        maxRangeFilter = val
     }
     
-    public func setRangeMultiplier(val: Int = 0){
+    public func setRangeMultiplier(val: Double = 0){
         if(val == 0){
             if NSLocale.current.regionCode == "US" {
                 rangeMultiplier = 1.6
+            } else {
+                rangeMultiplier = 1
             }
         } else {
-            rangeMultiplier = 1
+            rangeMultiplier = val
         }
         
     }

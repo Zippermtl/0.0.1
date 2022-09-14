@@ -71,7 +71,8 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         print("Entering View did load with userIdList size: \(GeoManager.shared.userIdList.count)")
         if NSLocale.current.regionCode == "US" {
             GeoManager.shared.rangeMultiplier = 1.6
-            GeoManager.shared.maxRangeFilter *= GeoManager.shared.rangeMultiplier
+//            GeoManager.shared.maxRangeFilter *= GeoManager.shared.rangeMultiplier
+            GeoManager.shared.setMaxRangeFilter(val: nil)
 //            rangeMultiplier = 1.6
 //            maxRangeFilter *= rangeMultiplier
         }
