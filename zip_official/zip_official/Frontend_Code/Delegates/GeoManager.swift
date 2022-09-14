@@ -105,8 +105,8 @@ class GeoManager {
         queryRunning = true
         let geoRange = (range ?? presentRange)
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
-//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+//        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
 
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
