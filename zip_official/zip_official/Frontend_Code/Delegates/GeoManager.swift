@@ -105,8 +105,8 @@ class GeoManager {
         queryRunning = true
         let geoRange = (range ?? presentRange)
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
-        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-//        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
+//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
 
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
@@ -132,7 +132,7 @@ class GeoManager {
             let user = User(userId: key)
             user.location = location
             if(strongSelf.userIsValid(checkUser: user)){
-                GeoManager.shared.userIdList.append(User(userId:key))
+                GeoManager.shared.userIdList.append(user)
                 if(strongSelf.userLocDict[key] == nil){
                     strongSelf.userLocDict[key] = location
                 }
@@ -237,6 +237,12 @@ class GeoManager {
                     case .success(let u):
                         strongSelf.loadedUsers[u.userId] = u
                         if let loc = strongSelf.userIdList.firstIndex(of: u) {
+                            let localLoc = strongSelf.userIdList[loc].location
+                            guard localLoc != CLLocation() else {
+                                print("nil location in line 242")
+                                return
+                            }
+                            strongSelf.loadedUsers[u.userId]!.location = localLoc
                             strongSelf.userIdList.remove(at: loc)
                         } else {
                             print("Geomanager Error 194")
