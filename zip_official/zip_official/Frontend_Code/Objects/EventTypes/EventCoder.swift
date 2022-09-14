@@ -136,7 +136,7 @@ public class EventCoder: Codable {
         
         self.phoneNumber = try? container.decode(Int.self, forKey: .phoneNumber)
 //        self.category = try? container.decode(CategoryType(rawValue: String.self), forKey: .category)
-        //MARK: Yianni fix pls
+
         let catagoryString = try? container.decode(String.self, forKey: .category)
         if let s = catagoryString {
             self.category = CategoryType(rawValue: s)
@@ -243,15 +243,19 @@ public class EventCoder: Codable {
 public class LocalEventCoder : EventCoder {
     var id: String?
     var imageUrl : String?
+    var loadStatus: Int?
 
     enum CodingKeys: String, CodingKey {
         case id = "id"
         case imageUrl = "imageUrl"
+        case loadStatus = "loadStatus"
     }
     
     override init(event: Event) {
         self.id = event.eventId
         self.imageUrl = event.imageUrl?.absoluteString
+        self.loadStatus = event.loadStatus.rawValue
+        
         super.init(event: event)
     }
     
@@ -259,6 +263,7 @@ public class LocalEventCoder : EventCoder {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try? container.decode(String.self, forKey: .id)
         self.imageUrl = try? container.decode(String.self, forKey: .imageUrl)
+        self.loadStatus = try? container.decode(Int.self, forKey: .loadStatus)
         try super.init(from: decoder)
     }
     
@@ -266,6 +271,7 @@ public class LocalEventCoder : EventCoder {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try? container.encode(id, forKey: .id)
         try? container.encode(imageUrl, forKey: .imageUrl)
+        try? container.encode(loadStatus, forKey: .loadStatus)
         try super.encode(to: encoder)
     }
     
@@ -276,6 +282,9 @@ public class LocalEventCoder : EventCoder {
         }
         if let imageUrl = imageUrl {
             event.imageUrl = URL(string: imageUrl)
+        }
+        if let loadStatus = loadStatus {
+            event.loadStatus = User.UserLoadType(rawValue: loadStatus)!
         }
         return event
     }

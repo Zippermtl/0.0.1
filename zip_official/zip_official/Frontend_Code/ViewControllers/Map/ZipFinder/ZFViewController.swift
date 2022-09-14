@@ -31,10 +31,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     weak var delegate: ZipFinderVCDelegate?
     
+    
     @objc private let closeButton: UIButton = {
-        let button = UIButton()
-        button.setBackgroundImage(UIImage(named: "close"), for: .normal)
-        return button
+        let btn = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .medium)
+        btn.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        return btn
     }()
     
     private var hasMore = false
@@ -100,8 +102,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                     return
                 }
                 let loc = strongSelf.data.firstIndex(of: User(userId: res))
-                strongSelf.data[loc!] = GeoManager.shared.loadedUsers[res]!
-                //MARK: Yianni idk what to do right here when the image completion fires
+                let user =  GeoManager.shared.loadedUsers[res]!
+                strongSelf.data[loc!] = user
+                guard let cell = user.ZFCell else {
+                    return
+                }
+                cell.configureImage(user: user)
             })
         })
        

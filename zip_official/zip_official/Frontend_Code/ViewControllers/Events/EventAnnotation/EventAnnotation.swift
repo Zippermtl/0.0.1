@@ -26,6 +26,22 @@ class EventAnnotation: NSObject, MKAnnotation {
         coordinate = event.coordinates.coordinate
         super.init()
     }
+    
+    
+    public func overlaps(annotation: EventAnnotation) -> Bool {
+        guard let myView = viewFor,
+              let otherView = annotation.viewFor
+        else {
+            return false
+        }
+        
+        if myView.frame.contains(otherView.frame) {
+            return true
+        }
+        return false
+
+    }
+
 }
 
 
@@ -39,6 +55,12 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
     private var dotView: UIView
     private var ringColor: UIColor = .black
     
+    override var annotation: MKAnnotation? {
+        didSet {
+            self.clusteringIdentifier = EventClusterAnnotationView.identifier
+        }
+    }
+    
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         if let eventAnnotation = annotation as? EventAnnotation {
             self.ringColor = eventAnnotation.event.getType().color
@@ -47,12 +69,9 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         self.ringColor = .white
         self.eventImage = UIButton()
         self.dotView = UIView()
-
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        eventImage.addTarget(self, action: #selector(didTapEventImage), for: .touchUpInside)
-        configureSubviews()
-        addSubviews()
-        configureSubviewLayout()
+        self.clusteringIdentifier = EventClusterAnnotationView.identifier
+        initConfig()
     }
     
     init(annotation: MKAnnotation?, reuseIdentifier: String?, ringColor c: UIColor = .white, view_length v : CGFloat = 40, dot_length d : CGFloat = 12) {
@@ -62,16 +81,24 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         self.eventImage = UIButton()
         self.dotView = UIView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        initConfig()
+    }
+    
+    private func initConfig(){
         eventImage.addTarget(self, action: #selector(didTapEventImage), for: .touchUpInside)
 
         configureSubviews()
         addSubviews()
         configureSubviewLayout()
+        
+        clusteringIdentifier = EventClusterAnnotationView.identifier
+        isOpaque = false
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
     
     private func configureSubviews() {
         eventImage.backgroundColor = .zipLightGray
@@ -174,6 +201,8 @@ class PromoterEventAnnotationView: EventAnnotationView {
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipYellow, view_length: 60, dot_length: 16)
+        clusteringIdentifier = EventClusterAnnotationView.identifier
+
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -186,6 +215,7 @@ class UserEventAnnotationView: EventAnnotationView {
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue, view_length: 40, dot_length: 12)
+        clusteringIdentifier = EventClusterAnnotationView.identifier
     }
     
     required init?(coder aDecoder: NSCoder) {

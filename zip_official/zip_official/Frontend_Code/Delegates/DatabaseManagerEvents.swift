@@ -39,14 +39,17 @@ extension DatabaseManager {
         var i = [Event]()
         var ph = [Event]()
         var pg = [Event]()
-        getAllPrivateEventsForMap(eventCompletion: { event in
+        getAllPrivateEventsForMap(getImage: false, eventCompletion: { event in
             if event.ownerId == selfId { h.append(event) }
             else if event.usersGoing.contains(User(userId: selfId)) { g.append(event) }
             else if event.usersNotGoing.contains(User(userId: selfId)) { n.append(event) }
             else { i.append(event) }
         }, allCompletion: { [weak self] result in
-            guard let strongSelf = self else { return }            
-            strongSelf.getPastGoingEvents(eventCompletion: { event in
+            guard let strongSelf = self else { return }
+            guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+                return
+            }
+            strongSelf.getPastGoingEvents(userId: userId, eventCompletion: { event in
                 print("event title = \(event.title)")
                 if event.ownerId == selfId { ph.append(event) }
                 else { pg.append(event)}
@@ -89,15 +92,17 @@ extension DatabaseManager {
     }
     
     /// Gets all currently going events for current user
+    /// `fast` - boolean - if false then the function returns events when fully loaded instead of before image
+    /// `getImage` - boolean - if true, load image
     /// `eventCompletion` - returns an event whenever one is finished
     /// `allCompletion` - fires when all events are done loading
-    public func getAllGoingEvents(eventCompletion: @escaping (Event) -> Void,
+    public func getAllGoingEvents(userId: String,
+                                  fast: Bool = true,
+                                  getImage: Bool = true,
+                                  eventCompletion: @escaping (Event) -> Void,
                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
         
-        queryFieldArray(collection: "EventProfiles", field: "usersGoing", arrayContains: userId, eventCompletion: { event in
+        queryFieldArray(collection: "EventProfiles", field: "usersGoing", arrayContains: userId,fast: fast, getImage: getImage, eventCompletion: { event in
             eventCompletion(event)
         }, allCompletion: { result in
             allCompletion(result)
@@ -105,15 +110,17 @@ extension DatabaseManager {
     }
     
     /// Gets all current hosting events for current user
+    /// `fast` - boolean - if false then the function returns events when fully loaded instead of before image
+    /// `getImage` - boolean - if true, load image
     /// `eventCompletion` - returns an event whenever one is finished
     /// `allCompletion` - fires when all events are done loading
     public func getAllHostedEvents(userId: String,
+                                   fast: Bool = true,
+                                   getImage: Bool = true,
                                    eventCompletion: @escaping (Event) -> Void,
                                    allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
-        queryFieldArray(collection: "EventProfiles", field: "hosts", arrayContains: userId, eventCompletion: { event in
+     
+        queryFieldArray(collection: "EventProfiles", field: "hosts", arrayContains: userId, fast: fast, getImage: getImage, eventCompletion: { event in
             eventCompletion(event)
         }, allCompletion: { result in
             allCompletion(result)
@@ -123,13 +130,11 @@ extension DatabaseManager {
     /// Gets all past attended events for current user
     /// `eventCompletion` - returns an event whenever one is finished
     /// `allCompletion` - fires when all events are done loading
-    public func getPastGoingEvents(eventCompletion: @escaping (Event) -> Void,
+    public func getPastGoingEvents(userId: String,
+                                   eventCompletion: @escaping (Event) -> Void,
                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
         
-        queryFieldArray(collection: "ExpiredEvents", field: "usersGoing", arrayContains: userId, fast: false, eventCompletion: { event in
+        queryFieldArray(collection: "ExpiredEvents", field: "usersGoing", arrayContains: userId, fast: true, getImage: false, eventCompletion: { event in
             eventCompletion(event)
         }, allCompletion: { result in
             allCompletion(result)
@@ -140,12 +145,9 @@ extension DatabaseManager {
     /// `eventCompletion` - returns an event whenever one is finished
     /// `allCompletion` - fires when all events are done loading
     public func getPastHostedEvents(userId: String,
-                                   eventCompletion: @escaping (Event) -> Void,
-                                   allCompletion: @escaping (Result<[Event], Error>) -> Void){
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
-        queryFieldArray(collection: "ExpiredEvents", field: "hosts", arrayContains: userId, fast: false, eventCompletion: { event in
+                                    eventCompletion: @escaping (Event) -> Void,
+                                    allCompletion: @escaping (Result<[Event], Error>) -> Void){
+        queryFieldArray(collection: "ExpiredEvents", field: "hosts", arrayContains: userId, fast: true ,getImage: false, eventCompletion: { event in
             eventCompletion(event)
         }, allCompletion: { result in
             allCompletion(result)
@@ -153,20 +155,170 @@ extension DatabaseManager {
     }
     
     /// Gets all private events for current user
+    /// `fast` - boolean - if false then the function returns events when fully loaded instead of before image
+    /// `getImage` - boolean - if true, load image
     /// `eventCompletion` - returns an event whenever one is finished
     /// `allCompletion` - fires when all events are done loading
-    public func getAllPrivateEventsForMap(eventCompletion: @escaping (Event) -> Void,
+    public func getAllPrivateEventsForMap(fast: Bool = true,
+                                          getImage: Bool = true,
+                                          eventCompletion: @escaping (Event) -> Void,
                                           allCompletion: @escaping (Result<[Event], Error>) -> Void){
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
             return
         }
         
-        queryFieldArray(collection: "EventProfiles", field: "usersInvite", arrayContains: userId, eventCompletion: { event in
+        queryFieldArray(collection: "EventProfiles", field: "usersInvite", arrayContains: userId, fast: fast, getImage: getImage, eventCompletion: { event in
             eventCompletion(event)
         }, allCompletion: { result in
             allCompletion(result)
         })
     }
+    
+    public func getMutualEvents(userId: String,
+                                completion: @escaping (Result<[MultiSectionData],Error>) -> Void) {
+        
+        guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+            return
+        }
+        var todayHost = [String: Event]()
+        var upcomingHost = [String: Event]()
+        var pastHost = [String: Event]()
+        var todayGoing = [String: Event]()
+        var upcomingGoing = [String: Event]()
+        var pastGoing = [String: Event]()
+        getAllHostedEvents(userId: userId, eventCompletion: { event in
+            if event.canIGo() {
+                if event.startTime.isInSameDay(as: Date()) {
+                    todayHost[event.eventId] = event
+                } else {
+                    upcomingHost[event.eventId] = event
+                }
+            }
+        }, allCompletion: { [weak self] _ in
+            guard let strongSelf = self else { return }
+            strongSelf.getPastHostedEvents(userId: userId, eventCompletion: { event in
+                if event.canIGo() {
+                    pastHost[event.eventId] = event
+                }
+            }, allCompletion: { [weak self] _ in
+                guard let strongSelf = self else { return }
+//                let htodaySection = CellSectionData(title: "Today", items: todayHost.map({ $0.value }), cellType: CellType(eventType: .save))
+//                let hupcomingSection = CellSectionData(title: "Upcomming", items: upcomingHost.map({ $0.value }), cellType: CellType(eventType: .save))
+//                let hpastSection = CellSectionData(title: "Previous", items: pastHost.map({ $0.value }), cellType: CellType(eventType: .save))
+//
+//                let hostSection = MultiSectionData(title: "Hosting", sections: [htodaySection,hupcomingSection,hpastSection])
+                
+                strongSelf.getAllGoingEvents(userId: userId, eventCompletion: { event in
+                    if event.canIGo() {
+                        if todayHost[event.eventId] == nil
+                            && upcomingHost[event.eventId] == nil {
+                            if event.startTime.isInSameDay(as: Date()) {
+                                todayGoing[event.eventId] = event
+                            } else {
+                                upcomingGoing[event.eventId] = event
+                            }
+                        }
+                    }
+                }, allCompletion: { [weak self] res in
+                    guard let strongSelf = self else { return }
+                    strongSelf.getPastGoingEvents(userId: userId, eventCompletion: { event in
+                        if event.canIGo() {
+                            if pastHost[event.eventId] == nil {
+                                pastGoing[event.eventId] = event
+                            }
+                        }
+                    }, allCompletion: { result in
+                        let htodaySection = CellSectionData(title: "Today", items: todayHost.map({ $0.value }), cellType: CellType(eventType: .save))
+                        let hupcomingSection = CellSectionData(title: "Upcomming", items: upcomingHost.map({ $0.value }), cellType: CellType(eventType: .save))
+                        let hpastSection = CellSectionData(title: "Previous", items: pastHost.map({ $0.value }), cellType: CellType(eventType: .save))
+                        
+                        let hostSection = MultiSectionData(title: "Hosting", sections: [htodaySection,hupcomingSection,hpastSection])
+                        
+                        
+                        let gtodaySection = CellSectionData(title: "Today", items: todayGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+                        let gupcomingSection = CellSectionData(title: "Upcomming", items: upcomingGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+                        let gpastSection = CellSectionData(title: "Previous", items: pastGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+                        
+                        let goingSection = MultiSectionData(title: "Going", sections: [gtodaySection,gupcomingSection,gpastSection])
+                        completion(.success([hostSection,goingSection]))
+                        
+                    })
+                })
+//                completion(.success([hostSection]))
+//
+//                strongSelf.firestore.collection("EventProfiles").whereField("usersGoing", arrayContains: selfId).whereField("usersGoing", arrayContains: userId).getDocuments(completion: { [weak self] (querySnapshot, err) in
+//                    guard let strongSelf = self else { return }
+//                    strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: false, eventCompletion: { event in
+//                        if event.canIGo() {
+//                            if todayHost[event.eventId] == nil
+//                                && upcomingHost[event.eventId] == nil {
+//                                if event.startTime.isInSameDay(as: Date()) {
+//                                    todayGoing[event.eventId] = event
+//                                } else {
+//                                    upcomingGoing[event.eventId] = event
+//                                }
+//                            }
+//                        }
+//                    }, allCompletion: { result in
+//                        strongSelf.firestore.collection("ExpireEvents").whereField("usersGoing", arrayContains: selfId).whereField("usersGoing", arrayContains: userId).getDocuments(completion: { [weak self] (querySnapshot, err) in
+//                            guard let strongSelf = self else { return }
+//                            strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: false, eventCompletion: { event in
+//                                if event.canIGo() {
+//                                    if pastHost[event.eventId] == nil {
+//                                        pastGoing[event.eventId] = event
+//                                    }
+//                                }
+//                            }, allCompletion: { result in
+//
+//                                let htodaySection = CellSectionData(title: "Today", items: todayHost.map({ $0.value }), cellType: CellType(eventType: .save))
+//                                let hupcomingSection = CellSectionData(title: "Upcomming", items: upcomingHost.map({ $0.value }), cellType: CellType(eventType: .save))
+//                                let hpastSection = CellSectionData(title: "Previous", items: pastHost.map({ $0.value }), cellType: CellType(eventType: .save))
+//
+//                                let hostSection = MultiSectionData(title: "Hosting", sections: [htodaySection,hupcomingSection,hpastSection])
+//
+//
+//                                let gtodaySection = CellSectionData(title: "Today", items: todayGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+//                                let gupcomingSection = CellSectionData(title: "Upcomming", items: upcomingGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+//                                let gpastSection = CellSectionData(title: "Previous", items: pastGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+//
+//                                let goingSection = MultiSectionData(title: "Going", sections: [gtodaySection,gupcomingSection,gpastSection])
+//                                completion(.success([hostSection,goingSection]))
+//                            })
+//                        })
+//                    })
+//                })
+                
+            })
+        })
+        
+        
+        
+        
+    }
+    public func getAllMutualGoingEvents(userId: String,
+                                        eventCompletion: @escaping (Event) -> Void,
+                                        allCompletion: @escaping (Result<[Event], Error>) -> Void){
+       
+        
+       
+    }
+    
+    public func getAllMutualInvited(userId: String,
+                                    eventCompletion: @escaping (Event) -> Void,
+                                    allCompletion: @escaping (Result<[Event], Error>) -> Void){
+    guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
+        return
+    }
+    
+    firestore.collection("EventProfiles").whereField("usersInvite", arrayContains: selfId).whereField("usersInvite", arrayContains: userId).getDocuments(completion: { [weak self] (querySnapshot, err) in
+        guard let strongSelf = self else { return }
+        strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: false, eventCompletion: { event in
+            eventCompletion(event)
+        }, allCompletion: { result in
+            allCompletion(result)
+        })
+    })
+}
     
     
 
@@ -175,17 +327,19 @@ extension DatabaseManager {
     /// `field` - string field to query on
     /// `isEqualTo` - comparison
     /// `fast` - boolean - if false then the function returns events when fully loaded instead of before image
+    /// `getImage` - boolean - if true, load image
     /// `eventCompletion` - returns an event whenever one is finished
     /// `allCompletion` - fires when all events are done loading
     public func queryFieldValue(collection : String,
                                 field : String,
                                 isEqualTo : Any,
                                 fast: Bool = true,
+                                getImage: Bool = true,
                                 eventCompletion: @escaping (Event) -> Void,
                                 allCompletion: @escaping (Result<[Event], Error>) -> Void){
        firestore.collection(collection).whereField(field, isEqualTo: isEqualTo).getDocuments() { [weak self] (querySnapshot, err) in
            guard let strongSelf = self else { return }
-           strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: fast, eventCompletion: { event in
+           strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: fast, getImage: getImage, eventCompletion: { event in
                eventCompletion(event)
            }, allCompletion: { result in
                allCompletion(result)
@@ -197,11 +351,12 @@ extension DatabaseManager {
                                 field : String,
                                 arrayContains : Any,
                                 fast: Bool = true,
+                                getImage: Bool = true,
                                 eventCompletion: @escaping (Event) -> Void,
                                 allCompletion: @escaping (Result<[Event], Error>) -> Void){
         firestore.collection(collection).whereField(field, arrayContains: arrayContains).getDocuments() { [weak self] (querySnapshot, err) in
             guard let strongSelf = self else { return }
-            strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: fast, eventCompletion: { event in
+            strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: fast, getImage: getImage, eventCompletion: { event in
                 eventCompletion(event)
             }, allCompletion: { result in
                 allCompletion(result)
@@ -213,14 +368,18 @@ extension DatabaseManager {
     /// params
     /// - `querySnapshot` : Snapshot result
     /// - `err` :  optional error returned with query snapshot
-    /// - `fast` :  return event with image
+    /// - `fast` :  - boolean - if false, return with fully loaded image
+    /// - `getImage` - boolean - if true, load image
+
     /// - `eventCompletion` : completion firing when one event is loaded . When it returns depends on fast
     /// - `eventCompletion` : completion firing when all events are loaded
     private func handleEventQueryResults(querySnapshot: QuerySnapshot?,
                                          err: Error?,
                                          fast: Bool = true,
+                                         getImage: Bool = true,
                                          eventCompletion: @escaping (Event) -> Void,
                                          allCompletion: @escaping (Result<[Event], Error>) -> Void) {
+    
         guard err == nil else {
             print("Error getting documents: \(err!)")
             allCompletion(.failure(err!))
@@ -237,33 +396,37 @@ extension DatabaseManager {
                 do {
                     let currentEvent = try coderType.getData(document: document)
                     currentEvent.eventId = document.documentID
+                    currentEvent.loadStatus = .UserProfileNoPic
                     events.append(currentEvent)
                     if fast { // complete event without image
                         eventCompletion(currentEvent)
                     }
+                    if getImage {
+                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
+                            count += 1
 
-                    DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
-                        count += 1
+                            switch res {
+                            case .success(let urls):
+                                currentEvent.loadStatus = .UserProfile
+                                if urls.count != 0 {
+                                    currentEvent.imageUrl = urls[0]
+                                }
+                                if !fast {
+                                    eventCompletion(currentEvent)
+                                    if  count == querySnapshot!.documents.count {
+                                        allCompletion(.success(events))
+                                    }
+                                }
 
-                        switch res {
-                        case .success(let urls):
-                            if urls.count != 0 {
-                                currentEvent.imageUrl = urls[0]
-                            }
-                            if !fast {
-                                eventCompletion(currentEvent)
+                            case .failure(let error):
                                 if  count == querySnapshot!.documents.count {
                                     allCompletion(.success(events))
                                 }
+                                print("error loading image in map load Error: \(error)")
                             }
-
-                        case .failure(let error):
-                            if  count == querySnapshot!.documents.count {
-                                allCompletion(.success(events))
-                            }
-                            print("error loading image in map load Error: \(error)")
-                        }
-                    })
+                        })
+                    }
+                    
                 }
                 catch {
                     count += 1
@@ -349,7 +512,6 @@ extension DatabaseManager {
                     }
                 })
             }
-            
             completion()
         }
     }
@@ -360,10 +522,12 @@ extension DatabaseManager {
             case .success(let eventCoder):
                 print("Success loading")
                 eventCoder.updateEvent(event: event)
+                event.loadStatus = .UserProfileNoPic
                 completion(.success(event))
                 DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
                     switch res{
                     case .success(let url):
+                        event.loadStatus = .UserProfile
                         print("making event")
                         if url.count != 0 {
                             event.imageUrl = url[0]
@@ -436,9 +600,8 @@ extension DatabaseManager {
                     completion(.failure(error!))
                     return
                 }
-                var hostedEvents = User.getUDEvents(toKey: .hostedEvents)
-                hostedEvents.append(event)
-                User.setUDEvents(events: hostedEvents, toKey: .hostedEvents)
+                
+                User.appendUDEvent(event: event, toKey: .hostedEvents)
                 
                 GeoManager.shared.UpdateEventLocation(event: event)
                 self?.updateEventImage(event: event, completion: { result in
@@ -544,7 +707,7 @@ extension DatabaseManager {
                 completion(error!)
                 return
             }
-            
+            User.appendUDEvent(event: event, toKey: .goingEvents)
             completion(nil)
         }
     }
@@ -557,14 +720,15 @@ extension DatabaseManager {
                 return
             }
             
+            User.removeUDEvent(event: event, toKey: .goingEvents)
             completion(nil)
         }
     }
     
     public func markSaved(event: Event, completion: @escaping (Error?) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        let savedEvents = User.appendUDEvent(event: event, toKey: .savedEvents)
-        firestore.collection("UserStoredEvents").document(selfId).setData(["saved": savedEvents.map({ $0.eventId })]) { error in
+        User.appendUDEvent(event: event, toKey: .savedEvents)
+        firestore.collection("UserStoredEvents").document(selfId).setData(["saved": FieldValue.arrayUnion([event.eventId])]) { error in
             guard error == nil else {
                 completion(error!)
                 return
@@ -575,8 +739,8 @@ extension DatabaseManager {
     
     public func markUnsaved(event: Event, completion: @escaping (Error?) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        let savedEvents = User.removeUDEvent(event: event, toKey: .savedEvents)
-        firestore.collection("UserStoredEvents").document(selfId).setData(["saved":savedEvents.map({ $0.eventId })]) { error in
+        User.removeUDEvent(event: event, toKey: .savedEvents)
+        firestore.collection("UserStoredEvents").document(selfId).setData(["saved": FieldValue.arrayRemove([event.eventId])]) { error in
             guard error == nil else {
                 completion(error!)
                 return

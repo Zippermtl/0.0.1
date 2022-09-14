@@ -25,10 +25,15 @@ class AbstractEventTableViewCell: UITableViewCell {
     
     var titleLabel: UILabel
     let participantsLabel: UILabel
-    var distanceLabel: DistanceLabel
-    var dateLabel: IconLabel
-    var timeLabel: IconLabel
+    let distanceLabel: UILabel
+    let dateLabel: UILabel
+    let timeLabel: UILabel
     
+    let distanceIcon: UIImageView
+    let dateIcon : UIImageView
+    let timeIcon : UIImageView
+    
+    let participantsIcon : UIImageView
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -40,19 +45,28 @@ class AbstractEventTableViewCell: UITableViewCell {
         self.eventImage = UIImageView()
         self.titleLabel = UILabel.zipTextNotiBold()
         self.participantsLabel = UILabel.zipTextDetail()
+        self.distanceLabel = UILabel.zipTextDetail()
+        self.timeLabel = UILabel.zipTextDetail()
+        self.dateLabel = UILabel.zipTextDetail()
         
-        let smallConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold, scale: .small)
-        self.distanceLabel = DistanceLabel(labelFont: .zipTextDetail, color: .zipVeryLightGray, config: smallConfig)
-        self.timeLabel = IconLabel(iconImage: UIImage(systemName: "clock")?.withConfiguration(smallConfig), labelFont: .zipTextDetail, color: .zipVeryLightGray)
-        self.dateLabel = IconLabel(iconImage: UIImage(systemName: "calendar")?.withConfiguration(smallConfig), labelFont: .zipTextDetail, color: .zipVeryLightGray)
+        let distanceConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .light, scale: .large)
+        let timeConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .small)
+        let dateConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .light, scale: .small)
+        let distanceImage = UIImage(named: "zip.mappin")?.withConfiguration(distanceConfig).withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+        let timeImage = UIImage(systemName: "clock")?.withConfiguration(timeConfig).withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+        let dateImage = UIImage(systemName: "calendar")?.withConfiguration(dateConfig).withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+        self.timeIcon = UIImageView(image: timeImage)
+        self.distanceIcon = UIImageView(image: distanceImage)
+        self.dateIcon = UIImageView(image: dateImage)
 
+
+        let image = UIImage(systemName: "person.3.fill", withConfiguration: timeConfig)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+        self.participantsIcon = UIImageView(image: image)
+        
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         eventImage.backgroundColor = .zipLightGray
         eventImage.isUserInteractionEnabled = true
-        
-        participantsLabel.numberOfLines = 0
-        participantsLabel.lineBreakMode = .byWordWrapping
-        
+
         
         bgView.layer.cornerRadius = 10
         bgView.backgroundColor = .zipLightGray
@@ -101,20 +115,18 @@ class AbstractEventTableViewCell: UITableViewCell {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d"
-        dateLabel.update(string:  " " + dateFormatter.string(from: event.startTime))
+        dateLabel.text =  " " + dateFormatter.string(from: event.startTime)
         
         dateFormatter.dateFormat = "h:mm a"
-        timeLabel.update(string: " " + dateFormatter.string(from: event.startTime))
+        timeLabel.text = " " + dateFormatter.string(from: event.startTime)
         
-        let eventLoc = CLLocation(latitude: event.coordinates.coordinate.latitude, longitude: event.coordinates.coordinate.longitude)
-        distanceLabel.update(location: eventLoc)
+        distanceLabel.text = event.getDistanceString()
         
-        
-        participantsLabel.text = String(event.usersGoing.count) + "\nparticipants"
+        participantsLabel.text = event.usersGoing.count.description
         
         participantsLabel.textAlignment = .right
         
-        participantsLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        participantsLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
     
@@ -125,11 +137,15 @@ class AbstractEventTableViewCell: UITableViewCell {
         bgView.addSubview(eventImage)
         bgView.addSubview(titleLabel)
         
+        bgView.addSubview(distanceIcon)
+        bgView.addSubview(timeIcon)
+        bgView.addSubview(dateIcon)
         
         bgView.addSubview(distanceLabel)
         bgView.addSubview(dateLabel)
         bgView.addSubview(timeLabel)
         
+        bgView.addSubview(participantsIcon)
         bgView.addSubview(participantsLabel)
     }
     
@@ -144,23 +160,39 @@ class AbstractEventTableViewCell: UITableViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.centerYAnchor.constraint(equalTo: eventImage.topAnchor).isActive = true
         titleLabel.leftAnchor.constraint(equalTo: eventImage.rightAnchor, constant: 10).isActive = true
-        titleLabel.rightAnchor.constraint(equalTo: participantsLabel.leftAnchor, constant: -5).isActive = true
+        titleLabel.rightAnchor.constraint(equalTo: participantsIcon.leftAnchor, constant: -5).isActive = true
 
-        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        distanceLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2).isActive = true
-        distanceLabel.leftAnchor.constraint(equalTo: titleLabel.leftAnchor).isActive = true
+        distanceIcon.translatesAutoresizingMaskIntoConstraints = false
+        distanceIcon.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2).isActive = true
+        distanceIcon.leftAnchor.constraint(equalTo: titleLabel.leftAnchor).isActive = true
 
-        dateLabel.translatesAutoresizingMaskIntoConstraints = false
-        dateLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor).isActive = true
-        dateLabel.leftAnchor.constraint(equalTo: distanceLabel.leftAnchor).isActive = true
+        dateIcon.translatesAutoresizingMaskIntoConstraints = false
+        dateIcon.topAnchor.constraint(equalTo: distanceIcon.bottomAnchor).isActive = true
+        dateIcon.centerXAnchor.constraint(equalTo: distanceIcon.centerXAnchor).isActive = true
 
+        timeIcon.translatesAutoresizingMaskIntoConstraints = false
+        timeIcon.topAnchor.constraint(equalTo: dateIcon.bottomAnchor).isActive = true
+        timeIcon.centerXAnchor.constraint(equalTo: dateIcon.centerXAnchor).isActive = true
+        
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
-        timeLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor).isActive = true
-        timeLabel.leftAnchor.constraint(equalTo: distanceLabel.leftAnchor).isActive = true
+        timeLabel.centerYAnchor.constraint(equalTo: timeIcon.centerYAnchor).isActive = true
+        timeLabel.leftAnchor.constraint(equalTo: timeIcon.rightAnchor,constant: 3).isActive = true
+        
+        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        distanceLabel.centerYAnchor.constraint(equalTo: distanceIcon.centerYAnchor).isActive = true
+        distanceLabel.leftAnchor.constraint(equalTo: timeLabel.leftAnchor).isActive = true
+        
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
+        dateLabel.centerYAnchor.constraint(equalTo: dateIcon.centerYAnchor).isActive = true
+        dateLabel.leftAnchor.constraint(equalTo: timeLabel.leftAnchor).isActive = true
         
         participantsLabel.translatesAutoresizingMaskIntoConstraints = false
         participantsLabel.topAnchor.constraint(equalTo: titleLabel.topAnchor).isActive = true
         participantsLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20).isActive = true
+        
+        participantsIcon.translatesAutoresizingMaskIntoConstraints = false
+        participantsIcon.centerYAnchor.constraint(equalTo: participantsLabel.centerYAnchor).isActive = true
+        participantsIcon.rightAnchor.constraint(equalTo: participantsLabel.leftAnchor, constant: -2).isActive = true
 
         eventImage.translatesAutoresizingMaskIntoConstraints = false
         eventImage.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true

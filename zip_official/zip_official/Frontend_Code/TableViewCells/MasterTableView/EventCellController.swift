@@ -72,12 +72,31 @@ class EventCellController: TableCellController {
         return 120
     }
     
-    func fetch(completion: @escaping (Error) -> Void) {
+    func fetch(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.loadEvent(event: event, completion: { result in
             switch result {
             case .success(let event):
                 guard let cell = event.tableViewCell else { return }
                 cell.configure(event)
+                completion(nil)
+            case .failure(let error):
+                completion(error)
+            }
+        })
+    }
+    
+    func fetchImage(completion: @escaping (Error?) -> Void) {
+        DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { [weak self] res in
+            guard let strongSelf = self else { return }
+            switch res{
+            case .success(let url):
+                if url.count != 0 {
+                    strongSelf.event.imageUrl = url[0]
+                }
+                if let cell = strongSelf.event.tableViewCell {
+                    cell.configureImage(strongSelf.event)
+                }
+                completion(nil)
             case .failure(let error):
                 completion(error)
             }
