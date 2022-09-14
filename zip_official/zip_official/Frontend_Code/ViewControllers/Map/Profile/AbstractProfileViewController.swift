@@ -420,7 +420,6 @@ extension AbstractProfileViewController: UITableViewDataSource {
             interestCell!.contentConfiguration = content
             
             tableCells.append(interestCell!)
-
         }
         
         birthdayCell = UITableViewCell()

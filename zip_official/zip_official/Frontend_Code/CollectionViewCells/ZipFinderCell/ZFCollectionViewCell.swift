@@ -36,7 +36,6 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardFrontView = ZFCardFrontView()
         cardBackView = ZFCardBackView()
         super.init(frame: frame)
-
         configureBackground()
         configureCard()
         configureGestureRecognizer()
@@ -49,7 +48,6 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardBackView = ZFCardBackView()
         
         super.init(coder: coder)
-
         configureBackground()
         configureCard()
         configureGestureRecognizer()
@@ -75,6 +73,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     
     //inits outline/card frame and color
     private func configureBackground() {
+        contentView.layer.masksToBounds = true
         contentView.addSubview(cardView)
         cardView.translatesAutoresizingMaskIntoConstraints = false
         cardView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
@@ -82,7 +81,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardView.heightAnchor.constraint(equalToConstant: contentView.frame.height).isActive = true
         cardView.widthAnchor.constraint(equalToConstant: contentView.frame.width-25).isActive = true
 
-        cardView.layer.cornerRadius = 40
+        cardView.layer.cornerRadius = 20
         cardView.layer.borderColor = UIColor.white.cgColor //UIColor.zipBlue.cgColor
         cardView.layer.borderWidth = 2
         cardView.backgroundColor = .zipGray
@@ -128,6 +127,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
         cardFrontView.isHidden = false
         cardFrontView.pictureCollectionView.reloadData()
         cardBackView.isHidden = true
+        cardFrontView.prepareForReuse()
     }
 
     

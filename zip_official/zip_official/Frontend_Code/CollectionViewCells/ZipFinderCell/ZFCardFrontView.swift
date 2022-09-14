@@ -292,6 +292,7 @@ class ZFCardFrontView: UIView {
 
             shadowView.removeFromSuperview()
             profilePicture.removeFromSuperview()
+
             self.profilePicture = nil
             self.shadowView = nil
             self.spacer1 = nil
@@ -299,6 +300,22 @@ class ZFCardFrontView: UIView {
         } else {
             profilePicture?.sd_setImage(with: user.profilePicUrl)
         }
+    }
+    
+    public func prepareForReuse(){
+        guard let shadowView = shadowView,
+              let profilePicture = profilePicture
+        else {
+            return
+        }
+
+        shadowView.removeFromSuperview()
+        profilePicture.removeFromSuperview()
+
+        self.profilePicture = nil
+        self.shadowView = nil
+        self.spacer1 = nil
+        self.spacer2 = nil
     }
   
     

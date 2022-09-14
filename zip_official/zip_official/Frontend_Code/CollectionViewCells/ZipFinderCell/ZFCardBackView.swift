@@ -321,7 +321,8 @@ class ZFCardBackView: UIView {
         }
         
         if user.hasInterests {
-            interestsLabel.text = "Interests: " + user.interests.map{$0.description}.joined(separator: ", ")
+
+            interestsLabel.text = user.interestsString
         } else {
             interestsLabel.text = ""
         }
