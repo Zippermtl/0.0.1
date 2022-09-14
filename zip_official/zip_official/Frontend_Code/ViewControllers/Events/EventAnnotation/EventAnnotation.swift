@@ -55,6 +55,12 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
     private var dotView: UIView
     private var ringColor: UIColor = .black
     
+    override var annotation: MKAnnotation? {
+        didSet {
+            self.clusteringIdentifier = EventClusterAnnotationView.identifier
+        }
+    }
+    
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         if let eventAnnotation = annotation as? EventAnnotation {
             self.ringColor = eventAnnotation.event.getType().color
@@ -63,8 +69,8 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         self.ringColor = .white
         self.eventImage = UIButton()
         self.dotView = UIView()
-
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        self.clusteringIdentifier = EventClusterAnnotationView.identifier
         initConfig()
     }
     
@@ -195,6 +201,8 @@ class PromoterEventAnnotationView: EventAnnotationView {
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipYellow, view_length: 60, dot_length: 16)
+        clusteringIdentifier = EventClusterAnnotationView.identifier
+
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -207,6 +215,7 @@ class UserEventAnnotationView: EventAnnotationView {
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier, ringColor: .zipBlue, view_length: 40, dot_length: 12)
+        clusteringIdentifier = EventClusterAnnotationView.identifier
     }
     
     required init?(coder aDecoder: NSCoder) {

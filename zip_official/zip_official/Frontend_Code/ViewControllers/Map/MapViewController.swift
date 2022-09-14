@@ -298,8 +298,8 @@ class MapViewController: UIViewController {
         mapView.register(RecurringEventAnnotationView.self, forAnnotationViewWithReuseIdentifier: RecurringEventAnnotationView.identifier)
         mapView.register(EventClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: EventClusterAnnotationView.identifier)
         mapView.register(HappeningsClusterAnnotationView.self, forAnnotationViewWithReuseIdentifier: HappeningsClusterAnnotationView.identifier)
-
         
+        guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         
         DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
@@ -335,7 +335,7 @@ class MapViewController: UIViewController {
             }
         })
 
-        DatabaseManager.shared.getAllGoingEvents(eventCompletion: { [weak self] event in
+        DatabaseManager.shared.getAllGoingEvents(userId: selfId, eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
             if strongSelf.mappedEvents[event.eventId] == nil {
                 let annotation = EventAnnotation(event: event)
@@ -399,9 +399,17 @@ extension MapViewController: CLLocationManagerDelegate {
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
             GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3, completion: {
                 
-                GeoManager.shared.LoadUsers(size: 10, completion: {_ in }, updateCompletion: {_ in})
-//                GeoManager.shared.LoadNextUsers(size: 10, completion: {
-//                })
+                GeoManager.shared.LoadUsers(size: 10, completion: {_ in }, updateCompletion: {  [weak self] res in
+                    //MARK: GABE find out how to make the user configure the image - all you need to do is find the user
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    let user =  GeoManager.shared.loadedUsers[res]!
+                    guard let cell = user.ZFCell else {
+                        return
+                    }
+                    cell.configureImage(user: user)
+                })
 
             })
             guardingGeoFireCalls = true
@@ -585,6 +593,16 @@ extension MapViewController: MKMapViewDelegate {
         guard let eventAnnotations = memberAnnotations as? [EventAnnotation] else {
             return MKClusterAnnotation(memberAnnotations: memberAnnotations)
         }
+        let type = eventAnnotations[0].event
+        for event in eventAnnotations {
+            if type is RecurringEvent {
+                if !(event.event is RecurringEvent) { print("combining") }
+            }
+            
+            if type is UserEvent || type is PromoterEvent {
+                if !(event.event is UserEvent || event.event is PromoterEvent) { print("comining2") }
+            }
+        }
         
         if !(eventAnnotations[0].event is RecurringEvent) {
 //            let eventAnnotations = eventAnnotations.filter({ !($0.event is RecurringEvent) })
@@ -595,18 +613,51 @@ extension MapViewController: MKMapViewDelegate {
         }
     }
     
-    
+    private func getCluterSpan(cluster: MKClusterAnnotation) -> MKCoordinateRegion {
+        guard let eventAnnotations = cluster.memberAnnotations as? [EventAnnotation] else { return MKCoordinateRegion() }
+        let events = eventAnnotations.map({ $0.event })
+        let currentSpan = mapView.region.span
+        let currentRatio = currentSpan.latitudeDelta / currentSpan.longitudeDelta
+        
+        let annotations = cluster.memberAnnotations
+        var minLat: CLLocationDegrees = annotations[0].coordinate.latitude
+        var maxLat: CLLocationDegrees = annotations[0].coordinate.latitude
+        var minLong: CLLocationDegrees = annotations[0].coordinate.longitude
+        var maxLong: CLLocationDegrees = annotations[0].coordinate.longitude
+        var centerLat = 0.0
+        var centerLong = 0.0
+
+        for event in events {
+//            guard let event = event else { continue }
+            let lat = event.coordinates.coordinate.latitude
+            let long = event.coordinates.coordinate.longitude
+            centerLat += lat
+            centerLong += long
+            
+            maxLat = max(maxLat, lat)
+            minLat = min(minLat, lat)
+            maxLong = max(maxLong, long)
+            minLong = min(minLong, long)
+        }
+        
+        let latDifference = (maxLat - minLat) * 1.5
+        let longDifference = (maxLong - minLong) * 1.5
+        
+        centerLat /= Double(annotations.count)
+        centerLong /= Double(annotations.count)
+        let center = CLLocationCoordinate2D(latitude: centerLat, longitude: centerLong)
+        
+        return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latDifference, longitudeDelta: longDifference))
+        
+        
+    }
     
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
-        if view is EventClusterAnnotationView || view is HappeningsClusterAnnotationView {
-            // if the user taps a cluster, zoom in
-            let currentSpan = mapView.region.span
-            let zoomSpan = MKCoordinateSpan(latitudeDelta: currentSpan.latitudeDelta / 2.0, longitudeDelta: currentSpan.longitudeDelta / 2.0)
-            let zoomCoordinate = view.annotation?.coordinate ?? mapView.region.center
-            let zoomed = MKCoordinateRegion(center: zoomCoordinate, span: zoomSpan)
-            mapView.setRegion(zoomed, animated: true)
+        
+        if let cluster = view.annotation as? MKClusterAnnotation {
+            mapView.setRegion(getCluterSpan(cluster: cluster), animated: true)
             return
         }
         
@@ -695,7 +746,7 @@ extension MapViewController: UIGestureRecognizerDelegate {
     }
     
     private func updateAnnotation(){
-        configureEventsOnDistance()
+//        configureEventsOnDistance()
     }
 
     private func configureEventsOnDistance() {

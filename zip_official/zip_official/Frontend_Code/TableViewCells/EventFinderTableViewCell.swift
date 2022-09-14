@@ -9,10 +9,14 @@ import UIKit
 import MapKit
 import CoreLocation
 
-
+protocol SaveEventCellProtocol : AnyObject {
+    func saveEvent(event: Event)
+    func unsaveEvent(event: Event)
+}
 
 class EventFinderTableViewCell: AbstractEventTableViewCell {
     let saveButton: UIButton
+    weak var delegate : SaveEventCellProtocol?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         self.saveButton = UIButton()
@@ -38,6 +42,7 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
     
     override func configure(_ event: Event) {
         super.configure(event)
+
         let myEvents = User.getUDEvents(toKey: .hostedEvents) + User.getUDEvents(toKey: .pastHostEvents)
         
         if myEvents.contains(event) {
@@ -49,6 +54,8 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
         let savedEvents = User.getUDEvents(toKey: .savedEvents)
         if savedEvents.contains(event) {
             saveButton.isSelected = true
+        } else {
+            saveButton.isSelected = false
         }
     }
     
@@ -57,21 +64,32 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
     }
     
     @objc private func didTapSaveButton() {
-        if saveButton.isSelected { // case where it was already saved
-            DatabaseManager.shared.markSaved(event: event, completion: { [weak self] error in
+        if !saveButton.isSelected { // case where it was already saved
+            event.markSaved(completion: { [weak self] error in
                 guard error == nil,
                       let saveButton = self?.saveButton else {
                     return
                 }
                 saveButton.isSelected = !saveButton.isSelected
+                DispatchQueue.main.async { [weak self] in
+                    guard let event = self?.event,
+                          let delegate = self?.delegate else { return }
+                    delegate.saveEvent(event: event)
+                }
             })
+            
         } else {
-            DatabaseManager.shared.markUnsaved(event: event, completion: {[weak self] error in
+            event.markUnsaved(completion: { [weak self] error in
                 guard error == nil,
                       let saveButton = self?.saveButton else {
                     return
                 }
                 saveButton.isSelected = !saveButton.isSelected
+                DispatchQueue.main.async { [weak self] in
+                    guard let event = self?.event,
+                          let delegate = self?.delegate else { return }
+                    delegate.unsaveEvent(event: event)
+                }
             })
 
         }

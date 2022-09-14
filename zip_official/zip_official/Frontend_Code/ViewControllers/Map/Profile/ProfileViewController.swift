@@ -79,38 +79,7 @@ class ProfileViewController: AbstractProfileViewController {
     }
     
     override func didTapB1Button() {
-        let hostingEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .hostedEvents))
-        let goingEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .goingEvents))
-        let savedEvents = Event.getTodayUpcomingPrevious(events: User.getUDEvents(toKey: .savedEvents))
-        
-        print("MY PAST EVENTS = ")
-        print(User.getUDEvents(toKey: .pastHostEvents))
-        
-        let goingData = [
-            CellSectionData(title: "Today", items: goingEvents.0, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Upcoming", items: goingEvents.1, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Previous", items: User.getUDEvents(toKey: .pastGoingEvents), cellType: CellType(eventType: .save))
-        ]
-
-        let savedData = [
-            CellSectionData(title: "Today", items: savedEvents.0, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Upcoming", items: savedEvents.1, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Previous", items: savedEvents.2, cellType: CellType(eventType: .save))
-        ]
-        
-        let hostingData = [
-            CellSectionData(title: "Today", items: hostingEvents.0, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Upcoming", items: hostingEvents.1, cellType: CellType(eventType: .save)),
-            CellSectionData(title: "Previous", items: User.getUDEvents(toKey: .pastHostEvents), cellType: CellType(eventType: .save))
-        ]
-        
-        let tableData : [MultiSectionData] = [
-            MultiSectionData(title: "Going", sections: goingData),
-            MultiSectionData(title: "Saved", sections: savedData),
-            MultiSectionData(title: "Hosting", sections: hostingData)
-        ]
-
-        let vc = MasterTableViewController(multiSectionData: tableData, fetch: false)
+        let vc = MyEventsViewController()
         vc.title = "My Events"
         vc.modalPresentationStyle = .overCurrentContext
         navigationController?.pushViewController(vc, animated: true)

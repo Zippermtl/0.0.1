@@ -102,6 +102,7 @@ public class UserCache {
                     completionUpdates(.failure(err))
                 }
             })
+        case .Unloaded: break
 //        case 4:
 //            print("add this later for expansion")
 //        default:

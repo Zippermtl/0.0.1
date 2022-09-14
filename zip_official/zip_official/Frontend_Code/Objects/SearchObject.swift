@@ -136,4 +136,13 @@ class SearchObject : Equatable{
         return hold
     }
     
+    var cellItem: CellItem {
+        if isUser() {
+            return user ?? User()
+        } else {
+            return event ?? Event()
+        }
+    }
+    
+    
 }

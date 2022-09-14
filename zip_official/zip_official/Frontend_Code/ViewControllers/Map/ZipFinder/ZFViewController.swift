@@ -31,10 +31,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     weak var delegate: ZipFinderVCDelegate?
     
+    
     @objc private let closeButton: UIButton = {
-        let button = UIButton()
-        button.setBackgroundImage(UIImage(named: "close"), for: .normal)
-        return button
+        let btn = UIButton()
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .medium)
+        btn.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        return btn
     }()
     
     private var hasMore = false

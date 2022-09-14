@@ -612,12 +612,17 @@ extension LoginViewController: UITextFieldDelegate {
             configureNumber(phoneText: nums)
             return false
         }
+        
+        var inString = string.replacingOccurrences(of: "(", with: "")
+        inString = inString.replacingOccurrences(of: ")", with: "")
+        inString = inString.replacingOccurrences(of: "-", with: "")
+        inString = inString.replacingOccurrences(of: " ", with: "")
+        inString = inString.replacingOccurrences(of: "+1", with: "")
 
         var max = 10
         if countryCode == "+33" { max = 9 }
         let nums = getNumText()
-
-        if nums.count + string.count > max { return false }
+        if nums.count + inString.count > max { return false }
         
         
         let ACCEPTABLE_CHARACTERS = "0123456789"

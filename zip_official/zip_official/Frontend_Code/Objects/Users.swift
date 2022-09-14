@@ -194,7 +194,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         return userId
     }
     
-    
+    public var loadStatus: UserLoadType = .Unloaded
     
     public static func < (lhs: User, rhs: User) -> Bool {
         return lhs.firstName < rhs.firstName
@@ -760,6 +760,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         case SubView = 3
         case ProfilePicUrl = 4
         case PicUrls = 5
+        case Unloaded = 6
     }
     
     public func updateSelfHard(user: User){
@@ -1065,15 +1066,6 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         return requestsArr.map({ $0.receiver })
     }
     
-    static func getInvitedEvents() -> [Event]{
-        guard let raw_events = AppDelegate.userDefaults.value(forKey: "myInvitedEvents") as? [String] else {
-            return []
-        }
-        let events = raw_events.map({ Event(eventId: $0)})
-        return events
-    }
-    
-    
     static func getMyRequests() -> [User]{
         guard let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]] else {
             return []
@@ -1084,50 +1076,62 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         return requestsArr.map({ $0.receiver })
     }
     
-    static func removeUDEvent(event: Event, toKey key: UserDefaultEventKeys) -> [Event] {
-        var events = self.getUDEvents(toKey: key)
-        if let idx = events.firstIndex(of: event) {
-            events.remove(at: idx)
-            Self.setUDEvents(events: events, toKey: key)
+    static func removeUDEvent(event: Event, toKey key: UserDefaultEventKeys) {
+        guard var dataDict = AppDelegate.userDefaults.value(forKey: key.rawValue) as? [String: Data] else {
+            return
         }
-        return events
+        dataDict.removeValue(forKey: event.eventId)
+
     }
     
-    static func appendUDEvent(event: Event, toKey key: UserDefaultEventKeys) -> [Event]{
-        var events = Self.getUDEvents(toKey: key)
-        if !events.contains(event) {
-            events.append(event)
+    static func appendUDEvent(event: Event, toKey key: UserDefaultEventKeys) {
+        guard var dataDict = AppDelegate.userDefaults.value(forKey: key.rawValue) as? [String: Data] else {
+            Self.setUDEvents(events: [event], toKey: key)
+            return
         }
-        Self.setUDEvents(events: events, toKey: key)
-        return events
+        do {
+            let jsonEncoder = JSONEncoder()
+            let data = try jsonEncoder.encode(event.getLocalizedEncoder())
+            dataDict[event.eventId] = data
+            AppDelegate.userDefaults.set(dataDict, forKey: key.rawValue)
+        } catch {
+            
+        }        
     }
     
     static func setUDEvents(events: [Event], toKey key : UserDefaultEventKeys) {
-        let encoders : [EventCoder] = events.map({ $0.getLocalizedEncoder() })
-        do {
-            let encoder = JSONEncoder()
-            let data = try encoder.encode(encoders)
-            AppDelegate.userDefaults.set(data, forKey: key.rawValue)
-        } catch {
-            print("unable to decode \(key.rawValue)")
+        var UDEvents = [String:Data]()
+        for event in events {
+            do {
+                let jsonEncoder = JSONEncoder()
+                let data = try jsonEncoder.encode(event.getLocalizedEncoder())
+                UDEvents[event.eventId] = data
+            } catch {
+                print("unable to decode \(key.rawValue)")
+            }
         }
+        AppDelegate.userDefaults.set(UDEvents, forKey: key.rawValue)
     }
     
     static func getUDEvents(toKey key : UserDefaultEventKeys) -> [Event] {
-        if let data = AppDelegate.userDefaults.data(forKey: key.rawValue) {
-            do {
-                let decoder = JSONDecoder()
-                let eventCoders = try decoder.decode([LocalEventCoder].self, from: data)
-                return eventCoders.map({ $0.createEvent() })
-            } catch {
-                print("unable to decode \(key.rawValue)")
-                return []
-            }
-        } else {
+        guard let dataDict = AppDelegate.userDefaults.value(forKey: key.rawValue) as? [String: Data] else {
             return []
         }
+        
+        var events = [Event]()
+        for (id,data) in dataDict {
+            do {
+                let decoder = JSONDecoder()
+                let localEvent = try decoder.decode(LocalEventCoder.self, from: data).createEvent()
+                events.append(localEvent)
+            } catch {
+                print("unable to decode \(id) in \(key.rawValue)")
+            }
+        }
+        return events
     }
     
+
 }
 
 public enum UserDefaultEventKeys : String {

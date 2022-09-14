@@ -18,6 +18,12 @@ class RecurringEventAnnotationView: MKAnnotationView, EventAnnotationViewProtoco
     
     private var eventImage: UIImageView
     
+    override var annotation: MKAnnotation? {
+        didSet {
+            self.clusteringIdentifier = HappeningsClusterAnnotationView.identifier
+        }
+    }
+    
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         self.eventImage = UIImageView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -29,6 +35,10 @@ class RecurringEventAnnotationView: MKAnnotationView, EventAnnotationViewProtoco
         let tap = UITapGestureRecognizer(target: self, action: #selector(openEvent))
         eventImage.addGestureRecognizer(tap)
         clusteringIdentifier = HappeningsClusterAnnotationView.identifier
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.5
+        layer.shadowOffset = CGSize(width: 1, height: 4)
+        layer.shadowRadius = 2
     }
     
     required init?(coder aDecoder: NSCoder) {

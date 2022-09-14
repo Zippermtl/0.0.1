@@ -21,6 +21,12 @@ class ZFCardFrontView: UIView {
     var backView: ZFCardBackView?
     var delegate: ZFCardFrontDelegate?
 
+//    var profilePicStack: UIStackView?
+    var spacer1: UIView?
+    var spacer2: UIView?
+    var profilePicture: UIImageView?
+    var shadowView: UIView?
+    
     //MARK: - Subviews
     private var pictureCollectionLayout: SnappingFlowLayout
     var pictureCollectionView: UICollectionView
@@ -131,6 +137,7 @@ class ZFCardFrontView: UIView {
         fadedBG = UIView()
         
         super.init(frame: .zero)
+        self.layer.masksToBounds = true
         layer.cornerRadius = 20
         
         fadedBG.backgroundColor = .zipGray.withAlphaComponent(0.8)
@@ -188,6 +195,57 @@ class ZFCardFrontView: UIView {
         self.user = user
         configureLabels()
         updateRequestButton()
+        
+        if user.otherPictureUrls.count == 0 && profilePicture == nil{
+            shadowView = UIView()
+            profilePicture = UIImageView()
+            spacer1 = UIView()
+            spacer2 = UIView()
+
+            profilePicture!.layer.masksToBounds = true
+            profilePicture!.layer.cornerRadius = 125
+            
+            shadowView!.backgroundColor = .black
+            shadowView!.layer.masksToBounds = false
+            shadowView!.layer.cornerRadius = 125
+            shadowView!.layer.shadowColor = UIColor.black.cgColor
+            shadowView!.layer.shadowOpacity = 0.5
+            shadowView!.layer.shadowOffset = CGSize(width: 4, height: 20)
+            shadowView!.layer.shadowRadius = 5
+            
+            shadowView!.addSubview(profilePicture!)
+            addSubview(shadowView!)
+            addSubview(spacer1!)
+            addSubview(spacer2!)
+            
+            spacer1!.translatesAutoresizingMaskIntoConstraints = false
+            spacer1!.topAnchor.constraint(equalTo: pictureCollectionView.topAnchor).isActive = true
+            spacer1!.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+            spacer1!.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+            spacer1!.heightAnchor.constraint(equalTo: spacer2!.heightAnchor).isActive = true
+            
+            spacer2!.translatesAutoresizingMaskIntoConstraints = false
+            spacer2!.bottomAnchor.constraint(equalTo: fadedBG.topAnchor).isActive = true
+            spacer2!.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+            spacer2!.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+
+            shadowView!.translatesAutoresizingMaskIntoConstraints = false
+            shadowView!.widthAnchor.constraint(equalToConstant: 250).isActive = true
+            shadowView!.heightAnchor.constraint(equalTo: shadowView!.widthAnchor).isActive = true
+            shadowView!.topAnchor.constraint(equalTo: spacer1!.bottomAnchor).isActive = true
+            shadowView!.bottomAnchor.constraint(equalTo: spacer2!.topAnchor).isActive = true
+            shadowView!.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+            
+            profilePicture!.translatesAutoresizingMaskIntoConstraints = false
+            profilePicture!.topAnchor.constraint(equalTo: shadowView!.topAnchor).isActive = true
+            profilePicture!.bottomAnchor.constraint(equalTo: shadowView!.bottomAnchor).isActive = true
+            profilePicture!.rightAnchor.constraint(equalTo: shadowView!.rightAnchor).isActive = true
+            profilePicture!.leftAnchor.constraint(equalTo: shadowView!.leftAnchor).isActive = true
+            
+            profilePicture!.sd_setImage(with: user.profilePicUrl)
+        }
+        
+        
         pictureCollectionView.reloadData()
     }
     
@@ -210,16 +268,6 @@ class ZFCardFrontView: UIView {
     }
     
     private func configureLabels(){
-        //if you're a shitty person and have a home button
-//        if AppDelegate.userDefaults.bool(forKey: "hasHomeButton"){
-//            firstNameLabel.font = .zipTitle.withSize(20)
-//            lastNameLabel.font = .zipTitle.withSize(20)
-//            distanceLabel.font =  .zipTitle.withSize(16)
-//            bioLabel.font = .zipBody.withSize(15)
-//            tapToFlipLabel.font = .zipBody.withSize(10)
-//            swipeToViewLabel.font = .zipBody.withSize(10)
-//        }
-//        
         guard let user = user else {
             return
         }
@@ -234,6 +282,23 @@ class ZFCardFrontView: UIView {
         guard let cardUser = self.user else { return }
         cardUser.updateSelfSoft(user: user)
         pictureCollectionView.reloadData()
+        
+        if user.otherPictureUrls.count != 0 {
+            guard let shadowView = shadowView,
+                  let profilePicture = profilePicture
+            else {
+                return
+            }
+
+            shadowView.removeFromSuperview()
+            profilePicture.removeFromSuperview()
+            self.profilePicture = nil
+            self.shadowView = nil
+            self.spacer1 = nil
+            self.spacer2 = nil
+        } else {
+            profilePicture?.sd_setImage(with: user.profilePicUrl)
+        }
     }
   
     
@@ -245,6 +310,7 @@ class ZFCardFrontView: UIView {
         pictureCollectionView.collectionViewLayout = pictureCollectionLayout
         
         pictureCollectionView.register(PictureCollectionViewCell.self, forCellWithReuseIdentifier: PictureCollectionViewCell.identifier)
+        pictureCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "noPicCell")
         pictureCollectionView.dataSource = self
         pictureCollectionView.isOpaque = true
         pictureCollectionView.backgroundColor = .clear
@@ -332,21 +398,21 @@ extension ZFCardFrontView: UICollectionViewDataSource {
         guard let user = user else {
             return UICollectionViewCell()
         }
-        print("getting here at least")
         
-        var model: URL?
         if user.otherPictureUrls.count == 0 {
-            model = nil
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "noPicCell", for: indexPath)
+            cell.contentView.backgroundColor = .zipLightGray
+            return cell
         } else {
-            model = user.otherPictureUrls[indexPath.row]
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
+            cell.configure(with: user.otherPictureUrls[indexPath.row])
+            return cell
         }
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PictureCollectionViewCell.identifier, for: indexPath) as! PictureCollectionViewCell
         
-        cell.configure(with: model)
-        
-        return cell
     }
+    
+    
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let user = user else {
@@ -358,3 +424,7 @@ extension ZFCardFrontView: UICollectionViewDataSource {
         return 1
     }
 }
+
+
+
+

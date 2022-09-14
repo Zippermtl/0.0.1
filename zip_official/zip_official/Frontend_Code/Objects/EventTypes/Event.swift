@@ -75,6 +75,17 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         return lhs.eventId == rhs.eventId
     }
     
+    public enum EventLoadType: Int {
+        case EventProfile = 0
+        case EventProfileUpdates = 1
+        case EventProfileNoPic = 2
+        case SubView = 3
+        case ProfilePicUrl = 4
+        case PicUrls = 5
+        case Unloaded = 6
+    }
+    
+    public var loadStatus: User.UserLoadType = .Unloaded
     
     
     var eventId: String = ""
@@ -165,6 +176,11 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         return formatter.string(from: startTime)
     }
     
+    func canIGo() -> Bool {
+        let selfUser = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)
+        return getType() == .Promoter || hosts.contains(selfUser) || usersInvite.contains(selfUser) || usersGoing.contains(selfUser)
+    }
+    
     func getDistance() -> Double {
         guard let userCoordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
             return 0
@@ -245,8 +261,9 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
             guard err == nil else {
                 return
             }
-            let _ = User.removeUDEvent(event: self, toKey: .invitedEvents)
-            User.setUDEvents(events: User.removeUDEvent(event: self, toKey: .notGoingEvents), toKey: .goingEvents)
+            User.removeUDEvent(event: self, toKey: .invitedEvents)
+            User.removeUDEvent(event: self, toKey: .notGoingEvents)
+            User.appendUDEvent(event: self, toKey: .goingEvents)
         })
     }
     
@@ -256,8 +273,9 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
             guard err == nil else {
                 return
             }
-            let _ = User.removeUDEvent(event: self, toKey: .invitedEvents)
-            User.setUDEvents(events: User.removeUDEvent(event: self, toKey: .goingEvents), toKey: .notGoingEvents)
+            User.removeUDEvent(event: self, toKey: .invitedEvents)
+            User.removeUDEvent(event: self, toKey: .goingEvents)
+            User.appendUDEvent(event: self, toKey: .notGoingEvents)
         })
     }
     

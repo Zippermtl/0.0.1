@@ -40,9 +40,10 @@ class FPCViewController: UIViewController {
     private let zipRequestContainer: UIView
     public var eventsTableView: InvitedTableViewController
     private var zipRequestsTableView: InvitedTableViewController
-    private var searchTable: SearchBarTableView
+    private var searchTable: MasterTableViewController
     private var searchBg: UIView
     var events: [Event]
+    var requests: [User]
     
     private let findEventsIcon: IconButton
     private let createEventIcon: IconButton
@@ -67,6 +68,7 @@ class FPCViewController: UIViewController {
         self.zipRequestsButton = UIButton()
         self.eventsButton = UIButton()
         self.events = []
+        self.requests = []
         
         self.searchBg = UIView()
         
@@ -74,7 +76,7 @@ class FPCViewController: UIViewController {
         self.eventsContainer = UIView()
         self.zipRequestsTableView = InvitedTableViewController(cellItems: User.getMyRequests())
         self.eventsTableView = InvitedTableViewController(cellItems: events.filter({ User.getUDEvents(toKey: .goingEvents).contains( $0 ) }))
-        self.searchTable = SearchBarTableView()
+        self.searchTable = MasterTableViewController(cellData: [], cellType: CellType(userType: .zipList, eventType: .save))
         
         let iconConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .large)
         let createEventConfig = UIImage.SymbolConfiguration(pointSize: 25, weight: .light, scale: .large)
@@ -157,7 +159,6 @@ class FPCViewController: UIViewController {
         eventsButton.setAttributedTitle(NSMutableAttributedString(string: "See All", attributes: Eattributes), for: .normal)
         
         searchBg.isHidden = true
-        searchTable.isHidden = true
         
         messagesIcon.iconButton.addTarget(self, action: #selector(openMessages), for: .touchUpInside)
         findEventsIcon.iconButton.addTarget(self, action: #selector(findEvents), for: .touchUpInside)
@@ -293,12 +294,17 @@ class FPCViewController: UIViewController {
         addChild(eventsTableView)
         eventsTableView.didMove(toParent: self)
         
+        scrollView.addSubview(searchBg)
+        searchBg.addSubview(searchTable.view)
+        addChild(searchTable)
+        searchTable.didMove(toParent: self)
+        
+        
         zipRequestsTableView.view.translatesAutoresizingMaskIntoConstraints = false
         zipRequestsTableView.view.topAnchor.constraint(equalTo: zipRequestContainer.topAnchor).isActive = true
         zipRequestsTableView.view.bottomAnchor.constraint(equalTo: zipRequestContainer.bottomAnchor).isActive = true
         zipRequestsTableView.view.rightAnchor.constraint(equalTo: zipRequestContainer.rightAnchor).isActive = true
         zipRequestsTableView.view.leftAnchor.constraint(equalTo: zipRequestContainer.leftAnchor).isActive = true
-
      
         eventsTableView.view.translatesAutoresizingMaskIntoConstraints = false
         eventsTableView.view.topAnchor.constraint(equalTo: eventsContainer.topAnchor).isActive = true
@@ -306,12 +312,16 @@ class FPCViewController: UIViewController {
         eventsTableView.view.rightAnchor.constraint(equalTo: eventsContainer.rightAnchor).isActive = true
         eventsTableView.view.leftAnchor.constraint(equalTo: eventsContainer.leftAnchor).isActive = true
 
+        searchTable.view.translatesAutoresizingMaskIntoConstraints = false
+        searchTable.view.topAnchor.constraint(equalTo: searchBg.topAnchor).isActive = true
+        searchTable.view.bottomAnchor.constraint(equalTo: searchBg.bottomAnchor).isActive = true
+        searchTable.view.rightAnchor.constraint(equalTo: searchBg.rightAnchor).isActive = true
+        searchTable.view.leftAnchor.constraint(equalTo: searchBg.leftAnchor).isActive = true
+
 
         scrollView.addSubview(eventsLabel)
         scrollView.addSubview(eventsButton)
         
-        scrollView.addSubview(searchBg)
-        searchBg.addSubview(searchTable)
 
         scrollView.bringSubviewToFront(searchBg)
     }
@@ -382,12 +392,6 @@ class FPCViewController: UIViewController {
         searchBg.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         searchBg.backgroundColor = .zipGray
         
-        searchTable.translatesAutoresizingMaskIntoConstraints = false
-        searchTable.topAnchor.constraint(equalTo: searchBg.topAnchor).isActive = true
-        searchTable.bottomAnchor.constraint(equalTo: searchBg.bottomAnchor).isActive = true
-        searchTable.leftAnchor.constraint(equalTo: searchBg.leftAnchor).isActive = true
-        searchTable.rightAnchor.constraint(equalTo: searchBg.rightAnchor).isActive = true
-        
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 30).isActive = true
         collectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
@@ -427,6 +431,15 @@ class FPCViewController: UIViewController {
             eventsTableView.reload(cellItems: events)
             updateEventsLabel(cellItems: events)
         }
+        
+//        let zipRequest = User.getMyRequests()
+//        if requests != zipRequest {
+//            zipRequestsTableView.reload(cellItems: zipRequest)
+//        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
     }
     
 }
@@ -487,13 +500,11 @@ extension FPCViewController: UICollectionViewDataSource {
 extension FPCViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
         delegate?.openFPC()
-        searchTable.isHidden = false
         searchBg.isHidden = false
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField.text == "" {
-            searchTable.isHidden = true
             searchBg.isHidden = true
         }
     }
@@ -502,7 +513,6 @@ extension FPCViewController: UITextFieldDelegate {
         guard let text = textField.text else{
             return
         }
-        searchTable.searchData = []
         SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: { result in
             switch result {
             case .success(let searchObject):
@@ -524,10 +534,18 @@ extension FPCViewController: UITextFieldDelegate {
             guard let strongSelf = self else { return }
             switch result {
             case .success(let searchResults):
-                strongSelf.searchTable.searchData.append(contentsOf: searchResults.map({  SearchManager.shared.loadedData[$0]!  }))
-                strongSelf.searchTable.configureTableData()
-                print("SEARCH TABLE DATA = ", strongSelf.searchTable.searchData)
-                strongSelf.searchTable.reloadData()
+                let allResults = searchResults.map({  SearchManager.shared.loadedData[$0]!.cellItem  })
+                let userResults = allResults.filter({ $0.isUser })
+                let eventResults = allResults.filter({ $0.isEvent })
+                strongSelf.searchTable.reload(multiSectionData: [
+                    MultiSectionData(title: "All", sections:
+                                        [CellSectionData(title: nil, items: allResults, cellType: CellType(userType: .zipList, eventType: .save))]),
+                    MultiSectionData(title: "Users", sections:
+                                        [CellSectionData(title: nil, items: userResults, cellType: CellType(userType: .zipList, eventType: .save))]),
+                    MultiSectionData(title: "Events", sections:
+                                        [CellSectionData(title: nil, items: eventResults, cellType: CellType(userType: .zipList, eventType: .save))])
+                ], reloadTable: false)
+                
             case .failure(let error):
                 print("Error searching with querytext \(text) and Error: \(error)")
             }

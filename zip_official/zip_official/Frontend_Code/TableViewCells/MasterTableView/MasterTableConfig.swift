@@ -11,7 +11,9 @@ import UIKit
 public protocol CellItem {
     var isUser : Bool {get}
     var isEvent: Bool {get}
+    var loadStatus: User.UserLoadType {get set}
     func getId() -> String
+    
 }
 
 protocol TableCellController {
@@ -20,7 +22,8 @@ protocol TableCellController {
     func cellFromTableView(_ tableView: UITableView, forIndexPath indexPath: IndexPath, cellType: CellType) -> UITableViewCell
     func didSelectCell()
     func heightForRowAt(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
-    func fetch(completion: @escaping (Error) -> Void)
+    func fetch(completion: @escaping (Error?) -> Void)
+    func fetchImage(completion: @escaping (Error?) -> Void)
     func getItem() -> CellItem
     func filterResult(searchText: String) -> Bool
     func itemEquals(cellItem: CellItem) -> Bool

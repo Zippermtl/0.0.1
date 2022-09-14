@@ -42,7 +42,8 @@ class UserPhotosViewController: UIViewController {
     
     private let xButton: UIButton = {
         let btn = UIButton()
-        btn.setImage(UIImage(systemName: "xmark.circle.fill")?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .medium)
+        btn.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white), for: .normal)
         return btn
     }()
     

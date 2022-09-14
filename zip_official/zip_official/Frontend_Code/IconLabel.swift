@@ -31,6 +31,18 @@ class IconLabel: UILabel {
     private var color: UIColor
     private var labelText: String
     
+    
+    enum IconPlacement {
+        case left
+        case right
+    }
+    
+    var iconPlaceMent: IconPlacement? {
+        didSet {
+            update(string: labelText)
+        }
+    }
+    
     init(iconImage: UIImage?){
         self.labelFont = .zipSubtitle2
         self.color = .zipBlue
@@ -75,12 +87,27 @@ class IconLabel: UILabel {
             labelText += " "
         }
         labelText += s
-
         let attachmentString = NSAttributedString(attachment: icon)
         let completeString = NSMutableAttributedString(string: "")
-        completeString.append(attachmentString)
-        completeString.append(NSAttributedString(string: s, attributes: [NSAttributedString.Key.font: self.labelFont,
-                                                                         NSAttributedString.Key.foregroundColor: self.color]))
+        
+        if let iconPlaceMent = iconPlaceMent {
+            switch iconPlaceMent {
+            case .left:
+                completeString.append(attachmentString)
+                completeString.append(NSAttributedString(string: s, attributes: [NSAttributedString.Key.font: self.labelFont,
+                                                                                 NSAttributedString.Key.foregroundColor: self.color]))
+            case .right:
+                completeString.append(NSAttributedString(string: s, attributes: [NSAttributedString.Key.font: self.labelFont,
+                                                                                 NSAttributedString.Key.foregroundColor: self.color]))
+                completeString.append(attachmentString)
+
+            }
+        } else {
+            completeString.append(attachmentString)
+            completeString.append(NSAttributedString(string: s, attributes: [NSAttributedString.Key.font: self.labelFont,
+                                                                             NSAttributedString.Key.foregroundColor: self.color]))
+        }
+        
         attributedText = completeString
     }
     

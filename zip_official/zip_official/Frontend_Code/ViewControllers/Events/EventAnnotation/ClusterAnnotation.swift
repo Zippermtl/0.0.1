@@ -26,9 +26,7 @@ class EventClusterAnnotationView : MKAnnotationView {
    
     override var annotation: MKAnnotation? {
         didSet {
-            guard let cluster = annotation as? MKClusterAnnotation else { return }
-            displayPriority = .defaultHigh
-            countLabel.text = cluster.memberAnnotations.count.description
+            config()
         }
     }
     
@@ -36,21 +34,47 @@ class EventClusterAnnotationView : MKAnnotationView {
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         countLabel = UILabel.zipSubtitle2()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        addSubview(countLabel)
+
+        config()
+    }
+    
+    private func config() {
         frame = CGRect(x: 0, y: 0, width: 30, height: 30)
         layer.masksToBounds = true
         layer.cornerRadius = 15
-        backgroundColor = .zipYellow
-        addSubview(countLabel)
         canShowCallout = false
         clusteringIdentifier = Self.identifier
-        countLabel.textAlignment = .center
-        countLabel.textColor = .zipGray
-        
+        displayPriority = .required
+        zPriority = .defaultSelected
 
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.5
+        layer.shadowOffset = CGSize(width: 1, height: 4)
+        layer.shadowRadius = 2
+        countLabel.textAlignment = .center
+        
         guard let annotation = annotation as? MKClusterAnnotation else {
             return
         }
         countLabel.text = annotation.memberAnnotations.count.description
+        
+        if let eventAnnotations = annotation.memberAnnotations as? [EventAnnotation] {
+            for event in eventAnnotations.map({ $0.event }) {
+                if event is PromoterEvent {
+                    backgroundColor = .zipYellow
+                    countLabel.textColor = .black
+
+                    return
+                }
+            }
+            countLabel.textColor = .white
+            backgroundColor = .zipBlue
+            
+        } else {
+            countLabel.textColor = .zipGray
+            backgroundColor = .black
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -71,7 +95,9 @@ class HappeningsClusterAnnotationView : MKAnnotationView {
         didSet {
             guard let cluster = annotation as? MKClusterAnnotation else { return }
             displayPriority = .defaultHigh
+            zPriority = .defaultUnselected
             countLabel.text = cluster.memberAnnotations.count.description
+            clusteringIdentifier = Self.identifier
         }
     }
     
@@ -84,6 +110,10 @@ class HappeningsClusterAnnotationView : MKAnnotationView {
         backgroundColor = .zipRed
         addSubview(countLabel)
         canShowCallout = false
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.5
+        layer.shadowOffset = CGSize(width: 1, height: 4)
+        layer.shadowRadius = 2
         countLabel.textAlignment = .center
         countLabel.textColor = .white
         clusteringIdentifier = Self.identifier

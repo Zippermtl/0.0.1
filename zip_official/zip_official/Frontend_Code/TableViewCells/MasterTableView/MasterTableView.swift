@@ -20,7 +20,7 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
     
     
     
-    fileprivate var multiSectionData : [MultiSectionData]
+    public var multiSectionData : [MultiSectionData]
     fileprivate var tableData : MultiSectionData
     weak var delegate : MasterTableViewDelegate?
     
@@ -57,7 +57,11 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         self.tableView = UITableView()
         self.fetch = fetch
         self.multiSectionData = multiSectionData
-        self.tableData = multiSectionData[superSection]
+        if multiSectionData.count == 0 {
+            self.tableData = MultiSectionData(title: nil, sections: [])
+        } else {
+            self.tableData = multiSectionData[superSection]
+        }
         self.searchBar = UISearchBar()
         
      
@@ -266,16 +270,16 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
             }
         }
         
+        tableView.reloadData()
+        
         UserCellController.registerCell(on: tableView, cellTypes: cellTypes)
         EventCellController.registerCell(on: tableView, cellTypes: cellTypes)
         tableView.register(MasterTableSectionHeader.self, forHeaderFooterViewReuseIdentifier: MasterTableSectionHeader.identifier)
         tableView.register(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: "empty")
 
-        tableData = multiSectionData[superSection]
-//        tableView.reloadData()
         
         guard let tableHeader = tableHeader else {
-            tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 1))
+            tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 0))
             return
         }
 
@@ -318,24 +322,33 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         for multiSectionDatum in multiSectionData {
             for section in multiSectionDatum.sections {
                 for item in section.items {
-                    item.fetch(completion: { [weak self] error in
-                        guard let itemIdx = section.items.firstIndex(where: { controller in
-                            if controller.getItem().isUser != item.getItem().isUser { //they are both the same thing
-                                return false
-                            } else if item.getItem().isUser { // item is user -> already implied that controller item is user
-                                return (item.getItem() as! User) == (controller.getItem() as! User)
-                            } else {
-                                return (item.getItem() as! Event) == (controller.getItem() as! Event)
+                    if item.getItem().loadStatus == .UserProfileNoPic {
+                        item.fetchImage(completion: {_ in})
+                    } else {
+                        item.fetch(completion: { [weak self] error in
+                            guard error != nil else {
+                                return
                             }
-                        }) else { return }
-                        
-                        section.items.remove(at: itemIdx)
-                        self?.tableView.reloadData()
-                    })
+                            guard let itemIdx = section.items.firstIndex(where: { controller in
+                                if controller.getItem().isUser != item.getItem().isUser { //they are both the same thing
+                                    return false
+                                } else if item.getItem().isUser { // item is user -> already implied that controller item is user
+                                    return (item.getItem() as! User) == (controller.getItem() as! User)
+                                } else {
+                                    return (item.getItem() as! Event) == (controller.getItem() as! Event)
+                                }
+                            }) else { return }
+                            
+                            section.items.remove(at: itemIdx)
+                            self?.tableView.reloadData()
+                        })
+                    }
                 }
             }
         }
     }
+    
+    
     
     private func getItem(for indexPath: IndexPath) -> CellItem {
         return tableData.sections[indexPath.section].items[indexPath.row].getItem()

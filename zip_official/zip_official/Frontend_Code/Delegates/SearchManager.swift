@@ -19,7 +19,7 @@ class SearchManager{
     var presQuery: String = ""
     lazy var priority: [SearchObject] = {
         let friends = User.getMyZips().map({SearchObject($0)})
-        let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
+        let invitedEvents = User.getUDEvents(toKey: .invitedEvents).map({SearchObject($0)})
         let host = User.getUDEvents(toKey: .hostedEvents)
         let saved = User.getUDEvents(toKey: .savedEvents)
         return friends+invitedEvents
@@ -31,7 +31,7 @@ class SearchManager{
     public func updatePriority(event: Event, user: User){
 //        lazy var priority: [SearchObject] = {
             let friends = User.getMyZips().map({SearchObject($0)})
-            let invitedEvents = User.getInvitedEvents().map({SearchObject($0)})
+            let invitedEvents = User.getUDEvents(toKey: .invitedEvents).map({SearchObject($0)})
             let host = User.getUDEvents(toKey: .hostedEvents)
             let saved = User.getUDEvents(toKey: .savedEvents)
             priority = friends+invitedEvents
