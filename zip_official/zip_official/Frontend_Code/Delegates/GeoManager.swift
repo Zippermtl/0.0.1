@@ -97,8 +97,53 @@ class GeoManager {
         })
     }
     
+    public func setFilters(){
+        
+    }
+    
+    public func matchesFilters(user: User) -> Bool{
+//        “MaxRangeFilter” - distance in km/miles - you’ll need to multiply by whatever to make it meters
+//        “MinAgeFilter” - int
+//        “MaxAgeFilter” - int
+//        “genderFilter” - 0 (men), 1 (women), 2 (everyone)
+        var monitor = true
+        let minAgeFilter = AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as! Int ?? 0
+        let maxAgeFilter = AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as! Int ?? 1000
+        let genderFilter = AppDelegate.userDefaults.value(forKey: "genderFilter") as! Int ?? 2
+        switch genderFilter{
+        case 0:
+            if (user.gender != "M"){
+                monitor = false
+            }
+        case 1:
+            if (user.gender != "W"){
+                monitor = false
+            }
+        default:
+            print("no execution statement")
+        }
+        if(minAgeFilter > user.age || user.age > maxAgeFilter){
+            monitor = false
+        }
+        return monitor
+    }
 
-
+    public func addUsersToLoadedIfFitModel(user: User) -> Bool{
+        let u = user
+        if let loc = userIdList.firstIndex(of: u) {
+            let localLoc = userIdList[loc].location
+            u.location = localLoc
+            loadedUsers[u.userId] = u
+            userIdList.remove(at: loc)
+            if (matchesFilters(user: user)) {
+                return true
+            }
+            return false
+        } else {
+            print("Geomanager error 109 for addUser")
+            return false
+        }
+    }
 
     
     public func GetUserByLoc(location: CLLocation, range: Double?, max: Int, completion: @escaping () -> Void){
@@ -200,14 +245,9 @@ class GeoManager {
                     }
                     switch res{
                     case .success(let u):
-                        strongSelf.loadedUsers[u.userId] = u
-                        if let loc = strongSelf.userIdList.firstIndex(of: u) {
-                            strongSelf.loadedUsers[u.userId]?.location = strongSelf.userIdList[loc].location
-                            strongSelf.userIdList.remove(at: loc)
-                        } else {
-                            print("Geomanager Error 194")
+                        if(strongSelf.addUsersToLoadedIfFitModel(user: u)) {
+                            completion(.success(u.userId))
                         }
-                        completion(.success(u.userId))
                     case .failure(let err):
                         completion(.failure(err))
                         
@@ -235,19 +275,9 @@ class GeoManager {
                     }
                     switch res{
                     case .success(let u):
-                        strongSelf.loadedUsers[u.userId] = u
-                        if let loc = strongSelf.userIdList.firstIndex(of: u) {
-                            let localLoc = strongSelf.userIdList[loc].location
-                            guard localLoc != CLLocation() else {
-                                print("nil location in line 242")
-                                return
-                            }
-                            strongSelf.loadedUsers[u.userId]!.location = localLoc
-                            strongSelf.userIdList.remove(at: loc)
-                        } else {
-                            print("Geomanager Error 194")
+                        if(strongSelf.addUsersToLoadedIfFitModel(user: u)) {
+                            completion(.success(u.userId))
                         }
-                        completion(.success(u.userId))
                     case .failure(let err):
                         completion(.failure(err))
                         
