@@ -48,11 +48,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     init() {
         super.init(nibName: nil, bundle: nil)
-        if(GeoManager.shared.loadedUsers.count > 0){
-            for (i,k) in GeoManager.shared.loadedUsers {
-                data.append(k)
-            }
-        }
+//        if(GeoManager.shared.loadedUsers.count > 0){
+//            for (i,k) in GeoManager.shared.loadedUsers {
+//                data.append(k)
+//            }
+//        }
+        getShuffleData()
         if(data.count > 0){
             isInfite = true
         }
@@ -536,7 +537,41 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         return GeoManager.shared.getNumberOfCells() + 1
     }
     
+    public func getShuffleData(){
+        var temp: [User] = []
+        getFilterData()
+        temp = data
+        data = []
+        while temp.count > 0 {
+            let i = Int.random(in: 0..<(temp.count-1))
+            guard temp[i] != nil else {
+                continue
+            }
+            data.append(temp[i])
+            temp.remove(at: i)
+        }
+    }
     
+    public func filterData(){
+        if(GeoManager.shared.filtersChanged){
+            for i in data {
+                if(!GeoManager.shared.matchesFilters(user: i)){
+                    let j = data.firstIndex(of: i)
+                    guard let f = j else {
+                        continue
+                    }
+                    data.remove(at: f)
+                }
+            }
+            GeoManager.shared.filtersChanged = false
+        } else {
+            return
+        }
+    }
+    
+    public func getFilterData(){
+        data = GeoManager.shared.getFilteredData()
+    }
 }
 
 

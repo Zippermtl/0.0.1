@@ -46,6 +46,8 @@ class GeoManager {
     }
     var eventRange: Double = 0
     
+    var filtersChanged = false
+    
     init(){
         geoFire = GeoFire(firebaseRef: geofireRef)
         geoFireEventPublic = GeoFire(firebaseRef: geoFireEventRefPublic)
@@ -343,6 +345,16 @@ class GeoManager {
             return true
         }
         return false
+    }
+    
+    public func getFilteredData() -> [User]{
+        var returns: [User] = []
+        for (k,i) in loadedUsers {
+            if(matchesFilters(user: i)){
+                returns.append(i)
+            }
+        }
+        return returns
     }
     
     public func setMaxRangeFilter(val: Double?){

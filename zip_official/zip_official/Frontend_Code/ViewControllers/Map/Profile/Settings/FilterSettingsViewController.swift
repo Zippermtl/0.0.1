@@ -115,16 +115,19 @@ class FilterSettingsViewController: UIViewController {
     @objc private func didTapMen() {
         AppDelegate.userDefaults.set(0, forKey: "genderFilter")
         setGenderButtons()
+        GeoManager.shared.filtersChanged = true
     }
     
     @objc private func didTapWomen() {
         AppDelegate.userDefaults.set(1, forKey: "genderFilter")
         setGenderButtons()
+        GeoManager.shared.filtersChanged = true
     }
     
     @objc private func didTapEveryone() {
         AppDelegate.userDefaults.set(2, forKey: "genderFilter")
         setGenderButtons()
+        GeoManager.shared.filtersChanged = true
     }
     
     
@@ -148,6 +151,7 @@ class FilterSettingsViewController: UIViewController {
         }
         distanceLabel.text = convertedDistance.description + " " + unit
         GeoManager.shared.setMaxRangeFilter(val: Double(convertedDistance))
+        GeoManager.shared.filtersChanged = true
         AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
     }
     
@@ -155,6 +159,7 @@ class FilterSettingsViewController: UIViewController {
         AppDelegate.userDefaults.set(Int(ageSlider.leftValue), forKey: "MinAgeFilter")
         AppDelegate.userDefaults.set(Int(ageSlider.rightValue), forKey: "MaxAgeFilter")
         ageLabel.text = Int(ageSlider.leftValue).description + "-" + Int(ageSlider.rightValue).description
+        GeoManager.shared.filtersChanged = true
     }
     
     private func setGenderButtons(){
