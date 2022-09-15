@@ -185,6 +185,45 @@ extension DatabaseManager {
         })
     }
     
+    public func getAllConversationsInstance(for id: String, completion: @escaping (Result<[Conversation], Error>) -> Void){
+        database.child("userConvos/\(id)").observeSingleEvent(of: .value, with: { snapshot in
+            print("value = \(snapshot.value!)")
+//            print("id = \(snapshot.value!["id"])")
+
+            print("value type = \(type(of:snapshot.value))")
+
+            guard let value = snapshot.value as? [[String: Any]] else {
+                print("failed to fetch conversations")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+
+            var conversations: [Conversation] = value.compactMap({ dictionary in
+                guard let conversationID = dictionary["id"] as? String,
+                      let name = dictionary["name"] as? String,
+                      let otherUserId = dictionary["other_user_id"] as? String,
+                      let latestMessage = dictionary["latest_message"] as? [String: Any],
+                      let dateInt = latestMessage["date"] as? Double,
+                      let message = latestMessage["message"] as? String,
+                      let isRead = latestMessage["isRead"] as? Bool else {
+                          return nil
+                      }
+                let date = Date(timeIntervalSince1970: dateInt)
+                let latestMessageObject = LatestMessage(date: date, text: message, isRead: isRead)
+                let otherUser = User(userId: otherUserId)
+                let components = name.split(separator: " ")
+                otherUser.firstName = String(components[0])
+                otherUser.lastName = String(components[1])
+                return Conversation(id: conversationID,
+                                    otherUser: otherUser,
+                                    latestMessage: latestMessageObject)
+                
+            })
+            conversations.sort(by: { $0.latestMessage.date >= $1.latestMessage.date })
+            completion(.success(conversations))
+        })
+    }
+    
     /// Fetches and retunrs all conversations for the user with passed in email
     public func getAllConversations(for id: String, completion: @escaping (Result<[Conversation], Error>) -> Void){
         

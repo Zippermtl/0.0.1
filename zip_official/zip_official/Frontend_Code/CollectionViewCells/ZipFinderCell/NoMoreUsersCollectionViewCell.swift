@@ -72,12 +72,14 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
         changeSettingsButton.topAnchor.constraint(equalTo: goToSettingsLabel.bottomAnchor, constant: 20).isActive = true
         changeSettingsButton.widthAnchor.constraint(equalTo: cardView.widthAnchor, multiplier: 0.6).isActive = true
 
-
+        changeSettingsButton.layer.cornerRadius = 8
+        changeSettingsButton.layer.masksToBounds = true
     }
     
     @objc private func didTapGlobal() {
         delegate?.goGlobal()
     }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

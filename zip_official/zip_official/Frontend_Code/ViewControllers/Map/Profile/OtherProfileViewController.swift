@@ -231,7 +231,7 @@ class OtherProfileViewController: AbstractProfileViewController  {
     
     @objc private func didTapMessage(){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        DatabaseManager.shared.getAllConversations(for: selfId, completion: { [weak self] result in
+        DatabaseManager.shared.getAllConversationsInstance(for: selfId, completion: { [weak self] result in
             guard let strongSelf = self else {
                 return
             }
