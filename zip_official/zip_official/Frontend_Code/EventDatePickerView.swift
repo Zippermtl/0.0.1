@@ -91,8 +91,8 @@ class EventDatePickerView: UIView {
         endDatePicker.minimumDate = event.startTime
         endDatePicker.maximumDate = Date(timeInterval: TimeInterval(604800), since: event.startTime)
         
-        let startEndDiff = Calendar.current.dateComponents([.day], from: event.startTime, to: event.endTime)
-        if startEndDiff.day == 0 {
+      
+        if event.startTime.isInSameDay(as: event.endTime) {
             endTimePicker.minimumDate = event.startTime
         } else {
             endTimePicker.minimumDate = .none
@@ -107,9 +107,10 @@ class EventDatePickerView: UIView {
     }
     
     private func resetEndTime() {
-        if event.startTime > event.endTime {
+        if event.startTime >= event.endTime {
             endTimeField.text = ""
             endDateField.text = ""
+            event.endTime = Date(timeInterval: 365*24*60*60, since: event.startTime)
         }
     }
     
@@ -152,7 +153,7 @@ class EventDatePickerView: UIView {
         formatter.timeStyle = .short
         endTimeField.text = formatter.string(from: sender.date)
         
-        event.endTime = combineDateWithTime(date: event.startTime, time: sender.date)!
+        event.endTime = combineDateWithTime(date: event.endTime, time: sender.date)!
         setMinMax()
     }
     

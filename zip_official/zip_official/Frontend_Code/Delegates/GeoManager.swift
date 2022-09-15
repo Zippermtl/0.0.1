@@ -100,9 +100,9 @@ class GeoManager {
 //        “MaxAgeFilter” - int
 //        “genderFilter” - 0 (men), 1 (women), 2 (everyone)
         var monitor = true
-        let minAgeFilter = AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as! Int ?? 0
-        let maxAgeFilter = AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as! Int ?? 1000
-        let genderFilter = AppDelegate.userDefaults.value(forKey: "genderFilter") as! Int ?? 2
+        let minAgeFilter = AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as? Int ?? 0
+        let maxAgeFilter = AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as? Int ?? 1000
+        let genderFilter = AppDelegate.userDefaults.value(forKey: "genderFilter") as? Int ?? 2
         switch genderFilter{
         case 0:
             if (user.gender != "M"){
@@ -143,10 +143,10 @@ class GeoManager {
         queryRunning = true
         let geoRange = (range ?? presentRange)
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
-//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
 //        Latitude: 31.2198 Longitude: 121.4870
-        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
+//        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
 //        let geoRange = Double(locRange)
