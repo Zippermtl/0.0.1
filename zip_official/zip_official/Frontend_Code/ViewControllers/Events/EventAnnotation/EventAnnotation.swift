@@ -13,7 +13,7 @@ protocol EventAnnotationDelegate : AnyObject {
 }
 
 protocol EventAnnotationViewProtocol {
-    
+    func getEvent() -> Event
 }
 
 class EventAnnotation: NSObject, MKAnnotation {
@@ -59,6 +59,13 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         didSet {
             self.clusteringIdentifier = EventClusterAnnotationView.identifier
         }
+    }
+    
+    func getEvent() -> Event {
+        guard let eventAnnotation = annotation as? EventAnnotation else {
+            return Event()
+        }
+        return eventAnnotation.event
     }
     
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {

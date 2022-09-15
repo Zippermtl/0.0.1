@@ -104,8 +104,8 @@ public class RecurringEvent: PromoterEvent {
         self.coordinates = CLLocation(latitude: lat, longitude: long)
         self.bio = vals[7]
 //        self.endTime = vals[10]
-        self.website = vals[12]
-        
+        self.website = vals[12].replacingOccurrences(of: " ", with: "")
+
     }
     
 //    public func dayOfTheWeak() -> String? {
@@ -116,5 +116,30 @@ public class RecurringEvent: PromoterEvent {
         return .Recurring
     }
     
-
+    override var viewController: EventViewController {
+        return RecurringEventViewController(event: self)
+    }
+    
+    override func getImage(completion: @escaping (Result<URL?, Error>) -> Void) {
+        StorageManager.shared.getRecurringEventImage(event: self, completion: { result in
+            switch result {
+            case .success(let url) : completion(.success(url))
+            case .failure(let error) : completion(.failure(error))
+            }
+        })
+    }
+    
+    var phoneNumberString : String {
+        guard var phoneNumberInt = phoneNumber else { return "" }
+        var phoneArray = [Int]()
+        phoneArray.append(phoneNumberInt%10)
+        while phoneNumberInt >= 10 {
+            phoneNumberInt /= 10
+            phoneArray.insert(phoneNumberInt%10, at: 0)
+        }
+        let areaCode = "\(phoneArray[0].description + phoneArray[1].description + phoneArray[2].description)"
+        let firstThree = "\(phoneArray[3].description + phoneArray[4].description + phoneArray[5].description)"
+        let lastFour = "\(phoneArray[6].description + phoneArray[7].description + phoneArray[8].description + phoneArray[9].description)"
+        return "(\(areaCode)) - \(firstThree) - \(lastFour)"
+    }
 }

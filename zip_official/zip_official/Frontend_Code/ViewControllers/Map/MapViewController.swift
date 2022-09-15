@@ -613,8 +613,8 @@ extension MapViewController: MKMapViewDelegate {
         }
     }
     
-    private func getCluterSpan(cluster: MKClusterAnnotation) -> MKCoordinateRegion {
-        guard let eventAnnotations = cluster.memberAnnotations as? [EventAnnotation] else { return MKCoordinateRegion() }
+    private func getCluterSpan(cluster: MKClusterAnnotation) -> ClusterSpan? {
+        guard let eventAnnotations = cluster.memberAnnotations as? [EventAnnotation] else { return nil }
         let events = eventAnnotations.map({ $0.event })
         let currentSpan = mapView.region.span
         let currentRatio = currentSpan.latitudeDelta / currentSpan.longitudeDelta
@@ -646,18 +646,32 @@ extension MapViewController: MKMapViewDelegate {
         centerLat /= Double(annotations.count)
         centerLong /= Double(annotations.count)
         let center = CLLocationCoordinate2D(latitude: centerLat, longitude: centerLong)
-        
-        return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latDifference, longitudeDelta: longDifference))
-        
-        
+        return ClusterSpan(center: center, latitudeDelta: latDifference, longitudeDelta: longDifference)
     }
     
+    private typealias ClusterSpan = (center: CLLocationCoordinate2D, latitudeDelta: CLLocationDegrees, longitudeDelta: CLLocationDegrees)
+
     //did select is how you click annotations
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.isZoomEnabled = true
         
         if let cluster = view.annotation as? MKClusterAnnotation {
-            mapView.setRegion(getCluterSpan(cluster: cluster), animated: true)
+            guard let clusterSpan = getCluterSpan(cluster: cluster) else {
+                return
+            }
+            
+            if clusterSpan.latitudeDelta < 0.0001 && clusterSpan.longitudeDelta < 0.0001 {
+                guard let eventAnnotations = cluster.memberAnnotations as? [EventAnnotation] else { return }
+                let events = eventAnnotations.map({ $0.event }).sorted(by: { $0.startTime > $1.startTime})
+                let vc = MasterTableViewController(cellData: events, cellType: CellType(eventType: .save))
+                vc.title = "Multiple Events"
+                navigationController?.pushViewController(vc, animated: true)
+            } else {
+                let region = MKCoordinateRegion(center: clusterSpan.center,
+                                                span: MKCoordinateSpan(latitudeDelta: clusterSpan.latitudeDelta, longitudeDelta: clusterSpan.longitudeDelta))
+                mapView.setRegion(region, animated: true)
+            }
+            
             return
         }
         
@@ -707,34 +721,9 @@ extension MapViewController: MKMapViewDelegate {
         }
     }
 }
-
 extension MapViewController : EventAnnotationDelegate {
     func selectEvent(for annotationView: EventAnnotationViewProtocol) {
-        if let aView = annotationView as? EventAnnotationView {
-            guard let annotation = aView.annotation as? EventAnnotation  else {
-                return
-            }
-            let event = annotation.event
-            
-            var eventVC: UIViewController
-            let userId = (AppDelegate.userDefaults.value(forKey: "userId") as? String) ?? ""
-            if annotation.event.hosts.map({ $0.userId }).contains(userId) {
-                eventVC = MyEventViewController(event: event)
-            } else {
-                eventVC = EventViewController(event: event)
-            }
-            
-            navigationController?.pushViewController(eventVC, animated: true)
-        } else if let aView = annotationView as? RecurringEventAnnotationView{
-            guard let annotation = aView.annotation as? EventAnnotation,
-                  let rEvent = annotation.event as? RecurringEvent else {
-                return
-            }
-            
-            let vc = RecurringEventViewController(event: rEvent)
-            navigationController?.pushViewController(vc, animated: true)
-
-        }
+        navigationController?.pushViewController(annotationView.getEvent().viewController, animated: true)
     }
 }
 

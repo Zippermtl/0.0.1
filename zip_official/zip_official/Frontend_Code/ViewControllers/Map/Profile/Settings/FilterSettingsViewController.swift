@@ -147,9 +147,8 @@ class FilterSettingsViewController: UIViewController {
             unit = "miles"
         }
         distanceLabel.text = convertedDistance.description + " " + unit
-        //MARK: Yianni check 
         GeoManager.shared.setMaxRangeFilter(val: Double(convertedDistance))
-//        AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
+        AppDelegate.userDefaults.set(convertedDistance, forKey: "MaxRangeFilter")
     }
     
     @objc func ageSliderChanged(){

@@ -19,8 +19,8 @@ class RecurringEventViewController : EventViewController {
 
         messageButton.setIcon(icon: globeIcon)
         messageButton.setTextLabel(s: "Website")
-        saveButton.setIcon(icon: phoneIcon)
-        saveButton.setTextLabel(s: "Call")
+        participantsButton.setIcon(icon: phoneIcon)
+        participantsButton.setTextLabel(s: "Call")
     }
     
     required init?(coder: NSCoder) {
@@ -36,8 +36,14 @@ class RecurringEventViewController : EventViewController {
     }
     
     override func didTapMessageButton() {
-        guard let event = event as? RecurringEvent else { return }
-        UIApplication.shared.open(URL(string: event.website!)!)
+         guard let event = event as? RecurringEvent,
+              let websiteString = event.website,
+              let url = URL(string: websiteString)
+        else {
+            
+            return
+        }
+        UIApplication.shared.open(url)
     }
     
     override func didTapSaveButton() {
@@ -45,7 +51,27 @@ class RecurringEventViewController : EventViewController {
     }
     
     override func didTapParticipantsButton() {
+        guard let event = event as? RecurringEvent,
+              let phoneNumber = event.phoneNumber else {
+            return
+            
+        }
         
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: event.phoneNumberString, style: .default, handler: { _ in
+            if let url = URL(string: "tel://\(phoneNumber)"), UIApplication.shared.canOpenURL(url) {
+                if #available(iOS 10, *) {
+                    UIApplication.shared.open(url)
+                } else {
+                    UIApplication.shared.openURL(url)
+                }
+            }
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(actionSheet, animated: true)
     }
     
     override func didTapHost() {

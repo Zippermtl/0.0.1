@@ -230,7 +230,7 @@ public class EventCoder: Codable {
            let rEvent = event as? RecurringEvent {
             rEvent.phoneNumber = p
             rEvent.category = c
-            rEvent.website = w
+            rEvent.website = w.replacingOccurrences(of: "\r", with: "")
             rEvent.venu = v
         }
             

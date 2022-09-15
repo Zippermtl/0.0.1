@@ -398,7 +398,7 @@ extension DatabaseManager {
                     currentEvent.eventId = document.documentID
                     currentEvent.loadStatus = .UserProfileNoPic
                     events.append(currentEvent)
-                    if fast { // complete event without image
+                    if fast || !getImage { // complete event without image
                         eventCompletion(currentEvent)
                     }
                     if getImage {
@@ -457,7 +457,7 @@ extension DatabaseManager {
         
         firestore.collection("RecurringEvents").document(dayOfTheWeek).collection("events").getDocuments(completion: { [weak self] snapshot,err in
             guard let strongSelf = self else { return }
-            strongSelf.handleEventQueryResults(querySnapshot: snapshot, err: err, eventCompletion: { event in
+            strongSelf.handleEventQueryResults(querySnapshot: snapshot, err: err, fast: false, getImage: false, eventCompletion: { event in
                 eventCompletion(event)
             }, allCompletion: { result in
                 allCompletion(result)

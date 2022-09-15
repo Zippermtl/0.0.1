@@ -24,6 +24,13 @@ class RecurringEventAnnotationView: MKAnnotationView, EventAnnotationViewProtoco
         }
     }
     
+    func getEvent() -> Event {
+        guard let eventAnnotation = annotation as? EventAnnotation else {
+            return Event()
+        }
+        return eventAnnotation.event
+    }
+    
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         self.eventImage = UIImageView()
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)

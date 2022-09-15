@@ -141,6 +141,14 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         }
     }
     
+    var viewController : EventViewController {
+        if hosts.contains(where: {$0.userId == AppDelegate.userDefaults.value(forKey: "userId") as! String})  {
+            return MyEventViewController(event: self)
+        } else {
+            return EventViewController(event: self)
+        }
+    }
+    
     var annotationView : EventAnnotationView?
     var tableViewCell: AbstractEventTableViewCell?
     var mapView: MKMapView?
@@ -288,6 +296,21 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     func markUnsaved(completion: @escaping (Error?) -> Void) {
         DatabaseManager.shared.markUnsaved(event: self, completion: { err in
             completion(err)
+        })
+    }
+    
+    func getImage(completion: @escaping (Result<URL?,Error>) -> Void) {
+        DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { [weak self] res in
+            switch res {
+            case .success(let urls) :
+                if urls.count == 0 {
+                    completion(.success(nil))
+                } else {
+                    completion(.success(urls[0]))
+                }
+            case .failure(let error) :
+                completion(.failure(error))
+            }
         })
     }
     

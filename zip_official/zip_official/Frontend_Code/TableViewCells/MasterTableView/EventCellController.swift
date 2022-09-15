@@ -58,14 +58,7 @@ class EventCellController: TableCellController {
     }
     
     func didSelectCell() {
-        print("TAPPED EVENT = ", event)
-        var vc : UIViewController
-        if event.hosts.contains(User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)) {
-            vc = MyEventViewController(event: event)
-        } else {
-            vc = EventViewController(event: event)
-        }
-        delegate?.openVC(vc)
+        delegate?.openVC(event.viewController)
     }
     
     func heightForRowAt(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -86,13 +79,12 @@ class EventCellController: TableCellController {
     }
     
     func fetchImage(completion: @escaping (Error?) -> Void) {
-        DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { [weak self] res in
+        event.getImage(completion: { [weak self] result in
             guard let strongSelf = self else { return }
-            switch res{
+            switch result {
             case .success(let url):
-                if url.count != 0 {
-                    strongSelf.event.imageUrl = url[0]
-                }
+                guard let url = url else { return }
+                strongSelf.event.imageUrl = url
                 if let cell = strongSelf.event.tableViewCell {
                     cell.configureImage(strongSelf.event)
                 }
