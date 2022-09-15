@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class HelpSettingsViewController: UITableViewController {
 
@@ -47,7 +48,26 @@ class HelpSettingsViewController: UITableViewController {
             let alert = UIAlertController(title: "Delete Account?", message: "are you sure you want to delete your account?", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Delete Account", style: .default, handler: { _ in
-
+                DatabaseManager.shared.deleteUser(userId: AppDelegate.userDefaults.value(forKey: "userID") as! String, completion: { [weak self] _ in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    
+                    do {
+                        try FirebaseAuth.Auth.auth().signOut()
+                        let domain = Bundle.main.bundleIdentifier!
+                        AppDelegate.userDefaults.removePersistentDomain(forName: domain)
+                        AppDelegate.userDefaults.synchronize()
+                        
+                        let vc = OpeningLoginViewController()
+                        let nav = UINavigationController(rootViewController: vc)
+                        nav.modalPresentationStyle = .fullScreen
+                        strongSelf.present(nav, animated: true, completion: nil)
+                    }
+                    catch {
+                        print("Failed to Logout User")
+                    }
+                })
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
