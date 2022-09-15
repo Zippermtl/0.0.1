@@ -19,8 +19,20 @@ class HelpSettingsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
-        case 0: break
-        case 1: break
+        case 0:
+            let url = URL(string: "https://zipper.noveltysol.com/privacy-policy/")!
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(url)
+            } else {
+                UIApplication.shared.openURL(url)
+            }
+        case 1:
+            let url = URL(string: "https://zipper.noveltysol.com/terms-of-service/")!
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(url)
+            } else {
+                UIApplication.shared.openURL(url)
+            }
         case 2:
             let email = "contact.zipmtl@gmail.com"
             if let url = URL(string: "mailto:\(email)") {

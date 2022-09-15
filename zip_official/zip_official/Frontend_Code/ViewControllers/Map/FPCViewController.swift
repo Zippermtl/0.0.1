@@ -211,7 +211,6 @@ class FPCViewController: UIViewController {
     @objc private func didTapEventInvites(){
         print("we can tap")
         let vc = InvitedTableViewController(cellItems: events + User.getUDEvents(toKey: .goingEvents) + User.getUDEvents(toKey: .notGoingEvents),removeCells: false )
-        
         vc.title = "Event Invites"
         delegate?.openVC(vc)
     }

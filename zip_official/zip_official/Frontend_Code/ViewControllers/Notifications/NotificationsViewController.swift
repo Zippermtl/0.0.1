@@ -20,11 +20,14 @@ class NotificationsViewController: UIViewController {
         
     @objc private func didTapZipRequestsButton(){
         let vc = InvitedTableViewController(cellItems: User.getMyRequests())
+        vc.title = "Zip Requests"
         navigationController?.pushViewController(vc, animated: true)
     }
     
     @objc private func didTapEventInvites() {
-        
+        let vc = InvitedTableViewController(cellItems:User.getUDEvents(toKey: .goingEvents) + User.getUDEvents(toKey: .notGoingEvents),removeCells: false )
+        vc.title = "Event Invites"
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     
@@ -51,7 +54,7 @@ class NotificationsViewController: UIViewController {
         zipRequestButton.contentHorizontalAlignment = .left
         zipRequestButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         
-        eventInvitesButton.setTitle("Event Invites (not implemented)", for: .normal)
+        eventInvitesButton.setTitle("Event Invites (\(User.getUDEvents(toKey: .invitedEvents).count)", for: .normal)
         eventInvitesButton.addTarget(self, action: #selector(didTapEventInvites), for: .touchUpInside)
         eventInvitesButton.backgroundColor = .clear
         eventInvitesButton.titleLabel?.textColor = .white
@@ -77,6 +80,11 @@ class NotificationsViewController: UIViewController {
         
         
         
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        eventInvitesButton.setTitle("Event Invites (\(User.getUDEvents(toKey: .invitedEvents).count)", for: .normal)
     }
     
     //MARK: - Nav Bar Config
