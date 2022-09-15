@@ -394,10 +394,19 @@ extension MapViewController: CLLocationManagerDelegate {
         AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
 //        DatabaseManager.shared.testEmail()
         if !guardingGeoFireCalls {
+            var maxRange : Double
+            if let maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as? Double {
+                maxRange = (maxRangeFilter > 5.0 ? 5.0 : maxRangeFilter)
+            } else {
+                maxRange = 2.0
+            }
             
             GeoManager.shared.UpdateLocation(location: latestLocation)
             let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-            GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: 2, max: 3, completion: {
+            GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]),
+                                           range: maxRange,
+                                           max: 3,
+                                           completion: {
                 
                 GeoManager.shared.LoadUsers(size: 10, completion: {_ in }, updateCompletion: {  [weak self] res in
                     //MARK: GABE find out how to make the user configure the image - all you need to do is find the user

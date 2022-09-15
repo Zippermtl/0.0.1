@@ -8,7 +8,9 @@
 import UIKit
 import MARKRangeSlider
 
-
+protocol ZFFiltersVCDelegate: AnyObject {
+    func updateFilters()
+}
 //MARK: Yianni fix max range 200 m 500 km or 100 m 150km
 class FilterSettingsViewController: UIViewController {
     private let distanceView: cellView
@@ -24,6 +26,8 @@ class FilterSettingsViewController: UIViewController {
     private let womenButton: UIButton
     private let everyoneButton: UIButton
     private let buttonHolder: UIStackView
+    
+    weak var delegate : ZFFiltersVCDelegate?
 
     
     init() {
@@ -184,6 +188,13 @@ class FilterSettingsViewController: UIViewController {
         ageSlider.setMinValue(17, maxValue: 60)
 
         // Do any additional setup after loading the view.
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if let delegate = delegate {
+            delegate.updateFilters()
+        }
     }
     
     override func viewDidLayoutSubviews() {

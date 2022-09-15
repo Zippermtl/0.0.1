@@ -231,9 +231,6 @@ class ZipMessagesViewController: UIViewController {
         navigationController?.navigationBar.titleTextAttributes =
             [NSAttributedString.Key.font: UIFont.zipTitle.withSize(27),
              NSAttributedString.Key.foregroundColor: UIColor.white]
-    
-        
-       
     }
   
 

@@ -432,7 +432,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         if(isInfite){
             return .max
         }
-        return GeoManager.shared.getPossiblePresentNumberOfCells()
+        return data.count + 1
     }
     
     public func numberOfLoadedItemsInSelection() -> Int {
@@ -540,16 +540,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     public func getShuffleData(){
         var temp: [User] = []
         getFilterData()
-        temp = data
-        data = []
-        while temp.count > 0 {
-            let i = Int.random(in: 0..<(temp.count-1))
-            guard temp[i] != nil else {
-                continue
-            }
-            data.append(temp[i])
-            temp.remove(at: i)
-        }
+        data = data.shuffled()
     }
     
     public func filterData(){
@@ -603,10 +594,16 @@ extension ZipFinderViewController : UIScrollViewDelegate {
 
 
 extension ZipFinderViewController: DidTapGlobalProtocol {
-    func goGlobal() {
-        print("Touched Yianni's new button")
-//        GeoManager.shared.blockFutureQueries = false
-//        GeoManager.shared.hasMaxRange = false
-//        checkNeedsNewUsers()
+    func openFilters() {
+        let vc = FilterSettingsViewController()
+        vc.delegate = self
+        navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
+extension ZipFinderViewController : ZFFiltersVCDelegate {
+    func updateFilters() {
+        filterData()
+        collectionView?.reloadData()
     }
 }

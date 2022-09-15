@@ -7,7 +7,7 @@
 
 import UIKit
 protocol DidTapGlobalProtocol: AnyObject {
-    func goGlobal()
+    func openFilters()
 }
 
 class NoMoreUsersCollectionViewCell: UICollectionViewCell {
@@ -17,6 +17,8 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
     private let oopsLabel: UILabel
     private let goToSettingsLabel: UILabel
     private let changeSettingsButton: UIButton
+    
+    
     
     weak var delegate: DidTapGlobalProtocol?
     
@@ -77,7 +79,7 @@ class NoMoreUsersCollectionViewCell: UICollectionViewCell {
     }
     
     @objc private func didTapGlobal() {
-        delegate?.goGlobal()
+        delegate?.openFilters()
     }
     
     required init?(coder: NSCoder) {
