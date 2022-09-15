@@ -15,6 +15,7 @@ class HelpSettingsViewController: UITableViewController {
         title = "Help"
         tableView.backgroundColor = .zipGray
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -72,6 +73,7 @@ class HelpSettingsViewController: UITableViewController {
         content.text = tableData[indexPath.row]
         cell.contentConfiguration = content
         cell.accessoryType = .disclosureIndicator
+        cell.selectionStyle = .none
         return cell
         
     }
