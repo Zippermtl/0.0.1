@@ -43,7 +43,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
     
     private var maxIndex = 0
     
-    private var isInfite = true
+    private var isInfite = false
     
     
     init() {
@@ -52,6 +52,9 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
             for (i,k) in GeoManager.shared.loadedUsers {
                 data.append(k)
             }
+        }
+        if(data.count > 0){
+            isInfite = true
         }
     }
     
@@ -75,6 +78,13 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
             GeoManager.shared.setMaxRangeFilter(val: nil)
 //            rangeMultiplier = 1.6
 //            maxRangeFilter *= rangeMultiplier
+        }
+        if(data.count == 0){
+            isInfite = false
+        } else if (data.count > maxIndex){
+            DispatchQueue.main.async {
+                self.collectionView?.reloadData()
+            }
         }
         //if failure for the range change to maxRangeFilter
         let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]

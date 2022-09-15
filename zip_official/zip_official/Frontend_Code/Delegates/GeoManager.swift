@@ -143,9 +143,10 @@ class GeoManager {
         queryRunning = true
         let geoRange = (range ?? presentRange)
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
-        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
-
+//        Latitude: 31.2198 Longitude: 121.4870
+        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
 //        let geoRange = Double(locRange)
@@ -348,7 +349,13 @@ class GeoManager {
         if(val != nil){
             maxRangeFilter = val!
         } else {
-            maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as! Double ?? 100
+            guard let max = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as? Double else {
+                AppDelegate.userDefaults.set(Double(100), forKey: "MaxRangeFilter")
+                print("Yianni this a placeholder patch fix it")
+                maxRangeFilter = 100
+                return
+            }
+            maxRangeFilter = max
         }
 //        AppDelegate.userDefaults.set(val, forKey: "MaxRangeFilter")
 //        maxRangeFilter = val
