@@ -114,12 +114,14 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                     return
                 }
                 let loc = strongSelf.data.firstIndex(of: User(userId: res))
-                let user =  GeoManager.shared.loadedUsers[res]!
-                strongSelf.data[loc!] = user
-                guard let cell = user.ZFCell else {
-                    return
+                let user = GeoManager.shared.loadedUsers[res]!
+                if (GeoManager.shared.checkPictureCompletion(user: res)){
+                    strongSelf.data[loc!] = user
+                    guard let cell = user.ZFCell else {
+                        return
+                    }
+                    cell.configureImage(user: user)
                 }
-                cell.configureImage(user: user)
             })
         })
        
@@ -447,14 +449,14 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if indexPath.row > GeoManager.shared.getPossiblePresentNumberOfCells() {
+        if indexPath.row >= GeoManager.shared.getNumberOfCells() {
             makeFinite()
         } else {
             if(!isInfite){
                 makeInfite()
             }
         }
-        if indexPath.row == GeoManager.shared.loadedUsers.count {
+        if indexPath.row == GeoManager.shared.getNumberOfCells() {
             if (checkDataConcurency()) {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NoMoreUsersCollectionViewCell.identifier, for: indexPath) as! NoMoreUsersCollectionViewCell
                 //MARK: Make finite
@@ -510,10 +512,16 @@ extension ZipFinderViewController: UICollectionViewDataSource {
 //        let model = testUsers[indexPath.row]
         
         var model: User
-        if (GeoManager.shared.loadedUsers.count == 0){
+        if (GeoManager.shared.getFilteredData().count == 0){
             model = User()
         } else {
-            let loc = data[indexPath.row % GeoManager.shared.loadedUsers.count]
+            if GeoManager.shared.needsReload(maxIndex: maxIndex, isInfite: isInfite) {
+                DispatchQueue.main.async {
+                    self.collectionView?.reloadData()
+                }
+            }
+            let numcells = GeoManager.shared.getNumberOfCells()
+            let loc = data[indexPath.row % GeoManager.shared.getNumberOfCells()]
 //            model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
             model = loc
         }
@@ -538,27 +546,27 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     }
     
     public func getShuffleData(){
-        var temp: [User] = []
+//        var temp: [User] = []
         getFilterData()
         data = data.shuffled()
     }
     
-    public func filterData(){
-        if(GeoManager.shared.filtersChanged){
-            for i in data {
-                if(!GeoManager.shared.matchesFilters(user: i)){
-                    let j = data.firstIndex(of: i)
-                    guard let f = j else {
-                        continue
-                    }
-                    data.remove(at: f)
-                }
-            }
-            GeoManager.shared.filtersChanged = false
-        } else {
-            return
-        }
-    }
+//    public func filterData(){
+//        if(GeoManager.shared.filtersChanged){
+//            for i in data {
+//                if(!GeoManager.shared.matchesFilters(user: i)){
+//                    let j = data.firstIndex(of: i)
+//                    guard let f = j else {
+//                        continue
+//                    }
+//                    data.remove(at: f)
+//                }
+//            }
+//            GeoManager.shared.filtersChanged = false
+//        } else {
+//            return
+//        }
+//    }
     
     public func getFilterData(){
         data = GeoManager.shared.getFilteredData()
@@ -603,7 +611,7 @@ extension ZipFinderViewController: DidTapGlobalProtocol {
 
 extension ZipFinderViewController : ZFFiltersVCDelegate {
     func updateFilters() {
-        filterData()
+        getShuffleData()
         collectionView?.reloadData()
     }
 }

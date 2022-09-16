@@ -37,6 +37,28 @@ class SearchManager{
             priority = friends+invitedEvents
     }
     
+    public func newQuery(searchString: String) -> Bool {
+        let queryText = searchString.lowercased()
+        if (queryText == ""){
+            return false
+        } else {
+            for i in 0..<searchVal.count {
+                print("searchVal data at the start of query")
+                print(searchVal[i])
+                print(searchVal.count)
+                if (queryText.contains(searchVal[i])) {
+//                    if(queryText!.first == searchVal!.first){
+                        return false
+//                        index = i
+//                        print("Data Exists in previous query")
+//                    }
+//                    addOldData = true
+                }
+            }
+        }
+        return true
+    }
+    
     public func StartSearch(searchString: String, event: Bool = false, user: Bool = false, finishedLoadingCompletion: @escaping (Result<String, Error>) -> Void, allCompletion: @escaping (Result <[String], Error>) -> Void){
         let queryText = searchString.lowercased()
         var index = -1
@@ -59,6 +81,7 @@ class SearchManager{
                 }
             }
             
+//            if(index == -1 || newq){
             if(index != -1 || newq){
                 updateSearch(ss: queryText)
                 print(presQuery + " in index -1")
