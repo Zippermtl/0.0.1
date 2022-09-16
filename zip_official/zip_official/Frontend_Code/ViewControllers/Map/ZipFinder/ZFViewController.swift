@@ -113,14 +113,17 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                 guard let strongSelf = self else {
                     return
                 }
-                let loc = strongSelf.data.firstIndex(of: User(userId: res))
-                let user = GeoManager.shared.loadedUsers[res]!
-                if (GeoManager.shared.checkPictureCompletion(user: res)){
-                    strongSelf.data[loc!] = user
-                    guard let cell = user.ZFCell else {
-                        return
+                if(GeoManager.shared.checkMatchesByString(Id: res)){
+                    if let loc = strongSelf.data.firstIndex(of: User(userId: res)){
+                        let user = GeoManager.shared.loadedUsers[res]!
+    //                    if (GeoManager.shared.checkPictureCompletion(user: res)){
+                        strongSelf.data[loc] = user
+                        guard let cell = user.ZFCell else {
+                            return
+                        }
+                        cell.configureImage(user: user)
+    //                    }
                     }
-                    cell.configureImage(user: user)
                 }
             })
         })
@@ -313,11 +316,23 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                 guard let strongSelf = self else {
                     return
                 }
-                if let tmp = GeoManager.shared.loadedUsers[res] {
-                    let loc = strongSelf.data.firstIndex(of: User(userId: res))
-                    strongSelf.data[loc!] = GeoManager.shared.loadedUsers[res]!
-                    completionPictures(tmp)
+                if(GeoManager.shared.checkMatchesByString(Id: res)){
+                    if let tmp = GeoManager.shared.loadedUsers[res] {
+                        let loc = strongSelf.data.firstIndex(of: User(userId: res))
+                        strongSelf.data[loc!] = GeoManager.shared.loadedUsers[res]!
+                        completionPictures(tmp)
+                    }
+//                    let loc = strongSelf.data.firstIndex(of: User(userId: res))
+//                    let user = GeoManager.shared.loadedUsers[res]!
+//                    if (GeoManager.shared.checkPictureCompletion(user: res)){
+//                        strongSelf.data[loc!] = user
+//                        guard let cell = user.ZFCell else {
+//                            return
+//                        }
+//                        cell.configureImage(user: user)
+//                    }
                 }
+                
             })
         })) {
             
@@ -343,10 +358,12 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                 guard let strongSelf = self else {
                     return
                 }
-                if let tmp = GeoManager.shared.loadedUsers[res] {
-                    let loc = strongSelf.data.firstIndex(of: User(userId: res))
-                    strongSelf.data[loc!] = GeoManager.shared.loadedUsers[res]!
-                    completionPictures(tmp)
+                if GeoManager.shared.checkMatchesByString(Id: res){
+                    if let tmp = GeoManager.shared.loadedUsers[res] {
+                        let loc = strongSelf.data.firstIndex(of: User(userId: res))
+                        strongSelf.data[loc!] = GeoManager.shared.loadedUsers[res]!
+                        completionPictures(tmp)
+                    }
                 }
             })
         }

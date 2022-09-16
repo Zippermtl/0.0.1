@@ -493,11 +493,13 @@ extension MapViewController: CLLocationManagerDelegate {
                     guard let strongSelf = self else {
                         return
                     }
-                    let user =  GeoManager.shared.loadedUsers[res]!
-                    guard let cell = user.ZFCell else {
-                        return
+                    if let user = GeoManager.shared.loadedUsers[res] {
+                        guard let cell = user.ZFCell else {
+                            return
+                        }
+                        cell.configureImage(user: user)
                     }
-                    cell.configureImage(user: user)
+                    
                 })
 
             })

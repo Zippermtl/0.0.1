@@ -123,10 +123,12 @@ class GeoManager {
         return monitor
     }
     
-    public func checkPictureCompletion(user: String) -> Bool {
-        if let user = loadedUsers[user] {
-            if (matchesFilters(user: user)) {
+    public func checkMatchesByString(Id: String) -> Bool{
+        if let load = loadedUsers[Id] {
+            if(matchesFilters(user: load)){
                 return true
+            } else {
+                return false
             }
         }
         return false
@@ -134,6 +136,7 @@ class GeoManager {
     
     public func addUsersToLoadedIfFitModel(user: User) -> Bool{
         let u = user
+        print("Geomanager 137 enter")
         if let loc = userIdList.firstIndex(of: u) {
             let localLoc = userIdList[loc].location
             u.location = localLoc
@@ -144,7 +147,7 @@ class GeoManager {
             }
             return false
         } else {
-            print("Geomanager error 109 for addUser")
+            print("Geomanager error 148 for addUser")
             return false
         }
     }
@@ -158,6 +161,8 @@ class GeoManager {
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
 //        Latitude: 31.2198 Longitude: 121.4870
 //        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
+//    Latitude: 45.5041 Longitude: -73.5747
+//        let center = CLLocation(latitude: 45.5041, longitude: -73.5747)
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
 //        let geoRange = Double(locRange)
@@ -394,6 +399,13 @@ class GeoManager {
             rangeMultiplier = val
         }
         
+    }
+    
+    public func isLoadedUserMatchFilter(Id: String) -> Bool {
+        if let load = loadedUsers[Id] {
+            return matchesFilters(user: load)
+        }
+        return false
     }
 //    public func LoadUsers(size: Int){
 //        print("LoadUsers \(size) with array size \(userIdList.count)")
