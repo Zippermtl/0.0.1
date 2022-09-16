@@ -241,7 +241,7 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
         return UITableView.automaticDimension
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 6
+        return 5
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -266,11 +266,10 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.row {
         case 0: return getTypeCell(tableView: tableView, indexPath: indexPath)
-        case 1: return getTypeCell(tableView: tableView, indexPath: indexPath)
-        case 2: return getTimeCell(tableView: tableView, indexPath: indexPath)
-        case 3: return getLocationCell(tableView: tableView, indexPath: indexPath)
-        case 4: return getBioCell(tableView: tableView, indexPath: indexPath)
-        case 5: return getUserInvitesCell(tableView: tableView, indexPath: indexPath)
+        case 1: return getTimeCell(tableView: tableView, indexPath: indexPath)
+        case 2: return getLocationCell(tableView: tableView, indexPath: indexPath)
+        case 3: return getBioCell(tableView: tableView, indexPath: indexPath)
+        case 4: return getUserInvitesCell(tableView: tableView, indexPath: indexPath)
             
         default: return UITableViewCell()
         }

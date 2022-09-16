@@ -19,6 +19,7 @@ import CoreLocation
 import CoreGraphics
 import SDWebImage
 import FloatingPanel
+import FirebaseFirestore
 
 extension MKMapView {
     func visibleAnnotations() -> [MKAnnotation] {
@@ -52,12 +53,14 @@ class MapViewController: UIViewController {
 
     private let DEFAULT_ZOOM_DISTANCE = CGFloat(2000)
     private let DOT_ZOOM_DISTANCE: Double = 12
-
     
     var guardingGeoFireCalls: Bool
     
     var mapDidMove: Bool
     
+    var promoterEventListener : ListenerRegistration?
+    var invitedEventListener : ListenerRegistration?
+
 //    typealias LoadCircle = (center: CLLocation, radius: Double)
 //    var eventId_circles = [LoadCircle]()
 //    var loadedEvent_circles = [LoadCircle]()
@@ -122,6 +125,8 @@ class MapViewController: UIViewController {
 //        let path2 = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
 //        DatabaseManager.shared.getCSVData(path: path1)
 //        DatabaseManager.shared.getCSVData(path: path2)
+        
+//        DatabaseManager.shared.writeSpecialUsers()
 
 
         guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String
@@ -182,6 +187,7 @@ class MapViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        configureObservers()
         if let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
            let url = URL(string: urlString)
            profileButton.sd_setImage(with: url, for: .normal, completed: nil)
@@ -195,8 +201,17 @@ class MapViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: true)
-
+        if let promoterEventListener = promoterEventListener {
+            promoterEventListener.remove()
+        }
+       
+        if let invitedEventListener = invitedEventListener {
+            invitedEventListener.remove()
+        }
+        
     }
+    
+    
     
 
     
@@ -211,6 +226,10 @@ class MapViewController: UIViewController {
             present(vc, animated: true, completion: nil)
         }
     
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
     }
 
     private func configureProfilePicture(){
@@ -301,50 +320,13 @@ class MapViewController: UIViewController {
         
         guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
         
-        DatabaseManager.shared.getAllPrivateEventsForMap(eventCompletion: { [weak self] event in
-            guard let strongSelf = self else { return }
-            if strongSelf.mappedEvents[event.eventId] == nil {
-                let annotation = EventAnnotation(event: event)
-                DispatchQueue.main.async {
-                    if strongSelf.mappedEvents[event.eventId] == nil {
-                        strongSelf.mapView.addAnnotation(annotation)
-                        strongSelf.mappedEvents[event.eventId] = annotation
-                    }
-                }
-            }
-        }, allCompletion: { [weak self] result in
-            guard let strongSelf = self else { return }
-
-            switch result {
-            case .success(let events):
-                guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController else {
-                    return
-                }
-                DispatchQueue.main.async {
-                    let filteredEvents = events.filter({ event in
-                        let selfUser = User(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String)
-                        return !(event.usersNotGoing.contains(selfUser) || event.usersGoing.contains(selfUser))
-                    })
-                    fpcVC.events = filteredEvents
-                    fpcVC.updateEventsLabel(cellItems: filteredEvents)
-                    fpcVC.eventsTableView.reload(cellItems: filteredEvents)
-                }
-               
-            case .failure(let error):
-                print("failure loading all events: \(error)")
-            }
-        })
-
+        
+        
+        
         DatabaseManager.shared.getAllGoingEvents(userId: selfId, eventCompletion: { [weak self] event in
             guard let strongSelf = self else { return }
-            if strongSelf.mappedEvents[event.eventId] == nil {
-                let annotation = EventAnnotation(event: event)
-                DispatchQueue.main.async {
-                    if strongSelf.mappedEvents[event.eventId] == nil {
-                        strongSelf.mapView.addAnnotation(annotation)
-                        strongSelf.mappedEvents[event.eventId] = annotation
-                    }
-                }
+            DispatchQueue.main.async {
+                strongSelf.addEvent(event: event)
             }
         }, allCompletion: { result in
             
@@ -366,23 +348,121 @@ class MapViewController: UIViewController {
             
         })
 
-        DatabaseManager.shared.getAllPromoter(eventCompletion: { [weak self] event in
+        
+    }
+    
+    private func configureObservers() {
+        invitedEventListener = DatabaseManager.shared.getInivtedEventsListener(addedEventHandler: { [weak self] event in
             guard let strongSelf = self else { return }
-            if strongSelf.mappedEvents[event.eventId] == nil {
-                let annotation = EventAnnotation(event: event)
-                DispatchQueue.main.async {
-                    if strongSelf.mappedEvents[event.eventId] == nil {
-                        strongSelf.mapView.addAnnotation(annotation)
-                        strongSelf.mappedEvents[event.eventId] = annotation
-                    }
+            DispatchQueue.main.async {
+                strongSelf.addEvent(event: event)
+            }
+            
+            guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController,
+                  let id = AppDelegate.userDefaults.value(forKey: "userId") as? String,
+                  event.getType() != .Promoter,
+                  !event.usersGoing.contains(where:{ $0.userId == id } ),
+                  !event.usersNotGoing.contains(where:{ $0.userId == id } )
+            else { return }
+            User.appendUDEvent(event: event, toKey: .invitedEvents)
+            fpcVC.addEvent(event: event)
+        }, modifiedEventHandler: { [weak self] event in
+            guard let strongSelf = self else { return }
+            DispatchQueue.main.async {
+                strongSelf.modifyEvent(event: event)
+            }
+        }, removedEventHandler: { [weak self] event in
+            guard let strongSelf = self else { return }
+            DispatchQueue.main.async {
+                strongSelf.removeEvent(event: event)
+            }
+            
+            guard let fpcVC = strongSelf.fpc.contentViewController as? FPCViewController
+            else {
+                return
+            }
+            fpcVC.removeEvent(event: event)
+        })
+        
+        
+        promoterEventListener = DatabaseManager.shared.getPromoterEventListener(addedEventHandler: { [weak self] event in
+            guard let strongSelf = self else { return }
+            DispatchQueue.main.async {
+                strongSelf.addEvent(event: event)
+            }
+        }, modifiedEventHandler: { [weak self] event in
+            guard let strongSelf = self else { return }
+            DispatchQueue.main.async {
+                strongSelf.modifyEvent(event: event)
+            }
+        }, removedEventHandler: { [weak self] event in
+            guard let strongSelf = self else { return }
+            DispatchQueue.main.async {
+                strongSelf.removeEvent(event: event)
+            }
+        })
+    }
+    
+    private func removeEvent(event: Event) {
+        guard let annotation = mappedEvents[event.eventId],
+              !event.canIGo()
+        else {
+            return
+        }
+        
+        mapView.removeAnnotation(annotation)
+        mappedEvents[event.eventId] = nil
+    }
+    
+    private func modifyEvent(event: Event) {
+        guard let fpcVC = fpc.contentViewController as? FPCViewController,
+              let id = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
+
+        let invited = event.usersInvite.contains(where: { $0.userId == id })
+        let going = event.usersGoing.contains(where: { $0.userId == id })
+        let hosting = event.hosts.contains(where: { $0.userId == id })
+        
+        if !invited {
+            fpcVC.removeEvent(event: event)
+        }
+        
+        if invited || going || hosting || event.getType() == .Promoter {
+            updateEvent(event: event)
+        } else {
+            removeEvent(event: event)
+        }
+    }
+    
+    private func updateEvent(event: Event) {
+        guard let oldInstance = mappedEvents[event.eventId]?.event else { return }
+        if oldInstance.picNum != event.picNum {
+            event.getImage(completion: { url in
+                if let annotation = oldInstance.annotationView {
+                    annotation.configure(event: event)
+                } else if let cell = oldInstance.tableViewCell {
+                    cell.configureImage(event)
+                }
+            })
+        }
+    }
+    
+    private func addEvent(event: Event) {
+        if mappedEvents[event.eventId] == nil {
+            let annotation = EventAnnotation(event: event)
+            DispatchQueue.main.async { [weak self] in
+                guard let strongSelf = self else { return }
+                if strongSelf.mappedEvents[event.eventId] == nil {
+                    event.getImage(completion: { url in
+                        if let view = event.annotationView {
+                            view.configure(event: event)
+                        }
+                    })
+                    strongSelf.mapView.addAnnotation(annotation)
+                    strongSelf.mappedEvents[event.eventId] = annotation
                 }
             }
-        }, allCompletion: { result in
-
-        })
-
+        }
     }
-
 }
 
 //MARK: -  Location Services

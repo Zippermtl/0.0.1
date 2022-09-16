@@ -180,6 +180,11 @@ class ChatViewController: MessagesViewController {
         }
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        DatabaseManager.shared.removeAllObservers()
+    }
+    
     
     private func presentInputActionSheet(){
         let actionSheet = UIAlertController(title: "Attach Media",

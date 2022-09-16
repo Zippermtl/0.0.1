@@ -322,7 +322,9 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         for multiSectionDatum in multiSectionData {
             for section in multiSectionDatum.sections {
                 for item in section.items {
-                    if item.getItem().loadStatus == .UserProfileNoPic {
+                    if item.getItem().loadStatus == .UserProfile {
+                        continue
+                    } else if item.getItem().loadStatus == .UserProfileNoPic {
                         item.fetchImage(completion: {_ in})
                     } else {
                         item.fetch(completion: { [weak self] error in
@@ -362,13 +364,12 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         tableData.sections[indexPath.section].items.remove(at: indexPath.row)
     }
     
-    public func reload(cellItems: [CellItem], reloadTable: Bool = true) {
+    public func reload(cellItems: [CellItem], cellType: CellType = CellType(userType: .zipList, eventType: .save), reloadTable: Bool = true) {
         multiSectionData = [MultiSectionData(title: nil,
                                              sections: [Self.cellControllers(with: cellItems,
                                                                             title: nil,
-                                                                            cellType: .zipList)])
+                                                                             cellType: cellType)])
         ]
-        
         
         tableData = multiSectionData[0]
         

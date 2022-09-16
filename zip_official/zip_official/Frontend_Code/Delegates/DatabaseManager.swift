@@ -116,6 +116,10 @@ extension DatabaseManager {
         
     }
     
+    public func removeAllObservers(){
+        database.removeAllObservers()
+    }
+    
     
 }
 

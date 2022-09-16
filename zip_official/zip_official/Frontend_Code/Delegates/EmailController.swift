@@ -31,7 +31,7 @@ public enum EmailControllerType: String {
 //
 //    }
     
-func sendMail(type: EmailControllerType, self: User, target: SearchObject, descriptor: String){
+func sendMail(type: EmailControllerType, target: SearchObject, descriptor: String){
     var smtpSession = MCOSMTPSession()
     smtpSession.hostname = "smtp.gmail.com"
     smtpSession.username = "zipper.alerts@gmail.com"
@@ -52,7 +52,7 @@ func sendMail(type: EmailControllerType, self: User, target: SearchObject, descr
     builder.header.to = [MCOAddress(displayName: "Contact Zipper", mailbox: "itsrool@gmail.com")]
     builder.header.from = MCOAddress(displayName: "Zipper Alerts", mailbox: "matt@gmail.com")
     builder.header.subject = "Alert: " + type.rawValue
-    builder.htmlBody = createBodyFunc(type: type, self: self, target: target, desc: descriptor)
+    builder.htmlBody = createBodyFunc(type: type, target: target, desc: descriptor)
 
     let rfc822Data = builder.data()
     if let sendOperation = smtpSession.sendOperation(with: rfc822Data) {
@@ -67,8 +67,8 @@ func sendMail(type: EmailControllerType, self: User, target: SearchObject, descr
     
 }
 
-func createBodyFunc(type: EmailControllerType, self: User, target: SearchObject, desc: String) -> String {
-    let id = self.userId
+func createBodyFunc(type: EmailControllerType, target: SearchObject, desc: String) -> String {
+    let id = AppDelegate.userDefaults.value(forKey: "userId") as! String
     let targetId = target.getId()
     var targetType: String
     let intro = "User: " + id + " has alerted "

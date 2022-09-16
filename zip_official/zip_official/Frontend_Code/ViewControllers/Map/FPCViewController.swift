@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreLocation
+import FirebaseFirestore
 
 protocol FPCMapDelegate: AnyObject {
     func openZipFinder()
@@ -180,6 +181,30 @@ class FPCViewController: UIViewController {
         searchBar.inputAccessoryView = doneToolbar
     }
     
+    public func addEvent(event: Event) {
+        eventsTableView.addItem(cellItem: event)
+    }
+    
+    public func removeEvent(event: Event) {
+        eventsTableView.removeItem(cellItem: event)
+    }
+    
+    func observeZipRequests() {
+        DatabaseManager.shared.observeZipRequests(completion: { result in
+            switch result {
+            case .success(let users):
+                DispatchQueue.main.async { [weak self] in
+                    guard let strongSelf = self else { return }
+                    strongSelf.zipRequestsTableView.reload(cellItems: users)
+                    strongSelf.updateZipsLabel(cellItems: users)
+                }
+            case .failure(let error):
+                print("error observing zip requests")
+                break
+            }
+        })
+    }
+    
     @objc func doneButtonAction(){
         searchBar.resignFirstResponder()
     }
@@ -279,9 +304,7 @@ class FPCViewController: UIViewController {
         scrollView.addSubview(zipFinderButton)
         scrollView.addSubview(searchBar)
         scrollView.addSubview(collectionView)
-        
-        
-       
+
         
         scrollView.addSubview(zipRequestContainer)
         zipRequestContainer.addSubview(zipRequestsTableView.view)
@@ -424,21 +447,12 @@ class FPCViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let invitedEvents = User.getUDEvents(toKey: .invitedEvents)
-        if events != invitedEvents {
-            events = User.getUDEvents(toKey: .invitedEvents)
-            eventsTableView.reload(cellItems: events)
-            updateEventsLabel(cellItems: events)
-        }
-        
-//        let zipRequest = User.getMyRequests()
-//        if requests != zipRequest {
-//            zipRequestsTableView.reload(cellItems: zipRequest)
-//        }
+        observeZipRequests()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        DatabaseManager.shared.removeAllObservers()
     }
     
 }

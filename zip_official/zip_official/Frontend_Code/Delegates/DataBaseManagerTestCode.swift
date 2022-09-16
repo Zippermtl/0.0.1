@@ -303,7 +303,7 @@ extension DatabaseManager {
 //    }
  
     public func testEmail(){
-        sendMail(type: .Harrassment, self: User(userId: "0"), target: SearchObject(User(userId: "1")), descriptor: "took way too long")
+        sendMail(type: .Harrassment, target: SearchObject(User(userId: "1")), descriptor: "took way too long")
     }
     
 }

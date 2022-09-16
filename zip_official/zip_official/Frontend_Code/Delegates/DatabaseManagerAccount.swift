@@ -306,6 +306,26 @@ extension DatabaseManager {
 
 //MARK: - User Data Retreival
 extension DatabaseManager {
+    public func writeSpecialUsers() {
+        database.child("ImportantUsers").setValue(["u9789070602" : 0, "u6501111111" : 0])
+    }
+    
+    public func getImportantUsers(founderCompletion: @escaping ([String]) -> Void,
+                                  promoterCompletion: @escaping ([String]) -> Void) {
+        database.child("ImportantUsers").observeSingleEvent(of: .value, with: { result in
+            guard let dict = result.value as? [String: Int] else {
+                return
+            }
+            let founders = dict.filter({ $0.1 == 0})
+            let promoters = dict.filter({ $0.1 == 1})
+              
+            founderCompletion(Array(founders.keys))
+            promoterCompletion(Array(promoters.keys))
+        })
+    }
+    
+    
+    
     public func loadUserProfileNoPic (given user: User, completion: @escaping (Result<User, Error>) -> Void) {
         firestore.collection("UserProfiles").document(user.userId).getDocument(as: UserCoder.self)  { result in
             switch result {

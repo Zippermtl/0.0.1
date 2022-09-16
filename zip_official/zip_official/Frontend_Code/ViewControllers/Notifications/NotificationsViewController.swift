@@ -38,15 +38,6 @@ class NotificationsViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         zipRequestButton.setTitle("Zip Requests (\(User.getMyRequests().count))", for: .normal)
-//        super.init(nibName: nil, bundle: nil)
-//        if let friendsips = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: Int] {
-//            let zipsDict = friendsips.filter({ $0.value == FriendshipStatus.REQUESTED_INCOMING.rawValue })
-//            let userIds = Array(zipsDict.keys)
-//            zipRequestButton.setTitle("Zip Requests (\(userIds.count))", for: .normal)
-//        } else {
-//            zipRequestButton.setTitle("Zip Requests (0)", for: .normal)
-//        }
-        
         zipRequestButton.addTarget(self, action: #selector(didTapZipRequestsButton), for: .touchUpInside)
         zipRequestButton.backgroundColor = .clear
         zipRequestButton.titleLabel?.textColor = .white
@@ -54,7 +45,7 @@ class NotificationsViewController: UIViewController {
         zipRequestButton.contentHorizontalAlignment = .left
         zipRequestButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         
-        eventInvitesButton.setTitle("Event Invites (\(User.getUDEvents(toKey: .invitedEvents).count)", for: .normal)
+        eventInvitesButton.setTitle("Event Invites (\(User.getUDEvents(toKey: .invitedEvents).count))", for: .normal)
         eventInvitesButton.addTarget(self, action: #selector(didTapEventInvites), for: .touchUpInside)
         eventInvitesButton.backgroundColor = .clear
         eventInvitesButton.titleLabel?.textColor = .white

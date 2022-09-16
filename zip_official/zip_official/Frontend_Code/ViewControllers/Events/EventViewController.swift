@@ -386,6 +386,7 @@ class EventViewController: UIViewController {
         let vc = InviteTableViewController(items: User.getMyZips().filter({ user in
             return !(event.usersInvite.contains(user) || event.usersGoing.contains(user) || event.usersNotGoing.contains(user))
         }))
+        vc.dispearingRightButton = true
         vc.saveFunc = { [weak self] items in
             guard let event = self?.event else { return }
             let users = items.map({ $0 as! User })
@@ -982,8 +983,10 @@ extension EventViewController : ReportMessageDelegate {
     }
     
     func sendReport(reason: String) {
-        slideDown(view: reportView, completion: { b in
+        slideDown(view: reportView, completion: { [weak self] b in
 //            event.report(reason: reson)
+            guard let strongSelf = self else { return }
+            sendMail(type: .Danger, target: SearchObject(strongSelf.event), descriptor: reason)
         })
     }
     

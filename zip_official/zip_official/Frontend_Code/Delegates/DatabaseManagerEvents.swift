@@ -309,19 +309,51 @@ extension DatabaseManager {
     guard let selfId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
         return
     }
-    
-    firestore.collection("EventProfiles").whereField("usersInvite", arrayContains: selfId).whereField("usersInvite", arrayContains: userId).getDocuments(completion: { [weak self] (querySnapshot, err) in
-        guard let strongSelf = self else { return }
-        strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: false, eventCompletion: { event in
-            eventCompletion(event)
-        }, allCompletion: { result in
-            allCompletion(result)
+        
+        firestore.collection("EventProfiles").whereField("usersInvite", arrayContains: selfId).whereField("usersInvite", arrayContains: userId).getDocuments(completion: { [weak self] (querySnapshot, err) in
+            guard let strongSelf = self else { return }
+            strongSelf.handleEventQueryResults(querySnapshot: querySnapshot, err: err, fast: false, eventCompletion: { event in
+                eventCompletion(event)
+            }, allCompletion: { result in
+                allCompletion(result)
+            })
         })
-    })
-}
+    }
     
     
-
+    public func getInivtedEventsListener(addedEventHandler: @escaping (Event) -> Void,
+                                       modifiedEventHandler: @escaping (Event) -> Void,
+                                       removedEventHandler: @escaping (Event) -> Void) -> ListenerRegistration{
+        let id = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        return firestore.collection("EventProfiles").whereField("eventInvites", arrayContains: id).addSnapshotListener { [weak self] snapshot, error in
+            guard let strongSelf = self else { return }
+            strongSelf.handleEventLiveUpdates(querySnapshot: snapshot,
+                                              error: error,
+                                              addedEventHandler: addedEventHandler,
+                                              modifiedEventHandler: modifiedEventHandler,
+                                              removedEventHandler: removedEventHandler)
+        }
+    }
+    
+    public func getPromoterEventListener(addedEventHandler: @escaping (Event) -> Void,
+                                         modifiedEventHandler: @escaping (Event) -> Void,
+                                         removedEventHandler: @escaping (Event) -> Void) -> ListenerRegistration{
+        return firestore.collection("EventProfiles").whereField("type", isEqualTo: EventType.Promoter.rawValue).addSnapshotListener { [weak self] snapshot, error in
+            guard let strongSelf = self else { return }
+            strongSelf.handleEventLiveUpdates(querySnapshot: snapshot,
+                                              error: error,
+                                              addedEventHandler: addedEventHandler,
+                                              modifiedEventHandler: modifiedEventHandler,
+                                              removedEventHandler: removedEventHandler)
+        }
+    }
+    
+    public func removeEventObserver(observer: NSObject) {
+        firestore.removeObserver(observer, forKeyPath: "EventProfiles")
+    }
+    
+    
+    
     ///Queries database for a field equal to a value
     /// `collection` - string colelction name
     /// `field` - string field to query on
@@ -362,6 +394,39 @@ extension DatabaseManager {
                 allCompletion(result)
             })
         }
+    }
+    
+    
+    private func handleEventLiveUpdates(querySnapshot: QuerySnapshot?,
+                                        error: Error?,
+                                        addedEventHandler: @escaping (Event) -> Void,
+                                        modifiedEventHandler: @escaping (Event) -> Void,
+                                        removedEventHandler: @escaping (Event) -> Void) {
+        guard let snapshot = querySnapshot,
+              error == nil else {
+            return
+        }
+        
+        snapshot.documentChanges.forEach({ diff in
+            do {
+                guard let eventType = diff.document.data()["type"] as? Int,
+                      let coderType = EventType(rawValue: eventType) else {
+                    return
+                }
+                
+                let event = try coderType.getData(document: diff.document)
+                event.eventId = diff.document.documentID
+                
+                switch diff.type {
+                case .added: addedEventHandler(event)
+                case .modified: modifiedEventHandler(event)
+                case .removed: removedEventHandler(event)
+                }
+            }
+            catch {
+            
+            }
+        })
     }
     
     /// handels a list of events query snapshot

@@ -27,6 +27,8 @@ class ZFCardFrontView: UIView {
     var profilePicture: UIImageView?
     var shadowView: UIView?
     
+    var importanceLabel: UILabel
+    
     //MARK: - Subviews
     private var pictureCollectionLayout: SnappingFlowLayout
     var pictureCollectionView: UICollectionView
@@ -135,7 +137,7 @@ class ZFCardFrontView: UIView {
         pictureCollectionView = UICollectionView(frame: .zero, collectionViewLayout: SnappingFlowLayout())
         pictureCollectionLayout = SnappingFlowLayout()
         fadedBG = UIView()
-        
+        importanceLabel = UILabel.zipSubtitle2()
         super.init(frame: .zero)
         self.layer.masksToBounds = true
         layer.cornerRadius = 20
@@ -189,10 +191,28 @@ class ZFCardFrontView: UIView {
         requestButton.layer.cornerRadius = requestButton.frame.height/2
     }
     
+    private func configureImportanceLabel() {
+        guard let importance = AppDelegate.userDefaults.value(forKey: "userType") as? Int else {
+            importanceLabel.isHidden = true
+            return
+            
+        }
+        importanceLabel.isHidden = false
+        if importance == 0 {
+            importanceLabel.backgroundColor = .zipBlue
+            importanceLabel.text = "Founder"
+            importanceLabel.textColor = .white
+        } else {
+            importanceLabel.backgroundColor = .zipYellow
+            importanceLabel.text = "Promoter"
+            importanceLabel.textColor = .black
+        }
+    }
     
     //MARK: - Configure
     public func configure(user: User){
         self.user = user
+        configureImportanceLabel()
         configureLabels()
         updateRequestButton()
         
@@ -343,6 +363,8 @@ class ZFCardFrontView: UIView {
         addSubview(nameLabel)
         addSubview(reportButton)
         
+        addSubview(importanceLabel)
+        
         addSubview(fadedBG)
 
         fadedBG.addSubview(distanceLabel)
@@ -370,6 +392,15 @@ class ZFCardFrontView: UIView {
         pictureCollectionView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         pictureCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
 //        pictureCollectionView.heightAnchor.constraint(equalTo: pictureCollectionView.widthAnchor, multiplier: 1/UIImageCropper.CROP_RATIO).isActive = true
+        
+        importanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        importanceLabel.topAnchor.constraint(equalTo: pictureCollectionView.topAnchor,constant: 5).isActive = true
+        importanceLabel.leftAnchor.constraint(equalTo: pictureCollectionView.leftAnchor,constant: 10).isActive = true
+        importanceLabel.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        importanceLabel.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        importanceLabel.layer.cornerRadius = 13
+        importanceLabel.layer.masksToBounds = true
+        importanceLabel.textAlignment = .center
         
         reportButton.translatesAutoresizingMaskIntoConstraints = false
 //        reportButton.heightAnchor.constraint(equalToConstant: name.intrinsicContentSize.height*1.5).isActive = true

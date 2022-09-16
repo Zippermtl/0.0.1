@@ -19,7 +19,7 @@ import SwiftUI
 extension DatabaseManager {
     public func loadUserFriendships(given id: String, completion: @escaping (Result<[Friendship], Error>) -> Void) {
         // Get user id inside userFriendships
-        database.child("userFriendships").child(id).observe(.value, with: { result in
+        database.child("userFriendships").child(id).observeSingleEvent(of: .value, with: { result in
             guard let value = result.value as? [String: Any] else {
                 completion(.success([]))
                 return
@@ -39,6 +39,21 @@ extension DatabaseManager {
             case .failure(let error):
                 completion(.failure(error))
             }
+        })
+    }
+    
+    public func observeZipRequests(completion: @escaping (Result<[User], Error>)->Void) {
+        let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        database.child("userFriendships/\(userId)").observe(.value, with: { snapshot in
+            guard let value = snapshot.value as? [String:[String: Any]] else {
+                print("failed to fetch conversations")
+                completion(.failure(DatabaseError.failedToFetch))
+                return
+            }
+            
+            let decodedFriendships = DecodeFriendships(value)
+            let zipRequests = decodedFriendships.filter({ $0.status == .REQUESTED_INCOMING})
+            completion(.success(zipRequests.map({ $0.receiver })))
         })
     }
     

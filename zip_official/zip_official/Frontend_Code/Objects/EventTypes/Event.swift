@@ -300,7 +300,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     }
     
     func getImage(completion: @escaping (Result<URL?,Error>) -> Void) {
-        DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { [weak self] res in
+        DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { res in
             switch res {
             case .success(let urls) :
                 if urls.count == 0 {

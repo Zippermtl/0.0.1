@@ -75,8 +75,8 @@ class InvitedTableViewController : MasterTableViewController {
         return num
     }
     
-    override func reload(cellItems: [CellItem], reloadTable: Bool = true) {
-        super.reload(cellItems: cellItems, reloadTable: reloadTable)
+    func reload(cellItems: [CellItem], reloadTable: Bool = true) {
+        super.reload(cellItems: cellItems, cellType: CellType(userType: .zipRequest, eventType: .rsvp), reloadTable: reloadTable)
         self.items = cellItems
     }
     
@@ -90,6 +90,26 @@ class InvitedTableViewController : MasterTableViewController {
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 1
     }
+    
+    func removeItem(cellItem: CellItem) {
+        if let idx = items.firstIndex(where: { item in
+            if item.isUser && cellItem.isUser {
+                return item as! User == cellItem as! User
+            } else if item.isEvent  && cellItem.isEvent {
+                return item as! Event == cellItem as! Event
+            }
+            return false
+        }) {
+            items.remove(at: idx)
+            reload(cellItems: items)
+        }
+    }
+
+
+    func addItem(cellItem: CellItem) {
+        items.append(cellItem)
+        reload(cellItems: items)
+    }
 }
 
 extension InvitedTableViewController : InvitedTableViewDelegate {
@@ -97,7 +117,7 @@ extension InvitedTableViewController : InvitedTableViewDelegate {
         items.remove(at: indexPath.row)
         tableView.beginUpdates()
         tableView.deleteRows(at: [indexPath], with: .right)
-        reload(cellItems: items,reloadTable: false)
+        reload(cellItems: items)
         tableView.reloadData()
         tableView.endUpdates()
         if let delegate = FPCZipDelegate {

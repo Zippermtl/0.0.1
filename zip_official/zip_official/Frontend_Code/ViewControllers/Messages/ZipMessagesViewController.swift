@@ -152,13 +152,25 @@ class ZipMessagesViewController: UIViewController {
         configureTable()
         addSubviews()
         
+      
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         loginObserver = NotificationCenter.default.addObserver(forName: .didLogInNotification, object: self, queue: .main, using: { [weak self] _ in
             guard let strongSelf = self else {
                 return
             }
             strongSelf.startListeningForConversations()
         })
-        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if let observer = loginObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     private func startListeningForConversations(){

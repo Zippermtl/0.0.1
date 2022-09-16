@@ -62,6 +62,11 @@ class AbstractUserTableViewCell: UITableViewCell {
         pictureView.sd_setImage(with: pfp)
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        pictureView.image = nil
+    }
+    
  
     
     //MARK: -Add Subviews
