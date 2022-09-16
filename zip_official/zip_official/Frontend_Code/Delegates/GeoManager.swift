@@ -122,7 +122,16 @@ class GeoManager {
         }
         return monitor
     }
-
+    
+    public func checkPictureCompletion(user: String) -> Bool {
+        if let user = loadedUsers[user] {
+            if (matchesFilters(user: user)) {
+                return true
+            }
+        }
+        return false
+    }
+    
     public func addUsersToLoadedIfFitModel(user: User) -> Bool{
         let u = user
         if let loc = userIdList.firstIndex(of: u) {
@@ -293,16 +302,17 @@ class GeoManager {
 //        completion()
     }
     
-    public func getPossiblePresentNumberOfCells() -> Int {
-        return loadedUsers.count + userIdList.count
-    }
+//    public func getPossiblePresentNumberOfCells() -> Int {
+//        return loadedUsers.count + userIdList.count
+//    }
     
     public func getNumberOfCells() -> Int {
-        return loadedUsers.count
+        let temp = getFilteredData()
+        return temp.count
     }
     
     public func needsReload(maxIndex: Int, isInfite: Bool) -> Bool{
-        if(maxIndex >= loadedUsers.count && !isInfite){
+        if(maxIndex >= getFilteredData().count && !isInfite){
             return true
         }
         return false
@@ -314,7 +324,7 @@ class GeoManager {
             if a > 5 {
                 a = 5
             }
-            if(presIndex >= loadedUsers.count+a && presIndex <= getPossiblePresentNumberOfCells()){
+            if(presIndex >= getFilteredData().count+a){
                 if(isInfinite){
                     return false
                 }

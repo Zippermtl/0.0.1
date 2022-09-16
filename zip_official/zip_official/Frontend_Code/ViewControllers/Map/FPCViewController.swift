@@ -526,6 +526,7 @@ extension FPCViewController: UITextFieldDelegate {
         guard let text = textField.text else{
             return
         }
+<<<<<<< HEAD
         SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: { result in
             switch result {
             case .success(let searchObject):
@@ -537,32 +538,50 @@ extension FPCViewController: UITextFieldDelegate {
                 } else if let event = object as? Event {
                     if let cell = event.tableViewCell {
                         cell.configure(event)
+=======
+//        if(SearchManager.shared.newQuery(searchString: text)){
+            SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: { result in
+                switch result {
+                case .success(let searchObject):
+                    if searchObject != "0" {
+                        let object = SearchManager.shared.loadedData[searchObject]!
+                        if let user = object as? User {
+                            if let cell = user.tableViewCell {
+                                cell.configureImage(user)
+                            }
+                        } else if let event = object as? Event {
+                            if let cell = event.tableViewCell {
+                                cell.configureImage(event)
+                            }
+                        }
+>>>>>>> babb27c393417abed571cc2e747f9fc0a4778c9e
                     }
+                case .failure(let error):
+                    print("Error loading object in search Error: \(error)")
                 }
-            case .failure(let error):
-                print("Error loading object in search Error: \(error)")
-            }
-        }, allCompletion: { [weak self] result in
-            print("completing")
-            guard let strongSelf = self else { return }
-            switch result {
-            case .success(let searchResults):
-                let allResults = searchResults.map({  SearchManager.shared.loadedData[$0]!.cellItem  })
-                let userResults = allResults.filter({ $0.isUser })
-                let eventResults = allResults.filter({ $0.isEvent })
-                strongSelf.searchTable.reload(multiSectionData: [
-                    MultiSectionData(title: "All", sections:
-                                        [CellSectionData(title: nil, items: allResults, cellType: CellType(userType: .zipList, eventType: .save))]),
-                    MultiSectionData(title: "Users", sections:
-                                        [CellSectionData(title: nil, items: userResults, cellType: CellType(userType: .zipList, eventType: .save))]),
-                    MultiSectionData(title: "Events", sections:
-                                        [CellSectionData(title: nil, items: eventResults, cellType: CellType(userType: .zipList, eventType: .save))])
-                ], reloadTable: false)
-                
-            case .failure(let error):
-                print("Error searching with querytext \(text) and Error: \(error)")
-            }
-        })
+            }, allCompletion: { [weak self] result in
+                print("completing")
+                guard let strongSelf = self else { return }
+                switch result {
+                case .success(let searchResults):
+                    let allResults = searchResults.map({  SearchManager.shared.loadedData[$0]!.cellItem  })
+                    let userResults = allResults.filter({ $0.isUser })
+                    let eventResults = allResults.filter({ $0.isEvent })
+                    strongSelf.searchTable.reload(multiSectionData: [
+                        MultiSectionData(title: "All", sections:
+                                            [CellSectionData(title: nil, items: allResults, cellType: CellType(userType: .zipList, eventType: .save))]),
+                        MultiSectionData(title: "Users", sections:
+                                            [CellSectionData(title: nil, items: userResults, cellType: CellType(userType: .zipList, eventType: .save))]),
+                        MultiSectionData(title: "Events", sections:
+                                            [CellSectionData(title: nil, items: eventResults, cellType: CellType(userType: .zipList, eventType: .save))])
+                    ], reloadTable: false)
+                    
+                case .failure(let error):
+                    print("Error searching with querytext \(text) and Error: \(error)")
+                }
+            })
+//        }
+        
     }
     
     func textFieldShouldClear(_ textField: UITextField) -> Bool {
