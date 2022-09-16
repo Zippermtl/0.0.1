@@ -91,7 +91,7 @@ class UserCellController: TableCellController {
             }
         }, pictureCompletion: { [weak self] result in
             switch result {
-            case .success(let _):
+            case .success(_):
                 guard let strongSelf = self,
                       let cell = strongSelf.user.tableViewCell else {
                     return

@@ -68,7 +68,7 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell, InvitedCell {
         user.acceptRequest(completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else { return }
-            strongSelf.delegate?.removeCell(indexPath: strongSelf.iPath)
+//            strongSelf.delegate?.removeCell(indexPath: strongSelf.iPath)
         })
     }
     
@@ -76,7 +76,7 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell, InvitedCell {
         user.rejectRequest(completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else { return }
-            strongSelf.delegate?.removeCell(indexPath: strongSelf.iPath)
+//            strongSelf.delegate?.removeCell(indexPath: strongSelf.iPath)
         })
     }
     

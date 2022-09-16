@@ -50,7 +50,7 @@ extension DatabaseManager {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
-            
+                        
             let decodedFriendships = DecodeFriendships(value)
             let zipRequests = decodedFriendships.filter({ $0.status == .REQUESTED_INCOMING})
             completion(.success(zipRequests.map({ $0.receiver })))

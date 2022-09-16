@@ -192,30 +192,36 @@ class ZFCardFrontView: UIView {
     }
     
     private func configureImportanceLabel() {
-        guard let importance = AppDelegate.userDefaults.value(forKey: "userType") as? Int else {
-            importanceLabel.isHidden = true
-            return
-            
-        }
-        importanceLabel.isHidden = false
-        if importance == 0 {
+        guard let user = user else { return }
+        if (AppDelegate.userDefaults.value(forKey: "founders") as? [String] ?? []).contains(user.userId) {
             importanceLabel.backgroundColor = .zipBlue
             importanceLabel.text = "Founder"
             importanceLabel.textColor = .white
-        } else {
+            importanceLabel.isHidden = false
+        } else if (AppDelegate.userDefaults.value(forKey: "promoters") as? [String] ?? []).contains(user.userId) {
             importanceLabel.backgroundColor = .zipYellow
             importanceLabel.text = "Promoter"
             importanceLabel.textColor = .black
+            importanceLabel.isHidden = false
+        } else {
+            importanceLabel.isHidden = true
         }
     }
     
     //MARK: - Configure
     public func configure(user: User){
         self.user = user
-        configureImportanceLabel()
         configureLabels()
         updateRequestButton()
+        configureImportanceLabel()
+        configureProfilePic()
         
+        
+        pictureCollectionView.reloadData()
+    }
+    
+    func configureProfilePic() {
+        guard let user = user else { return }
         if user.otherPictureUrls.count == 0 && profilePicture == nil{
             shadowView = UIView()
             profilePicture = UIImageView()
@@ -264,9 +270,6 @@ class ZFCardFrontView: UIView {
             
             profilePicture!.sd_setImage(with: user.profilePicUrl)
         }
-        
-        
-        pictureCollectionView.reloadData()
     }
     
     public func updateRequestButton() {
@@ -323,6 +326,8 @@ class ZFCardFrontView: UIView {
     }
     
     public func prepareForReuse(){
+        importanceLabel.isHidden = true
+        
         guard let shadowView = shadowView,
               let profilePicture = profilePicture
         else {

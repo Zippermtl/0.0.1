@@ -133,13 +133,9 @@ class LoadingViewController: UIViewController {
                 }
                 
                 DatabaseManager.shared.getImportantUsers(founderCompletion: { ids in
-                    if ids.contains(user.userId) {
-                        AppDelegate.userDefaults.setValue(0, forKey: "userType")
-                    }
+                    AppDelegate.userDefaults.setValue(ids, forKey: "founders")
                 }, promoterCompletion: { ids in
-                    if ids.contains(user.userId) {
-                        AppDelegate.userDefaults.setValue(1, forKey: "userType")
-                    }
+                    AppDelegate.userDefaults.setValue(ids, forKey: "promoters")
                 })
                 
                 
