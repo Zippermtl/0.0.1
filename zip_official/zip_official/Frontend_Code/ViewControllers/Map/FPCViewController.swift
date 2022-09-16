@@ -532,11 +532,11 @@ extension FPCViewController: UITextFieldDelegate {
                 let object = SearchManager.shared.loadedData[searchObject]!
                 if let user = object as? User {
                     if let cell = user.tableViewCell {
-                        cell.configureImage(user)
+                        cell.configure(user)
                     }
                 } else if let event = object as? Event {
                     if let cell = event.tableViewCell {
-                        cell.configureImage(event)
+                        cell.configure(event)
                     }
                 }
             case .failure(let error):
