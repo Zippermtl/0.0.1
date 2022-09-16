@@ -159,8 +159,9 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
             print("NO MAP VIEW")
             return
         }
-        print("ADDING TO MAP ")
-        mapView.addAnnotation(EventAnnotation(event: self))
+        if let mapVC = mapView.parentViewController as? MapViewController {
+            mapVC.addEvent(event: self)
+        }
     }
     
     var latitude : Double {
@@ -300,18 +301,40 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     }
     
     func getImage(completion: @escaping (Result<URL?,Error>) -> Void) {
-        DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { res in
+        DatabaseManager.shared.getImages(Id: eventId, indices: eventCoverIndex, event: true, completion: { [weak self] res in
+            guard let strongSelf = self else { return }
             switch res {
             case .success(let urls) :
                 if urls.count == 0 {
                     completion(.success(nil))
                 } else {
+                    strongSelf.imageUrl = urls[0]
                     completion(.success(urls[0]))
                 }
             case .failure(let error) :
                 completion(.failure(error))
             }
         })
+    }
+    
+    func updateImageInView(completion: @escaping (Error?) -> Void) {
+        getImage { [weak self] result in
+            guard let strongSelf = self else { return }
+            switch result {
+            case .success(let url) :
+                if let annotationView = strongSelf.annotationView {
+                    guard let url = url else { return }
+                    annotationView.updateImage(url)
+                }
+                
+                if let cell = strongSelf.tableViewCell {
+                    cell.configureImage(strongSelf)
+                }
+                completion(nil)
+            case .failure(let error): completion(error)
+            }
+            
+        }
     }
     
     public func dispatch(user: User) -> Bool {

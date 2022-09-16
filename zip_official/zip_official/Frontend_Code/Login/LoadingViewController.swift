@@ -169,7 +169,7 @@ class LoadingViewController: UIViewController {
     
     private func isLocationEnabled() -> Bool {
         let manager = CLLocationManager()
-        return CLLocationManager.locationServicesEnabled() || manager.authorizationStatus != .denied
+        return manager.authorizationStatus != .denied
     }
     
     private func locationDenied() {
@@ -191,11 +191,6 @@ class LoadingViewController: UIViewController {
     }
     
     private func loadZipRequests(completion: @escaping ((Error?) -> Void)) {
-        
-        guard let userId = AppDelegate.userDefaults.value(forKey: "userId") as? String else {
-            return
-        }
-        
         DataStorageManager.shared.selfUser.getIncomingRequests(completion: { [weak self] results in
             switch results {
             case .success(let requests):

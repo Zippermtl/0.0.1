@@ -416,11 +416,14 @@ extension DatabaseManager {
                 
                 let event = try coderType.getData(document: diff.document)
                 event.eventId = diff.document.documentID
-                
+                event.updateImageInView{_ in}
                 switch diff.type {
-                case .added: addedEventHandler(event)
-                case .modified: modifiedEventHandler(event)
-                case .removed: removedEventHandler(event)
+                case .added:
+                    addedEventHandler(event)
+                case .modified:
+                    modifiedEventHandler(event)
+                case .removed:
+                    removedEventHandler(event)
                 }
             }
             catch {

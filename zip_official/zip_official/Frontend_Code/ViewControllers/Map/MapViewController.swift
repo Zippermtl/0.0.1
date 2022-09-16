@@ -403,7 +403,7 @@ class MapViewController: UIViewController {
         })
     }
     
-    private func removeEvent(event: Event) {
+    func removeEvent(event: Event) {
         guard let annotation = mappedEvents[event.eventId],
               !event.canIGo()
         else {
@@ -414,7 +414,7 @@ class MapViewController: UIViewController {
         mappedEvents[event.eventId] = nil
     }
     
-    private func modifyEvent(event: Event) {
+    func modifyEvent(event: Event) {
         guard let fpcVC = fpc.contentViewController as? FPCViewController,
               let id = AppDelegate.userDefaults.value(forKey: "userId") as? String else { return }
 
@@ -433,32 +433,22 @@ class MapViewController: UIViewController {
         }
     }
     
-    private func updateEvent(event: Event) {
+    func updateEvent(event: Event) {
         guard let oldInstance = mappedEvents[event.eventId]?.event else { return }
         if oldInstance.picNum != event.picNum {
-            event.getImage(completion: { url in
-                if let annotation = oldInstance.annotationView {
-                    annotation.configure(event: event)
-                } else if let cell = oldInstance.tableViewCell {
-                    cell.configureImage(event)
-                }
-            })
+            event.updateImageInView{_ in}
         }
     }
     
-    private func addEvent(event: Event) {
+    func addEvent(event: Event) {
         if mappedEvents[event.eventId] == nil {
-            let annotation = EventAnnotation(event: event)
             DispatchQueue.main.async { [weak self] in
                 guard let strongSelf = self else { return }
                 if strongSelf.mappedEvents[event.eventId] == nil {
-                    event.getImage(completion: { url in
-                        if let view = event.annotationView {
-                            view.configure(event: event)
-                        }
-                    })
+                    let annotation = EventAnnotation(event: event)
                     strongSelf.mapView.addAnnotation(annotation)
                     strongSelf.mappedEvents[event.eventId] = annotation
+                    event.updateImageInView(completion: {_ in})
                 }
             }
         }
@@ -527,10 +517,6 @@ extension MapViewController: CLLocationManagerDelegate {
     @objc  func configureLocationServices(){
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
-
-        if CLLocationManager.locationServicesEnabled(){
-            beginLocationUpdates(locationManager: locationManager)
-        }
     }
     
     //start location updates

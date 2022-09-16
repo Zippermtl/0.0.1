@@ -155,7 +155,6 @@ class EventAnnotationView: MKAnnotationView, EventAnnotationViewProtocol {
         }
         
         if let url = event.imageUrl {
-            
             eventImage.sd_setImage(with: url, for: .normal, completed: nil)
         } else {
             let imageName = event.getType() == .Promoter ? "defaultPromoterEventProfilePic" : "defaultEventProfilePic"

@@ -398,10 +398,9 @@ extension UIDevice {
 
 
 
-
-
 extension UIImageCropper {
     static let CROP_RATIO: Double = 7/10
+
 }
 
 
