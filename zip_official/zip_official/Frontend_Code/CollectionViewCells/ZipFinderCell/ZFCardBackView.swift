@@ -311,7 +311,7 @@ class ZFCardBackView: UIView {
         distanceLabel.update(distance: user.getDistance())
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM d, yyyy"
-        joinedDateLabel.text = "Join Zipper on " + dateFormatter.string(from: user.joinDate)
+        joinedDateLabel.text = "Joined Zipper on " + dateFormatter.string(from: user.joinDate)
 
         if user.hasSchool {
             schoolLabel.text = user.school!
@@ -340,8 +340,10 @@ class ZFCardBackView: UIView {
         slideView.sliderViewTopDistance = 7
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
-        slideView.sliderTextLabel.text = "Swipe"
-        slideView.textLabel.text = ""
+        slideView.sliderTextLabel.text = ""
+        slideView.textLabel.text = "Swipe"
+        slideView.textLabel.font = .zipTextFill
+        slideView.textColor = .white
 
 //        slideView.thumbnailViewStartingDistance = -10
         slideView.sliderHolderView.backgroundColor = .zipBlue.withAlphaComponent(0.5) //.zipBlue.withAlphaComponent(0.1)

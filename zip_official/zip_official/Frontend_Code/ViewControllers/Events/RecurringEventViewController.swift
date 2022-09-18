@@ -21,6 +21,11 @@ class RecurringEventViewController : EventViewController {
         messageButton.setTextLabel(s: "Website")
         participantsButton.setIcon(icon: phoneIcon)
         participantsButton.setTextLabel(s: "Call")
+        if let rEvent = event as? RecurringEvent {
+            eventTypeLabel.textColor = rEvent.category.color
+        }
+        
+        
     }
     
     required init?(coder: NSCoder) {
@@ -101,8 +106,7 @@ class RecurringEventViewController : EventViewController {
               let venu = event.venu
         else { return }
         let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextNoti,
-                                                         .foregroundColor: UIColor.zipVeryLightGray,
-                                                         .underlineStyle: NSUnderlineStyle.single.rawValue]
+                                                         .foregroundColor: UIColor.zipVeryLightGray]
         
         hostLabel.attributedText = NSAttributedString(string: "Happening at \(venu)", attributes: attributes)
         

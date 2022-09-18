@@ -1142,4 +1142,5 @@ public enum UserDefaultEventKeys : String {
     case notGoingEvents = "notGoingEvents"
     case pastHostEvents = "pastHostEvents"
     case pastGoingEvents = "pastGoingEvents"
+    case happenings = "happenings"
 }

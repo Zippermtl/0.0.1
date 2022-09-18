@@ -28,7 +28,7 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
         
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
         let addImg = UIImage(systemName: "plus.circle.fill", withConfiguration: largeConfig)!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        let requestImg = UIImage(systemName: "arrow.forward.circle.fill", withConfiguration: largeConfig)!.withRenderingMode(.alwaysOriginal).withTintColor(.zipYellow)
+        let requestImg = UIImage(systemName: "arrow.forward.circle.fill", withConfiguration: largeConfig)!.withRenderingMode(.alwaysOriginal).withTintColor(.zipLightGray)
         requestButton.setImage(addImg, for: .normal)
         requestButton.setImage(requestImg, for: .selected)
         

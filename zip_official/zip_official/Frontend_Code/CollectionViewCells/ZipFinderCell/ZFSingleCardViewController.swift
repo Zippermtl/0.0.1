@@ -52,6 +52,8 @@ class ZFSingleCardViewController: UIViewController {
     
     public func configure(user: User) {
         self.user = user
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        user.location = CLLocation(latitude: loc[0], longitude: loc[1])
         cardFrontView = ZFCardFrontView()
         cardFrontView?.canRequest = false
         cardFrontView?.configure(user: user)

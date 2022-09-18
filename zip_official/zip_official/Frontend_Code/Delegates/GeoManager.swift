@@ -159,6 +159,8 @@ class GeoManager {
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
+//        let center = CLLocation(latitude: 45.5019, longitude: -73.5674)
+
 //        Latitude: 31.2198 Longitude: 121.4870
 //        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
 //    Latitude: 45.5041 Longitude: -73.5747

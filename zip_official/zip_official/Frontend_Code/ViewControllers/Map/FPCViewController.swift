@@ -339,7 +339,8 @@ class FPCViewController: UIViewController {
         searchTable.view.bottomAnchor.constraint(equalTo: searchBg.bottomAnchor).isActive = true
         searchTable.view.rightAnchor.constraint(equalTo: searchBg.rightAnchor).isActive = true
         searchTable.view.leftAnchor.constraint(equalTo: searchBg.leftAnchor).isActive = true
-
+        searchTable.tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 250, right: 0)
+//        searchTable.tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 350))
 
         scrollView.addSubview(eventsLabel)
         scrollView.addSubview(eventsButton)

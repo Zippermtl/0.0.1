@@ -149,9 +149,11 @@ class OtherProfileViewController: AbstractProfileViewController  {
             guard let strongSelf = self else { return }
             switch result {
             case .success(let data):
-                let vc = MasterTableViewController(multiSectionData: data)
-                vc.title = "\(strongSelf.user.firstName)'s Events"
-                strongSelf.navigationController?.pushViewController(vc, animated: true)
+                if strongSelf == strongSelf.navigationController?.presentedViewController {
+                    let vc = MasterTableViewController(multiSectionData: data)
+                    vc.title = "\(strongSelf.user.firstName)'s Events"
+                    strongSelf.navigationController?.pushViewController(vc, animated: true)
+                }
             case .failure(_): break
             }
         })

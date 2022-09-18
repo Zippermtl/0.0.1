@@ -89,7 +89,12 @@ class AbstractEventTableViewCell: UITableViewCell {
         eventImage.layer.borderWidth = 2
         print("title = \(event.title)")
         print("type = \(event.getType())")
-        eventImage.layer.borderColor = event.getType().color.cgColor
+        
+        if let rEvent = event as? RecurringEvent {
+            eventImage.layer.borderColor = rEvent.category.color.cgColor
+        } else {
+            eventImage.layer.borderColor = event.getType().color.cgColor
+        }
     }
     
     public func configureImage(_ event: Event) {
