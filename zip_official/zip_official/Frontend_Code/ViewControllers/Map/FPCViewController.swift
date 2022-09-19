@@ -534,11 +534,11 @@ extension FPCViewController: UITextFieldDelegate {
             case .success(let searchObject):
                 if searchObject != "0" {
                     let object = SearchManager.shared.loadedData[searchObject]!
-                    if let user = object as? User {
+                    if let user = object.user {
                         if let cell = user.tableViewCell {
                             cell.configure(user)
                         }
-                    } else if let event = object as? Event {
+                    } else if let event = object.event {
                         if let cell = event.tableViewCell {
                             cell.configure(event)
                         }
