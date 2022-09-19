@@ -192,16 +192,14 @@ class ZFCardFrontView: UIView {
     }
     
     private func configureImportanceLabel() {
-        guard let user = user else { return }
-        if (AppDelegate.userDefaults.value(forKey: "founders") as? [String] ?? []).contains(user.userId) {
-            importanceLabel.backgroundColor = .zipBlue
-            importanceLabel.text = "Founder"
-            importanceLabel.textColor = .white
-            importanceLabel.isHidden = false
-        } else if (AppDelegate.userDefaults.value(forKey: "promoters") as? [String] ?? []).contains(user.userId) {
-            importanceLabel.backgroundColor = .zipYellow
-            importanceLabel.text = "Promoter"
-            importanceLabel.textColor = .black
+        guard let user = user,
+              let importantUsers = AppDelegate.userDefaults.value(forKey: "importantUsers") as? [String: Int]
+        else { return }
+        if let tpyeInt = importantUsers[user.userId],
+           let type = ImportantUserType(rawValue: tpyeInt){
+            importanceLabel.backgroundColor = type.color
+            importanceLabel.text = type.description
+            importanceLabel.textColor = type.textColor
             importanceLabel.isHidden = false
         } else {
             importanceLabel.isHidden = true
@@ -402,7 +400,7 @@ class ZFCardFrontView: UIView {
         importanceLabel.topAnchor.constraint(equalTo: pictureCollectionView.topAnchor,constant: 5).isActive = true
         importanceLabel.leftAnchor.constraint(equalTo: pictureCollectionView.leftAnchor,constant: 10).isActive = true
         importanceLabel.heightAnchor.constraint(equalToConstant: 26).isActive = true
-        importanceLabel.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        importanceLabel.widthAnchor.constraint(equalToConstant: 120).isActive = true
         importanceLabel.layer.cornerRadius = 13
         importanceLabel.layer.masksToBounds = true
         importanceLabel.textAlignment = .center

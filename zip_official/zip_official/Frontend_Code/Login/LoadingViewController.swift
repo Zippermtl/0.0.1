@@ -132,11 +132,7 @@ class LoadingViewController: UIViewController {
                     AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
                 }
                 
-                DatabaseManager.shared.getImportantUsers(founderCompletion: { ids in
-                    AppDelegate.userDefaults.setValue(ids, forKey: "founders")
-                }, promoterCompletion: { ids in
-                    AppDelegate.userDefaults.setValue(ids, forKey: "promoters")
-                })
+                DatabaseManager.shared.getImportantUsers()
                 
                 
                 DatabaseManager.shared.loadUserFriendships(given: user.userId, completion: { result in

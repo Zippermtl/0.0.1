@@ -584,11 +584,11 @@ extension FPCViewController: UITextFieldDelegate {
 
 extension FPCViewController: FPCTableDelegate {
     func updateZipsLabel(cellItems: [CellItem]) {
-        zipRequestsLabel.text = "Zip Requests (\(User.getMyRequests().count))"
+        zipRequestsLabel.text = "Zip Requests (\(cellItems.count))"
     }
     
     func updateEventsLabel(cellItems: [CellItem]) {
-        eventsLabel.text = "Event Invites (\(events.count))"
+        eventsLabel.text = "Event Invites (\(cellItems.count))"
     }
 }
 

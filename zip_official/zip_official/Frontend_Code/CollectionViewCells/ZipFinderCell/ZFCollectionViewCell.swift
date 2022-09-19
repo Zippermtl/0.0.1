@@ -118,6 +118,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
     
     private func configureGestureRecognizer(){
         let tapFlip = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        tapFlip.delegate = self
         tapFlip.numberOfTapsRequired = 1
         tapFlip.numberOfTouchesRequired = 1
         cardView.addGestureRecognizer(tapFlip)
@@ -153,7 +154,11 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
 }
 
 
-
+extension ZipFinderCollectionViewCell : UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        return !(touch.view is UIControl)
+    }
+}
 
 
 

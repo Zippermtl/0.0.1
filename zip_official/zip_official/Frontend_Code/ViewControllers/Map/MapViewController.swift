@@ -550,6 +550,18 @@ extension MapViewController: FPCMapDelegate {
     }
     
     func createEvent() {
+        if let userType = AppDelegate.userDefaults.value(forKey: "userType") as? Int {
+            if userType == 0 || userType == 1 || userType == 2 {
+                promoterCreateEvent()
+            } else {
+                normalCreateEvent()
+            }
+        } else {
+            normalCreateEvent()
+        }
+    }
+    
+    private func promoterCreateEvent() {
         let alert = UIAlertController(title: "Select Event Type",
                                       message: "",
                                       preferredStyle: .actionSheet)
@@ -585,6 +597,13 @@ extension MapViewController: FPCMapDelegate {
         }))
         
         present(alert, animated: true)
+    }
+    
+    private func normalCreateEvent() {
+        let event = UserEvent()
+        event.mapView = mapView
+        let vc = CreateEventViewController(event: event)
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func openFPC() {

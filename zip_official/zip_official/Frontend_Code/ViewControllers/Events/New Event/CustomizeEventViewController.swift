@@ -232,33 +232,18 @@ class CustomizeEventViewController: UIViewController {
         let vc = InviteTableViewController(items: User.getMyZips())
         
         vc.saveFunc = { [weak self] items in
-            guard let event = self?.event else { return }
-            let hosts = items.map({ $0 as! User })
-            for user in hosts {
-                if !event.usersInvite.contains(user) {
-                    event.usersInvite.append(user)
+            guard let strongSelf = self,
+                  let users = items as? [User] else { return }
+            for user in users {
+                if !strongSelf.event.hosts.contains(user) {
+                    strongSelf.event.hosts.append(user)
                 }
             }
-            event.hosts += hosts
-            DatabaseManager.shared.updateEvent(event: event, completion: { [weak self] error in
-                guard error == nil else {
-                    let alert = UIAlertController(title: "Error Inviting Users",
-                                                  message: "\(error!.localizedDescription)",
-                                                  preferredStyle: .alert)
-                    
-                    alert.addAction(UIAlertAction(title: "Ok",
-                                                  style: .cancel,
-                                                  handler: { _ in }))
-                    DispatchQueue.main.async {
-                        self?.present(alert, animated: true)
-                    }
-                    return
-                }
                 
-                DispatchQueue.main.async {
-                    self?.navigationController?.popViewController(animated: true)
-                }
-            })
+            DispatchQueue.main.async {
+                self?.navigationController?.popViewController(animated: true)
+            }
+        
         }
         vc.title = "Co-Host"
         navigationController?.pushViewController(vc, animated: true)

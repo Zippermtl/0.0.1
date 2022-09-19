@@ -304,23 +304,59 @@ extension DatabaseManager {
     }
 }
 
+
+enum ImportantUserType : Int, CustomStringConvertible {
+    case founder = 0
+    case zipper = 1
+    case promoter = 2
+    case ambassador = 3
+    
+    
+    var description: String {
+        switch self {
+        case .founder: return "Founder"
+        case .zipper: return "Zipper"
+        case .promoter: return "Promoter"
+        case .ambassador: return "Ambassador"
+        }
+    }
+    
+    var color: UIColor {
+        switch self {
+        case .founder: return .zipBlue
+        case .zipper: return .zipBlue
+        case .promoter: return .zipYellow
+        case .ambassador: return .zipGreen
+        }
+    }
+    
+    var textColor: UIColor {
+        switch self {
+        case .founder: return .white
+        case .zipper: return .white
+        case .promoter: return .black
+        case .ambassador: return .white
+        }
+    }
+}
 //MARK: - User Data Retreival
 extension DatabaseManager {
     public func writeSpecialUsers() {
         database.child("ImportantUsers").setValue(["u9789070602" : 0, "u6501111111" : 0])
     }
     
-    public func getImportantUsers(founderCompletion: @escaping ([String]) -> Void,
-                                  promoterCompletion: @escaping ([String]) -> Void) {
+    public func getImportantUsers() {
         database.child("ImportantUsers").observeSingleEvent(of: .value, with: { result in
             guard let dict = result.value as? [String: Int] else {
                 return
             }
-            let founders = dict.filter({ $0.1 == 0})
-            let promoters = dict.filter({ $0.1 == 1})
-              
-            founderCompletion(Array(founders.keys))
-            promoterCompletion(Array(promoters.keys))
+            
+            let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+            if let userType = dict[userId] {
+                AppDelegate.userDefaults.setValue(userType, forKey: "userType")
+            }
+            
+            AppDelegate.userDefaults.setValue(dict, forKey: "importantUsers")
         })
     }
     
