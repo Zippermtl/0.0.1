@@ -157,13 +157,17 @@ class GeoManager {
         queryRunning = true
         let geoRange = (range ?? presentRange)
         let userID = AppDelegate.userDefaults.value(forKey: "userID")
+        //MARK: Actual Location
+//        var lat = location.coordinate.latitude
+//        var long = location.coordinate.longitude
         let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        //MARK: Vanderbilt Campus
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
-//        let center = CLLocation(latitude: 45.5019, longitude: -73.5674)
-
 //        Latitude: 31.2198 Longitude: 121.4870
+        //MARK: Shanghai (no users nearby edge case)
 //        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
 //    Latitude: 45.5041 Longitude: -73.5747
+        //MARK: McGuille Campus
 //        let center = CLLocation(latitude: 45.5041, longitude: -73.5747)
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
@@ -250,7 +254,7 @@ class GeoManager {
                 dataholder.append(userIdList[j])
             }
             for i in dataholder {
-                let tmp = userIdList.firstIndex(of: i)
+                let tmp = i
                 DatabaseManager.shared.loadUserProfile(given: i, dataCompletion: { [weak self] res in
                     guard let strongSelf = self else {
                         return
@@ -268,10 +272,11 @@ class GeoManager {
                     guard let strongSelf = self else {
                         return
                     }
-                    guard tmp != nil else {
+                    var temp = strongSelf.userIdList.firstIndex(of: i)
+                    guard temp != nil else {
                         return
                     }
-                    updateCompletion(strongSelf.userIdList[tmp!].userId)
+                    updateCompletion(strongSelf.userIdList[temp!].userId)
                 })
             }
         } else {
@@ -331,7 +336,7 @@ class GeoManager {
             if a > 5 {
                 a = 5
             }
-            if(presIndex >= getFilteredData().count+a){
+            if(presIndex+5 >= getFilteredData().count){
                 if(isInfinite){
                     return false
                 }

@@ -80,6 +80,10 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
 //            rangeMultiplier = 1.6
 //            maxRangeFilter *= rangeMultiplier
         }
+//        var temp = GeoManager.shared.getFilteredData()
+//        var loaded = GeoManager.shared.loadedUsers.values
+//        var count = loaded.count
+//        var thththth = data.count
         if(data.count == 0){
             isInfite = false
         } else if (data.count > maxIndex){
@@ -291,9 +295,11 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
 //        if(GeoManager.shared.needsNewUsers(maxIndex: maxIndex, isConstant: !isInfite , range: presentRange)
         
         if(!GeoManager.shared.needsNewUsers(maxIndex: maxIndex, isConstant: (maxIndex != -1), completion: { [weak self] in
+            
             guard let strongSelf = self else {
                 return
             }
+            
             GeoManager.shared.LoadUsers(size: 10, completion: { [weak self] res in
                 guard let strongSelf = self else {
                     return
@@ -334,6 +340,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                 }
                 
             })
+            
         })) {
             
             GeoManager.shared.LoadUsers(size: 10, completion: { [weak self] res in
@@ -441,10 +448,12 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     
     func makeFinite(){
         isInfite = false
+        maxIndex = data.count
     }
     
     func makeInfite(){
         isInfite = true
+        maxIndex = .max
     }
     
     public func numberOfItemsInSelection() -> Int {
@@ -466,16 +475,20 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        var a = indexPath.row
+//        var j = GeoManager.shared.getNumberOfCells()
+        
         if indexPath.row >= GeoManager.shared.getNumberOfCells() {
             makeFinite()
         } else {
-            if(!isInfite){
-                makeInfite()
-            }
+//            if(!isInfite){
+            makeInfite()
+//            }
         }
         if indexPath.row == GeoManager.shared.getNumberOfCells() {
             if (checkDataConcurency()) {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NoMoreUsersCollectionViewCell.identifier, for: indexPath) as! NoMoreUsersCollectionViewCell
+                makeFinite()
                 //MARK: Make finite
                 cell.delegate = self
                 PullNextUser(completion: {[weak self] _ in
@@ -495,6 +508,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                     guard let strongSelf = self else {
                         return
                     }
+//                    strongSelf.makeFinite()
                     if(GeoManager.shared.needsReload(presIndex: indexPath.row, maxIndices: strongSelf.maxIndex, Incompletion: true, isInfinite: strongSelf.isInfite)){
                         DispatchQueue.main.async {
                             self?.maxIndex = indexPath.row
@@ -505,6 +519,23 @@ extension ZipFinderViewController: UICollectionViewDataSource {
             }
             
         }
+        GeoManager.shared.needsNewUsers(maxIndex: maxIndex, isConstant: !isInfite, completion: { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.PullNextUser(completion: {[weak self] _ in
+                guard let strongSelf = self else {
+                    return
+                }
+//                    strongSelf.makeFinite()
+                if(GeoManager.shared.needsReload(presIndex: indexPath.row, maxIndices: strongSelf.maxIndex, Incompletion: true, isInfinite: strongSelf.isInfite)){
+                    DispatchQueue.main.async {
+                        self?.maxIndex = indexPath.row
+                        self?.collectionView?.reloadData()
+                    }
+                }
+            }, completionPictures: {_ in})
+        })
         //MARK: size indicator
         if indexPath.row >= maxIndex {
             maxIndex = indexPath.row
@@ -538,9 +569,15 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                 }
             }
             let numcells = GeoManager.shared.getNumberOfCells()
-            let loc = data[indexPath.row % GeoManager.shared.getNumberOfCells()]
-//            model = GeoManager.shared.loadedUsers[indexPath.row % GeoManager.shared.loadedUsers.count]
-            model = loc
+            if (data.count > indexPath.row){
+                let loc = data[indexPath.row]
+                model = loc
+            } else {
+                reloadSelf(ind: indexPath.row)
+                model = data[indexPath.row % data.count]
+            }
+//            let loc = data[indexPath.row % GeoManager.shared.getNumberOfCells()]
+//            model = loc
         }
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ZipFinderCollectionViewCell.identifier, for: indexPath) as! ZipFinderCollectionViewCell
@@ -568,6 +605,10 @@ extension ZipFinderViewController: UICollectionViewDataSource {
         data = data.shuffled()
     }
     
+    public func reloadSelf(ind: Int){
+        maxIndex = ind
+        collectionView?.reloadData()
+    }
 //    public func filterData(){
 //        if(GeoManager.shared.filtersChanged){
 //            for i in data {
