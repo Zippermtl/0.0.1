@@ -80,7 +80,6 @@ class GeoManager {
                 return
             }
             self?.initialLaunch = false
-//              Yianni insert a call to whatever happens if location is                    unavailable
         }
         //adds test set to test1 -> test4 inclusive
 //        createTestCodeZip()
@@ -352,7 +351,7 @@ class GeoManager {
     public func needsNewUsers(maxIndex: Int, isConstant: Bool, completion: @escaping () -> Void) -> Bool{
         if (loadedUsers.count-5 > maxIndex) {
             if(userIdList.count < 10 && queryRunning == false){
-                let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+                let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] ?? [31.2198,121.4870]
                 if(moreUsersInQuery){
                     GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: presentRange, max: 100, completion: {
                         completion()

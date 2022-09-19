@@ -192,7 +192,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     
     func getDistance() -> Double {
         guard let userCoordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
-            return 0
+            return 9999999999.999
         }
         let userLoc = CLLocation(latitude: userCoordinates[0], longitude: userCoordinates[1])
         print("user lat: ", userCoordinates[0])
@@ -206,6 +206,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     func getDistanceString() -> String {
         var distanceText = ""
         var unit = "km"
+        
         var distance = Double(round(10*(getDistance())/1000))/10
         
         if NSLocale.current.regionCode == "US" {

@@ -232,7 +232,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var email: String?
     var friendshipStatus: FriendshipStatus?
     
-    var location: CLLocation = CLLocation()
+    var location: CLLocation = CLLocation(latitude: 0, longitude: 0)
     var pictures: [UIImage] = []
     var pictureURLs: [URL] = []
     var profilePicIndex: [Int] = []
@@ -274,7 +274,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
 
     func getDistance() -> Double {
         guard let coordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
-            return -1.0
+            return 999999999.99
         }
         let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
         

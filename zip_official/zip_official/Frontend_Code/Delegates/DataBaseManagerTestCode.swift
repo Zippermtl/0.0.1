@@ -64,7 +64,7 @@ extension DatabaseManager {
     }
     
     public func makeSampleEvent(){
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] ?? [36.144051,-86.800949]
         let userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         let baseEvent = Event(eventId: "sample",
                               title: "sample",
@@ -139,7 +139,7 @@ extension DatabaseManager {
         var userIdStart = 00000001
         var users: [User] = []
         let image = UIImage(named: "defaultProfilePic")!
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] ?? [36.144051,-86.800949]
         let userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         for i in 0...100 {
             users.append(User(userId: "u" + String(userIdStart), email: String(userIdStart) + "@gmail.com", username: "test", firstName: "butt", lastName: "hole " + String(i), birthday: Date(), location: userLoc, picNum: 1, pictures: [image], bio: "myass", school: "yianni", interests: [], previousEvents: [], goingEvents: []))
@@ -190,7 +190,7 @@ extension DatabaseManager {
         var userIdStart = 00000001
         var users: [User] = []
         let image = UIImage(named: "defaultProfilePic")!
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] ?? [36.144051,-86.800949]
         let userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
         users.append(User(userId: "u2158018458"))
         users.append(User(userId: "u2508575270"))

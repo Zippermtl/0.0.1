@@ -87,47 +87,6 @@ extension UILabel {
     }
 }
 
-
-public func getDistanceLabel(user: User) -> String {
-    guard let coordinates = UserDefaults.standard.object(forKey: "userLoc") as? [Double] else {
-        return ""
-    }
-    
-    let userLoc = CLLocation(latitude: coordinates[0], longitude: coordinates[1])
-    var distance = Double(round(10*(userLoc.distance(from: user.location))/1000))/10
-
-    var unit = "km"
-    if NSLocale.current.regionCode == "US" {
-        distance = round(10*distance/1.6)/10
-        unit = "miles"
-    }
-    
-    if distance > 10 {
-        let intDistance = Int(distance)
-        if distance <= 1 {
-            if unit == "miles" {
-                unit = "mile"
-            }
-            return "<1 \(unit)"
-        } else if distance >= 500 {
-            return ">500 \(unit)"
-        } else {
-            return String(intDistance) + " \(unit)"
-        }
-    } else {
-        if distance <= 1 {
-            if unit == "miles" {
-                unit = "mile"
-            }
-            return "<1 \(unit)"
-        } else if distance >= 500 {
-            return ">500 \(unit)"
-        } else {
-            return String(distance) + " \(unit)"
-        }
-    }
-}
-
 extension Date {
     
     func isEqual(to date: Date, toGranularity component: Calendar.Component, in calendar: Calendar = .current) -> Bool {

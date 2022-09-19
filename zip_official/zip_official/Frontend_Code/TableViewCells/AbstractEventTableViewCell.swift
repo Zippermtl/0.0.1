@@ -126,7 +126,6 @@ class AbstractEventTableViewCell: UITableViewCell {
         timeLabel.text = " " + dateFormatter.string(from: event.startTime)
         
         distanceLabel.text = event.getDistanceString()
-        
         participantsLabel.text = event.usersGoing.count.description
         
         participantsLabel.textAlignment = .right

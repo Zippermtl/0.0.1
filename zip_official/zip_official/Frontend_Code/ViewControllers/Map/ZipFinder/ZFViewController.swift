@@ -89,10 +89,11 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         } else if (data.count > maxIndex){
             DispatchQueue.main.async {
                 self.collectionView?.reloadData()
+                self.adjustScaleAndAlpha()
             }
         }
         //if failure for the range change to maxRangeFilter
-        let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+        let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] ?? [36.144051,-86.800949]
         GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]), range: GeoManager.shared.presentRange, max: 100, completion: {
             GeoManager.shared.LoadUsers(size: 10, completion: { [weak self] res in
                 guard let strongSelf = self else {
@@ -105,6 +106,7 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                             strongSelf.data.append(tmp)
                             DispatchQueue.main.async {
                                 self?.collectionView?.reloadData()
+                                self?.adjustScaleAndAlpha()
                             }
                         }
                     }
@@ -499,6 +501,8 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                         DispatchQueue.main.async {
                             self?.maxIndex = indexPath.row
                             self?.collectionView?.reloadData()
+                            self?.adjustScaleAndAlpha()
+
                         }
                     }
                 }, completionPictures: {_ in})
@@ -513,6 +517,8 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                         DispatchQueue.main.async {
                             self?.maxIndex = indexPath.row
                             self?.collectionView?.reloadData()
+                            self?.adjustScaleAndAlpha()
+
                         }
                     }
                 }, completionPictures: {_ in})
@@ -532,6 +538,8 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                     DispatchQueue.main.async {
                         self?.maxIndex = indexPath.row
                         self?.collectionView?.reloadData()
+                        self?.adjustScaleAndAlpha()
+
                     }
                 }
             }, completionPictures: {_ in})
@@ -547,6 +555,8 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                     DispatchQueue.main.async {
                         self?.maxIndex = indexPath.row
                         self?.collectionView?.reloadData()
+                        self?.adjustScaleAndAlpha()
+
                     }
                 }
             }, completionPictures: {_ in})
@@ -566,6 +576,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
             if GeoManager.shared.needsReload(maxIndex: maxIndex, isInfite: isInfite) {
                 DispatchQueue.main.async {
                     self.collectionView?.reloadData()
+                    self.adjustScaleAndAlpha()
                 }
             }
             let numcells = GeoManager.shared.getNumberOfCells()
@@ -608,6 +619,7 @@ extension ZipFinderViewController: UICollectionViewDataSource {
     public func reloadSelf(ind: Int){
         maxIndex = ind
         collectionView?.reloadData()
+        adjustScaleAndAlpha()
     }
 //    public func filterData(){
 //        if(GeoManager.shared.filtersChanged){
@@ -671,5 +683,6 @@ extension ZipFinderViewController : ZFFiltersVCDelegate {
     func updateFilters() {
         getShuffleData()
         collectionView?.reloadData()
+        adjustScaleAndAlpha()
     }
 }

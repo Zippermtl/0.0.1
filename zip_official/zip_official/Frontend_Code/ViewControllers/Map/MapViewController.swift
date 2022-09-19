@@ -143,10 +143,11 @@ class MapViewController: UIViewController {
     
     private func zoomToLatestLocation(){
         //change 20000,20000 so that it fits all 3 rings
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        let userLoc = CLLocationCoordinate2D(latitude: loc[0], longitude: loc[1])
-        let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: DEFAULT_ZOOM_DISTANCE,longitudinalMeters: DEFAULT_ZOOM_DISTANCE)
-        mapView.setRegion(zoomRegion, animated: true)
+        if let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] {
+            let userLoc = CLLocationCoordinate2D(latitude: loc[0], longitude: loc[1])
+            let zoomRegion = MKCoordinateRegion(center: userLoc, latitudinalMeters: DEFAULT_ZOOM_DISTANCE,longitudinalMeters: DEFAULT_ZOOM_DISTANCE)
+            mapView.setRegion(zoomRegion, animated: true)
+        }
         updateAnnotation()
     }
 
@@ -173,9 +174,14 @@ class MapViewController: UIViewController {
     // essentially the main
     override func viewDidLoad() {
         super.viewDidLoad()
-        if #available(iOS 13.0, *){
+        if #available(iOS 13.0, *) {
             overrideUserInterfaceStyle = .dark
         }
+        
+        if AppDelegate.userDefaults.value(forKey: "userLoc") == nil {
+            initZFUsers()
+        }
+        
         navigationItem.backBarButtonItem =  BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
 
         configureAnnotations()
@@ -457,12 +463,7 @@ class MapViewController: UIViewController {
 
 //MARK: -  Location Services
 extension MapViewController: CLLocationManagerDelegate {
-        
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let latestLocation = locations.first else { return }
-        
-        AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
-//        DatabaseManager.shared.testEmail()
+    private func initZFUsers() {
         if !guardingGeoFireCalls {
             var maxRange : Double
             if let maxRangeFilter = AppDelegate.userDefaults.value(forKey: "MaxRangeFilter") as? Double {
@@ -471,8 +472,7 @@ extension MapViewController: CLLocationManagerDelegate {
                 maxRange = 2.0
             }
             
-            GeoManager.shared.UpdateLocation(location: latestLocation)
-            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
+            let coordinates = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] ?? [36.144051, -86.800949]
             GeoManager.shared.GetUserByLoc(location: CLLocation(latitude: coordinates[0], longitude: coordinates[1]),
                                            range: maxRange,
                                            max: 3,
@@ -497,6 +497,17 @@ extension MapViewController: CLLocationManagerDelegate {
             zoomToLatestLocation()
             mapDidMove = false
         }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let latestLocation = locations.first else { return }
+        
+        AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
+//        DatabaseManager.shared.testEmail()
+        if !guardingGeoFireCalls {
+            GeoManager.shared.UpdateLocation(location: latestLocation)
+        }
+        initZFUsers()
 //        DatabaseManager.shared.testUserTableView()
 //        DatabaseManager.shared.testEventTableView()
 //        DatabaseManager.shared.createSampleUsersMany()
@@ -537,9 +548,10 @@ extension MapViewController: FPCMapDelegate {
     func openZipFinder() {
         let zipFinder = ZipFinderViewController()
         zipFinder.delegate = self
-        
-        let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as! [Double]
-        zipFinder.userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
+
+        if let loc = AppDelegate.userDefaults.value(forKey: "userLoc") as? [Double] {
+            zipFinder.userLoc = CLLocation(latitude: loc[0], longitude: loc[1])
+        }
         
         let vc = UINavigationController(rootViewController: zipFinder)
         vc.modalPresentationStyle = .overCurrentContext

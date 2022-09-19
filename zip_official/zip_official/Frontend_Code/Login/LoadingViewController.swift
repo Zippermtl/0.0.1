@@ -78,10 +78,6 @@ class LoadingViewController: UIViewController {
     }
     
     @objc private func didTapContinueButton() {
-        guard isLocationEnabled() == true else {
-            locationDenied()
-            return
-        }
         presentMap()
     }
 
@@ -99,6 +95,11 @@ class LoadingViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zipLogoBlue
         
+        
+        let manager = CLLocationManager()
+        if manager.authorizationStatus == .denied {
+            AppDelegate.userDefaults.removeObject(forKey: "userLoc")
+        }
         signoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         continueButton.addTarget(self, action: #selector(didTapContinueButton), for: .touchUpInside)
 
@@ -159,17 +160,7 @@ class LoadingViewController: UIViewController {
         })
     }
     
-    private func isLocationEnabled() -> Bool {
-        let manager = CLLocationManager()
-        return manager.authorizationStatus != .denied
-    }
-    
-    private func locationDenied() {
-        let vc = LocationDeniedViewController()
-        vc.modalPresentationStyle = .overFullScreen
-        vc.modalTransitionStyle = .crossDissolve
-        present(vc, animated: true, completion: nil)
-    }
+   
     
     private func loadLaunchData(completion: @escaping ((Error?) -> Void)){
 //        loadZipRequests(completion: { [weak self] error in
