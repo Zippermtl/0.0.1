@@ -11,6 +11,7 @@ import UIKit
 protocol ReportMessageDelegate: AnyObject {
     func dismissVC()
     func sendReport(reason: String)
+    func sendBlock()
 }
 
 
@@ -139,7 +140,9 @@ class ReportViewController: UIViewController {
     }
     
     func OpenReportOrBlockView() {
-        
+        var blockedUsers = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
+        blockedUsers.append(user.userId)
+        AppDelegate.setValue(blockedUsers, forKey: "blockedUsers")
     }
     
     @objc private func didTapCancel(){
@@ -279,12 +282,14 @@ class ReportViewController: UIViewController {
             cancelButton = UIButton()
             
             super.init(frame: .zero)
-            backgroundColor = .black
+            backgroundColor = .zipGray
             layer.masksToBounds = true
             layer.cornerRadius = 15
-            
+            blockButton.addTarget(self, action: #selector(didTapBlock), for: .touchUpInside)
+            cancelButton.addTarget(self, action: #selector(didTapCancel), for: .touchUpInside)
+
             blockButton.setTitle("Block", for: .normal)
-            blockButton.backgroundColor = .zipVeryLightGray
+            blockButton.backgroundColor = .zipLightGray
             blockButton.setTitleColor(.white, for: .normal)
             blockButton.titleLabel?.font = .zipSubtitle2
             
@@ -302,6 +307,7 @@ class ReportViewController: UIViewController {
         }
         
         @objc private func didTapBlock() {
+            delegate?.sendBlock()
             delegate?.dismissVC()
         }
         
@@ -557,6 +563,12 @@ class ReportViewController: UIViewController {
 extension ReportViewController: ReportMessageDelegate {
     func sendReport(reason: String) {
         user.report(reason: reason)
+    }
+    
+    func sendBlock() {
+        var blockedUsers = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
+        blockedUsers.append(user.userId)
+        AppDelegate.userDefaults.set(blockedUsers, forKey: "blockedUsers")
     }
     
     func dismissVC() {

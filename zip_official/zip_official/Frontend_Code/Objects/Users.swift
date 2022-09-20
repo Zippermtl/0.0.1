@@ -23,6 +23,7 @@ class UserCoder: UserUpdateCoder {
     var deviceId: [String]
     var notificationToken: [String]
     var birthday: Timestamp
+    var blockedUsers: [String]?
 
     
     override init(user: User) {
@@ -37,7 +38,7 @@ class UserCoder: UserUpdateCoder {
         self.joinDate = Timestamp(date: user.joinDate)
         self.notificationToken = [user.notificationToken]
         self.deviceId = [user.deviceId]
-
+        self.blockedUsers = user.blockedUsers.map({ $0.userId })
         super.init(user: user)
     }
     
@@ -53,7 +54,7 @@ class UserCoder: UserUpdateCoder {
         case joinDate = "joinDate"
         case notificationToken = "notificationToken"
         case deviceId = "deviceId"
-
+        case blockedUsers = "blockedUsers"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -69,7 +70,7 @@ class UserCoder: UserUpdateCoder {
         deviceId = try container.decode([String].self, forKey: .deviceId)
         notificationToken = try container.decode([String].self, forKey: .notificationToken)
         joinDate = try container.decode(Timestamp.self, forKey: .joinDate)
-
+        blockedUsers = try? container.decode([String].self, forKey: .blockedUsers)
         try super.init(from: decoder)
     }
     
@@ -86,6 +87,7 @@ class UserCoder: UserUpdateCoder {
         try container.encode(picIndices, forKey: .picIndices)
         try container.encode(profilePicIndex, forKey: .profilePicIndex)
         try container.encode(picNum, forKey: .picNum)
+        try? container.encode(blockedUsers, forKey: .blockedUsers)
         try super.encode(to: encoder)
     }
     
@@ -105,26 +107,14 @@ class UserCoder: UserUpdateCoder {
             nt = notificationToken[0]
         }
         user.notificationToken = nt
+        if let blockedUsers = blockedUsers {
+            user.blockedUsers = blockedUsers.map({ User(userId: $0)})
+        }
     }
     
     override func createUser() -> User {
-        
         let user = super.createUser()
-        user.picNum = picNum
-        user.profilePicIndex = profilePicIndex
-        user.picIndices = picIndices
-        user.userId = userId
-        user.username = username
-        user.firstName = firstName
-        user.lastName = lastName
-        user.birthday = birthday.dateValue()
-        user.joinDate = joinDate.dateValue()
-        var nt = ""
-        if notificationToken.count != 0 {
-            nt = notificationToken[0]
-        }
-        user.notificationToken = nt
-
+        updateUser(user)
         return user
     }
 }
@@ -135,7 +125,6 @@ class UserUpdateCoder: Codable {
     var interests: [Interests]
     var school: String?
     var gender: String
-
     
     init(user: User) {
         self.bio = user.bio
@@ -242,7 +231,6 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var blockedUsers: [String] = []
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
-    
     weak var tableViewCell: AbstractUserTableViewCell?
     weak var ZFCell : ZipFinderCollectionViewCell?
     

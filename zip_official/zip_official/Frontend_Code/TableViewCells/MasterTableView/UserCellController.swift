@@ -38,6 +38,7 @@ class UserCellController: TableCellController {
             case .zipList: tableView.register(MyZipsTableViewCell.self, forCellReuseIdentifier: MyZipsTableViewCell.identifier)
             case .message: tableView.register(ConversationTableViewCell.self, forCellReuseIdentifier: ConversationTableViewCell.identifier)
             case .invite: tableView.register(InviteTableViewCell.self, forCellReuseIdentifier: InviteTableViewCell.identifier)
+            case .unblock: tableView.register(BlockedUserTableViewCell.self, forCellReuseIdentifier: BlockedUserTableViewCell.identifier)
             case .inviteToEventNotif: break
             case .zippedBackNotif: break
             }
@@ -54,6 +55,7 @@ class UserCellController: TableCellController {
         case .invite: cell = tableView.dequeueReusableCell(withIdentifier: InviteTableViewCell.identifier, for: indexPath) as! InviteTableViewCell
         case .inviteToEventNotif: cell = AbstractUserTableViewCell()
         case .zippedBackNotif: cell = AbstractUserTableViewCell()
+        case .unblock: cell = tableView.dequeueReusableCell(withIdentifier: BlockedUserTableViewCell.identifier, for: indexPath) as! BlockedUserTableViewCell
         }
         
         cell.selectionStyle = .none

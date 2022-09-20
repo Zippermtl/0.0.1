@@ -17,21 +17,30 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
     
     private let requestButton: UIButton
     
+    let images : [UIImage]
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         requestButton = UIButton()
         
+        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
+        let addImg = UIImage(systemName: "plus.circle.fill", withConfiguration: largeConfig)!
+            .withRenderingMode(.alwaysOriginal)
+            .withTintColor(.white)
+        
+        let requestImg = UIImage(systemName: "arrow.forward.circle.fill", withConfiguration: largeConfig)!
+            .withRenderingMode(.alwaysOriginal)
+            .withTintColor(.zipVeryLightGray)
+        
+        let zippedImg = UIImage(systemName: "checkmark.circle.fill", withConfiguration: largeConfig)!
+            .withRenderingMode(.alwaysOriginal)
+            .withTintColor(.zipBlue)
+        
+        images = [addImg, requestImg, zippedImg]
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         extraInfoLabel.font = .zipTextNoti
         
         requestButton.addTarget(self, action: #selector(didTapRequest), for: .touchUpInside)
-        
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold, scale: .large)
-        let addImg = UIImage(systemName: "plus.circle.fill", withConfiguration: largeConfig)!.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        let requestImg = UIImage(systemName: "arrow.forward.circle.fill", withConfiguration: largeConfig)!.withRenderingMode(.alwaysOriginal).withTintColor(.zipLightGray)
-        requestButton.setImage(addImg, for: .normal)
-        requestButton.setImage(requestImg, for: .selected)
-        
+
         contentView.addSubview(requestButton)
         requestButton.translatesAutoresizingMaskIntoConstraints = false
         requestButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
@@ -45,18 +54,16 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
     }
     
     private func configureRequestedButton() {
+        requestButton.isSelected = false
         switch user.friendshipStatus {
         case .none:
-            requestButton.isHidden = false
-            requestButton.isSelected = false
+            requestButton.setImage(images[0], for: .normal)
         case .REQUESTED_INCOMING:
-            requestButton.isHidden = false
-            requestButton.isSelected = false
+            requestButton.setImage(images[0], for: .normal)
         case .REQUESTED_OUTGOING:
-            requestButton.isHidden = false
-            requestButton.isSelected = true
+            requestButton.setImage(images[1], for: .normal)
         case .ACCEPTED:
-            requestButton.isHidden = true
+            requestButton.setImage(images[2], for: .normal)
         }
     }
     
@@ -67,7 +74,12 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
     @objc private func didTapRequest(){
         switch user.friendshipStatus {
         case .ACCEPTED:
-            break
+            user.unfriend(completion: {[weak self] err in
+                guard err == nil else {
+                    return
+                }
+                self?.configureRequestedButton()
+            })
         case .REQUESTED_OUTGOING:
             user.unsendRequest(completion: { [weak self] err in
                 guard err == nil else {

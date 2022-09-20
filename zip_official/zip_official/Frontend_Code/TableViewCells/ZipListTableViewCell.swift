@@ -54,7 +54,7 @@ class ZipListTableViewCell: AbstractUserTableViewCell {
     }
     
     @objc private func didTapRequest(){
-        
+        print("tapping here")
     }
     
 }

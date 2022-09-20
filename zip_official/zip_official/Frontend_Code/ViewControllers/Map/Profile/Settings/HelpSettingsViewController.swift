@@ -48,7 +48,7 @@ class HelpSettingsViewController: UITableViewController {
             let alert = UIAlertController(title: "Delete Account?", message: "are you sure you want to delete your account?", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Delete Account", style: .default, handler: { _ in
-                DatabaseManager.shared.deleteUser(userId: AppDelegate.userDefaults.value(forKey: "userID") as! String, completion: { [weak self] _ in
+                DatabaseManager.shared.deleteUser(userId: AppDelegate.userDefaults.value(forKey: "userId") as! String, completion: { [weak self] _ in
                     guard let strongSelf = self else {
                         return
                     }

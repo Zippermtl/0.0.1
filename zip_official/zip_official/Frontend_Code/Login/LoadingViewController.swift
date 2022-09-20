@@ -67,23 +67,28 @@ class LoadingViewController: UIViewController {
                     strongSelf.presentMap()
                 }
             case .failure(let error):
+                print("Failed to load and logout user Error: \(error)\nPushing to login")
                 do {
+                    print(error)
                     try FirebaseAuth.Auth.auth().signOut()
                     let domain = Bundle.main.bundleIdentifier!
                     AppDelegate.userDefaults.removePersistentDomain(forName: domain)
                     AppDelegate.userDefaults.synchronize()
-                    
-                    let vc = OpeningLoginViewController()
-                    let nav = UINavigationController(rootViewController: vc)
-                    nav.modalPresentationStyle = .fullScreen
-                    strongSelf.present(nav, animated: true, completion: nil)
+                    DispatchQueue.main.async {
+                        let vc = OpeningLoginViewController()
+                        let nav = UINavigationController(rootViewController: vc)
+                        nav.modalPresentationStyle = .fullScreen
+                        strongSelf.present(nav, animated: true, completion: nil)
+                    }
+                   
                 }
                 catch {
-                    print("Failed to load and logout user Error: \(error)\nPushing to login")
-                    let vc = OpeningLoginViewController()
-                    let nav = UINavigationController(rootViewController: vc)
-                    nav.modalPresentationStyle = .fullScreen
-                    strongSelf.present(nav, animated: true, completion: nil)
+                    DispatchQueue.main.async {
+                        let vc = OpeningLoginViewController()
+                        let nav = UINavigationController(rootViewController: vc)
+                        nav.modalPresentationStyle = .fullScreen
+                        strongSelf.present(nav, animated: true, completion: nil)
+                    }
                 }
 
             }

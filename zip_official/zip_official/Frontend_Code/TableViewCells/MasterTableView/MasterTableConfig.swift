@@ -57,6 +57,7 @@ enum UserCellType {
     case invite
     case inviteToEventNotif
     case zippedBackNotif
+    case unblock
 }
 
 enum EventCellType {

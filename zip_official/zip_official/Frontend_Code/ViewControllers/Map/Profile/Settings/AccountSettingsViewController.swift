@@ -24,7 +24,12 @@ class AccountSettingsViewController: UITableViewController {
         case 0:
             let vc = genderVC()
             navigationController?.pushViewController(vc, animated: true)
-        default: break
+        default:
+            let blockedUser = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
+            let users = blockedUser.map({ User(userId: $0 )})
+            let vc = MasterTableViewController(cellData: users, cellType: CellType(userType: .unblock))
+            vc.title = "Blocked Users"
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     

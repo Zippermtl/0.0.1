@@ -371,12 +371,11 @@ class EventViewController: UIViewController {
         goingButton.setTitle("Not Going", for: .normal)
         isGoing = false
         isNotGoing = true
-        goingButton.backgroundColor = .zipGray
+        goingButton.backgroundColor = .zipLightGray
     }
     
     @objc func didTapParticipantsButton(){
         let vc = MasterTableViewController(sectionData: event.getParticipants())
-        
         vc.title = "Participants"
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -970,6 +969,10 @@ extension EventViewController: UITableViewDataSource {
 
 
 extension EventViewController : ReportMessageDelegate {
+    func sendBlock() {
+        
+    }
+    
     func dismissVC() {
         slideDown(view: reportView, completion: { b in
 

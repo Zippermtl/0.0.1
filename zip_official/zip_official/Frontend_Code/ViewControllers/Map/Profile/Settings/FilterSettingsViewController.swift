@@ -16,16 +16,19 @@ class FilterSettingsViewController: UIViewController {
     private let distanceView: cellView
     private let ageView: cellView
     private let genderView: cellView
+
     
     private let ageSlider : MARKRangeSlider
     private let ageLabel: UILabel
     private let distanceSlider: ResizeSlider
     private let distanceLabel: UILabel
+    private let ghostModeLabel: UILabel
     
     private let menButton: UIButton
     private let womenButton: UIButton
     private let everyoneButton: UIButton
     private let buttonHolder: UIStackView
+    private let ghostModeSwitch: UISwitch
     
     weak var delegate : ZFFiltersVCDelegate?
 
@@ -39,6 +42,8 @@ class FilterSettingsViewController: UIViewController {
         ageLabel = UILabel.zipSubtitle2()
         distanceSlider = ResizeSlider()
         distanceLabel = UILabel.zipSubtitle2()
+        ghostModeLabel = UILabel.zipSubtitle2()
+        ghostModeSwitch = UISwitch()
         
         menButton = UIButton()
         womenButton = UIButton()
@@ -55,6 +60,7 @@ class FilterSettingsViewController: UIViewController {
         ageLabel.text = Int(minAge).description + "-" + Int(maxAge).description
         ageLabel.textAlignment = .center
         ageLabel.backgroundColor = .zipLightGray
+        
         
         ageSlider.setLeftValue(minAge, rightValue: maxAge)
         ageSlider.minimumDistance = 5
@@ -101,7 +107,7 @@ class FilterSettingsViewController: UIViewController {
         everyoneButton.layer.cornerRadius = 8
         everyoneButton.addTarget(self, action: #selector(didTapEveryone), for: .touchUpInside)
 
-        
+        ghostModeLabel.text = "Ghost Mode"
         setGenderButtons()
         
         buttonHolder.axis = .horizontal
@@ -220,6 +226,16 @@ class FilterSettingsViewController: UIViewController {
         buttonHolder.addArrangedSubview(menButton)
         buttonHolder.addArrangedSubview(womenButton)
         buttonHolder.addArrangedSubview(everyoneButton)
+        
+//        let sep =
+//        view.addSubview(sep)
+//        sep.translatesAutoresizingMaskIntoConstraints = false
+//        sep.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+//        sep.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+//        sep.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+//        sep.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        view.addSubview(ghostModeSwitch)
+        view.addSubview(ghostModeLabel)
     }
     
     
@@ -294,6 +310,14 @@ class FilterSettingsViewController: UIViewController {
 
         everyoneButton.translatesAutoresizingMaskIntoConstraints = false
         everyoneButton.widthAnchor.constraint(equalTo: menButton.widthAnchor).isActive = true
+        
+        ghostModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        ghostModeLabel.topAnchor.constraint(equalTo: genderView.bottomAnchor, constant: 25).isActive = true
+        ghostModeLabel.leftAnchor.constraint(equalTo: genderView.titleView.leftAnchor).isActive = true
+        
+        ghostModeSwitch.translatesAutoresizingMaskIntoConstraints = false
+        ghostModeSwitch.centerYAnchor.constraint(equalTo: ghostModeLabel.centerYAnchor).isActive = true
+        ghostModeSwitch.rightAnchor.constraint(equalTo: ageSlider.rightAnchor).isActive = true
     }
     
     

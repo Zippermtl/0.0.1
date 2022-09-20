@@ -36,7 +36,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Please allow access to take a profile picture</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Zipper uses your location data to connect you with users around you and improve your experience.</string>
+	<string>Zipper shares your relative distance with other users in the ZipFinder and enhances your experience with the map by showing events nearby</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Please allow access to send audi and video messages</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

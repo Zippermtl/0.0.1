@@ -105,9 +105,9 @@ class AbstractUserTableViewCell: UITableViewCell {
         extraInfoLabel.leftAnchor.constraint(equalTo: nameLabel.leftAnchor).isActive = true
         extraInfoLabel.topAnchor.constraint(equalTo: outlineView.centerYAnchor).isActive = true
         
-
+        
     }
-    }
+}
 
 /*
  
