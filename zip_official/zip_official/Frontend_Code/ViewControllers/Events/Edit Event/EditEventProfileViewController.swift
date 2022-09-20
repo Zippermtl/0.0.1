@@ -222,7 +222,7 @@ class EditEventProfileViewController: UIViewController {
 
         changeProfilePicBtn.setTitle("Change Event Cover Photo", for: .normal)
         changeProfilePicBtn.setTitleColor(.zipBlue, for: .normal)
-        changeProfilePicBtn.titleLabel?.font = .zipTextFill
+        changeProfilePicBtn.titleLabel?.font = .zipTextFillBold
 
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
@@ -270,7 +270,6 @@ extension EditEventProfileViewController: UITableViewDelegate, UITableViewDataSo
         case 2: return getLocationCell(tableView: tableView, indexPath: indexPath)
         case 3: return getBioCell(tableView: tableView, indexPath: indexPath)
         case 4: return getUserInvitesCell(tableView: tableView, indexPath: indexPath)
-            
         default: return UITableViewCell()
         }
     }

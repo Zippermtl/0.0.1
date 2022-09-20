@@ -21,12 +21,16 @@ import UserNotifications
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
     static let userDefaults = UserDefaults.standard
-    static let locationManager = CLLocationManager()
+    let locationManager = CLLocationManager()
 
+    
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+//        if Self.locationManager.authorizationStatus == .denied {
+//            AppDelegate.userDefaults.removeObject(forKey: "userLoc")
+//        }
         
-        
+        locationManager.delegate = self
         //FireBase
         FirebaseApp.configure()
         
@@ -222,3 +226,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
     }
 
 }
+
+extension AppDelegate : CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .denied {
+            AppDelegate.userDefaults.removeObject(forKey: "userLoc")
+        }
+    }
+}
+

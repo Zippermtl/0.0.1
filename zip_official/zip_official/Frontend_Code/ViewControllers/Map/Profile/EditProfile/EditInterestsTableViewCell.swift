@@ -157,6 +157,11 @@ extension EditInterestsTableViewCell: UICollectionViewDelegate, UICollectionView
         }
         
         private func configureSubviewLayout(){
+//            xButton.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+//            contentView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+//            bg.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+//            interestLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+
             bg.translatesAutoresizingMaskIntoConstraints = false
             bg.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
             bg.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
@@ -169,6 +174,7 @@ extension EditInterestsTableViewCell: UICollectionViewDelegate, UICollectionView
             interestLabel.leftAnchor.constraint(equalTo: bg.leftAnchor,constant: 7).isActive = true
             interestLabel.topAnchor.constraint(equalTo: bg.topAnchor).isActive = true
             interestLabel.bottomAnchor.constraint(equalTo: bg.bottomAnchor).isActive = true
+//            interestLabel.rightAnchor.constraint(equalTo: xButton.leftAnchor,constant: -2).isActive = true
 
             xButton.translatesAutoresizingMaskIntoConstraints = false
             xButton.topAnchor.constraint(equalTo: bg.topAnchor).isActive = true
@@ -189,14 +195,13 @@ extension EditInterestsTableViewCell: UICollectionViewDelegate, UICollectionView
 
 extension EditInterestsTableViewCell: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let fontAttributes = [NSAttributedString.Key.font: UIFont.zipSubtitle]
         if indexPath.row == interests.count {
-            return CGSize(width: "Add More".size(withAttributes: fontAttributes).width+30, height: 30)
+            let fontAttributes = [NSAttributedString.Key.font: UIFont.zipTextFillBold]
+            return CGSize(width: "Add More".size(withAttributes: fontAttributes).width+40, height: 30)
         } else {
+            let fontAttributes = [NSAttributedString.Key.font: UIFont.zipTextFill]
             return CGSize(width: interests[indexPath.row].description.size(withAttributes: fontAttributes).width+40,height: 30)
         }
-        
-        
     }
 }
 

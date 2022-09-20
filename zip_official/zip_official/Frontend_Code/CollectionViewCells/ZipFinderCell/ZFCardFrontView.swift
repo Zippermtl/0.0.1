@@ -144,6 +144,7 @@ class ZFCardFrontView: UIView {
         
         fadedBG.backgroundColor = .zipGray.withAlphaComponent(0.8)
         
+        
         swipeToViewLabel.text = "swipe →"
         tapToFlipLabel.text = "tap to flip"
         
@@ -176,7 +177,7 @@ class ZFCardFrontView: UIView {
         nameLabel.numberOfLines = 0
         
         bioLabel.numberOfLines = 3
-        bioLabel.lineBreakMode = .byWordWrapping
+//        bioLabel.lineBreakMode = .byWordWrapping
 
         backgroundColor = .clear
         layer.cornerRadius = 20
@@ -425,10 +426,14 @@ class ZFCardFrontView: UIView {
         tapToFlipLabel.centerXAnchor.constraint(equalTo: fadedBG.centerXAnchor).isActive = true
         tapToFlipLabel.bottomAnchor.constraint(equalTo: fadedBG.bottomAnchor, constant: -5).isActive = true
 
+        bioLabel.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        tapToFlipLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+        
         bioLabel.translatesAutoresizingMaskIntoConstraints = false
         bioLabel.leftAnchor.constraint(equalTo: distanceLabel.leftAnchor).isActive = true
         bioLabel.rightAnchor.constraint(equalTo: fadedBG.rightAnchor, constant: -buffer).isActive = true
         bioLabel.topAnchor.constraint(equalTo: distanceLabel.bottomAnchor, constant: 10).isActive = true
+        bioLabel.bottomAnchor.constraint(equalTo: tapToFlipLabel.topAnchor).isActive = true
         
         swipeToViewLabel.translatesAutoresizingMaskIntoConstraints = false
         swipeToViewLabel.rightAnchor.constraint(equalTo: fadedBG.rightAnchor, constant: -15).isActive = true

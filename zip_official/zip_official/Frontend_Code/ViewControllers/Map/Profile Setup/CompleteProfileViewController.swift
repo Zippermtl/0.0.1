@@ -8,14 +8,9 @@
 import UIKit
 import UIImageCropper
 import JGProgressHUD
-class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelegate {
-    weak var delegate: UpdateFromEditProtocol?
-    let spinner = JGProgressHUD(style: .light)
+class CompleteProfileViewController: EditProfileViewController {
     
-    private var user: User
-    private var tableView: UITableView
-    private var tableHeader: UIView
-    private var imagePicker: UIImagePickerController
+   
     private var collectionView: UICollectionView?
     private let addPicturesLabel: UILabel
     private let picturesDescLabel: UILabel
@@ -24,53 +19,38 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
     var userPictures = [PictureHolder]()
 
     
-    @objc private func didTapDoneButton(){
+    override func didTapDoneButton(){
+        view.endEditing(true)
         spinner.show(in: view)
-        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] err in
+        DatabaseManager.shared.updateUser(with: user, completion: { [weak self] error in
             guard let strongSelf = self,
-                  err == nil else {
+                  error == nil else {
+                let alert = UIAlertController(title: "Error Saving Profile",
+                                              message: "\(error!.localizedDescription)",
+                                              preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Ok",
+                                              style: .cancel,
+                                              handler: { _ in
+                }))
+                
                 DispatchQueue.main.async {
-                    self?.spinner.dismiss(animated: true)
+                    self?.present(alert, animated: true)
+                    self?.spinner.dismiss()
                 }
-                let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
-                self?.present(alert, animated: true)
+                
                 return
             }
-           
+            
+            
             DatabaseManager.shared.updateImages(key: strongSelf.user.userId, images: strongSelf.userPictures, imageType: DatabaseManager.ImageType.picIndices, completion: { [weak self] res in
                 guard let strongSelf = self else {
-                    print("Big error on line 124 of UserPhotos...wController")
                     return
                 }
-                switch res {
-                case .success(let pics):
-                    print("temp")
-                    //trusting no issues
-                    var tempUrls: [URL] = []
-                    for i in pics{
-                        guard let url = i.url else {
-                            print("something wrong with url in obj at line 134 of UserPhotos...wController")
-                            continue
-                        }
-                        tempUrls.append(url)
-                    }
-                    DispatchQueue.main.async {
-                        strongSelf.spinner.dismiss(animated: true)
-                    }
-                    strongSelf.dismiss(animated: true, completion: nil)
-                    
-                case .failure(let error):
-                    print("error completing profile Error: \(error)")
-                    DispatchQueue.main.async {
-                        self?.spinner.dismiss(animated: true)
-                    }
-                    let alert = UIAlertController(title: "Error updating your profile.", message: "Try again later.", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
-                    self?.present(alert, animated: true)
-                }
+                strongSelf.navigationController?.popViewController(animated: true)
             }, completionProfileUrl: {_ in})
             
+                
             
         })
     }
@@ -87,15 +67,11 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
     }
     
     
-    init(user: User){
-        self.user = user
-        self.tableView = UITableView()
-        self.tableHeader = UIView()
-        self.imagePicker = UIImagePickerController()
-        self.addPicturesLabel = UILabel.zipTextFill()
+    override init(user: User){
+        self.addPicturesLabel = UILabel.zipTextFillBold()
         self.picturesDescLabel = UILabel.zipTextNoti()
         self.imageCropper = UIImageCropper(cropRatio: UIImageCropper.CROP_RATIO)
-        super.init(nibName: nil, bundle: nil)
+        super.init(user: user)
         addPicturesLabel.text = "Add Pictures:"
         picturesDescLabel.text = "These pictures can be viewed from your profile and from your card in the ZipFinder"
         picturesDescLabel.textColor = .zipVeryLightGray
@@ -103,19 +79,50 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
         picturesDescLabel.lineBreakMode = .byWordWrapping
         picturesDescLabel.numberOfLines = 0
         
-        imagePicker.sourceType = .photoLibrary
-        imagePicker.modalPresentationStyle = .overCurrentContext
         imageCropper.picker = imagePicker
         imageCropper.delegate = self
         
-        let dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
-        dismissTap.delegate = self
-        tableView.addGestureRecognizer(dismissTap)
+       
+//        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 150, right: 0)
         
         configureNavBar()
         configureCollectionView()
         configureTable()
         configureTableHeader()
+        setupKeyboardHiding()
+    }
+    
+    private func setupKeyboardHiding() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    var originalY : CGFloat?
+    @objc private func keyboardWillShow(sender: NSNotification) {
+        originalY = view.frame.origin.y
+        guard let userInfo = sender.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+              let currentTextField = UIResponder.currentFirst() as? UITextView else {
+            return
+        }
+        
+        let keyboardTopY = keyboardFrame.cgRectValue.origin.y
+        let convertedTextFieldFrame = view.convert(currentTextField.frame, from: currentTextField.superview)
+        let textFieldBottomY = convertedTextFieldFrame.origin.y + convertedTextFieldFrame.size.height
+//        let maxSize = UIScreen.main.bounds.height
+//        let inset =  maxSize - textFieldBottomY
+//        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: inset, right: 0)
+        if textFieldBottomY > keyboardTopY {
+            let textBoxY = convertedTextFieldFrame.origin.y
+            let newFrameY = (textBoxY - keyboardTopY / 2) * -1
+            view.frame.origin.y = newFrameY
+        }
+    }
+    
+    @objc private func keyboardWillHide(notification : NSNotification) {
+        if let originalY = originalY {
+            view.frame.origin.y = originalY
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -132,11 +139,7 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
         view.backgroundColor = .zipGray
     }
     
-    @objc private func dismissKeyboardTouchOutside(){
-        print("dismissing")
-        view.endEditing(true)
-        
-    }
+    
     
     
     //MARK: - Nav Bar Config
@@ -193,7 +196,7 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
         collectionView.contentInset = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
     }
     
-    private func configureTableHeader() {
+    override func configureTableHeader() {
         guard let collectionView = collectionView else {
             return
         }
@@ -212,7 +215,6 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.topAnchor.constraint(equalTo: picturesDescLabel.bottomAnchor, constant: 15).isActive = true
-//        collectionView.bottomAnchor.constraint(equalTo: tableHeader.topAnchor).isActive = true
         collectionView.leftAnchor.constraint(equalTo: tableHeader.leftAnchor).isActive = true
         collectionView.rightAnchor.constraint(equalTo: tableHeader.rightAnchor).isActive = true
         collectionView.heightAnchor.constraint(equalTo: collectionView.widthAnchor, multiplier: 7/6).isActive = true
@@ -222,112 +224,12 @@ class CompleteProfileViewController: UIViewController, UIGestureRecognizerDelega
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
         tableView.tableHeaderView = tableHeader
-        
-        
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableHeader.setNeedsLayout()
         tableHeader.layoutIfNeeded()
-    }
-        
-    func saveBioFunc(_ s: String) {
-        user.bio = s
-    }
-    
-    func saveSchoolFunc(_ s: String) {
-        user.school = s
-    }
-    
-    
-}
-
-extension CompleteProfileViewController :  UITableViewDelegate {
-
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
-    }
-}
-
-extension CompleteProfileViewController :  UITableViewDataSource {
-    //MARK: # Rows in Section
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
-    }
-    
-    //MARK: cellForRowAt
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.row {
-        case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "Bio", content: user.bio, saveFunc: saveBioFunc(_:))
-            cell.placeHolder = "Tell us a little about yourself."
-            cell.charLimit = 300
-            cell.cellDelegate = self
-            cell.selectionStyle = .none
-
-            return cell
-        case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
-            cell.configure(label: "School", content: user.school ?? "", saveFunc: saveSchoolFunc(_:))
-            cell.placeHolder = "Where do you go to school?"
-            cell.charLimit = 40
-            cell.cellDelegate = self
-            cell.selectionStyle = .none
-            return cell
-            
-        case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: EditInterestsTableViewCell.identifier, for: indexPath) as! EditInterestsTableViewCell
-            cell.configure(label: "Interests", content: user.interests)
-            cell.cellDelegate = self
-            cell.presentInterestDelegate = self
-            cell.updateInterestsDelegate = self
-            return cell
-        default: return UITableViewCell()
-        }
-    }
-    
-    
-
-}
-
-
-//MARK: - GrowingCellProtocol
-extension CompleteProfileViewController: GrowingCellProtocol {
-    func updateValue(value: String) {
-        
-    }
-    
-    func updateHeightOfRow(_ cell: UITableViewCell, _ view: UIView) {
-        let size = view.bounds.size
-        let newSize = tableView.sizeThatFits(CGSize(width: size.width,
-                                                        height: CGFloat.greatestFiniteMagnitude))
-        if size.height != newSize.height {
-            UIView.setAnimationsEnabled(false)
-            tableView.beginUpdates()
-            tableView.endUpdates()
-            UIView.setAnimationsEnabled(true)
-        }
-    }
-    
-}
-
-//MARK: - UpdateInterestsProtocol
-extension CompleteProfileViewController: UpdateInterestsProtocol {
-    func updateInterests(_ interests: [Interests]) {
-        user.interests = interests
-//        print("user interests = \(user.interests.description)")
-        tableView.reloadData()
-    }
-}
-
-
-extension CompleteProfileViewController: PresentEditInterestsProtocol {
-    func presentInterestSelect() {
-        let interestSelection = InterestSelectionViewController(interests: user.interests)
-        interestSelection.delegate = self
-        navigationController?.pushViewController(interestSelection, animated: true)
     }
 }
 
@@ -383,7 +285,7 @@ extension CompleteProfileViewController: UICollectionViewDataSource {
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "addImage", for: indexPath) as! AddImageCollectionViewCell
             cell.delegate = self
-            cell.backgroundColor = .zipLightGray.withAlphaComponent(0.6)
+            cell.backgroundColor = .clear
             return cell
         }
     }
@@ -407,12 +309,5 @@ extension CompleteProfileViewController: UIImageCropperProtocol {
         }
         userPictures.append(PictureHolder(image: croppedImage, edited: true))
         collectionView?.reloadData()
-    }
-}
-
-
-extension CompleteEventViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        return !(touch.view is UIControl) && !(touch.view is UITextView)
     }
 }

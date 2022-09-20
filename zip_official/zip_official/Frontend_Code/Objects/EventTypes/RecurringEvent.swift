@@ -57,10 +57,7 @@ public class RecurringEvent: PromoterEvent {
         super.init()
         let calendar = NSCalendar(calendarIdentifier: .gregorian)!
         var toMakeDate = DateComponents()
-        let calendarDate = Calendar.current.dateComponents([.day, .year, .month], from: Date())
-        toMakeDate.year = calendarDate.year
-        toMakeDate.month = calendarDate.month
-        toMakeDate.day = calendarDate.day
+
         
         guard let lat = Double(vals[4]),
                 let long = Double(vals[5]) else {
@@ -78,24 +75,42 @@ public class RecurringEvent: PromoterEvent {
         self.dayOfTheWeek = vals[8]
        
             
+        
+
+        
         let a1 = vals[9].components(separatedBy: ":")
         let b1 = vals[10].components(separatedBy: ":")
-
         let a = a1.map { Int($0) ?? 0 }
         let b = b1.map { Int($0) ?? 0 }
-        toMakeDate.hour = a[0]
-        toMakeDate.minute = a[1]
-        let stDate = calendar.date(from: toMakeDate as DateComponents)
-        self.startTime = stDate! as Date
-        toMakeDate.hour = b[0]
-        toMakeDate.minute = b[1]
+        
+        var comps = DateComponents()
+        comps.hour = a[0]
+        comps.minute = a[1]
+        comps.year = 2022
+        comps.month = 10
+        switch vals[8] {
+        case "Sunday": comps.day = 2
+        case "Monday": comps.day = 3
+        case "Tuesday": comps.day = 4
+        case "Wednesday": comps.day = 5
+        case "Thursday": comps.day = 6
+        case "Friday": comps.day = 7
+        case "Saturday": comps.day = 1
+        default : break
+        }
+    
+        let stDate = Calendar.current.nextDate(after: Date(), matching: comps, matchingPolicy: .nextTime)
+        self.startTime = stDate ?? Date()
+
+        comps.hour = b[0]
+        comps.minute = b[1]
         if (a[0] < b[0]){
-            let edDate = calendar.date(from: toMakeDate as DateComponents)
+            let edDate = calendar.date(from: comps)
             self.endTime = edDate! as Date
         } else {
-            toMakeDate.day = (calendarDate.day!) + 1
-            let edDate = calendar.date(from: toMakeDate as DateComponents)
-            self.endTime = edDate! as Date
+            comps.day = comps.day ?? 0 + 1
+            let edDate = Calendar.current.nextDate(after: Date(), matching: comps, matchingPolicy: .nextTimePreservingSmallerComponents)
+            self.endTime = edDate ?? Date()
         }
         self.title = vals[0]
         self.eventId = vals[1]

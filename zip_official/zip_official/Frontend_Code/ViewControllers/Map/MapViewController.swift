@@ -122,8 +122,9 @@ class MapViewController: UIViewController {
     
     @objc private func didTapProfileButton() {
 //        let path1 = "/Users/yiannizavaliagkos/Downloads/happenings.csv"
-//        let path2 = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
 //        DatabaseManager.shared.getCSVData(path: path1)
+
+//        let path2 = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
 //        DatabaseManager.shared.getCSVData(path: path2)
         
 //        DatabaseManager.shared.writeSpecialUsers()
@@ -935,7 +936,7 @@ extension MapViewController: NewAccountDelegate {
         user.firstName = AppDelegate.userDefaults.value(forKey: "firstName") as! String
         user.lastName = AppDelegate.userDefaults.value(forKey: "lastName") as! String
         user.birthday = AppDelegate.userDefaults.value(forKey: "birthday") as! Date
-        user.pictureURLs = [URL(string: AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as! String)!]
+        user.gender = AppDelegate.userDefaults.value(forKey: "gender") as! String
         let vc = CompleteProfileViewController(user: user)
 
         navigationController?.pushViewController(vc, animated: true)

@@ -29,6 +29,13 @@ extension UIColor {
 //        return UIColor(red: 154/255, green: 219/255, blue: 131/255, alpha: 1)
         return UIColor(red: 142/255, green: 221/255, blue: 114/255, alpha: 1)
     }
+    
+    static var zipGoingGreen: UIColor{
+//        return UIColor(red: 154/255, green: 219/255, blue: 131/255, alpha: 1)
+        return UIColor(red: 136/255, green: 194/255, blue: 116/255, alpha: 1)
+//        return zipHappeningsTrivia
+    }
+    
     static var zipPink: UIColor{
 //        return UIColor(red: 233/255, green: 163/255, blue: 226/255, alpha: 1)
         return UIColor(red: 229/255, green: 142/255, blue: 221/255, alpha: 1)
@@ -175,10 +182,11 @@ extension UIFont {
     static var zipTitle: UIFont {  return UIFont.zipFontSemiBold.withSize(28)  }
     static var zipTextDetail: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
     static var zipTextDetail2: UIFont {  return UIFont.zipFontRegular.withSize(10)  }
-    static var zipTextFill: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
+    static var zipTextFill: UIFont {  return UIFont.zipFontRegular.withSize(16)  }
+    static var zipTextFillBold: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
     static var zipTextIcon: UIFont {  return UIFont.zipFontRegular.withSize(12)  }
-    static var zipTextNoti: UIFont {  return UIFont.zipFontMedium.withSize(14)  }
-    static var zipTextNotiBold: UIFont {  return UIFont.zipFontSemiBold.withSize(14)  }
+    static var zipTextNoti: UIFont {  return UIFont.zipFontMedium.withSize(16)  }
+    static var zipTextNotiBold: UIFont {  return UIFont.zipFontSemiBold.withSize(16)  }
     static var zipTextPrompt: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
     static var zipTextPrompt2: UIFont {  return UIFont.zipFontRegular.withSize(14)  }
     static var zipTextPrompt3: UIFont {  return UIFont.zipFontMedium.withSize(14)  }
@@ -238,6 +246,14 @@ extension UILabel {
         label.font = .zipTextDetail2
         return label
     }
+    
+    static func zipTextFillBold() -> UILabel {
+        let label = UILabel()
+        label.textColor = UILabel.DEFAULT_TEXTCOLOR
+        label.font = .zipTextFillBold
+        return label
+    }
+    
     static func zipTextFill() -> UILabel {
         let label = UILabel()
         label.textColor = UILabel.DEFAULT_TEXTCOLOR

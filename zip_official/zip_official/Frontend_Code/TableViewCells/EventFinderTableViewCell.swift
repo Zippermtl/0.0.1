@@ -40,6 +40,7 @@ class EventFinderTableViewCell: AbstractEventTableViewCell {
         saveButton.rightAnchor.constraint(equalTo: participantsLabel.rightAnchor).isActive = true
     }
     
+    
     override func configure(_ event: Event) {
         super.configure(event)
 

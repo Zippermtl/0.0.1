@@ -155,7 +155,7 @@ class BasicProfileSetupViewController: UIViewController {
         field.backgroundColor = .zipLightGray
         field.tintColor = .white
         field.textColor = .white
-        field.font = .zipTextFill
+        field.font = .zipSubtitle2
         
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
@@ -237,7 +237,7 @@ class BasicProfileSetupViewController: UIViewController {
         self.user = user
         self.genderDD = DropDown()
         self.usernameErrorLabel = UILabel.zipTextDetail()
-        genderLabel = UILabel.zipTextFill()
+        genderLabel = UILabel.zipSubtitle2()
         super.init(nibName: nil, bundle: nil)
         usernameErrorLabel.text = "'' is taken"
         usernameErrorLabel.isHidden = true

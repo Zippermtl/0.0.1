@@ -40,10 +40,10 @@ class CreateEventViewController: UIViewController {
         self.datePicker = EventDatePickerView(event: event)
         
         self.mapView = MKMapView()
-        self.eventNameLabel = UILabel.zipTextFill()
-        self.startTimeLabel = UILabel.zipTextFill()
-        self.locationLabel = UILabel.zipTextFill()
-        self.endTimeLabel = UILabel.zipTextFill()
+        self.eventNameLabel = UILabel.zipTextFillBold()
+        self.startTimeLabel = UILabel.zipTextFillBold()
+        self.locationLabel = UILabel.zipTextFillBold()
+        self.endTimeLabel = UILabel.zipTextFillBold()
         
         self.locationField = UITextField()
         self.eventNameField = UITextField()

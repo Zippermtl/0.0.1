@@ -78,20 +78,8 @@ class NewAccountPopupViewController: UIViewController {
     }
     
     @objc private func didTapGoToProfile(){
-        let user = User()
-        user.userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        user.username = AppDelegate.userDefaults.value(forKey: "username") as! String
-        user.firstName = AppDelegate.userDefaults.value(forKey: "firstName") as! String
-        user.lastName = AppDelegate.userDefaults.value(forKey: "lastName") as! String
-        user.birthday = AppDelegate.userDefaults.value(forKey: "birthday") as! Date
-        user.gender = AppDelegate.userDefaults.value(forKey: "gender") as! String
-
-        let vc = CompleteProfileViewController(user: user)
-
-        
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true, completion: nil)
+        self.dismiss(animated: true)
+        delegate?.completeProfile()
     }
     
     override func viewDidLoad() {

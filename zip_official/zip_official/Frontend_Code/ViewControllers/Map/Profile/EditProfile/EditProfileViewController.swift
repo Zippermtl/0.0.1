@@ -23,27 +23,27 @@ class EditProfileViewController: UIViewController {
     static let schoolIdentifier = "schoolIdentifier"
     static let interestsIdentifier = "interestsIdentifier"
     
-    private let spinner = JGProgressHUD(style: .light)
+    let spinner = JGProgressHUD(style: .light)
 
     weak var delegate: UpdateFromEditProtocol?
     
-    private var user: User
-    private var tableView: UITableView
-    private var firstNameText: UITextField
-    private var lastNameText: UITextField
+    var user: User
+    var tableView: UITableView
+    var firstNameText: UITextField
+    var lastNameText: UITextField
     private var changeProfilePicBtn: UIButton
     private var profilePic: UIImageView
-    private var tableHeader: UIView
-    private var imagePicker: UIImagePickerController
+    var tableHeader: UIView
+    var imagePicker: UIImagePickerController
     private var changedPFP = false
     
-    @objc private func didTapDoneButton(){
+    @objc func didTapDoneButton(){
         view.endEditing(true)
         spinner.show(in: view)
         DatabaseManager.shared.updateUser(with: user, completion: { [weak self] error in
             guard let strongSelf = self,
                   error == nil else {
-                let alert = UIAlertController(title: "Error Saving Event",
+                let alert = UIAlertController(title: "Error Saving Profile",
                                               message: "\(error!.localizedDescription)",
                                               preferredStyle: .alert)
                 
@@ -147,6 +147,10 @@ class EditProfileViewController: UIViewController {
         
         imagePicker.delegate = self
         
+        let dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardTouchOutside))
+        dismissTap.delegate = self
+        tableView.addGestureRecognizer(dismissTap)
+        
         configureNavBar()
         configureTable()
         configureTableHeader()
@@ -154,6 +158,12 @@ class EditProfileViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc private func dismissKeyboardTouchOutside(){
+        print("dismissing")
+        view.endEditing(true)
+        
     }
     
     //MARK: - viewDidLoad
@@ -208,7 +218,7 @@ class EditProfileViewController: UIViewController {
         
     }
     
-    private func configureTableHeader() {
+    func configureTableHeader() {
         tableHeader.addSubview(profilePic)
         tableHeader.addSubview(changeProfilePicBtn)
 
@@ -229,7 +239,7 @@ class EditProfileViewController: UIViewController {
 
         changeProfilePicBtn.setTitle("Change Profile Picture", for: .normal)
         changeProfilePicBtn.setTitleColor(.zipBlue, for: .normal)
-        changeProfilePicBtn.titleLabel?.font = .zipTextFill
+        changeProfilePicBtn.titleLabel?.font = .zipTextFillBold
 
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false
@@ -298,6 +308,7 @@ extension EditProfileViewController :  UITableViewDataSource {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "Bio", content: user.bio, saveFunc: saveBioFunc(_:))
+            cell.placeHolder = "Tell us about yourself"
             cell.charLimit = 300
             cell.cellDelegate = self
             cell.selectionStyle = .none
@@ -307,6 +318,7 @@ extension EditProfileViewController :  UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: EditTextFieldTableViewCell.identifier, for: indexPath) as! EditTextFieldTableViewCell
             cell.configure(label: "School", content: user.school ?? "", saveFunc: saveSchoolFunc(_:))
             cell.charLimit = 40
+            cell.placeHolder = "Where do you go to school?"
             cell.cellDelegate = self
             cell.selectionStyle = .none
             return cell
@@ -400,4 +412,10 @@ extension EditProfileViewController : DeleteInterestsProtocol {
     }
     
     
+}
+
+extension EditProfileViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        return !(touch.view is UIControl) && !(touch.view is UITextView)
+    }
 }

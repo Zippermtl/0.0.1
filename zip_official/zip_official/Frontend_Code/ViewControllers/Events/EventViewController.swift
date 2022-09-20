@@ -158,7 +158,12 @@ class EventViewController: UIViewController {
         configureNavBar()
         configureTable()
         configureRefresh()
-        fetchEvent(completion: nil)
+        fetchEvent(completion: { [weak self] in
+            guard let refreshControl = self?.refreshControl else {
+                return
+            }
+            refreshControl.endRefreshing()
+        })
     }
     
     public func configureGoingButton(){
@@ -359,14 +364,14 @@ class EventViewController: UIViewController {
         goingButton.setTitle("Going", for: .normal)
         isGoing = true
         isNotGoing = false
-        goingButton.backgroundColor = .zipGreen
+        goingButton.backgroundColor = .zipGoingGreen
     }
     
     private func notGoingUI() {
         goingButton.setTitle("Not Going", for: .normal)
         isGoing = false
         isNotGoing = true
-        goingButton.backgroundColor = .zipRed
+        goingButton.backgroundColor = .zipGray
     }
     
     @objc func didTapParticipantsButton(){
@@ -578,6 +583,9 @@ class EventViewController: UIViewController {
     func fetchEvent(completion: (() -> Void)? = nil) {
         if event.endTime <= Date() {
             configureLoadedEvent() // expired events have already been loaded and cannot change so no need to reload
+            if let complete = completion {
+                complete()
+            }
         } else {
             DatabaseManager.shared.loadEvent(event: event, completion: { [weak self] result in
                 switch result {

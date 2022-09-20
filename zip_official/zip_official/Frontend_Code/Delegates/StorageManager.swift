@@ -179,7 +179,8 @@ final class StorageManager {
         photoId = photoId.replacingOccurrences(of: "7", with: "")
         photoId = photoId.replacingOccurrences(of: "8", with: "")
         photoId = photoId.replacingOccurrences(of: "9", with: "")
-        
+        photoId = photoId.replacingOccurrences(of: "0", with: "")
+
 
         let tempPath = "Activities/" + photoId + ".png"
         self.downloadURL(for: tempPath, completion: { result in

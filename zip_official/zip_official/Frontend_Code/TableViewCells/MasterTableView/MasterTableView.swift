@@ -210,7 +210,7 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
             let btn = UIButton()
             if superSectionIdx == 0 { btn.isSelected = true }
             btn.tag = superSectionIdx
-            let underlineAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextFill,
+            let underlineAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.zipTextFillBold,
                                                                    .foregroundColor: UIColor.white,
                                                                    .underlineStyle: NSUnderlineStyle.single.rawValue]
             

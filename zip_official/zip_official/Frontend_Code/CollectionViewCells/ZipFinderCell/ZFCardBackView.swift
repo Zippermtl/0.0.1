@@ -115,7 +115,7 @@ class ZFCardBackView: UIView {
         
         interestsLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         interestsImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        interestsLabel.numberOfLines = 2
+        interestsLabel.numberOfLines = 0
         interestsLabel.lineBreakMode = .byWordWrapping
         
         bioLabel.numberOfLines = 0
@@ -282,6 +282,10 @@ class ZFCardBackView: UIView {
             interestsImage.isHidden = true
         }
         
+        if user.userId != AppDelegate.userDefaults.value(forKey: "userId") as! String {
+            slideView.textLabel.text = "Swipe"
+        }
+        
         configureLabels()
         profilePicture.sd_setImage(with: user.profilePicUrl, completed: nil)
         updateSlider()
@@ -341,7 +345,6 @@ class ZFCardBackView: UIView {
         slideView.sliderCornerRadius = 15
         slideView.delegate = self
         slideView.sliderTextLabel.text = ""
-        slideView.textLabel.text = "Swipe"
         slideView.textLabel.font = .zipTextFill
         slideView.textColor = .white
 

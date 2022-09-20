@@ -12,6 +12,7 @@ import JGProgressHUD
 
 class PermissionsSetupViewController: UIViewController {
     var user = User()
+    let locationManager = CLLocationManager()
     let spinner = JGProgressHUD(style: .light)
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -127,7 +128,8 @@ class PermissionsSetupViewController: UIViewController {
     }()
     
     @objc private func didTapCompleteButton(){
-        AppDelegate.locationManager.requestWhenInUseAuthorization()
+        
+        locationManager.requestWhenInUseAuthorization()
         registerForPushNotifications()
 
         user.notificationPreferences =
@@ -144,7 +146,7 @@ class PermissionsSetupViewController: UIViewController {
         ]
                 
 
-        if !CLLocationManager.locationServicesEnabled() || AppDelegate.locationManager.authorizationStatus == .denied {
+        if !CLLocationManager.locationServicesEnabled() || locationManager.authorizationStatus == .denied {
             let vc = MapViewController(isNewAccount: true)
             let navVC = UINavigationController(rootViewController: vc)
             navVC.modalPresentationStyle = .overFullScreen
@@ -162,7 +164,7 @@ class PermissionsSetupViewController: UIViewController {
     }
     
     @objc private func didTapLocation(){
-        AppDelegate.locationManager.requestWhenInUseAuthorization()
+        locationManager.requestWhenInUseAuthorization()
         
         if !CLLocationManager.locationServicesEnabled() {
             let actionSheet = UIAlertController(title: "Location Services Must Be Enabled to Use Zipper",

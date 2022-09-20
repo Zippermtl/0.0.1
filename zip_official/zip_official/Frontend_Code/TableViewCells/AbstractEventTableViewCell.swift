@@ -86,9 +86,8 @@ class AbstractEventTableViewCell: UITableViewCell {
         self.event = event
         configureLabels()
         configureImage(event)
+        configureParticipantsForRecurring()
         eventImage.layer.borderWidth = 2
-        print("title = \(event.title)")
-        print("type = \(event.getType())")
         
         if let rEvent = event as? RecurringEvent {
             eventImage.layer.borderColor = rEvent.category.color.cgColor
@@ -96,6 +95,28 @@ class AbstractEventTableViewCell: UITableViewCell {
             eventImage.layer.borderColor = event.getType().color.cgColor
         }
     }
+    
+    private func configureParticipantsForRecurring() {
+        if let rEvent = event as? RecurringEvent {
+            participantsLabel.isHidden = true
+            participantsIcon.isHidden = true
+        } else {
+            participantsLabel.isHidden = false
+            participantsIcon.isHidden = false
+        }
+//        if let rEvent = event as? RecurringEvent {
+//            participantsLabel.isHidden = true
+//            let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .small)
+//            let image = UIImage(named: rEvent.category.imageName)
+//            participantsIcon.image = image
+//        } else {
+//            participantsLabel.isHidden = false
+//            let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .small)
+//            let image = UIImage(systemName: "person.3.fill", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.zipVeryLightGray)
+//            participantsIcon.image = image
+//        }
+    }
+
     
     public func configureImage(_ event: Event) {
         guard let url = event.imageUrl else {
@@ -113,9 +134,6 @@ class AbstractEventTableViewCell: UITableViewCell {
         guard let event = event else {
             return
         }
-        
-       
-        
         titleLabel.text = event.title
         
         let dateFormatter = DateFormatter()
@@ -195,7 +213,7 @@ class AbstractEventTableViewCell: UITableViewCell {
         participantsLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20).isActive = true
         
         participantsIcon.translatesAutoresizingMaskIntoConstraints = false
-        participantsIcon.centerYAnchor.constraint(equalTo: participantsLabel.centerYAnchor).isActive = true
+        participantsIcon.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor).isActive = true
         participantsIcon.rightAnchor.constraint(equalTo: participantsLabel.leftAnchor, constant: -2).isActive = true
 
         eventImage.translatesAutoresizingMaskIntoConstraints = false

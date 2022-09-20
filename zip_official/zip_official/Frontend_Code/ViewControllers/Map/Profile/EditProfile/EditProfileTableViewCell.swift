@@ -17,7 +17,7 @@ class EditProfileTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         self.rightView = UIView()
-        self.titleLabel = UILabel.zipTextFill()
+        self.titleLabel = UILabel.zipTextFillBold()
         
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .zipGray

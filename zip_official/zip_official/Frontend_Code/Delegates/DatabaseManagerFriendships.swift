@@ -50,8 +50,10 @@ extension DatabaseManager {
                 completion(.failure(DatabaseError.failedToFetch))
                 return
             }
-                        
+            
             let decodedFriendships = DecodeFriendships(value)
+            let encoded = EncodeFriendsUserDefaults(decodedFriendships)
+            AppDelegate.userDefaults.set(encoded, forKey: "friendships")
             let zipRequests = decodedFriendships.filter({ $0.status == .REQUESTED_INCOMING})
             completion(.success(zipRequests.map({ $0.receiver })))
         })

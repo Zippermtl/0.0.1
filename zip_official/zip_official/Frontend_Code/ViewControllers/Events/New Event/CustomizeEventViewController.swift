@@ -20,11 +20,11 @@ class CustomizeEventViewController: UIViewController {
     init(event: Event) {
         self.event = event
         self.descriptionField = UITextView()
-        self.descriptionLabel = UILabel.zipTextFill()
+        self.descriptionLabel = UILabel.zipTextFillBold()
         self.eventPicture = UIImageView()
         self.addHostButton = UIButton()
-        self.addHostsLabel = UILabel.zipTextFill()
-        self.hostCountLabel = UILabel.zipTextFill()
+        self.addHostsLabel = UILabel.zipTextFillBold()
+        self.hostCountLabel = UILabel.zipTextFillBold()
         hostCountLabel.textColor = .zipVeryLightGray
         
         if event.getType() == .Promoter {
@@ -494,7 +494,7 @@ extension CustomizeEventViewController {
         init(){
             self.allowUserInvitesSwitch = UISwitch()
             self.privacyLabel = UILabel.zipTextFill()
-            self.allowUserInvitesLabel = UILabel.zipTextFill()
+            self.allowUserInvitesLabel = UILabel.zipTextFillBold()
             self.openClosedLabel = UILabel.zipTextFill()
             self.openClosedDescriptionLabel = UILabel.zipTextDetail()
             self.openButton = UIButton()
@@ -711,7 +711,7 @@ extension CustomizeEventViewController {
         
         private func getPriceCell() -> UITableViewCell {
             let cell = UITableViewCell()
-            let priceLabel = UILabel.zipTextFill()
+            let priceLabel = UILabel.zipTextFillBold()
             priceLabel.text = "Price"
             
             let view = cell.contentView
@@ -736,7 +736,7 @@ extension CustomizeEventViewController {
         
         private func getLinkCell() -> UITableViewCell {
             let cell = UITableViewCell()
-            let linkLabel = UILabel.zipTextFill()
+            let linkLabel = UILabel.zipTextFillBold()
             linkLabel.text = "Link"
             
             let view = cell.contentView

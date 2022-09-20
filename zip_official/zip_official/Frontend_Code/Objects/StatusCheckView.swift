@@ -49,7 +49,7 @@ class StatusCheckView: UIView {
     
     public func clear(){
         backgroundColor = .zipVeryLightGray
-        imageView.image = clearMark
+        imageView.image = clearMark?.withTintColor(.zipVeryLightGray)
         status = .neutral
     }
     
@@ -66,10 +66,8 @@ class StatusCheckView: UIView {
     }
     
     public func select(){
-        backgroundColor = .zipBlue
-        imageView.image = clearMark
-//        checkMark.isHidden = true
-//        xMark.isHidden = true
+        backgroundColor = .clear
+        imageView.image = clearMark?.withTintColor(.zipBlue)
         status = .selected
     }
     
