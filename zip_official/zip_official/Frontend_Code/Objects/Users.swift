@@ -228,7 +228,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var deviceId: String = ""
     var notificationToken: String = ""
     var gender: String = ""
-    var Zfpref: ZipfinderPreferance = .Default
+    var Zfpref: ZipfinderPreference = .Default
     
     var email: String?
     var friendshipStatus: FriendshipStatus?
@@ -765,7 +765,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         case Unloaded = 6
     }
     
-    public enum ZipfinderPreferance: Int {
+    public enum ZipfinderPreference: Int {
         case Default = 0
         case HideLocation = 1
         case HideProfile = 2
