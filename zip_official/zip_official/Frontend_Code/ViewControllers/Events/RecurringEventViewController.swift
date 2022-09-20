@@ -88,13 +88,30 @@ class RecurringEventViewController : EventViewController {
         
     }
     
+    override func configureLoadedEvent() {
+        super.configureLoadedEvent()
+        if let rEvent = event as? RecurringEvent {
+            eventTypeLabel.textColor = rEvent.category.color
+        }
+    }
+    
     override func fetchEvent(completion: (() -> Void)? = nil) {
         configureLoadedEvent()
-        StorageManager.shared.getRecurringEventImage(event: event, completion: { [weak self] result in
+        
+        event.getImage(completion: { [weak self] result in
             switch result {
-            case .success(let url): self?.eventPhotoView.sd_setImage(with: url)
-            case .failure(let error): print("error loading recurring event image in vc Error: ",error)
+            case .success(let url):
+                self?.eventPhotoView.sd_setImage(with: url)
+                if let completion = completion {
+                    completion()
+                }
+            case .failure(let error):
+                print("error loading recurring event image in vc Error: ",error)
+                if let completion = completion {
+                    completion()
+                }
             }
+            
         })
     }
     

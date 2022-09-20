@@ -122,8 +122,9 @@ class MapViewController: UIViewController {
     
     @objc private func didTapProfileButton() {
 //        let path1 = "/Users/yiannizavaliagkos/Downloads/happenings.csv"
-//        let path2 = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
 //        DatabaseManager.shared.getCSVData(path: path1)
+
+//        let path2 = "/Users/yiannizavaliagkos/Downloads/happenings2.csv"
 //        DatabaseManager.shared.getCSVData(path: path2)
         
 //        DatabaseManager.shared.writeSpecialUsers()

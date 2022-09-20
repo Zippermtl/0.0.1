@@ -94,12 +94,12 @@ class FPCEventTableViewCell: AbstractEventTableViewCell, InvitedCell {
     
     private func goingUI(){
         rsvpButton.setTitle("Going", for: .normal)
-        rsvpButton.backgroundColor = .zipGreen
+        rsvpButton.backgroundColor = .zipGoingGreen
     }
     
     private func notGoingUI() {
         rsvpButton.setTitle("Not Going", for: .normal)
-        rsvpButton.backgroundColor = .zipRed
+        rsvpButton.backgroundColor = .zipGray
     }
     
     @objc func didTapGoingButton(){
@@ -132,8 +132,8 @@ class FPCEventTableViewCell: AbstractEventTableViewCell, InvitedCell {
     private func configureSubviewLayout() {
         contentView.addSubview(rsvpButton)
         rsvpButton.translatesAutoresizingMaskIntoConstraints = false
-        rsvpButton.widthAnchor.constraint(equalToConstant: 85).isActive = true
-        rsvpButton.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        rsvpButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        rsvpButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         rsvpButton.rightAnchor.constraint(equalTo: participantsLabel.rightAnchor).isActive = true
         rsvpButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -15).isActive = true
     }

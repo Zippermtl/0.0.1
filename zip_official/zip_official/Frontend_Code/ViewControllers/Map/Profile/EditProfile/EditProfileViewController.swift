@@ -229,7 +229,7 @@ class EditProfileViewController: UIViewController {
 
         changeProfilePicBtn.setTitle("Change Profile Picture", for: .normal)
         changeProfilePicBtn.setTitleColor(.zipBlue, for: .normal)
-        changeProfilePicBtn.titleLabel?.font = .zipTextFill
+        changeProfilePicBtn.titleLabel?.font = .zipTextFillBold
 
         
         tableHeader.translatesAutoresizingMaskIntoConstraints = false

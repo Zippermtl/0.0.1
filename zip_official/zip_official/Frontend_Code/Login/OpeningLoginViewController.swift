@@ -9,6 +9,12 @@ import UIKit
 
 class OpeningLoginViewController: UIViewController {
     let welcomeLabel: UILabel
+    private let logo: UIImageView = {
+        let view = UIImageView()
+        view.image = UIImage(named: "zipperLogo")
+        view.contentMode = .scaleAspectFit
+        return view
+    }()
     
     let loginButton: UIButton
     let registerButton: UIButton
@@ -40,15 +46,17 @@ class OpeningLoginViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     private func configureSubviews(){
-        welcomeLabel.text = "Welcome To Zipper"
-        
-        view.addSubview(welcomeLabel)
-        welcomeLabel.translatesAutoresizingMaskIntoConstraints = false
-        welcomeLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 125).isActive = true
-        welcomeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        
+        view.addSubview(logo)
+        logo.translatesAutoresizingMaskIntoConstraints = false
+        logo.bottomAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        logo.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        logo.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        logo.heightAnchor.constraint(equalToConstant: 250).isActive = true
+
         loginButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         registerButton.addTarget(self, action: #selector(didTapRegisterButton), for: .touchUpInside)
+        
+        
         
         loginButton.setTitle("Login", for: .normal)
         loginButton.setTitleColor(.white, for: .normal)
@@ -68,14 +76,13 @@ class OpeningLoginViewController: UIViewController {
         view.addSubview(registerButton)
         
         loginButton.translatesAutoresizingMaskIntoConstraints = false
-        loginButton.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 50).isActive = true
+        loginButton.bottomAnchor.constraint(equalTo: registerButton.topAnchor, constant: -20).isActive = true
         loginButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         loginButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.6).isActive = true
         loginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-
         
         registerButton.translatesAutoresizingMaskIntoConstraints = false
-        registerButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 20).isActive = true
+        registerButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50).isActive = true
         registerButton.heightAnchor.constraint(equalTo: loginButton.heightAnchor).isActive = true
         registerButton.widthAnchor.constraint(equalTo: loginButton.widthAnchor).isActive = true
         registerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -87,6 +94,14 @@ class OpeningLoginViewController: UIViewController {
 
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+    }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+    }
     
 }

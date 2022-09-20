@@ -87,8 +87,6 @@ class AbstractEventTableViewCell: UITableViewCell {
         configureLabels()
         configureImage(event)
         eventImage.layer.borderWidth = 2
-        print("title = \(event.title)")
-        print("type = \(event.getType())")
         
         if let rEvent = event as? RecurringEvent {
             eventImage.layer.borderColor = rEvent.category.color.cgColor
@@ -113,9 +111,6 @@ class AbstractEventTableViewCell: UITableViewCell {
         guard let event = event else {
             return
         }
-        
-       
-        
         titleLabel.text = event.title
         
         let dateFormatter = DateFormatter()

@@ -64,8 +64,8 @@ class FPCViewController: UIViewController {
         self.zipFinderButton = UIButton()
         self.searchBar = UITextField()
         
-        self.zipRequestsLabel = UILabel.zipTextFill()
-        self.eventsLabel = UILabel.zipTextFill()
+        self.zipRequestsLabel = UILabel.zipTextFillBold()
+        self.eventsLabel = UILabel.zipTextFillBold()
         self.zipRequestsButton = UIButton()
         self.eventsButton = UIButton()
         self.events = []
