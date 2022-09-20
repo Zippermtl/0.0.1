@@ -115,7 +115,7 @@ class ZFCardBackView: UIView {
         
         interestsLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         interestsImage.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        interestsLabel.numberOfLines = 2
+        interestsLabel.numberOfLines = 0
         interestsLabel.lineBreakMode = .byWordWrapping
         
         bioLabel.numberOfLines = 0

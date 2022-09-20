@@ -49,7 +49,9 @@ class LoadingViewController: UIViewController {
                 AppDelegate.userDefaults.set(user.firstName, forKey: "firstName")
                 AppDelegate.userDefaults.set(user.lastName, forKey: "lastName")
                 AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
+                AppDelegate.userDefaults.set(user.gender, forKey: "gender")
                 AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
+
                 AppDelegate.userDefaults.set(user.profilePicIndex, forKey: "profileIndex")
                 AppDelegate.userDefaults.set(user.picIndices, forKey: "picIndices")
                 
@@ -96,6 +98,7 @@ class LoadingViewController: UIViewController {
     }
     
     private func presentMap(){
+        view.backgroundColor = .zipGray
         let vc = MapViewController(isNewAccount: false)
         let navVC = UINavigationController(rootViewController: vc)
         navVC.modalPresentationStyle = .overFullScreen
