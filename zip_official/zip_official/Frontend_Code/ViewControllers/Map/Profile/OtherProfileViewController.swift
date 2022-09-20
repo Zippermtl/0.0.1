@@ -49,6 +49,10 @@ class OtherProfileViewController: AbstractProfileViewController  {
         super.viewDidLoad()
         centerActionButton.layer.borderColor = UIColor.zipBlue.cgColor
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        pushedOnce = false
+    }
 
     override func initUser() {
         fetchUser(completion: { [weak self] in
@@ -142,19 +146,22 @@ class OtherProfileViewController: AbstractProfileViewController  {
         centerActionButton.layer.borderWidth = 0
     }
     
-
+    var pushedOnce = false
     
     override func didTapB1Button() {
         DatabaseManager.shared.getMutualEvents(userId: user.userId, completion: {[weak self] result in
             guard let strongSelf = self else { return }
             switch result {
             case .success(let data):
-                if strongSelf == strongSelf.navigationController?.presentedViewController {
+                if !strongSelf.pushedOnce {
+                    strongSelf.pushedOnce = true
                     let vc = MasterTableViewController(multiSectionData: data)
                     vc.title = "\(strongSelf.user.firstName)'s Events"
                     strongSelf.navigationController?.pushViewController(vc, animated: true)
                 }
-            case .failure(_): break
+
+            case .failure(_):
+                break
             }
         })
     }

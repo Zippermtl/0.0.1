@@ -608,6 +608,6 @@ extension FPCViewController: UIGestureRecognizerDelegate {
             return false
         }
         
-        return !(touch.view is UIControl) && !(touch.view is IconButton)
+        return !searchBg.isHidden || !(touch.view is UIControl) && !(touch.view is IconButton)
     }
 }

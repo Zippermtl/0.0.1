@@ -15,6 +15,7 @@ class ConversationTableViewCell: AbstractUserTableViewCell {
         timeStampLabel = UILabel.zipTextNoti()
         readIcon = UIView()
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        extraInfoLabel.font = .zipTextDetail
         outlineView.backgroundColor = .zipGray
         
         timeStampLabel.textColor = .zipVeryLightGray

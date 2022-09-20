@@ -156,6 +156,7 @@ class ZipFinderCollectionViewCell: UICollectionViewCell {
 
 extension ZipFinderCollectionViewCell : UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let view = touch.view
         return !(touch.view is UIControl)
     }
 }

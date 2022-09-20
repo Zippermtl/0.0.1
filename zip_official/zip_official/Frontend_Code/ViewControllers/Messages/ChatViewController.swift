@@ -129,6 +129,8 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
         messagesCollectionView.messageCellDelegate = self
+        
+        messagesCollectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 70, right: 0)
 
         messageInputBar.delegate = self
         messageInputBar.tintColor = .white
@@ -136,14 +138,14 @@ class ChatViewController: MessagesViewController {
         messageInputBar.middleContentView?.tintColor = .zipVeryLightGray
         messageInputBar.backgroundView.backgroundColor = .zipGray
         
-        sendButton.setup()
-        sendButton.backgroundColor = .zipBlue
-        sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
-        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .medium)
-        let img = UIImage(systemName: "arrow.up", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
-        sendButton.setImage(img, for: .normal)
-        sendButton.layer.masksToBounds = true
-        sendButton.layer.cornerRadius = 35/2
+//        sendButton.setup()
+//        sendButton.backgroundColor = .zipBlue
+//        sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
+//        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .regular, scale: .medium)
+//        let img = UIImage(systemName: "arrow.up", withConfiguration: config)?.withRenderingMode(.alwaysOriginal).withTintColor(.white)
+//        sendButton.setImage(img, for: .normal)
+//        sendButton.layer.masksToBounds = true
+//        sendButton.layer.cornerRadius = 35/2
 
         
         sendButton.onTouchUpInside({ [weak self] _ in
@@ -160,8 +162,8 @@ class ChatViewController: MessagesViewController {
         messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
         messageInputBar.setStackViewItems([attatchmentButton], forStack: .left, animated: false)
         
-        messageInputBar.setRightStackViewWidthConstant(to: 36, animated: false)
-        messageInputBar.setStackViewItems([sendButton], forStack: .right, animated: false)
+//        messageInputBar.setRightStackViewWidthConstant(to: 36, animated: false)
+//        messageInputBar.setStackViewItems([sendButton], forStack: .right, animated: false)
         
         
         

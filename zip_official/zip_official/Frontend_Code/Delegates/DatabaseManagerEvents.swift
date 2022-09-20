@@ -325,7 +325,7 @@ extension DatabaseManager {
                                        modifiedEventHandler: @escaping (Event) -> Void,
                                        removedEventHandler: @escaping (Event) -> Void) -> ListenerRegistration{
         let id = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        return firestore.collection("EventProfiles").whereField("eventInvites", arrayContains: id).addSnapshotListener { [weak self] snapshot, error in
+        return firestore.collection("EventProfiles").whereField("userInvites", arrayContains: id).addSnapshotListener { [weak self] snapshot, error in
             guard let strongSelf = self else { return }
             strongSelf.handleEventLiveUpdates(querySnapshot: snapshot,
                                               error: error,
@@ -776,6 +776,7 @@ extension DatabaseManager {
                 return
             }
             User.appendUDEvent(event: event, toKey: .goingEvents)
+            User.removeUDEvent(event: event, toKey: .notGoingEvents)
             completion(nil)
         }
     }
@@ -787,7 +788,7 @@ extension DatabaseManager {
                 completion(error!)
                 return
             }
-            
+            User.appendUDEvent(event: event, toKey: .notGoingEvents)
             User.removeUDEvent(event: event, toKey: .goingEvents)
             completion(nil)
         }

@@ -284,6 +284,8 @@ class ZFCardBackView: UIView {
         
         if user.userId != AppDelegate.userDefaults.value(forKey: "userId") as! String {
             slideView.textLabel.text = "Swipe"
+        } else {
+            slideView.textLabel.text = ""
         }
         
         configureLabels()

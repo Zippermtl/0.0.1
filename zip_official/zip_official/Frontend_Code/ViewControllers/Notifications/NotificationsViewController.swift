@@ -75,7 +75,7 @@ class NotificationsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        eventInvitesButton.setTitle("Event Invites (\(User.getUDEvents(toKey: .invitedEvents).count)", for: .normal)
+        eventInvitesButton.setTitle("Event Invites (\(User.getUDEvents(toKey: .invitedEvents).count))", for: .normal)
     }
     
     //MARK: - Nav Bar Config

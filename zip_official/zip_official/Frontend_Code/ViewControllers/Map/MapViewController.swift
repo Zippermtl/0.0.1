@@ -179,7 +179,7 @@ class MapViewController: UIViewController {
             overrideUserInterfaceStyle = .dark
         }
         
-        if AppDelegate.userDefaults.value(forKey: "userLoc") == nil {
+        if AppDelegate.userDefaults.value(forKey: "userLoc") == nil && locationManager.authorizationStatus == .denied {
             initZFUsers()
         }
         
@@ -194,7 +194,6 @@ class MapViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        configureObservers()
         if let urlString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
            let url = URL(string: urlString)
            profileButton.sd_setImage(with: url, for: .normal, completed: nil)
@@ -224,6 +223,8 @@ class MapViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        configureObservers()
+
 //        isNewAccount = true
         if isNewAccount {
             isNewAccount = false

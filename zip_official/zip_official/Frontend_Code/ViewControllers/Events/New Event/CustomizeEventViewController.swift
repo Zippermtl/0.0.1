@@ -17,6 +17,8 @@ class CustomizeEventViewController: UIViewController {
     private let addHostButton: UIButton
     private let addHostsLabel: UILabel
     private let hostCountLabel: UILabel
+    
+    private let changeProfilePicBtn : UIButton
     init(event: Event) {
         self.event = event
         self.descriptionField = UITextView()
@@ -26,15 +28,22 @@ class CustomizeEventViewController: UIViewController {
         self.addHostsLabel = UILabel.zipTextFillBold()
         self.hostCountLabel = UILabel.zipTextFillBold()
         hostCountLabel.textColor = .zipVeryLightGray
-        
+        changeProfilePicBtn = UIButton()
         if event.getType() == .Promoter {
             customizeView = PromoterTicketsView()
         } else {
             customizeView = PrivacyView()
         }
         
+        
         super.init(nibName: nil, bundle: nil)
         setupKeyboardHiding()
+
+        changeProfilePicBtn.setTitle("Change Event Cover Photo", for: .normal)
+        changeProfilePicBtn.setTitleColor(.zipBlue, for: .normal)
+        changeProfilePicBtn.titleLabel?.font = .zipTextFillBold
+        changeProfilePicBtn.addTarget(self, action: #selector(presentPhotoActionSheet), for: .touchUpInside)
+        
         descriptionField.text = "Tell us about your event here!"
         descriptionLabel.text = "Event Description:"
         addHostsLabel.text = "Add Co-hosts: "
@@ -294,6 +303,7 @@ class CustomizeEventViewController: UIViewController {
 
     private func addSubviews() {
         view.addSubview(eventPicture)
+        view.addSubview(changeProfilePicBtn)
         view.addSubview(descriptionLabel)
         view.addSubview(descriptionField)
         view.addSubview(customizeView)
@@ -315,13 +325,17 @@ class CustomizeEventViewController: UIViewController {
         eventPicture.widthAnchor.constraint(equalToConstant: view.frame.width/4).isActive = true
         eventPicture.heightAnchor.constraint(equalTo: eventPicture.widthAnchor).isActive = true
         
+        changeProfilePicBtn.translatesAutoresizingMaskIntoConstraints = false
+        changeProfilePicBtn.topAnchor.constraint(equalTo: eventPicture.bottomAnchor, constant: 10).isActive = true
+        changeProfilePicBtn.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        
         eventPicture.layer.masksToBounds = true
         eventPicture.layer.cornerRadius = view.frame.width/8
         eventPicture.layer.borderColor = event.getType().color.cgColor
         eventPicture.layer.borderWidth = 2
         
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.topAnchor.constraint(equalTo: eventPicture.bottomAnchor, constant: 20).isActive = true
+        descriptionLabel.topAnchor.constraint(equalTo: changeProfilePicBtn.bottomAnchor, constant: 20).isActive = true
         descriptionLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10).isActive = true
         
         descriptionField.translatesAutoresizingMaskIntoConstraints = false

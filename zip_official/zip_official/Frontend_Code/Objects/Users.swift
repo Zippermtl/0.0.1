@@ -38,7 +38,7 @@ class UserCoder: UserUpdateCoder {
         self.joinDate = Timestamp(date: user.joinDate)
         self.notificationToken = [user.notificationToken]
         self.deviceId = [user.deviceId]
-        self.blockedUsers = user.blockedUsers.map({ $0.userId })
+        self.blockedUsers = user.blockedUsers
         super.init(user: user)
     }
     
@@ -107,8 +107,9 @@ class UserCoder: UserUpdateCoder {
             nt = notificationToken[0]
         }
         user.notificationToken = nt
+        
         if let blockedUsers = blockedUsers {
-            user.blockedUsers = blockedUsers.map({ User(userId: $0)})
+            user.blockedUsers = blockedUsers
         }
     }
     
