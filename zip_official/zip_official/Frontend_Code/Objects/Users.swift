@@ -239,7 +239,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var profilePicIndex: [Int] = []
     var profilePicUrl: URL?
     var picIndices: [Int] = []
-    var blockedUsers: [User] = []
+    var blockedUsers: [String] = []
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     

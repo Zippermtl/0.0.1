@@ -104,6 +104,13 @@ class GeoManager {
         let minAgeFilter = AppDelegate.userDefaults.value(forKey: "MinAgeFilter") as? Int ?? 0
         let maxAgeFilter = AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as? Int ?? 1000
         let genderFilter = AppDelegate.userDefaults.value(forKey: "genderFilter") as? Int ?? 2
+        let blockedUsers = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
+        if user.blockedUsers.contains(AppDelegate.userDefaults.value(forKey: "userId") as! String) {
+            monitor = false
+        }
+        if blockedUsers.contains(user.userId){
+            monitor = false
+        }
         switch genderFilter{
         case 0:
             if (user.gender != "M"){
@@ -117,6 +124,9 @@ class GeoManager {
             print("no execution statement")
         }
         if(minAgeFilter > user.age || user.age > maxAgeFilter){
+            monitor = false
+        }
+        if(user.Zfpref == .HideProfile){
             monitor = false
         }
         return monitor

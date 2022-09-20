@@ -41,6 +41,33 @@ extension DatabaseManager {
         }
     }
     
+    public func blockUser(userId: String, completion: @escaping (Result<String, Error>) -> Void){
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        firestore.collection("UserProfiles").document(selfId).updateData(["usersGoing" : FieldValue.arrayUnion([userId])]) { error in
+            guard error == nil else {
+                completion(.failure(error!))
+                return
+            }
+//            User.blockedUsers.append(userId)
+            let temp = userId
+            completion(.success(temp))
+        }
+    }
+    
+    public func unblockUser(userId: String, completion: @escaping (Result<String, Error>) -> Void){
+        let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        firestore.collection("UserProfiles").document(selfId).updateData(["usersGoing" : FieldValue.arrayRemove([userId])]) { error in
+            guard error == nil else {
+                completion(.failure(error!))
+                return
+            }
+//            User.blockedUsers.append(userId)
+            let temp = userId
+            completion(.success(temp))
+        }
+    }
+                                                                          
+    
     public func checkUsernameExists(username: String, completion: @escaping (Bool) -> Void){
         firestore.collection("UserProfiles").whereField("username", isEqualTo: username).getDocuments() {(querySnapshot, err) in
             guard err == nil else {
