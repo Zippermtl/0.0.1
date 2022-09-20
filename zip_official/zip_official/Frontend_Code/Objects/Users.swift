@@ -228,6 +228,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var deviceId: String = ""
     var notificationToken: String = ""
     var gender: String = ""
+    var Zfpref: ZipfinderPreferance = .Default
     
     var email: String?
     var friendshipStatus: FriendshipStatus?
@@ -238,6 +239,7 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var profilePicIndex: [Int] = []
     var profilePicUrl: URL?
     var picIndices: [Int] = []
+    var blockedUsers: [User] = []
     var previousEvents: [Event] = []
     var goingEvents: [Event] = []
     
@@ -761,6 +763,12 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         case ProfilePicUrl = 4
         case PicUrls = 5
         case Unloaded = 6
+    }
+    
+    public enum ZipfinderPreferance: Int {
+        case Default = 0
+        case HideLocation = 1
+        case HideProfile = 2
     }
     
     public func updateSelfHard(user: User){

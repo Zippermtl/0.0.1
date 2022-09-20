@@ -83,7 +83,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
-        
+        //MARK: Gabe Do
     }
     
     func applyDropDownAppearanceChanges(){
