@@ -566,9 +566,10 @@ extension ReportViewController: ReportMessageDelegate {
     }
     
     func sendBlock() {
-        var blockedUsers = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
-        blockedUsers.append(user.userId)
-        AppDelegate.userDefaults.set(blockedUsers, forKey: "blockedUsers")
+        DatabaseManager.shared.blockUser(toBlockUserId: user.userId, completion: { _ in
+            
+        })
+    
     }
     
     func dismissVC() {

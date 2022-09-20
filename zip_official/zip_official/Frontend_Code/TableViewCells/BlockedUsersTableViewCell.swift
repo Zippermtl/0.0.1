@@ -43,15 +43,13 @@ class BlockedUserTableViewCell: AbstractUserTableViewCell {
     @objc private func didTapUnblock(){
         // selected = unblock
         if unblockButton.isSelected {
-            DatabaseManager.shared.unblockUser(toUnblockUserId: user.userId, completion: { [weak self] error in
-                guard let strongSelf = self,
-                      error == nil else { return }
+            DatabaseManager.shared.unblockUser(toUnblockUserId: user.userId, completion: { [weak self] _ in
+                guard let strongSelf = self else { return }
                 strongSelf.unblockButton.isSelected = !strongSelf.unblockButton.isSelected
             })
         } else {
-            DatabaseManager.shared.blockUser(toBlockUserId: user.userId, completion: { [weak self] error in
-                guard let strongSelf = self,
-                      error == nil else { return }
+            DatabaseManager.shared.blockUser(toBlockUserId: user.userId, completion: { [weak self] _ in
+                guard let strongSelf = self else { return }
                 strongSelf.unblockButton.isSelected = !strongSelf.unblockButton.isSelected
             })
         }

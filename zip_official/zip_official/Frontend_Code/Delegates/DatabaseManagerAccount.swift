@@ -43,18 +43,21 @@ extension DatabaseManager {
     
     public func blockUser(toBlockUserId: String, completion: @escaping (Result<String, Error>) -> Void){
         let selfId = AppDelegate.userDefaults.value(forKey: "userId") as! String
-        firestore.collection("UserProfiles").document(selfId).updateData(["usersGoing" : FieldValue.arrayUnion([toBlockUserId])]) { error in
-            guard error == nil else {
-                completion(.failure(error!))
-                return
+        var blockedUsers = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
+        if !blockedUsers.contains(selfId) {
+            firestore.collection("UserProfiles").document(selfId).updateData(["usersGoing" : FieldValue.arrayUnion([toBlockUserId])]) { error in
+                guard error == nil else {
+                    completion(.failure(error!))
+                    return
+                }
+                blockedUsers.append(toBlockUserId)
+                AppDelegate.userDefaults.set(blockedUsers, forKey: "blockedUsers")
+    //            User.blockedUsers.append(userId)
+                let temp = toBlockUserId
+                completion(.success(temp))
             }
-            var s = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
-            s.append(toBlockUserId)
-            AppDelegate.userDefaults.set(s, forKey: "blockedUsers")
-//            User.blockedUsers.append(userId)
-            let temp = toBlockUserId
-            completion(.success(temp))
         }
+        
     }
     
     public func unblockUser(toUnblockUserId: String, completion: @escaping (Result<String, Error>) -> Void){
@@ -67,8 +70,8 @@ extension DatabaseManager {
             var s = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
             if let i = s.firstIndex(of: toUnblockUserId) {
                 s.remove(at: i)
+                AppDelegate.userDefaults.set(s, forKey: "blockedUsers")
             }
-            AppDelegate.userDefaults.set(s, forKey: "blockedUsers")
 //            User.blockedUsers.append(userId)
             let temp = toUnblockUserId
             completion(.success(temp))
