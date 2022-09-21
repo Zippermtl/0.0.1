@@ -8,11 +8,12 @@
 import UIKit
 import CoreLocation
 import FirebaseAuth
-
+import JGProgressHUD
 
 
 
 class LoadingViewController: UIViewController {
+    let spinner = JGProgressHUD(style: .light)
     private let logo: UIImageView = {
         let view = UIImageView()
         view.image = UIImage(named: "zipperLogo")
@@ -33,13 +34,16 @@ class LoadingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .zipLogoBlue
-
+        spinner.backgroundColor = .clear
+        spinner.tintColor = .clear
         configureLayout()
         let locationManager = CLLocationManager()
         locationManager.requestWhenInUseAuthorization()
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
+        let user = User(userId: userId)
+        spinner.show(in: view)
         
-        DatabaseManager.shared.loadUserProfile(given: User(userId: userId), completion: { [weak self] result in
+        user.load(status: .UserProfileUpdates, dataCompletion: { [weak self] result in
             guard let strongSelf = self else { return }
             switch result {
             case .success(let user):
@@ -51,19 +55,14 @@ class LoadingViewController: UIViewController {
                 AppDelegate.userDefaults.set(user.birthday, forKey: "birthday")
                 AppDelegate.userDefaults.set(user.gender, forKey: "gender")
                 AppDelegate.userDefaults.set(user.picNum, forKey: "picNum")
-
+                
                 AppDelegate.userDefaults.set(user.profilePicIndex, forKey: "profileIndex")
                 AppDelegate.userDefaults.set(user.picIndices, forKey: "picIndices")
-                
-                if let pfpUrl = user.profilePicUrl {
-                    AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
-                } else {
-                    AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
-                }
                 
                 DatabaseManager.shared.getImportantUsers()
                 
                 DispatchQueue.main.async {
+                    strongSelf.spinner.dismiss(animated: true)
                     strongSelf.presentMap()
                 }
             case .failure(let error):
@@ -80,7 +79,6 @@ class LoadingViewController: UIViewController {
                         nav.modalPresentationStyle = .fullScreen
                         strongSelf.present(nav, animated: true, completion: nil)
                     }
-                   
                 }
                 catch {
                     DispatchQueue.main.async {
@@ -90,7 +88,13 @@ class LoadingViewController: UIViewController {
                         strongSelf.present(nav, animated: true, completion: nil)
                     }
                 }
-
+                
+            }
+        }, completionUpdates: { url in
+            if let pfpUrl = user.profilePicUrl {
+                AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
+            } else {
+                AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
             }
         })
         
