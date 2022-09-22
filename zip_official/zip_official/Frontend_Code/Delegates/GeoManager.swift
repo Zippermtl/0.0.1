@@ -18,6 +18,7 @@ class GeoManager {
     var loadedUsers: [String:User] = [:]
     var alreadyReadySeen: [String] = []
     var userLocDict: [String:CLLocation] = [:]
+    var limitUsers: [String] = []
 
     let noUsers = User(userId: "empty")
     var moreUsersInQuery = false
@@ -25,6 +26,8 @@ class GeoManager {
     var initialLaunch = true
     var hasMaxRange = true
     var blockFutureQueries = false
+    
+    var reloadFromForceChange = false
         
     let geofireRef = Database.database().reference().child("geoLocation/")
     var geoFire: GeoFire
@@ -105,11 +108,20 @@ class GeoManager {
         let maxAgeFilter = AppDelegate.userDefaults.value(forKey: "MaxAgeFilter") as? Int ?? 1000
         let genderFilter = AppDelegate.userDefaults.value(forKey: "genderFilter") as? Int ?? 2
         let blockedUsers = AppDelegate.userDefaults.value(forKey: "blockedUsers") as? [String] ?? []
-        if user.blockedUsers.contains(AppDelegate.userDefaults.value(forKey: "userId") as! String) {
+        let b = user.blockedUsers
+        if b != [] {
+            if b.contains(AppDelegate.userDefaults.value(forKey: "userId") as! String) {
+                monitor = false
+                print("blocked by \(user.userId)")
+            }
+        }
+        if limitUsers.contains(user.userId){
             monitor = false
         }
+        
         if blockedUsers.contains(user.userId){
             monitor = false
+            print("u blocked them")
         }
         switch genderFilter{
         case 0:
@@ -169,7 +181,7 @@ class GeoManager {
         //MARK: Actual Location
 //        var lat = location.coordinate.latitude
 //        var long = location.coordinate.longitude
-        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         //MARK: Vanderbilt Campus
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
 //        Latitude: 31.2198 Longitude: 121.4870
@@ -177,7 +189,7 @@ class GeoManager {
 //        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
 //    Latitude: 45.5041 Longitude: -73.5747
         //MARK: McGuille Campus
-//        let center = CLLocation(latitude: 45.5041, longitude: -73.5747)
+        let center = CLLocation(latitude: 45.5041, longitude: -73.5747)
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
 //        let geoRange = Double(locRange)
@@ -245,14 +257,17 @@ class GeoManager {
                 alreadyReadySeen.append(user.userId)
             }
             loadedUsers[user.userId] = user
+            reloadFromForceChange = true
         }
     }
     
     public func addedOrBlockedUser(user: User){
-        loadedUsers[user.userId] = nil
+        loadedUsers.removeValue(forKey: user.userId)
         if (!alreadyReadySeen.contains(user.userId)){
             alreadyReadySeen.append(user.userId)
         }
+        limitUsers.append(user.userId)
+        reloadFromForceChange = true
     }
     
     public func LoadUsers(size: Int, completion: @escaping (Result<String, Error>) -> Void, updateCompletion: @escaping (String) -> Void) {
@@ -264,7 +279,7 @@ class GeoManager {
             }
             for i in dataholder {
                 let tmp = i
-                DatabaseManager.shared.loadUserProfile(given: i, dataCompletion: { [weak self] res in
+                DatabaseManager.shared.loadUserProfile(given: i, dataCompletion: {[weak self] res in
                     guard let strongSelf = self else {
                         return
                     }
@@ -275,8 +290,9 @@ class GeoManager {
                         }
                     case .failure(let err):
                         completion(.failure(err))
-                        
                     }
+//                }, profilePictureCompletion: { _ in
+//                    // nothing needed
                 }, pictureCompletion: { [weak self] res in
                     guard let strongSelf = self else {
                         return
@@ -336,6 +352,10 @@ class GeoManager {
         if(maxIndex >= getFilteredData().count && !isInfite){
             return true
         }
+        if(reloadFromForceChange){
+            reloadFromForceChange = false
+//            return true
+        }
         return false
     }
     
@@ -354,6 +374,10 @@ class GeoManager {
 //            else if (!isInfinite){
 //                return true
 //            }
+        }
+        if(reloadFromForceChange){
+            reloadFromForceChange = false
+//            return true
         }
         return false
     }
