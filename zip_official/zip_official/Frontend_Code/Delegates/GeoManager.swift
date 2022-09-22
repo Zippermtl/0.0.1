@@ -181,7 +181,7 @@ class GeoManager {
         //MARK: Actual Location
 //        var lat = location.coordinate.latitude
 //        var long = location.coordinate.longitude
-//        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let center = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         //MARK: Vanderbilt Campus
 //        let center = CLLocation(latitude: 36.144051, longitude: -86.800949)
 //        Latitude: 31.2198 Longitude: 121.4870
@@ -189,7 +189,7 @@ class GeoManager {
 //        let center = CLLocation(latitude: 31.2198, longitude: 121.4870)
 //    Latitude: 45.5041 Longitude: -73.5747
         //MARK: McGuille Campus
-        let center = CLLocation(latitude: 45.5041, longitude: -73.5747)
+//        let center = CLLocation(latitude: 45.5041, longitude: -73.5747)
         print("Entering GetUserByLoc, range = \(geoRange) max = \(max)")
 
 //        let geoRange = Double(locRange)

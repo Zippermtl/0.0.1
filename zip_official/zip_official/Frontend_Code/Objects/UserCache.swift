@@ -25,7 +25,10 @@ public class UserCache {
         return cache
     }
     
-    public func load(user: User, status: User.UserLoadType, dataCompletion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL],Error>) -> Void) {
+    public func load(user: User, status: User.UserLoadType,
+                     dataCompletion: @escaping (Result<User, Error>) -> Void,
+//                     completionProfilePicture: @escaping (Result<[URL], Error>) -> Void,
+                     completionUpdates: @escaping (Result<[URL],Error>) -> Void) {
         switch status{
         case .UserProfile:
             DatabaseManager.shared.loadUserProfile(given: user, completion: { results in
@@ -47,11 +50,21 @@ public class UserCache {
                 case .failure(let error):
                     dataCompletion(.failure(error))
                 }
+//            }, profilePictureCompletion: { res in
+//                switch res{
+//                case .success(let url):
+//                    if(url.count > 0){
+//                        user.profilePicUrl = url[0]
+//                    }
+//                    completionProfilePicture(.success(url))
+//                case .failure(let error):
+//                    completionUpdates(.failure(error))
+//                }
             }, pictureCompletion: { res in
                 switch res{
                 case .success(let url):
                     if(url.count > 0){
-                        user.profilePicUrl = url[0]
+                        user.pictureURLs = url
                     }
                     completionUpdates(.success(url))
                 case .failure(let error):
@@ -119,7 +132,10 @@ public class UserCache {
 //            })
         }
     }
-    func loadUser(us: User, loadLevel: User.UserLoadType, loadFriends: Bool = false, completion: @escaping (Result<User, Error>) -> Void, completionUpdates: @escaping (Result<[URL], Error>) -> Void) {
+    func loadUser(us: User, loadLevel: User.UserLoadType, loadFriends: Bool = false,
+                  completion: @escaping (Result<User, Error>) -> Void,
+//                  completionProfilePic: @escaping (Result<[URL], Error>) -> Void,
+                  completionUpdates: @escaping (Result<[URL], Error>) -> Void) {
         if let cachedUser = cache[us.userId] {
             // Use the cached version
             us.updateSelfHard(user: cachedUser)
@@ -155,6 +171,13 @@ public class UserCache {
             case .failure(let err):
                 completion(.failure(err))
             }
+//        }, completionProfilePicture: { res in
+//            switch res2{
+//            case .success(let urls):
+//                completionUpdates(.success(urls))
+//            case .failure(let err):
+//                completionUpdates(.failure(err))
+//            }
         } completionUpdates: { res2 in
             switch res2{
             case .success(let urls):

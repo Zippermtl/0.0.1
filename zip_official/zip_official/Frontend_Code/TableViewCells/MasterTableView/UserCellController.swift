@@ -81,48 +81,48 @@ class UserCellController: TableCellController {
     func fetch(completion: @escaping (Error?) -> Void) {
         //MARK: Gabe should be .load
         // loading userprofile picture as their first picture and not their profile picture
-        DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { [weak self] result in
-            guard let user = self?.user,
-                  let cell = user.tableViewCell else { return }
-            switch result {
-            case .success(let user):
-                cell.configure(user)
-                completion(nil)
-            case .failure(let error):
-                completion(error)
-            }
-        }, pictureCompletion: { [weak self] result in
-            switch result {
-            case .success(_):
-                guard let strongSelf = self,
-                      let cell = strongSelf.user.tableViewCell else {
-                    return
-                }
-                cell.configureImage(strongSelf.user)
-                completion(nil)
-                
-            case .failure(let error):
-                completion(error)
-                print("Failure to load user photos in profile, Error: \(error)")
-            }
-        
-        })
-
-//        user.load(status: .UserProfileUpdates, dataCompletion: { result in
+//        DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { [weak self] result in
+//            guard let user = self?.user,
+//                  let cell = user.tableViewCell else { return }
 //            switch result {
 //            case .success(let user):
-//                guard let cell = user.tableViewCell else { return }
 //                cell.configure(user)
+//                completion(nil)
 //            case .failure(let error):
 //                completion(error)
 //            }
-//        }, completionUpdates: { [weak self] result in
-//            guard let strongSelf = self,
-//                  let cell = strongSelf.user.tableViewCell else {
-//                return
+//        }, pictureCompletion: { [weak self] result in
+//            switch result {
+//            case .success(_):
+//                guard let strongSelf = self,
+//                      let cell = strongSelf.user.tableViewCell else {
+//                    return
+//                }
+//                cell.configureImage(strongSelf.user)
+//                completion(nil)
+//
+//            case .failure(let error):
+//                completion(error)
+//                print("Failure to load user photos in profile, Error: \(error)")
 //            }
-//            cell.configureImage(strongSelf.user)
+//
 //        })
+
+        user.load(status: .UserProfileUpdates, dataCompletion: { result in
+            switch result {
+            case .success(let user):
+                guard let cell = user.tableViewCell else { return }
+                cell.configure(user)
+            case .failure(let error):
+                completion(error)
+            }
+        }, completionUpdates: { [weak self] result in
+            guard let strongSelf = self,
+                  let cell = strongSelf.user.tableViewCell else {
+                return
+            }
+            cell.configureImage(strongSelf.user)
+        })
     }
     
     func fetchImage(completion: @escaping (Error?) -> Void) {

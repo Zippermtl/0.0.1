@@ -464,6 +464,7 @@ extension DatabaseManager {
     /// - `pictureCompletion`: completion fired after storage manager data is loaded
     public func loadUserProfile(given user: User,
                                 dataCompletion: @escaping (Result<User, Error>) -> Void,
+//                                profilePictureCompletion: @escaping (Result<[URL], Error>) -> Void,
                                 pictureCompletion: @escaping (Result<[URL], Error>) -> Void) {
         
         loadUserProfileNoPic(given: user, completion: { result in
@@ -476,7 +477,8 @@ extension DatabaseManager {
                     case .success(let url):
                         if (url.count > 0){
                             user.profilePicUrl = url[0]
-                        } 
+                        }
+//                        profilePictureCompletion(.success(url))
                         if( user.picIndices.count > 0){
                             DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
                                 switch res {
@@ -489,11 +491,13 @@ extension DatabaseManager {
                                 }
                             })
                         } else {
+//                            profilePictureCompletion(.success(url))
                             pictureCompletion(.success(url))
                         }
                        
                     case .failure(let error):
                         pictureCompletion(.failure(error))
+//                        profilePictureCompletion(.failure(error))
                         print("failed getImages for Profile picture")
                     }
                 })
