@@ -48,7 +48,7 @@ class MapViewController: UIViewController {
     
     
     private let mapView: MKMapView
-    private let profileButton: UIButton
+    let profileButton: UIButton
     private let zoomToCurrentButton : UIButton
 
     private let DEFAULT_ZOOM_DISTANCE = CGFloat(2000)

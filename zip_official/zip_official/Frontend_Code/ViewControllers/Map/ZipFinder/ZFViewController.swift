@@ -89,7 +89,6 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
         } else if (data.count > maxIndex){
             DispatchQueue.main.async {
                 self.collectionView?.reloadData()
-                self.adjustScaleAndAlpha()
             }
         }
         //if failure for the range change to maxRangeFilter
@@ -106,7 +105,6 @@ class ZipFinderViewController: UIViewController, UICollectionViewDelegate {
                             strongSelf.data.append(tmp)
                             DispatchQueue.main.async {
                                 self?.collectionView?.reloadData()
-                                self?.adjustScaleAndAlpha()
                             }
                         }
                     }
@@ -501,7 +499,6 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                         DispatchQueue.main.async {
                             self?.maxIndex = indexPath.row
                             self?.collectionView?.reloadData()
-                            self?.adjustScaleAndAlpha()
 
                         }
                     }
@@ -517,7 +514,6 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                         DispatchQueue.main.async {
                             self?.maxIndex = indexPath.row
                             self?.collectionView?.reloadData()
-                            self?.adjustScaleAndAlpha()
 
                         }
                     }
@@ -538,7 +534,6 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                     DispatchQueue.main.async {
                         self?.maxIndex = indexPath.row
                         self?.collectionView?.reloadData()
-                        self?.adjustScaleAndAlpha()
 
                     }
                 }
@@ -555,7 +550,6 @@ extension ZipFinderViewController: UICollectionViewDataSource {
                     DispatchQueue.main.async {
                         self?.maxIndex = indexPath.row
                         self?.collectionView?.reloadData()
-                        self?.adjustScaleAndAlpha()
 
                     }
                 }
@@ -576,7 +570,6 @@ extension ZipFinderViewController: UICollectionViewDataSource {
             if GeoManager.shared.needsReload(maxIndex: maxIndex, isInfite: isInfite) {
                 DispatchQueue.main.async {
                     self.collectionView?.reloadData()
-                    self.adjustScaleAndAlpha()
                 }
             }
             let numcells = GeoManager.shared.getNumberOfCells()

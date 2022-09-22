@@ -229,14 +229,14 @@ extension DatabaseManager {
                         }
                     }, allCompletion: { result in
                         let htodaySection = CellSectionData(title: "Today", items: todayHost.map({ $0.value }), cellType: CellType(eventType: .save))
-                        let hupcomingSection = CellSectionData(title: "Upcomming", items: upcomingHost.map({ $0.value }), cellType: CellType(eventType: .save))
+                        let hupcomingSection = CellSectionData(title: "Upcoming", items: upcomingHost.map({ $0.value }), cellType: CellType(eventType: .save))
                         let hpastSection = CellSectionData(title: "Previous", items: pastHost.map({ $0.value }), cellType: CellType(eventType: .save))
                         
                         let hostSection = MultiSectionData(title: "Hosting", sections: [htodaySection,hupcomingSection,hpastSection])
                         
                         
                         let gtodaySection = CellSectionData(title: "Today", items: todayGoing.map({ $0.value }), cellType: CellType(eventType: .save))
-                        let gupcomingSection = CellSectionData(title: "Upcomming", items: upcomingGoing.map({ $0.value }), cellType: CellType(eventType: .save))
+                        let gupcomingSection = CellSectionData(title: "Upcoming", items: upcomingGoing.map({ $0.value }), cellType: CellType(eventType: .save))
                         let gpastSection = CellSectionData(title: "Previous", items: pastGoing.map({ $0.value }), cellType: CellType(eventType: .save))
                         
                         let goingSection = MultiSectionData(title: "Going", sections: [gtodaySection,gupcomingSection,gpastSection])

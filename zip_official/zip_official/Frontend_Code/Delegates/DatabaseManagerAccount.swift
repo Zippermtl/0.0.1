@@ -418,6 +418,7 @@ extension DatabaseManager {
                 userCoder.updateUser(user)
                 completion(.success(user))
             case .failure(let error):
+                completion(.failure(error))
                 print("failed to load user \(user.userId): \(error)")
             }
         }

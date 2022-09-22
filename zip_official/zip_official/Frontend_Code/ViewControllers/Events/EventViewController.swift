@@ -206,7 +206,7 @@ class EventViewController: UIViewController {
     
     public func configureInviteButton() {
         
-        if event.allowUserInvites {
+        if event.allowUserInvites || event is PromoterEvent {
             inviteButton = UIButton()
             
             inviteButton!.backgroundColor = .zipLightGray

@@ -42,4 +42,9 @@ public class PromoterEvent: Event {
         let sections = [hostingSection, goingSection, notGoingSection]
         return sections
     }
+    
+    override var viewController: EventViewController {
+        self.allowUserInvites = true
+        return super.viewController
+    }
 }

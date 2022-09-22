@@ -182,6 +182,14 @@ class FPCViewController: UIViewController {
     }
     
     public func addEvent(event: Event) {
+        let cellItems = eventsTableView.multiSectionData[0].sections[0].items
+        for item in cellItems {
+            if let currentEvent = item.getItem() as? Event {
+                if event == currentEvent {
+                    return
+                }
+            }
+        }
         eventsTableView.addItem(cellItem: event)
     }
     
