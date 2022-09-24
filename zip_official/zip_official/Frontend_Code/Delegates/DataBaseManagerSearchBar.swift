@@ -304,7 +304,7 @@ extension DatabaseManager {
 //                    if(friends.contains(user)){
 //
 //                    }
-                    
+                    event.eventId = doc.documentID
                     StorageManager.shared.getProfilePicture(path: "images/\(event.eventId)", completion: { res in
                         switch res {
                         case .success(let url):
