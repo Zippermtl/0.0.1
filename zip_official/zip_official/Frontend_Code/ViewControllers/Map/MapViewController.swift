@@ -55,7 +55,8 @@ class MapViewController: UIViewController {
     private let DOT_ZOOM_DISTANCE: Double = 12
     
     var guardingGeoFireCalls: Bool
-    
+    var firstLocationUpdate = false
+
     var mapDidMove: Bool
     
     var promoterEventListener : ListenerRegistration?
@@ -506,7 +507,8 @@ extension MapViewController: CLLocationManagerDelegate {
         
         AppDelegate.userDefaults.set([latestLocation.coordinate.latitude, latestLocation.coordinate.longitude], forKey: "userLoc")
 //        DatabaseManager.shared.testEmail()
-        if !guardingGeoFireCalls {
+        if !firstLocationUpdate {
+            firstLocationUpdate = true
             GeoManager.shared.UpdateLocation(location: latestLocation)
         }
         initZFUsers()

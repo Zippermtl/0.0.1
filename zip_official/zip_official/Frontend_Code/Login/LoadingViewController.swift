@@ -42,8 +42,8 @@ class LoadingViewController: UIViewController {
         let userId = AppDelegate.userDefaults.value(forKey: "userId") as! String
         let user = User(userId: userId)
         spinner.show(in: view)
-
-        DatabaseManager.shared.loadUserProfileNoPic(given: user, completion: { [weak self] result in
+        let vc = MapViewController(isNewAccount: false)
+        user.load(status: .UserProfileUpdates, dataCompletion: { [weak self] result in
             guard let strongSelf = self else { return }
             switch result {
             case .success(let user):
@@ -61,30 +61,18 @@ class LoadingViewController: UIViewController {
                 
                 DatabaseManager.shared.getImportantUsers()
                 
-                let vc = MapViewController(isNewAccount: false)
                 let navVC = UINavigationController(rootViewController: vc)
                 navVC.modalPresentationStyle = .overFullScreen
                 navVC.modalTransitionStyle = .crossDissolve
-            
+                
                 DispatchQueue.main.async {
                     strongSelf.view.backgroundColor = .zipGray
                     strongSelf.spinner.dismiss(animated: true)
                     strongSelf.present(navVC, animated: true, completion: nil)
                 }
-                
-                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { urls in
-                    if let pfpUrl = user.profilePicUrl {
-                        AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
-                        vc.profileButton.sd_setImage(with: pfpUrl, for: .normal)
-                    } else {
-                        AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
-                    }
-                })
-                
-            case .failure(let error):
-                print("Failed to load and logout user Error: \(error)\nPushing to login")
+            case .failure(_):
+//                print("Failed to load and logout user Error: \(error)\nPushing to login")
                 do {
-                    print(error)
                     try FirebaseAuth.Auth.auth().signOut()
                     let domain = Bundle.main.bundleIdentifier!
                     AppDelegate.userDefaults.removePersistentDomain(forName: domain)
@@ -104,11 +92,16 @@ class LoadingViewController: UIViewController {
                         strongSelf.present(nav, animated: true, completion: nil)
                     }
                 }
-                
             }
             
+        }, completionUpdates: { _ in
+            if let pfpUrl = user.profilePicUrl {
+                AppDelegate.userDefaults.set(pfpUrl.absoluteString, forKey: "profilePictureUrl")
+                vc.profileButton.sd_setImage(with: pfpUrl, for: .normal)
+            } else {
+                AppDelegate.userDefaults.set("", forKey: "profilePictureUrl")
+            }
         })
-    
         
         DatabaseManager.shared.getAllUserDefaultsEvents(completion: { error in
             guard error == nil else {
