@@ -35,6 +35,16 @@ class DatabaseManager {
     }
     
     
+    internal enum Keys: String {
+        case AllUserIds
+        case ErrorLog
+        case ExpiredEvents
+        case RecurringEvents
+        case UserFastInfo
+        case UserProfiles
+        case UserStoredEvents
+    }
+    
     
 }
 

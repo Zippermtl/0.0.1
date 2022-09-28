@@ -128,7 +128,7 @@ class RecurringEventViewController : EventViewController {
         eventTypeLabel.textColor = event.category.color
         
         let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm a"
+        formatter.dateFormat = "h:mm a"
         let start = formatter.string(from: event.startTime)
         let end = formatter.string(from: event.endTime)
         countDownLabel.text = start + " - " + end

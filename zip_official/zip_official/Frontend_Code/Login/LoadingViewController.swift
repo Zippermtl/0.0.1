@@ -59,6 +59,9 @@ class LoadingViewController: UIViewController {
                 AppDelegate.userDefaults.set(user.profilePicIndex, forKey: "profileIndex")
                 AppDelegate.userDefaults.set(user.picIndices, forKey: "picIndices")
                 
+                let intPerms = UserCoder.encodePermissions(user.permissions) ?? 0
+                AppDelegate.userDefaults.set(intPerms, forKey: "permissions")
+           
                 DatabaseManager.shared.getImportantUsers()
                 
                 let navVC = UINavigationController(rootViewController: vc)

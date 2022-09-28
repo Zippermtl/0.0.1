@@ -10,7 +10,7 @@ import UIKit
 
 
 
-public typealias MasterTableSwipeConfiguration = (style: UIContextualAction.Style, title: String?, action: ((CellItem) -> Void), exclude : [CellItem]?)
+public typealias MasterTableSwipeConfiguration = (style: UIContextualAction.Style, title: String?, action: ((CellItem) -> Void), exclude : [CellItem]?, color: UIColor?)
 
 protocol MasterTableSectionHeaderDelegate: AnyObject {
     func didTapMultiSection(superSection: Int)
@@ -364,7 +364,7 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         tableData.sections[indexPath.section].items.remove(at: indexPath.row)
     }
     
-    public func reload(cellItems: [CellItem], cellType: CellType = CellType(userType: .zipList, eventType: .save), reloadTable: Bool = true) {
+    public func reload(cellItems: [CellItem], cellType: CellType = CellType(userType: .zipList, eventType: .save), fetchTable: Bool = true) {
         multiSectionData = [MultiSectionData(title: nil,
                                              sections: [Self.cellControllers(with: cellItems,
                                                                             title: nil,
@@ -373,17 +373,17 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
         
         tableData = multiSectionData[0]
         
-        if reloadTable {
+        if fetchTable {
             tableView.reloadData()
             fetchAll()
         }
     }
     
-    public func reload(multiSectionData: [MultiSectionData], reloadTable: Bool = true) {
+    public func reload(multiSectionData: [MultiSectionData], fetchTable: Bool = true) {
         self.multiSectionData = multiSectionData
         tableData = multiSectionData[0]
         tableView.reloadData()
-        if reloadTable {
+        if fetchTable {
             fetchAll()
         }
     }
@@ -454,9 +454,11 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
                 config.action(item)
                 completion(true)
             })
+            action.backgroundColor = config.color
             contextualActions.append(action)
         }
         if contextualActions.isEmpty { return nil }
+      
         return UISwipeActionsConfiguration(actions: contextualActions)
     }
     
@@ -485,9 +487,11 @@ class MasterTableViewController: UIViewController, UITableViewDelegate, UITableV
                 config.action(item)
                 completion(true)
             })
+            action.backgroundColor = config.color
             contextualActions.append(action)
         }
         if contextualActions.isEmpty { return nil }
+        
         return UISwipeActionsConfiguration(actions: contextualActions)
     }
     

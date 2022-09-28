@@ -122,6 +122,21 @@ class MapViewController: UIViewController {
     }
     
     @objc private func didTapProfileButton() {
+//        let devs = ["u2158018458","u2508575270","u7812668085","u9789070602","u9295758083","u6176022100","u6176022100"]
+//        let promoters = ["u5147086379","u5147048473","u5147137662","u5148151337","u6107313985"]
+//        let ambassadors = ["u2152061697","u4373447783","u4384934911","u6477833537"]
+//        
+//        for dev in devs {
+//            DatabaseManager.shared.makeDeveloper(userId: dev, completion: { error in })
+//        }
+//        
+//        for promoter in promoters {
+//            DatabaseManager.shared.acceptPromoterApplication(user: User(userId: promoter), completion: { error in})
+//        }
+//        
+//        for ambassador in ambassadors {
+//            DatabaseManager.shared.acceptAmbassador(user: User(userId: ambassador), completion: { error in})
+//        }
 //        let path1 = "/Users/yiannizavaliagkos/Downloads/happenings.csv"
 //        DatabaseManager.shared.getCSVData(path: path1)
 
@@ -566,15 +581,15 @@ extension MapViewController: FPCMapDelegate {
     }
     
     func createEvent() {
-        if let userType = AppDelegate.userDefaults.value(forKey: "userType") as? Int {
-            if userType == 0 || userType == 1 || userType == 2 {
+        if let userType = User.getHighestPermission() {
+            if userType == .developer || userType == .promoter {
                 promoterCreateEvent()
-            } else {
-                normalCreateEvent()
+                return
             }
-        } else {
-            normalCreateEvent()
         }
+        
+        normalCreateEvent()
+        
     }
     
     private func promoterCreateEvent() {

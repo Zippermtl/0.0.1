@@ -41,6 +41,9 @@ class ConversationTableViewCell: AbstractUserTableViewCell {
         extraInfoLabel.lineBreakMode = .byWordWrapping
         extraInfoLabel.rightAnchor.constraint(equalTo: readIcon.leftAnchor,constant: -5).isActive = true
         extraInfoLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        
+        nameLabel.rightAnchor.constraint(lessThanOrEqualTo: timeStampLabel.leftAnchor,constant: -5).isActive = true
+
     }
     
     override func layoutSubviews() {
@@ -77,7 +80,6 @@ class ConversationTableViewCell: AbstractUserTableViewCell {
         extraInfoLabel.text = model.latestMessage.text
         extraInfoLabel.textColor = .zipVeryLightGray
         super.configure(model.otherUser)
-        
     }
     
     required init?(coder: NSCoder) {

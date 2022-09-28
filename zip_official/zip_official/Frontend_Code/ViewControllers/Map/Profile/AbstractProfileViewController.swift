@@ -25,6 +25,7 @@ class AbstractProfileViewController: UIViewController {
     private var lastnameLabel: UILabel
     private var ageLabel: UILabel
     var photoCountButton: UIButton
+    private var importanceLabel: UILabel
 
     // MARK: - Buttons
     var centerActionButton: UIButton
@@ -74,6 +75,7 @@ class AbstractProfileViewController: UIViewController {
         self.profilePictureView = UIImageView()
         self.firstnameLabel = UILabel.zipTitle()
         self.lastnameLabel = UILabel.zipTitle()
+        self.importanceLabel = UILabel.zipSubtitle2()
         self.ageLabel = UILabel.zipSubtitle2()
         self.photoCountButton = UIButton()
         self.centerActionButton = UIButton()
@@ -147,51 +149,84 @@ class AbstractProfileViewController: UIViewController {
                 if let complete = completion {
                     complete()
                 }
-                
-                print("rerererere")
                 return
             }
-            
-            strongSelf.configureCells()
-                                    
-            strongSelf.title = "@" + strongSelf.user.username
-            strongSelf.firstnameLabel.text = strongSelf.user.firstName
-            strongSelf.lastnameLabel.text = strongSelf.user.lastName
-            strongSelf.ageLabel.text = String(strongSelf.user.age) + " years old"
-            strongSelf.tableView.reloadData()
+            DispatchQueue.main.async {
+                strongSelf.reloadUI()
+            }
            
             if let complete = completion {
                 complete()
             }
         }, pictureCompletion: { [weak self] result in
-            print("COMPLETING PICTURES")
-            guard let strongSelf = self else { return }
             switch result {
             case .success(let urls):
-                let profileURL: URL?
-                if strongSelf.user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
-                    let profileString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String ?? ""
-                    profileURL = URL(string: profileString)
-                } else {
-                    profileURL = strongSelf.user.profilePicUrl
+                guard let strongSelf = self else { return }
+                DispatchQueue.main.async {
+                    strongSelf.imageReloadUI()
                 }
-            
-                strongSelf.configurePhotoCountText()
-                print("URL = \(profileURL)")
-                strongSelf.spinner.dismiss()
-                guard let url = profileURL else {
-                    strongSelf.profilePictureView.image = UIImage(named: "defaultProfilePic")
-                    return
-                }
-                strongSelf.profilePictureView.sd_setImage(with: url, completed: nil)
-            
-                
             case .failure(let error):
-                print("Failure to load user photos in profile, Error: \(error)")
+                break
             }
-
-        
+            
         })
+//        user.load(status: .UserProfileUpdates, dataCompletion: { [weak self] result in
+//            guard let strongSelf = self
+//            else {
+//                if let complete = completion {
+//                    complete()
+//                }
+//                return
+//            }
+//            DispatchQueue.main.async {
+//                strongSelf.reloadUI()
+//            }
+//
+//            if let complete = completion {
+//                complete()
+//            }
+//        }, completionUpdates: { [weak self] urls in
+//            guard let strongSelf = self else { return }
+//            DispatchQueue.main.async {
+//                strongSelf.imageReloadUI()
+//            }
+//        })
+    }
+    
+    private func reloadUI(){
+        configureCells()
+        
+        title = "@" + user.username
+        firstnameLabel.text = user.firstName
+        lastnameLabel.text = user.lastName
+        ageLabel.text = String(user.age) + " years old"
+        tableView.reloadData()
+        if let userType = user.getHighestPermission(),
+           let userTypeString = user.userTypeString {
+            importanceLabel.isHidden = false
+            importanceLabel.backgroundColor = userType.color
+            importanceLabel.text = "  " + userTypeString + "  "
+            importanceLabel.textColor = userType.textColor
+        }
+    }
+    
+    private func imageReloadUI() {
+        configurePhotoCountText()
+        spinner.dismiss()
+        guard let url = user.profilePicUrl else {
+            if user.userId == AppDelegate.userDefaults.value(forKey: "userId") as? String {
+                if let profileString = AppDelegate.userDefaults.value(forKey: "profilePictureUrl") as? String {
+                    profilePictureView.sd_setImage(with: URL(string: profileString), completed: nil)
+                } else {
+                    profilePictureView.image = UIImage(named: "defaultProfilePic")
+                }
+            } else {
+                profilePictureView.image = UIImage(named: "defaultProfilePic")
+            }
+           
+            return
+        }
+        profilePictureView.sd_setImage(with: url, completed: nil)
     }
     
     private func configureRefresh() {
@@ -261,6 +296,7 @@ class AbstractProfileViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         
+        tableView.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 150))
         configureTableHeaderLayout()
     }
     
@@ -285,17 +321,17 @@ class AbstractProfileViewController: UIViewController {
         
         tableHeader.addSubview(firstnameLabel)
         firstnameLabel.translatesAutoresizingMaskIntoConstraints = false
-        firstnameLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        firstnameLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor).isActive = true
         firstnameLabel.topAnchor.constraint(equalTo: profilePictureView.bottomAnchor, constant: 5).isActive = true
         
         tableHeader.addSubview(lastnameLabel)
         lastnameLabel.translatesAutoresizingMaskIntoConstraints = false
-        lastnameLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        lastnameLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor).isActive = true
         lastnameLabel.topAnchor.constraint(equalTo: firstnameLabel.bottomAnchor).isActive = true
 
         tableHeader.addSubview(ageLabel)
         ageLabel.translatesAutoresizingMaskIntoConstraints = false
-        ageLabel.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        ageLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor).isActive = true
         ageLabel.topAnchor.constraint(equalTo: lastnameLabel.bottomAnchor).isActive = true
         
         tableHeader.addSubview(centerActionButton)
@@ -303,12 +339,20 @@ class AbstractProfileViewController: UIViewController {
         centerActionButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
         centerActionButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         centerActionButton.topAnchor.constraint(equalTo: ageLabel.bottomAnchor, constant: 10).isActive = true
-        centerActionButton.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
+        centerActionButton.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor).isActive = true
        
+        tableHeader.addSubview(importanceLabel)
+        importanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        importanceLabel.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor,constant: 10).isActive = true
+        importanceLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor).isActive = true
+        importanceLabel.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        importanceLabel.layer.cornerRadius = 13
+        importanceLabel.layer.masksToBounds = true
+        
         tableHeader.addSubview(B2Button)
         B2Button.translatesAutoresizingMaskIntoConstraints = false
-        B2Button.centerXAnchor.constraint(equalTo: tableHeader.centerXAnchor).isActive = true
-        B2Button.topAnchor.constraint(equalTo: centerActionButton.bottomAnchor, constant: 40).isActive = true
+        B2Button.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor).isActive = true
+        B2Button.topAnchor.constraint(equalTo: importanceLabel.bottomAnchor, constant: 10).isActive = true
         B2Button.setIconDimension(width: 60)
 
         tableHeader.addSubview(B1Button)
@@ -341,6 +385,16 @@ class AbstractProfileViewController: UIViewController {
         tableHeader.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
         
+        tableView.tableHeaderView = tableHeader
+        
+        tableHeader.setNeedsLayout()
+        tableHeader.layoutIfNeeded()
+
+        let height = tableHeader.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        var frame = tableHeader.frame
+        frame.size.height = height
+        tableHeader.frame = frame
+
         tableView.tableHeaderView = tableHeader
         
     }

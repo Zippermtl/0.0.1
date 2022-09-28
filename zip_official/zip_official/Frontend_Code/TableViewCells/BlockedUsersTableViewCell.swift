@@ -25,6 +25,9 @@ class BlockedUserTableViewCell: AbstractUserTableViewCell {
         unblockButton.translatesAutoresizingMaskIntoConstraints = false
         unblockButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         unblockButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -30).isActive = true
+        
+        nameLabel.rightAnchor.constraint(lessThanOrEqualTo: unblockButton.leftAnchor,constant: -5).isActive = true
+
     }
     
     override func configure(_ user: User) {

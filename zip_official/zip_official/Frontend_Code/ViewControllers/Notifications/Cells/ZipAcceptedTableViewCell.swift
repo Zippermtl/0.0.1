@@ -27,6 +27,9 @@ class ZipAcceptedTableViewCell: AbstractUserTableViewCell {
         messageButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         messageButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -30).isActive = true
         messageButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        
+        nameLabel.rightAnchor.constraint(lessThanOrEqualTo: messageButton.leftAnchor,constant: -5).isActive = true
+
     }
     
     override func configure(_ user: User) {

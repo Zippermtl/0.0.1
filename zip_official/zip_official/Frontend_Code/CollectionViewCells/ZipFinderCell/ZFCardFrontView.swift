@@ -194,17 +194,16 @@ class ZFCardFrontView: UIView {
     
     private func configureImportanceLabel() {
         guard let user = user,
-              let importantUsers = AppDelegate.userDefaults.value(forKey: "importantUsers") as? [String: Int]
-        else { return }
-        if let tpyeInt = importantUsers[user.userId],
-           let type = ImportantUserType(rawValue: tpyeInt){
-            importanceLabel.backgroundColor = type.color
-            importanceLabel.text = type.description
-            importanceLabel.textColor = type.textColor
-            importanceLabel.isHidden = false
-        } else {
+              let userType = user.getHighestPermission(),
+              let userTypeString = user.userTypeString
+        else {
             importanceLabel.isHidden = true
+            return
         }
+        importanceLabel.isHidden = false
+        importanceLabel.backgroundColor = userType.color
+        importanceLabel.textColor = userType.textColor
+        importanceLabel.text = "  " + userTypeString + "  "
     }
     
     //MARK: - Configure
@@ -401,7 +400,6 @@ class ZFCardFrontView: UIView {
         importanceLabel.topAnchor.constraint(equalTo: pictureCollectionView.topAnchor,constant: 5).isActive = true
         importanceLabel.leftAnchor.constraint(equalTo: pictureCollectionView.leftAnchor,constant: 10).isActive = true
         importanceLabel.heightAnchor.constraint(equalToConstant: 26).isActive = true
-        importanceLabel.widthAnchor.constraint(equalToConstant: 120).isActive = true
         importanceLabel.layer.cornerRadius = 13
         importanceLabel.layer.masksToBounds = true
         importanceLabel.textAlignment = .center

@@ -39,13 +39,14 @@ class ZipRequestTableViewCell: AbstractUserTableViewCell, InvitedCell {
         contentView.addSubview(rejectButton)
         rejectButton.translatesAutoresizingMaskIntoConstraints = false
         rejectButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
-        rejectButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -30).isActive = true
+        rejectButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20).isActive = true
         
         contentView.addSubview(acceptButton)
         acceptButton.translatesAutoresizingMaskIntoConstraints = false
         acceptButton.centerYAnchor.constraint(equalTo: rejectButton.centerYAnchor).isActive = true
-        acceptButton.rightAnchor.constraint(equalTo: rejectButton.leftAnchor, constant: -10).isActive = true
+        acceptButton.rightAnchor.constraint(equalTo: rejectButton.leftAnchor, constant: -5).isActive = true
         
+        nameLabel.rightAnchor.constraint(lessThanOrEqualTo: acceptButton.leftAnchor,constant: -5).isActive = true
     }
     
     func setIndexPath(indexPath: IndexPath) {

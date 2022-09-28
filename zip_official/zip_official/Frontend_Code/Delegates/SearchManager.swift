@@ -15,6 +15,8 @@ class SearchManager{
 //    var unfinishedUsers: [User] = []
 //    var unfinishedEvents: [Event] = []
 //    var tempData = NSDictionary
+    var latestSearch: String = ""
+    
     var searchVal: [String] = []
     var presQuery: String = ""
     lazy var priority: [SearchObject] = {

@@ -45,6 +45,9 @@ class MyZipsTableViewCell: AbstractUserTableViewCell {
         requestButton.translatesAutoresizingMaskIntoConstraints = false
         requestButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         requestButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -30).isActive = true
+        
+        nameLabel.rightAnchor.constraint(lessThanOrEqualTo: requestButton.leftAnchor,constant: -5).isActive = true
+
     }
     
     override func configure(_ user: User) {

@@ -116,7 +116,7 @@ class MyEventViewController: EventViewController {
                                                                                 style: .done,
                                                                                 target: vc,
                                                                                 action: #selector(vc.saveFuncTarget))
-            }, [selfUser])
+            }, [selfUser], .zipRed)
             vc.trailingCellSwipeConfiguration = [uninviteConfig]
 
         }
@@ -199,7 +199,7 @@ class MyEventViewController: EventViewController {
                                                                    style: .done,
                                                                    target: vc,
                                                                    action: #selector(vc.saveFuncTarget))
-        }, [selfUser])
+        }, [selfUser],.zipRed)
         vc.trailingCellSwipeConfiguration = [uninviteConfig]
         navigationController?.pushViewController(vc, animated: true)
     }

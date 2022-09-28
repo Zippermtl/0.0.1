@@ -50,6 +50,9 @@ class InviteTableViewCell: AbstractUserTableViewCell, InviteCell {
         addButton.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -30).isActive = true
         
         addButton.addTarget(self, action: #selector(didTapAdd(_:)), for: .touchUpInside)
+        
+        nameLabel.rightAnchor.constraint(lessThanOrEqualTo: addButton.leftAnchor,constant: -5).isActive = true
+
     }
     
     required init?(coder: NSCoder) {

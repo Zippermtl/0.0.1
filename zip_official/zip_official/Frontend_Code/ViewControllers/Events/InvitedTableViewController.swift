@@ -75,8 +75,8 @@ class InvitedTableViewController : MasterTableViewController {
         return num
     }
     
-    func reload(cellItems: [CellItem], reloadTable: Bool = true) {
-        super.reload(cellItems: cellItems, cellType: CellType(userType: .zipRequest, eventType: .rsvp), reloadTable: reloadTable)
+    func reload(cellItems: [CellItem], fetchTable: Bool = true) {
+        super.reload(cellItems: cellItems, cellType: CellType(userType: .zipRequest, eventType: .rsvp), fetchTable: fetchTable)
         self.items = cellItems
     }
     

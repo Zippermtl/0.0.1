@@ -8,6 +8,7 @@
 import UIKit
 import CoreLocation
 import FirebaseFirestore
+import JGProgressHUD
 
 protocol FPCMapDelegate: AnyObject {
     func openZipFinder()
@@ -23,13 +24,14 @@ protocol FPCTableDelegate: AnyObject {
 }
 
 class FPCViewController: UIViewController {
-
+    private var searchDeadline = DispatchTime.now()
     weak var delegate: FPCMapDelegate?
     private var userLoc: CLLocation
     private var scrollView: UIScrollView
     private var zipFinderButton: UIButton
 
     let searchBar: UITextField
+    let searchSpinner = JGProgressHUD(style: .light)
     private var collectionView: UICollectionView
 
     private let zipRequestsLabel: UILabel
@@ -165,6 +167,94 @@ class FPCViewController: UIViewController {
         findEventsIcon.iconButton.addTarget(self, action: #selector(findEvents), for: .touchUpInside)
         createEventIcon.iconButton.addTarget(self, action: #selector(createEvent), for: .touchUpInside)
         notificationIcon.iconButton.addTarget(self, action: #selector(openNotifications), for: .touchUpInside)
+        
+        searchBar.addTarget(self, action: #selector(searchBarDidChange), for: .editingChanged)
+    }
+    
+    @objc private func searchBarDidChange(){
+        guard let text = searchBar.text,
+              text != ""
+        else {
+            searchSpinner.dismiss(animated: true)
+            searchBg.isHidden = true
+            return
+        }
+        
+        searchBg.isHidden = false
+        searchSpinner.show(in: searchBg)
+        if  let searchText = searchBar.text,
+            searchText != "" {
+            let deadline = DispatchTime.now() + 0.3
+            searchDeadline = deadline
+            DispatchQueue.main.asyncAfter(deadline: deadline, execute: { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.startSearch(when: deadline,searchText: searchText)
+            })
+        } else {
+            
+        }
+        
+    }
+    private func startSearch(when currentDeadline: DispatchTime, searchText text: String){
+        guard currentDeadline == searchDeadline else {
+            return
+        }
+        SearchManager.shared.latestSearch = text
+        SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: {[weak self] result in
+            switch result {
+            case .success(let searchObject):
+                guard let strongSelf = self,
+                      currentDeadline == strongSelf.searchDeadline
+                else { return }
+                
+                if searchObject != "0" {
+                    let object = SearchManager.shared.loadedData[searchObject]!
+                    if let user = object.user {
+                        if let cell = user.tableViewCell {
+                            DispatchQueue.main.async {
+                                cell.configureImage(user)
+//                                cell.configure(user)
+                            }
+                        }
+                    } else if let event = object.event {
+                        if let cell = event.tableViewCell {
+                            DispatchQueue.main.async {
+                                cell.configure(event)
+                            }
+                        }
+                    }
+                }
+            case .failure(let error):
+                print("Error loading object in search Error: \(error)")
+            }
+        }, allCompletion: { [weak self] result in
+            print("completing")
+            guard let strongSelf = self else { return }
+            switch result {
+            case .success(let searchResults):
+                guard let strongSelf = self,
+                      currentDeadline == strongSelf.searchDeadline
+                else { return }
+                let allResults = searchResults.map({  SearchManager.shared.loadedData[$0]!.cellItem  })
+                let userResults = allResults.filter({ $0.isUser })
+                let eventResults = allResults.filter({ $0.isEvent })
+                strongSelf.searchTable.reload(multiSectionData: [
+                    MultiSectionData(title: "All", sections:
+                                        [CellSectionData(title: nil, items: allResults, cellType: CellType(userType: .zipList, eventType: .save))]),
+                    MultiSectionData(title: "Users", sections:
+                                        [CellSectionData(title: nil, items: userResults, cellType: CellType(userType: .zipList, eventType: .save))]),
+                    MultiSectionData(title: "Events", sections:
+                                        [CellSectionData(title: nil, items: eventResults, cellType: CellType(userType: .zipList, eventType: .save))])
+                ], fetchTable: false)
+                DispatchQueue.main.async {
+                    strongSelf.searchSpinner.dismiss(animated: true)
+                }
+                
+            case .failure(let error):
+                print("Error searching with querytext \(text) and Error: \(error)")
+            }
+        })
+        
     }
     
     func addDoneButtonOnKeyboard(){
@@ -207,7 +297,7 @@ class FPCViewController: UIViewController {
                     strongSelf.updateZipsLabel(cellItems: users)
                 }
             case .failure(let error):
-                print("error observing zip requests")
+                print("error observing zip requests Error: \(error)")
                 break
             }
         })
@@ -518,6 +608,9 @@ extension FPCViewController: UICollectionViewDataSource {
         return cell
     }
 }
+    
+
+
 
 extension FPCViewController: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -528,56 +621,8 @@ extension FPCViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField.text == "" {
             searchBg.isHidden = true
+            searchSpinner.dismiss(animated: true)
         }
-    }
-    
-    func textFieldDidChangeSelection(_ textField: UITextField) {
-        guard let text = textField.text else{
-            return
-        }
-        
-        //        if(SearchManager.shared.newQuery(searchString: text)){
-        SearchManager.shared.StartSearch(searchString: text, event: true, user: true, finishedLoadingCompletion: { result in
-            switch result {
-            case .success(let searchObject):
-                if searchObject != "0" {
-                    let object = SearchManager.shared.loadedData[searchObject]!
-                    if let user = object.user {
-                        if let cell = user.tableViewCell {
-                            cell.configure(user)
-                        }
-                    } else if let event = object.event {
-                        if let cell = event.tableViewCell {
-                            cell.configure(event)
-                        }
-                    }
-                }
-            case .failure(let error):
-                print("Error loading object in search Error: \(error)")
-            }
-        }, allCompletion: { [weak self] result in
-            print("completing")
-            guard let strongSelf = self else { return }
-            switch result {
-            case .success(let searchResults):
-                let allResults = searchResults.map({  SearchManager.shared.loadedData[$0]!.cellItem  })
-                let userResults = allResults.filter({ $0.isUser })
-                let eventResults = allResults.filter({ $0.isEvent })
-                strongSelf.searchTable.reload(multiSectionData: [
-                    MultiSectionData(title: "All", sections:
-                                        [CellSectionData(title: nil, items: allResults, cellType: CellType(userType: .zipList, eventType: .save))]),
-                    MultiSectionData(title: "Users", sections:
-                                        [CellSectionData(title: nil, items: userResults, cellType: CellType(userType: .zipList, eventType: .save))]),
-                    MultiSectionData(title: "Events", sections:
-                                        [CellSectionData(title: nil, items: eventResults, cellType: CellType(userType: .zipList, eventType: .save))])
-                ], reloadTable: false)
-                
-            case .failure(let error):
-                print("Error searching with querytext \(text) and Error: \(error)")
-            }
-        })
-        //        }
-        
     }
     
     func textFieldShouldClear(_ textField: UITextField) -> Bool {

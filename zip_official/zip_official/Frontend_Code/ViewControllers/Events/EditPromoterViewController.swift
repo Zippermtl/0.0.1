@@ -41,10 +41,42 @@ class EditPromoterViewController: EditEventProfileViewController, UITextFieldDel
         linkField.borderStyle = .roundedRect
 
         sellTicketsSwitch.addTarget(self, action: #selector(didTapSwitch(sender:)), for: .valueChanged)
+        setupKeyboardHiding()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupKeyboardHiding() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    var originalY : CGFloat?
+    @objc private func keyboardWillShow(sender: NSNotification) {
+        originalY = view.frame.origin.y
+        guard let userInfo = sender.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+              let currentTextField = UIResponder.currentFirst() as? UITextView else {
+            return
+        }
+        
+        let keyboardTopY = keyboardFrame.cgRectValue.origin.y
+        let convertedTextFieldFrame = view.convert(currentTextField.frame, from: currentTextField.superview)
+        let textFieldBottomY = convertedTextFieldFrame.origin.y + convertedTextFieldFrame.size.height
+        
+        if textFieldBottomY > keyboardTopY {
+            let textBoxY = convertedTextFieldFrame.origin.y
+            let newFrameY = (textBoxY - keyboardTopY / 2) * -1
+            view.frame.origin.y = newFrameY
+        }
+    }
+    
+    @objc private func keyboardWillHide(notification : NSNotification) {
+        if let originalY = originalY {
+            view.frame.origin.y = originalY
+        }
     }
     
     private func noPriceOrLinkAlert() {

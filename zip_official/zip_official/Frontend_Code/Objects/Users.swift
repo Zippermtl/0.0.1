@@ -24,7 +24,9 @@ class UserCoder: UserUpdateCoder {
     var notificationToken: [String]
     var birthday: Timestamp
     var blockedUsers: [String]?
-
+    var permissions: Int?
+    var userTypeString: String?
+    
     
     override init(user: User) {
         self.userId = user.userId
@@ -39,7 +41,45 @@ class UserCoder: UserUpdateCoder {
         self.notificationToken = [user.notificationToken]
         self.deviceId = [user.deviceId]
         self.blockedUsers = user.blockedUsers
+        self.userTypeString = user.userTypeString
         super.init(user: user)
+        self.permissions = Self.encodePermissions(user.permissions)
+    }
+    
+    static func decodePermissions(_ N: Int?) -> [User.Permissions:Bool] {
+        guard var current = N else {
+            return Dictionary(uniqueKeysWithValues: User.Permissions.allCases.map{ ($0, false) })
+        }
+
+        var values: [User.Permissions:Bool] = [:]
+        var counter = 0 // Start index
+        let NB_PREFS = User.Permissions.allCases.count
+        let allPermissions = User.Permissions.allCases.sorted(by: { $0.rawValue > $1.rawValue})
+
+        while (counter < NB_PREFS) {
+            values[allPermissions[NB_PREFS-1-counter]] = current%2 > 0
+            current /= 2
+            counter += 1
+        }
+        return values
+    }
+
+
+    // Encode preferences into a integer
+    static func encodePermissions(_ preferences: [User.Permissions:Bool]) -> Int? {
+        var total = 0 // Total value
+        var powerOfTwo = 1 // Start with 2^0
+        let allPermissions = User.Permissions.allCases.sorted(by: { $0.rawValue > $1.rawValue})
+        for i in (0..<User.Permissions.allCases.count).reversed() {
+            
+            if let perm = preferences[allPermissions[i]] {
+                if perm {total += powerOfTwo} // If bit is on, add power of 2
+            }
+            powerOfTwo *= 2 // Multiply by 2 to get next power of 2
+        }
+        
+        // Return total
+        return total == 0 ? nil : total
     }
     
     enum CodingKeys: String, CodingKey {
@@ -55,6 +95,8 @@ class UserCoder: UserUpdateCoder {
         case notificationToken = "notificationToken"
         case deviceId = "deviceId"
         case blockedUsers = "blockedUsers"
+        case permissions = "permissions"
+        case userTypeString = "userTypeString"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -71,6 +113,8 @@ class UserCoder: UserUpdateCoder {
         notificationToken = try container.decode([String].self, forKey: .notificationToken)
         joinDate = try container.decode(Timestamp.self, forKey: .joinDate)
         blockedUsers = try? container.decode([String].self, forKey: .blockedUsers)
+        permissions = try? container.decode(Int.self, forKey: .permissions)
+        userTypeString = try? container.decode(String.self, forKey: .userTypeString)
         try super.init(from: decoder)
     }
     
@@ -88,6 +132,8 @@ class UserCoder: UserUpdateCoder {
         try container.encode(profilePicIndex, forKey: .profilePicIndex)
         try container.encode(picNum, forKey: .picNum)
         try? container.encode(blockedUsers, forKey: .blockedUsers)
+        try? container.encode(permissions, forKey: .permissions)
+        try? container.encode(userTypeString, forKey: .userTypeString)
         try super.encode(to: encoder)
     }
     
@@ -111,6 +157,9 @@ class UserCoder: UserUpdateCoder {
         if let blockedUsers = blockedUsers {
             user.blockedUsers = blockedUsers
         }
+        
+        user.userTypeString = self.userTypeString
+        user.permissions = Self.decodePermissions(self.permissions)
     }
     
     override func createUser() -> User {
@@ -121,7 +170,6 @@ class UserCoder: UserUpdateCoder {
 }
  
 class UserUpdateCoder: Codable {
-    
     var bio: String
     var interests: [Interests]
     var school: String?
@@ -234,6 +282,54 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
     var goingEvents: [Event] = []
     weak var tableViewCell: AbstractUserTableViewCell?
     weak var ZFCell : ZipFinderCollectionViewCell?
+    
+    public enum Permissions : Int, CaseIterable{
+        case developer = 0
+        case promoter = 1
+        case ambassador = 2
+        
+        
+        var color : UIColor {
+            switch self {
+            case .developer: return .zipBlue
+            case .promoter: return .zipYellow
+            case .ambassador: return .zipGreen
+            }
+        }
+        
+        var textColor: UIColor {
+            switch self {
+            case .developer: return .white
+            case .promoter: return .black
+            case .ambassador: return .white
+            }
+        }
+    }
+    
+    var userTypeString: String?
+    var permissions : [User.Permissions : Bool] = {
+        return Dictionary(uniqueKeysWithValues: User.Permissions.allCases.map{ ($0, false) })
+    }()
+    
+    var promoterApp: PromoterApplication? = nil
+    
+    func getHighestPermission() -> User.Permissions? {
+        if permissions[.developer] == true {
+            return .developer
+        } else if permissions[.promoter] == true {
+            return .promoter
+        } else if permissions[.ambassador] == true {
+            return .ambassador
+        } else {
+            return nil
+        }
+    }
+    
+    struct PromoterApplication {
+        let receiveTexts: Bool
+        let reason: String?
+        let accountType: String?
+    }
     
     public var description : String {
         var out = ""
@@ -1051,7 +1147,21 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
 ////            })
 //        }
     
-    
+    static func getHighestPermission() -> User.Permissions? {
+        guard let intPerms = AppDelegate.userDefaults.value(forKey: "permissions") as? Int else {
+            return nil
+        }
+        let permissions = UserCoder.decodePermissions(intPerms)
+        if permissions[.developer] == true {
+            return .developer
+        } else if permissions[.promoter] == true {
+            return .promoter
+        } else if permissions[.ambassador] == true {
+            return .ambassador
+        } else {
+            return nil
+        }
+    }
     
     static func getMyZips() -> [User]{
         guard let raw_friendships = AppDelegate.userDefaults.value(forKey: "friendships") as? [String: [String: String]] else {

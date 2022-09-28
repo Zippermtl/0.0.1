@@ -18,6 +18,9 @@ import CoreData
 
 //MARK: - Account Management
 extension DatabaseManager {
+    
+    
+    
     /// checks if user exists for given email
     /// parameters
     ///  - `completion` : async clusire to return with result
@@ -352,7 +355,7 @@ enum ImportantUserType : Int, CustomStringConvertible {
     
     var description: String {
         switch self {
-        case .founder: return "Founder"
+        case .founder: return "Zipper"
         case .zipper: return "Zipper"
         case .promoter: return "Promoter"
         case .ambassador: return "Ambassador"
@@ -558,6 +561,140 @@ extension DatabaseManager {
                 }
             })
         }
+    }
+    
+    public func applyForPromoter(accountType: String?, reason: String?, recieveTexts: Bool, completion: @escaping (Error?) -> Void) {
+        guard let id = AppDelegate.userDefaults.value(forKey: "userId") as? String,
+              let name = AppDelegate.userDefaults.value(forKey: "name") as? String else {
+            return
+        }
+        
+        var application : [String: Any] = [
+            "accountType" : accountType as Any,
+            "name" : name,
+            "receiveTexts": recieveTexts,
+            "id": id,
+            "reason" : reason as Any
+        ]
+        
+        firestore.collection("PromoterApplications").document(id).setData(application) { error in
+            if error != nil {
+                print("error sending promoter application")
+            }
+            completion(error)
+        }
+    }
+    
+    public func getPromoterRequests(completion: @escaping (Result<[User],Error>) -> Void) {
+        firestore.collection("PromoterApplications").getDocuments(completion: { snapshot,error in
+            guard error == nil,
+                  let documnets = snapshot?.documents
+                  
+            else {
+                      completion(.failure(error!))
+                      return
+            }
+            var users: [User] = []
+            for documnet in documnets {
+                let data = documnet.data()
+                let user = User(userId: documnet.documentID)
+                user.promoterApp = User.PromoterApplication(receiveTexts: data["receiveTexts"] as? Bool ?? false,
+                                                            reason: data["reason"] as? String,
+                                                            accountType: data["accountType"] as? String)
+                users.append(user)
+            }
+            completion(.success(users))
+        })
+    }
+    
+    public func getAmbassadorRequests(completion: @escaping (Result<[User],Error>) -> Void) {
+        firestore.collection("AmbassadorApplications").getDocuments(completion: { snapshot,error in
+            guard error == nil,
+                  let documnets = snapshot?.documents
+                  
+            else {
+                      completion(.failure(error!))
+                      return
+            }
+            var users: [User] = []
+            for documnet in documnets {
+                let data = documnet.data()
+                let user = User(userId: documnet.documentID)
+                users.append(user)
+            }
+            completion(.success(users))
+        })
+    }
+    
+    public func makeDeveloper(userId: String, completion: @escaping (Error?) -> Void) {
+        let devDict : [String : Any] = [
+            "permissions" : UserCoder.encodePermissions([.developer:true,.promoter:true]) as Any,
+            "userTypeString" : "Zipper"
+        ]
+        
+        firestore.collection("UserProfiles").document(userId).setData(devDict, merge: true) { [weak self] error in
+            guard error == nil,
+                  let strongSelf = self else {
+                completion(error)
+                return
+            }
+            strongSelf.firestore.collection("PromoterApplications").document(userId).delete()
+            completion(nil)
+        }
+    }
+    
+    public func acceptAmbassador(user: User, completion: @escaping (Error?) -> Void) {
+        let devDict : [String : Any] = [
+            "permissions" : UserCoder.encodePermissions([.developer:false,.promoter:false,.ambassador : true]) as Any,
+            "userTypeString" : "Ambassador"
+        ]
+        
+        firestore.collection("UserProfiles").document(user.userId).setData(devDict, merge: true) { [weak self] error in
+            guard error == nil,
+                  let strongSelf = self else {
+                completion(error)
+                return
+            }
+            strongSelf.firestore.collection("AmbassadorApplications").document(user.userId).delete()
+            completion(nil)
+        }
+    }
+    
+    public func acceptPromoterApplication(user: User, completion: @escaping (Error?) -> Void) {
+        let promoterDict : [String : Any] = [
+            "permissions" : UserCoder.encodePermissions([.developer:false,.promoter:true]) as Any,
+            "userTypeString" : user.promoterApp?.accountType ?? "Promoter"
+        ]
+        
+        firestore.collection("UserProfiles").document(user.userId).setData(promoterDict, merge: true) { [weak self] error in
+            guard error == nil,
+                  let strongSelf = self else {
+                completion(error)
+                return
+            }
+            strongSelf.firestore.collection("PromoterApplications").document(user.userId).delete()
+            completion(nil)
+        }
+    }
+    
+    public func rejectPromoterApplication(user: User, completion: @escaping (Error?) -> Void) {
+        
+        firestore.collection("PromoterApplications").document(user.userId).delete() { [weak self] error in
+            guard let strongSelf = self,
+                  error == nil else {
+                return
+            }
+            
+            let application : [String: Any] = [
+                "accountType" : user.promoterApp?.accountType as Any,
+                "name" : user.fullName,
+                "receiveTexts":  user.promoterApp?.receiveTexts ?? false,
+                "id": user.userId,
+                "reason" : user.promoterApp?.reason as Any
+            ]
+            strongSelf.firestore.collection("RejectedPromoters").document(user.userId).setData(application)
+        }
+        
     }
     
     public func updateGender(gender: String, completion: @escaping (Error?) -> Void) {

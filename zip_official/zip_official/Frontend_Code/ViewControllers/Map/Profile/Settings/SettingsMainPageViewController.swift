@@ -9,11 +9,23 @@ import UIKit
 import FirebaseAuth
 
 class SettingsPageViewController: UIViewController {
-    var settingsCatagories: [String] = ["Account", "ZipFinder Preferences", "Notifications", "Help"]
+    var settingsCatagories: [String]
     
     // MARK: - SubViews
     var tableView = UITableView()
     var logoutButton = UIButton()
+    
+    init() {
+        settingsCatagories = ["Account", "ZipFinder Preferences", "Notifications", "Help", "Apply to be an Ambassador", "Apply for a Promoter Account"]
+        if User.getHighestPermission() == .developer {
+            settingsCatagories.append("Developer Stack")
+        }
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Button Actions
     @objc private func didTapBackButton(){
@@ -165,7 +177,18 @@ extension SettingsPageViewController :  UITableViewDelegate {
         case 0: vc = AccountSettingsViewController()
         case 1: vc = FilterSettingsViewController()
         case 2: vc = NotificationsSettingsViewController()
-        default: vc = HelpSettingsViewController()
+        case 3: vc = HelpSettingsViewController()
+        case 4:
+            let url = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSc1j9AcW4N59vQrkK82Awf5FepGxqaHTOuTEZLvNn8dMIANLw/viewform")!
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(url)
+            } else {
+                UIApplication.shared.openURL(url)
+            }
+            return
+        case 5: vc = PromoterAppViewController()
+        case 6: vc = DevStackViewController()
+        default: return
         }
         navigationController?.pushViewController(vc, animated: true)
     }

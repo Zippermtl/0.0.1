@@ -753,6 +753,7 @@ class EventViewController: UIViewController {
         
         goingButton.addTarget(self, action: #selector(didTapGoingButton), for: .touchUpInside)
         
+        
         saveButton.iconAddTarget(self, action: #selector(didTapSaveButton), for: .touchUpInside)
         messageButton.iconAddTarget(self, action: #selector(didTapMessageButton), for: .touchUpInside)
         participantsButton.iconAddTarget(self, action: #selector(didTapParticipantsButton), for: .touchUpInside)
