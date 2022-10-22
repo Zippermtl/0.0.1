@@ -192,6 +192,7 @@ extension DatabaseManager{
                     guard let imgtemp = i.image else {
                         continue
                     }
+//                    UIImage
                     guard let dataholder = imgtemp.jpegData(compressionQuality: 0.8) else {
                         print("something is very wrong")
                         continue

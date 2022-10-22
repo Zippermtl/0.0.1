@@ -34,7 +34,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfile(given: user, completion: { results in
                 switch results {
                 case .success(let u):
-                    user.updateSelfHard(user: u)
+                    user.updateSelfSoft(user: u)
                     dataCompletion(.success(u))
                 case .failure(let error):
                     print("error load in LoadUser -> LoadUserProfile \(error)")
@@ -45,7 +45,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfile(given: user, dataCompletion: { res in
                 switch res{
                 case .success(let u):
-                    user.updateSelfHard(user: u)
+                    user.updateSelfSoft(user: u)
                     dataCompletion(.success(u))
                 case .failure(let error):
                     dataCompletion(.failure(error))
@@ -75,7 +75,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfileNoPic(given: user, completion: { res in
                 switch res{
                 case .success(let u):
-                    user.updateSelfHard(user: u)
+                    user.updateSelfSoft(user: u)
                     dataCompletion(.success(u))
                 case .failure(let err):
                     dataCompletion(.failure(err))
@@ -85,7 +85,7 @@ public class UserCache {
             DatabaseManager.shared.loadUserProfileSubView(given: user.userId, completion: { results in
                 switch results {
                 case .success(let u):
-                    user.updateSelfHard(user: u)
+                    user.updateSelfSoft(user: u)
                     dataCompletion(.success(u))
                 case .failure(let err):
                     dataCompletion(.failure(err))
@@ -138,8 +138,28 @@ public class UserCache {
                   completionUpdates: @escaping (Result<[URL], Error>) -> Void) {
         if let cachedUser = cache[us.userId] {
             // Use the cached version
-            us.updateSelfHard(user: cachedUser)
+            us.updateSelfSoft(user: cachedUser)
             completion(.success(cachedUser))
+            if let pp = us.profilePicUrl {
+                completionUpdates(.success([pp]))
+            } else {
+                DatabaseManager.shared.getImages(Id: us.userId, indices: us.profilePicIndex, event: false, completion: { [weak self] res in
+                    guard let strongSelf = self else {
+                        return
+                    }
+                    switch res{
+                    case .success(let url):
+                        completionUpdates(.success(url))
+                        if url.count != 0 {
+                            us.profilePicUrl = url[0]
+                            strongSelf.cache[us.userId]?.updateSelfSoft(user: us)
+                        }
+                    case .failure(let err):
+                        completionUpdates(.failure(err))
+                    }
+                    
+                })
+            }
             return
         }
 

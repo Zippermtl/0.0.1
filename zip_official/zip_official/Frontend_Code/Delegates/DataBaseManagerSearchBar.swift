@@ -287,6 +287,9 @@ extension DatabaseManager {
         let nameRef = firestore.collection("EventProfiles")
         var events: [Event] = []
 //        var friends = User.getMyZips()
+        if(queryText != SearchManager.shared.presQuery) {
+            return
+        }
         nameRef.whereField("LCTitle", isGreaterThanOrEqualTo: queryText).whereField("LCTitle", isLessThanOrEqualTo: queryText+"~").getDocuments() { [weak self] (querySnapshot, err) in
             guard let strongSelf = self,
                   err == nil else {
