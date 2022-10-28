@@ -33,7 +33,6 @@ pod 'CodableFirebase'
 pod 'Firebase/Messaging'
 
 #email
-pod 'GoogleAPIClient/Gmail'
 pod 'mailcore2-ios'
 
 
