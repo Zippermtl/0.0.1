@@ -470,7 +470,8 @@ extension DatabaseManager {
                         eventCompletion(currentEvent)
                     }
                     if getImage {
-                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
+                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, type: DatabaseManager.ImageType.eventCoverIndex, completion: { res in
+//                        DatabaseManager.shared.getImages(Id: currentEvent.eventId, indices: currentEvent.eventCoverIndex, event: true, completion: { res in
                             count += 1
 
                             switch res {
@@ -592,7 +593,8 @@ extension DatabaseManager {
                 eventCoder.updateEvent(event: event)
                 event.loadStatus = .UserProfileNoPic
                 completion(.success(event))
-                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
+                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, type: DatabaseManager.ImageType.eventCoverIndex, completion: { res in
+//                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
                     switch res{
                     case .success(let url):
                         event.loadStatus = .UserProfile
@@ -621,7 +623,8 @@ extension DatabaseManager {
                 print("Success loading")
                 eventCoder.updateEvent(event: event)
                 completion(.success(event))
-                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
+                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, type: DatabaseManager.ImageType.eventCoverIndex, completion: { res in
+//                DatabaseManager.shared.getImages(Id: event.eventId, indices: event.eventCoverIndex, event: true, completion: { res in
                     switch res{
                     case .success(let url):
                         print("making event")

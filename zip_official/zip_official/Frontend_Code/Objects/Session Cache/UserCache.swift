@@ -5,6 +5,7 @@
 //  Created by Nicolas Almerge
 
 import Foundation
+import MessageKit
 
 
 public class UserCache {
@@ -93,7 +94,8 @@ public class UserCache {
             })
         case .ProfilePicUrl:
             if (user.profilePicIndex) != [] {
-                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
+                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, type: DatabaseManager.ImageType.profileIndex, completion: { res in
+//                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
                     switch res {
                     case .success(let urls):
                         if(urls.count > 0){
@@ -106,7 +108,8 @@ public class UserCache {
                 })
             }
         case .PicUrls:
-            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
+            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, type: DatabaseManager.ImageType.picIndices, completion: { res in
+//            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
                 switch res {
                 case .success(let urls):
                     user.pictureURLs = urls
@@ -143,7 +146,8 @@ public class UserCache {
             if let pp = us.profilePicUrl {
                 completionUpdates(.success([pp]))
             } else {
-                DatabaseManager.shared.getImages(Id: us.userId, indices: us.profilePicIndex, event: false, completion: { [weak self] res in
+                DatabaseManager.shared.getImages(Id: us.userId, indices: us.profilePicIndex, type: DatabaseManager.ImageType.profileIndex, completion: { [weak self] res in
+//                DatabaseManager.shared.getImages(Id: us.userId, indices: us.profilePicIndex, event: false, completion: { [weak self] res in
                     guard let strongSelf = self else {
                         return
                     }

@@ -434,7 +434,8 @@ extension DatabaseManager {
             let id = user.userId
             let index = user.picIndices
             let proindex = user.profilePicIndex
-            DatabaseManager.shared.getImages(Id: id, indices: proindex, event: false, completion: { res in
+            DatabaseManager.shared.getImages(Id: id, indices: proindex, type: DatabaseManager.ImageType.profileIndex, completion: { res in
+//            DatabaseManager.shared.getImages(Id: id, indices: proindex, event: false, completion: { res in
                 switch res {
                 case .success(let url):
                     print("accessing")
@@ -442,8 +443,9 @@ extension DatabaseManager {
                     print(proindex)
                     if (url.count > 0){
                         user.profilePicUrl = url[0]
-                    } 
-                    DatabaseManager.shared.getImages(Id: id, indices: index, event: false, completion: { res in
+                    }
+                    DatabaseManager.shared.getImages(Id: id, indices: index, type: DatabaseManager.ImageType.picIndices, completion: { res in
+//                    DatabaseManager.shared.getImages(Id: id, indices: index, event: false, completion: { res in
                         switch res {
                         case.success(let urls):
                             user.pictureURLs = urls
@@ -476,7 +478,8 @@ extension DatabaseManager {
             case .success(let user):
 //                let imagesPath = "images/" + user.userId
                 dataCompletion(.success(user))
-                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
+                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, type: DatabaseManager.ImageType.profileIndex, completion: { res in
+//                DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
                     switch res {
                     case .success(let url):
                         if (url.count > 0){
@@ -484,7 +487,8 @@ extension DatabaseManager {
                         }
 //                        profilePictureCompletion(.success(url))
                         if( user.picIndices.count > 0){
-                            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
+                            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, type: DatabaseManager.ImageType.picIndices, completion: { res in
+//                            DatabaseManager.shared.getImages(Id: user.userId, indices: user.picIndices, event: false, completion: { res in
                                 switch res {
                                 case.success(let urls):
                                     user.pictureURLs = urls
@@ -550,7 +554,8 @@ extension DatabaseManager {
             user.location = CLLocation(latitude: data["lat"] as! Double, longitude: data["long"] as! Double)
             
 //            let imagesPath = "images/" + id
-            DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
+            DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, type: DatabaseManager.ImageType.profileIndex, completion: { res in
+//            DatabaseManager.shared.getImages(Id: user.userId, indices: user.profilePicIndex, event: false, completion: { res in
                 switch res {
                 case .success(let url):
                     user.profilePicUrl = url[0]
@@ -731,7 +736,8 @@ extension DatabaseManager {
                 }
                 var key = user.userId
                 var index = user.profilePicIndex
-                DatabaseManager.shared.getImages(Id: key, indices: index, event: false, completion: { res in
+                DatabaseManager.shared.getImages(Id: key, indices: index, type: DatabaseManager.ImageType.profileIndex, completion: { res in
+//                DatabaseManager.shared.getImages(Id: key, indices: index, event: false, completion: { res in
                     switch res {
                     case .success(let url):
                         print("767 \(url)")

@@ -32,6 +32,8 @@ class DatabaseManager {
         case failedToFetch
         case failedToSyncStorage
         case failedWithIndices
+        case failedToGetGroupId
+        case notAllowedToAccessGroup
     }
     
     
