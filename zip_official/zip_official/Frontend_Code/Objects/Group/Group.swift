@@ -13,6 +13,7 @@ public class Group: CustomStringConvertible, Equatable, Comparable {
     public enum GroupError: Error {
         case groupIdNotPresent
         case improperAccess
+        case notInGroup
     }
     
     var users: [User] = []

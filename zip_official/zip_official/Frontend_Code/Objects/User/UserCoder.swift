@@ -24,6 +24,7 @@ class UserCoder: UserUpdateCoder {
     var blockedUsers: [String]?
     var permissions: Int?
     var userTypeString: String?
+    var groups: [String]
     
     
     override init(user: User) {
@@ -40,6 +41,7 @@ class UserCoder: UserUpdateCoder {
         self.deviceId = [user.deviceId]
         self.blockedUsers = user.blockedUsers
         self.userTypeString = user.userTypeString
+        self.groups = user.groups.map({$0.id})
         super.init(user: user)
         self.permissions = Self.encodePermissions(user.permissions)
     }
@@ -94,6 +96,7 @@ class UserCoder: UserUpdateCoder {
         case blockedUsers = "blockedUsers"
         case permissions = "permissions"
         case userTypeString = "userTypeString"
+        case groups = "Groups"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -112,6 +115,7 @@ class UserCoder: UserUpdateCoder {
         blockedUsers = try? container.decode([String].self, forKey: .blockedUsers)
         permissions = try? container.decode(Int.self, forKey: .permissions)
         userTypeString = try? container.decode(String.self, forKey: .userTypeString)
+        groups = try container.decode([String].self, forKey: .groups)
         try super.init(from: decoder)
     }
     
@@ -131,6 +135,7 @@ class UserCoder: UserUpdateCoder {
         try? container.encode(blockedUsers, forKey: .blockedUsers)
         try? container.encode(permissions, forKey: .permissions)
         try? container.encode(userTypeString, forKey: .userTypeString)
+        try container.encode(groups, forKey: .groups)
         try super.encode(to: encoder)
     }
     
@@ -145,6 +150,7 @@ class UserCoder: UserUpdateCoder {
         user.lastName = lastName
         user.birthday = birthday.dateValue()
         user.joinDate = joinDate.dateValue()
+        
         var nt = ""
         if notificationToken.count != 0 {
             nt = notificationToken[0]
@@ -157,6 +163,8 @@ class UserCoder: UserUpdateCoder {
         
         user.userTypeString = self.userTypeString
         user.permissions = Self.decodePermissions(self.permissions)
+        user.groups = groups.map( { Group(groupId: $0 )} )
+        
     }
     
     override func createUser() -> User {

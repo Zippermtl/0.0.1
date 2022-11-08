@@ -251,15 +251,26 @@ public class User : CustomStringConvertible, Equatable, Comparable, CellItem {
         return AppDelegate.userDefaults.value(forKey: "userId") as! User
     }
 
-    public func fillGroups(){
+    public func fillGroups(completion: @escaping (Error?) -> Void){
         for i in 0...groups.count {
-            groups[i].pull()
+            groups[i].pull(completion: { err in
+                guard err == nil else {
+                    completion(err)
+                    return
+                }
+            })
         }
     }
     
-    public func writeGroup(index: Int){
-        groups[index].push()
+    public func writeChangesGroup(index: Int, completion: @escaping (Error?) -> Void){
+        groups[index].push(completion: { err in
+            guard err == nil else {
+                completion(err)
+                return
+            }
+        })
     }
+    
 //    init(userId id: String, username us: String, firstName fn: String, lastName ln: String) {
 //        userId = id
 //        username = us

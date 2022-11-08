@@ -64,7 +64,7 @@ extension DatabaseManager {
                     coder.updateGroup(group: group)
                     completion(nil)
                 } else {
-                    
+                    completion(Group.GroupError.notInGroup)
                 }
             case .failure(let error):
                 completion(error)
