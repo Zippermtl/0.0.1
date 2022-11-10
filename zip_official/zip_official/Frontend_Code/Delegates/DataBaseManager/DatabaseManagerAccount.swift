@@ -760,8 +760,16 @@ extension DatabaseManager {
             }
         })
         
-        
-        
+    }
+    
+    public func fixUserGroups(userId: String, groups: [String] = []) async  {
+        do {
+            print("entered fixUserGroups")
+            try await firestore.collection("UserProfiles").document(userId).updateData(["Groups": []])
+            print("finished adding [] as group to \(userId)")
+        } catch {
+            print("failed to update User \(userId)")
+        }
     }
     
 //    public func batchPull(idList: [User], completion: @escaping (Error?) -> Void){

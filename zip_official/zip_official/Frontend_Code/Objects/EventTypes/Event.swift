@@ -116,6 +116,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     var allowUserInvites: Bool = false
     var ownerName: String = ""
     var ownerId: String = ""
+    var tags: [String] = []
     
     func getEncoder() -> EventCoder {
         let encoder = EventCoder(event: self)
@@ -409,6 +410,15 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
     public func getType() -> EventType {
         return EventType.Event
     }
+    
+    public func fitsCategories(filters:[String]) -> Bool {
+        for i in filters{
+            if tags.contains(i){
+                return true
+            }
+        }
+        return false
+    }
         
     init(eventId Id: String = "",
          title tit: String = "",
@@ -433,8 +443,8 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
          eventPicIndices epI: [Int] = [],
          allowUserInvites aui: Bool = false,
          ownerName oN: String = "",
-         ownerId oId: String = ""
-
+         ownerId oId: String = "",
+         tags tag: [String] = []
     ) {
         eventId = Id
         title = tit
@@ -468,6 +478,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
             formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
             endTime = formatter.date(from: sts)!
         }
+        tags = tag
     }
     
     init(event: Event) {
@@ -495,6 +506,7 @@ public class Event : Equatable, CustomStringConvertible, CellItem {
         self.allowUserInvites = event.allowUserInvites
         self.ownerId = event.ownerId
         self.ownerName = event.ownerName
+        self.tags = event.tags
     }
     
     init(){
@@ -545,8 +557,9 @@ public func createEventLocal(eventId Id: String = "",
                              eventPicIndices epI: [Int] = [],
                              allowUserInvites aui: Bool = false,
                              ownerName oN: String = "",
-                             ownerId oId: String = "") -> Event {
-    let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersNotGoing: uNotGoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI,allowUserInvites: aui, ownerName: oN, ownerId: oId)
+                             ownerId oId: String = "",
+                             tags tag: [String] = []) -> Event {
+    let baseEvent = Event(eventId: Id, title: tit, coordinates: loc, hosts: host, bio: b, address: addy, locationName: locName, maxGuests: maxG, usersGoing: ugoing, usersNotGoing: uNotGoing, usersInterested: uinterested, usersInvite: uinvite, startTime: stime, endTime: etime, duration: dur, image: im, imageURL: url, endTimeString: ets, startTimeString: sts, eventCoverIndex: ecI,eventPicIndices: epI,allowUserInvites: aui, ownerName: oN, ownerId: oId, tags: tag)
     switch t{
     case .Event: return baseEvent
     case .Closed, .Open: return UserEvent(event: baseEvent, type: t)

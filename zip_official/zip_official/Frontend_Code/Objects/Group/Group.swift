@@ -132,6 +132,9 @@ public class Group: CustomStringConvertible, Equatable, Comparable {
                 return
             }
         })
+        Task {
+            await loadCover()
+        }
     }
     
     public func push(completion: @escaping (Error?) -> Void) {

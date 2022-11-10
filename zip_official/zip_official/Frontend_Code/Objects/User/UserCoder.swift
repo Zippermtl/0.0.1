@@ -24,7 +24,7 @@ class UserCoder: UserUpdateCoder {
     var blockedUsers: [String]?
     var permissions: Int?
     var userTypeString: String?
-    var groups: [String]
+    var groups: [String] = []
     
     
     override init(user: User) {
@@ -100,6 +100,7 @@ class UserCoder: UserUpdateCoder {
     }
     
     public required init(from decoder: Decoder) throws {
+        var needToFixGroups = false
         let container = try decoder.container(keyedBy: CodingKeys.self)
         userId = try container.decode(String.self, forKey: .userId)
         username = try container.decode(String.self, forKey: .username)
@@ -115,8 +116,21 @@ class UserCoder: UserUpdateCoder {
         blockedUsers = try? container.decode([String].self, forKey: .blockedUsers)
         permissions = try? container.decode(Int.self, forKey: .permissions)
         userTypeString = try? container.decode(String.self, forKey: .userTypeString)
-        groups = try container.decode([String].self, forKey: .groups)
+        do {
+            print("trying to get groups")
+            groups = try container.decode([String].self, forKey: .groups)
+            print("groups == \(groups), \(userId)")
+        } catch {
+            groups = []
+            needToFixGroups = true
+        }
         try super.init(from: decoder)
+        if needToFixGroups {
+            Task {
+                await DatabaseManager.shared.fixUserGroups(userId: userId)
+                print("fixed User: \(userId)")
+            }
+        }
     }
     
     public override func encode(to encoder: Encoder) throws {

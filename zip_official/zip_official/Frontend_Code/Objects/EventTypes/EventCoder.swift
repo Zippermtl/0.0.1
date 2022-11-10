@@ -35,6 +35,7 @@ public class EventCoder: Codable {
     var allowUserInvites: Bool
     var ownerName: String
     var ownerId: String
+    var tags: [String] = []
     
     var price: Double?
     var link: String?
@@ -65,6 +66,7 @@ public class EventCoder: Codable {
         self.allowUserInvites = event.allowUserInvites
         self.ownerId = event.ownerId
         self.ownerName = event.ownerName
+        self.tags = event.tags
 
         if let pEvent = event as? PromoterEvent {
             self.price = pEvent.price
@@ -102,6 +104,7 @@ public class EventCoder: Codable {
         case ownerId = "ownerId"
         case price = "price"
         case link = "buyTicketsLink"
+        case tags = "tags"
         
         case phoneNumber = "phoneNumber"
         case category = "category"
@@ -130,6 +133,7 @@ public class EventCoder: Codable {
         self.allowUserInvites = try container.decode(Bool.self, forKey: .allowUserInvites)
         self.ownerName = try container.decode(String.self, forKey: .ownerName)
         self.ownerId = try container.decode(String.self, forKey: .ownerId)
+        self.tags = try container.decode([String].self, forKey: .tags)
         
         self.price = try? container.decode(Double.self, forKey: .price)
         self.link = try? container.decode(String.self, forKey: .link)
@@ -169,6 +173,7 @@ public class EventCoder: Codable {
         try container.encode(allowUserInvites, forKey: .allowUserInvites)
         try container.encode(ownerName, forKey: .ownerName)
         try container.encode(ownerId, forKey: .ownerId)
+        try container.encode(tags, forKey: .tags)
         
         try? container.encode(price, forKey: .price)
         try? container.encode(link, forKey: .link)
@@ -215,6 +220,7 @@ public class EventCoder: Codable {
         event.allowUserInvites = allowUserInvites
         event.ownerId = ownerId
         event.ownerName = ownerName
+        event.tags = tags
         
         if let price = price,
            let link = link,
