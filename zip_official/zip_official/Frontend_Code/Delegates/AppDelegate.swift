@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
      
         
         //connect to googlemaps API
-        GMSPlacesClient.provideAPIKey("AIzaSyAlXUKYzukB_QHXwWtI3RPGu9bx_nkbuII")
+        GMSPlacesClient.provideAPIKey("GOOGLE ACCESS KEY")
 
 //        AppDelegate.userDefaults.setValue("Yianni Zavaliagkos", forKey: "name")
 
