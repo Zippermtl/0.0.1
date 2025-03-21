@@ -1,6 +1,7 @@
 # Zipper - The Social Map
 
 ![Group 962 (1)](https://github.com/Zippermtl/0.0.1/assets/85959302/930c1f88-a9c4-4d46-8946-052969e3cd1f)
+<img width="801" alt="Screen Shot 2025-03-21 at 5 12 09 PM" src="https://github.com/user-attachments/assets/750e6542-27bd-4e59-8610-7a1755d89c79" />
 
 ## About
 Find events and people nearby with Zipper! Effortlessly meet people, create, and discover events easier than ever before.
